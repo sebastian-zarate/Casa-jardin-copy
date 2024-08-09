@@ -14,7 +14,128 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-model aula {
-  id        String   @id @default(cuid())
+
+model Nacionalidad {
+  id        Int   @id @default(autoincrement())
+  nombre String
+  direccion Direccion[]
+}
+
+model Provincia {
+  id  Int @id @default(autoincrement())
+  nombre String
+  direccion Direccion[]
+}
+
+model Localidad {
+  id  Int @id @default(autoincrement())
+  nombre String
+  direccion Direccion[]
+}
+
+model Direccion {
+  id  Int @id @default(autoincrement())
+  localidad Localidad @relation(fields: [localidadId], references: [id])
+  localidadId Int @unique
+
+  provincia Provincia @relation(fields: [provinciaId], references: [id])
+  provinciaId Int @unique
+
+  nacionalidad Nacionalidad @relation(fields: [nacionalidadId], references: [id])
+  nacionalidadId Int @unique
+
+  alumno Alumno?
+  profesional Profesional?
+}
+
+model Profesional {
+  id  Int @id @default(autoincrement()) 
+  nombre String
+  apellido String
+  especialidad String 
+  email String @unique 
+  telefono Int @unique
+  direccion Direccion @relation(fields: [direccionId], references: [id])
+  direccionId Int @unique
+
+  prof_cur Profesional_Curso[]
+}
+
+model Profesional_Curso {
+  id  Int @id @default(autoincrement()) 
+  curso Curso @relation(fields: [cursoId], references: [id])
+  cursoId Int @unique
+  
+  profesional Profesional @relation(fields: [profesionalId], references: [id])
+  profesionalId Int @unique
+}
+
+model Curso {
+  id  Int @id @default(autoincrement()) 
+  nombre String
+  year DateTime
+  descripcion String
+
+  prof_cur Profesional_Curso[]
+  cronograma Cronograma[]
+  alum_cur Alumno_Curso[]
+}
+
+model Alumno {
+  id  Int @id @default(autoincrement()) 
+  nombre String
+  apellido String
+  dni Int @unique
+  telefono Int @unique
+  direccion Direccion @relation(fields: [direccionId], references: [id])
+  direccionId Int @unique
+  email String @unique
+  password String 
+
+  alum_cur Alumno_Curso[]
+}
+
+model Alumno_Curso {
+  id  Int @id @default(autoincrement()) 
+  alumno Alumno @relation(fields: [alumnoId], references: [id])
+  alumnoId Int @unique
+
+  curso Curso @relation(fields: [cursoId], references: [id])
+  cursoId Int @unique
+
+  pagos Pagos[]
+}
+
+model Pagos {
+  id  Int @id @default(autoincrement()) 
+  alum_cur Alumno_Curso @relation(fields: [Id], references: [id]) 
+  Id Int @unique
+
+}
+model Cronograma {
+  id  Int @id @default(autoincrement()) 
+  curso Curso @relation(fields: [cursoId], references: [id])
+  cursoId Int @unique
+
+  fecha Fecha @relation(fields: [fechaId], references: [id])
+  fechaId Int @unique
+
+  aula Aula @relation(fields: [aulaId], references: [id])
+  aulaId Int @unique
+}
+
+model Aula {
+  id        Int   @id @default(autoincrement())
   numero   Int
+
+  cronograma Cronograma?
+}
+
+model Fecha {
+  id  Int @id @default(autoincrement()) 
+  dia DateTime
+  hora_inicio DateTime
+  hora_fin DateTime
+
+  cronograma Cronograma[]
 }
