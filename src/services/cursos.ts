@@ -22,3 +22,8 @@ export async function createCurso(data: {
         data
     })
 }
+
+//Listar Crusos
+export async function getCursos() {
+    return prisma.curso.findMany()
+}

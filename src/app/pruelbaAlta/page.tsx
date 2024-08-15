@@ -1,6 +1,6 @@
 "use client"
 import React from "react";
-import { createCurso } from "../services/cursos";
+import { createCurso } from "../../services/cursos";
 
 async function handleCreateCurso() {
     try {
