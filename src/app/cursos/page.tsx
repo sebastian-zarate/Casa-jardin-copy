@@ -14,11 +14,11 @@ async function handleCreateCurso() {
         console.error("Imposible crear", error);
     }
 }
-function Page() {
+function cursos() {
     return (
         <main>
             <button onClick={handleCreateCurso} className="bg-red-700">Crear Curso</button>
         </main>
     );
 }
-export default Page;
+export default cursos;
