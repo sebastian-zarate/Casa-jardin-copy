@@ -73,7 +73,7 @@ model Profesional_Curso {
 model Curso {
   id  Int @id @default(autoincrement()) 
   nombre String
-  year DateTime
+  year Int
   descripcion String
 
   prof_cur Profesional_Curso[]
