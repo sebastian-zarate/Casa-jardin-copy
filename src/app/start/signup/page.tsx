@@ -1,8 +1,7 @@
 "use client"
-
 import Image from 'next/image'
-import BackgroundLibrary from '../../../public/Images/BookShell.jpg'
-import Logo from '../../../public/Images/LogoCasaJardin.png'
+import BackgroundLibrary from '../../../../public/Images/BookShell.jpg'
+import Logo from '../../../../public/Images/LogoCasaJardin.png'
 
 
 function Signup() {
@@ -37,11 +36,12 @@ function Signup() {
     />
 
   <div
-    className="flex flex-col"
     style={{
       backgroundColor: 'rgba(28, 171, 235, 1)', // Fondo con opacidad aplicada
       position: 'relative',
       zIndex: 2,
+      display: 'flex',
+        flexDirection: 'column',
       padding: '100px',
       height: '828px',
       borderRadius: '50px', // Bordes redondeados
@@ -95,7 +95,7 @@ style={{
 
 <div className="flex items-center justify-center">
     <span className='font-medium'>Tienes cuenta?</span>
-    <a href="/login" className=" font-bold text lg text-black ml-2">Iniciar Sesión</a>
+    <a href="/start/login" className=" font-bold text lg text-black ml-2">Iniciar Sesión</a>
 
 </div>
     </div>
