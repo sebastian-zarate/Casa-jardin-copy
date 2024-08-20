@@ -18,7 +18,7 @@ const Cursos: React.FC = () => {
     });
     // Estado para almacenar mensajes de error
     const [errorMessage, setErrorMessage] = useState<string>("");
-
+    const [foto, setFoto] = useState<File | null>(null); // Nuevo estado para la foto
     // Efecto para obtener la lista de cursos al montar el componente
     useEffect(() => {
         fetchCursos(); // Llama a la función para obtener cursos
@@ -56,6 +56,12 @@ const Cursos: React.FC = () => {
             [name]: name === 'year' ? parseInt(value, 10) : value // Convierte `year` a número entero
         }));
     }
+     //actulizar la imagen 
+    function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const file = e.target.files ? e.target.files[0] : null;
+        setFoto(file); // Establece el archivo de la foto
+    }
+
 
     // Función para validar los detalles del curso
     function validateCursoDetails() {
@@ -158,6 +164,21 @@ const Cursos: React.FC = () => {
                                     name="descripcion"
                                     value={cursoDetails.descripcion}
                                     onChange={handleChange}
+                                    className="p-2 w-full border rounded"
+                                />
+                            </div>
+                            <div className="mb-4">
+                            <label htmlFor="Profesor" className="block"> Profesor acargo:</label>
+
+
+                            </div>
+                            <div className="mb-4">
+                                <label htmlFor="foto" className="block">Foto:</label>
+                                <input
+                                    type="file"
+                                    id="foto"
+                                    name="foto"
+                                    onChange={handleFileChange}
                                     className="p-2 w-full border rounded"
                                 />
                             </div>
