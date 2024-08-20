@@ -4,6 +4,11 @@ import React, { useEffect, useState } from "react";
 import Navigate from "../../../helpers/navigate/page";
 import But_aside from "../../../helpers/but_aside/page";
 import { updateCurso, getCursos, deleteCurso, createCurso } from "../../../services/cursos";
+import Image from "next/image";
+import DeleteIcon from "../../../../public/Images/DeleteIcon.png";
+import EditIcon from "../../../../public/Images/EditIcon.png";
+import Background from "../../../../public/Images/Background.jpg";
+import ButtonAdd from "../../../../public/Images/Button.png";
 
 const Cursos: React.FC = () => {
     // Estado para almacenar la lista de cursos
@@ -103,6 +108,7 @@ const Cursos: React.FC = () => {
     }
     async function handleEliminarCurso(id: number) {
         try {
+            //Ventana de confirmación para eliminar el curso
             if (window.confirm("¿Estás seguro de que deseas eliminar este curso?")) {
                 await deleteCurso(id);
                 console.log("Curso eliminado con éxito:", id);
@@ -110,7 +116,7 @@ const Cursos: React.FC = () => {
                 setCursos(cursos.filter((curso) => curso.id !== id));
             }
         } catch (error) {
-            console.error("Imposible eliminar", error);
+            console.error("Imposible eliminar", error); //Manejo de errores
         }
     }
     async function handleCreateCurso() {
@@ -127,34 +133,39 @@ const Cursos: React.FC = () => {
     }
 
     return (
-        <main className="relative min-h-screen">
-                <div className="bg-blue-400 flex justify-between w-full p-4">
+        <main className="relative min-h-screen ">
+            <Image src={Background} alt="Background" layout="fill" objectFit="cover" quality={100} priority={true}/>
+            
+                <div className=" absolute bg-blue-400 flex justify-between w-full p-4">
                     <Navigate />
-                </div>
+                </div>                  
                 
-                <h1 className="absolute top-35 mt-5 left-60 text-3xl">Talleres</h1>
-                <div className="mt-20 border p-1 absolute left-40" style={{background: "#D9D9D9"}}>
+                <h1 className=" absolute top-60 left-60 text-3xl">Talleres</h1>
+        
+                <div className="mt-20 top-60 border p-1 absolute left-40" style={{background: "#D9D9D9"}}>
                     <div className="grid grid-cols-5 gap-4 mt-4">
                         {cursos.map((curso) => (
                             <div key={curso.id} className="border p-8 mx-2 relative">
                                 <button 
                                     onClick={() => handleEliminarCurso(curso.id)} 
                                     className="absolute top-0 right-0 text-red-600 font-bold">
-                                    X
+                                    <Image src={DeleteIcon} alt="Eliminar" width={27} height={27}/>
                                 </button>
                                 <button 
                                     onClick={() => setSelectedCursoId(curso.id)} 
-                                    className="absolute top-0 right-4 text-red-600 font-bold">
-                                    M
+                                    className="absolute top-0 right-8 text-red-600 font-bold">
+                                    <Image src={EditIcon} alt="Editar" width={27} height={27}/>
                                 </button>
                                 <h3>{curso.nombre}</h3>
                             </div>
                         ))}
                     </div>
-                    <button onClick={handleCreateCurso} className="bg-red-700 m-4 py-2 px-5">Crear Curso</button>
+                    <button onClick={handleCreateCurso} className="mt-6 mx-4">
+                        <Image src={ButtonAdd} className="mx-3" alt="Image Alt Text" width={70} height={70}/>
+                    </button>
                 </div>
 
-                <div className="absolute bottom-0 bg-slate-600 w-full">
+                <div className="absolute bottom-0 bg-white w-full" style={{opacity: 0.66}}>
                     <But_aside />
                 </div>
   

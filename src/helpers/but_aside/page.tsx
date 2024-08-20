@@ -2,7 +2,7 @@
 
 export default function But_aside () {
     return (
-        <aside style={{ display: "flex",justifyContent: "space-around" }}>
+        <aside style={{ display: "flex",justifyContent: "space-around"}}>
             <div>
                 <h1>Casa Jardín</h1>
             </div>
