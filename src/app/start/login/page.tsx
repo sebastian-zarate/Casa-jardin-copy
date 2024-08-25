@@ -1,42 +1,78 @@
-"use client"
+"use client";
 
 import Image from "next/image";
+import { useState } from "react";
 import BackgroundLibrary from "../../../../public/Images/BookShell.jpg";
-import Logo from "../../../../public/Images/LogoCasaJardin.png"
+import Logo from "../../../../public/Images/LogoCasaJardin.png";
+import { login } from "../../../services/Alumno"; // Importa la función `login` desde el servicio
+
 function Login() {
+  // Estados para gestionar los datos del formulario y errores
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
 
+  // Función para validar los datos del formulario
+  const validate = () => {
+    const newErrors: { email?: string; password?: string } = {};
+    
+    // Validación del email
+    if (!email) {
+      newErrors.email = "El email es requerido.";
+    } else if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email)) {
+      newErrors.email = "El email no es válido.";
+    }
 
-    return(
-<div
-  style={{
-    backgroundImage: `url(${BackgroundLibrary.src})`,
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    position: 'relative',
-    minHeight: '100vh',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    margin: 0,
-    padding: 0,
-    overflow: 'hidden',
-  }}
-  
->
+    // Validación de la contraseña
+    if (!password) {
+      newErrors.password = "La contraseña es requerida.";
+    } else if (password.length < 6) {
+      newErrors.password = "La contraseña debe tener al menos 6 caracteres.";
+    }
+
+    // Actualiza el estado de errores
+    setErrors(newErrors);
+
+    // Retorna `true` si no hay errores, de lo contrario `false`
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // Función para manejar el envío del formulario
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Valida los datos del formulario
+    if (validate()) {
+      try {
+        // Llama a la función `login` para verificar email y contraseña
+        const alumno = await login(email, password);
+        console.log("Inicio de sesión exitoso");
+        if (alumno) {
+          console.log("Inicio de sesión exitoso", alumno);
+          // Redirige o maneja el inicio de sesión exitoso aquí
+        }
+      } catch (error) {
+        console.error("Error al iniciar sesión:", error);
+        // Muestra un mensaje de error si las credenciales son incorrectas
+        setErrors({ email: "Email o contraseña incorrectos." });
+      }
+    }
+  };
+
+  return (
     <div
-    className="flex flex-col"
-    style={{
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(255, 255, 255, 0.7)', // Fondo con opacidad aplicada
-      zIndex: 1,
-    }}
-    />
+      className="relative min-h-screen flex items-center justify-center"
+      style={{
+        backgroundImage: `url(${BackgroundLibrary.src})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
+    >
+      {/* Capa de fondo con opacidad */}
+      <div className="absolute inset-0 bg-white bg-opacity-70 z-0" />
 
-  <div
+      {/* Contenedor principal del formulario de inicio de sesión */}
+      <div
     style={{
       backgroundColor: 'rgba(28, 171, 235, 1)', // Fondo con opacidad aplicada
       position: 'relative',
@@ -49,50 +85,61 @@ function Login() {
       boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)', // Sombra para dar profundidad
     }}
   >
-    <div className="flex flex-col items-center">
-        <Image src={Logo} alt="Logo Casa Jardin" width={150} height={150}/>
+        {/* Logo de la aplicación */}
+        <Image src={Logo} alt="Logo Casa Jardin" width={150} height={150} />
+
+        {/* Título del formulario */}
+        <h2 className="text text-2xl font-semibold my-4">Inicia Sesión</h2>
+
+        {/* Formulario de inicio de sesión */}
+        <form onSubmit={handleSubmit} className="w-full">
+          <div className="mb-4">
+            <label className="text font-medium" htmlFor="email">
+              Email
+            </label>
+            <input
+              type="text"
+              id="email"
+              className="w-full p-2 rounded-md"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+          </div>
+
+          <div className="mb-4">
+            <label className="text font-medium" htmlFor="password">
+              Contraseña
+            </label>
+            <input
+              type="password"
+              id="password"
+              className="w-full p-2 rounded-md"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
+          </div>
+
+          {/* Botón de inicio de sesión */}
+          <button
+            type="submit"
+            className="w-full p-3 bg-red-500 text rounded-md font-medium hover:bg-red-600 transition duration-300"
+          >
+            Iniciar Sesión
+          </button>
+        </form>
+
+        {/* Enlace para registrarse */}
+        <div className="p-5 flex items-center justify-center">
+          <span className="text font-medium">¿No tienes cuenta?</span>
+          <a href="/start/signup" className="font-bold text-lg text-black ml-2">
+            Regístrate
+          </a>
+        </div>
+      </div>
     </div>
-    
-    <div className="flex flex-col items-center font-medium" style={{marginBottom: '20px', marginTop: '10px'}}>
-
-         <h2>Inicia Sesión </h2>
-
-    </div>
-        <label className="font-medium" htmlFor="email">Email</label>
-
-        <input type="text" id="email" style={{ padding: '3px', borderRadius: '5px', marginBottom: '20px' }} />
-
-        <label className="font-medium" htmlFor="password">Contraseña</label>
-
-        <input className="items-center" type="password" id="password" style={{ padding: '3px', borderRadius: '5px', marginBottom: '20px', width: '400px' }} />
-
-        <button className="font-medium"
-          style={{
-            padding: '10px 20px',
-            backgroundColor: '#ff4d4d',
-            color: '#fff',
-            borderRadius: '5px',
-            border: 'none',
-            cursor: 'pointer',
-            transition: 'background-color 0.3s ease',
-          }}
-          onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#e60000')}
-          onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#ff4d4d')}
-        >
-          Iniciar Sesión
-        </button>
-
-
-
-    <div className="p-5 flex items-center justify-center">
-      <span className="  font-medium">No tienes cuenta?</span> 
-        <a href="/start/signup" className=" font-bold text lg text-black ml-2">Registrate</a>
-    </div>
-  </div>
-</div>
-
-
-        
-    )
+  );
 }
+
 export default Login;

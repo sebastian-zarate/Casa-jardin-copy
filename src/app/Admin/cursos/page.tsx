@@ -72,7 +72,7 @@ const Cursos: React.FC = () => {
         }
         // Validar que el año sea mayor o igual a 2024 y que tenga hasta 4 dígitos
         if (year < 2024 || year > 9999) {
-            return "El año debe ser mayor o igual a 2024 y tener hasta 4 dígitos.";
+            return "El año debe ser mayor o igual a 2024.";
         }
         // Validar que la descripción tenga al menos 10 palabras
         const descripcionWords = descripcion.trim().split(/\s+/).length;
@@ -173,7 +173,7 @@ const Cursos: React.FC = () => {
                 {selectedCursoId !== null && (
                     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
                         <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative">
-                            <h2 className="text-2xl font-bold mb-4">Editar Taller</h2>
+                            <h2 className="text-2xl font-bold mb-4">Editar Talleres </h2>
                             {errorMessage && (
                                 <div className="mb-4 text-red-600">
                                     {errorMessage} {/* Muestra el mensaje de error */}
