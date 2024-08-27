@@ -30,7 +30,7 @@ const Cursos: React.FC = () => {
     // Efecto para obtener la lista de cursos al montar el componente
     useEffect(() => {
         fetchCursos(); // Llama a la función para obtener cursos
-
+        fetchImages();
     }, []);
 
     // Efecto para actualizar los detalles del curso seleccionado cuando cambia el curso o el ID del curso
@@ -171,10 +171,10 @@ const Cursos: React.FC = () => {
             <button  className="absolute top-60" onClick={() =>{ fetchImages(); console.log(errorMessage)}}>Cargar Imagenes</button>
             <div className="top-60 border p-1 absolute left-40 h-90 max-h-90" style={{background: "#D9D9D9"}}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 my-4">
-                    {cursos.map((curso) => (
+                    {cursos.map((curso, key) => (
                         <div key={curso.id} className="border p-4 mx-2 relative w-47 h-47 justify-center items-center" >
                             <div className="relative w-30 h-20">
-                                {<Image 
+                             {<Image 
                                     src={images[0]} 
                                     alt="Background Image" 
                                     objectFit="cover"  
