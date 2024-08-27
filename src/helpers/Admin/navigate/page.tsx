@@ -1,6 +1,6 @@
 "use client"
 import Image from "next/image"
-import Logo from "../../../public/Images/LogoCasaJardin.png";
+import Logo from "../../../../public/Images/LogoCasaJardin.png";
 export default function Navigate () {
     return (
         

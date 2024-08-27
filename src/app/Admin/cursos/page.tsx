@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import Navigate from "../../../helpers/navigate/page";
-import But_aside from "../../../helpers/but_aside/page";
+import Navigate from "../../../helpers/Admin/navigate/page";
+import But_aside from "../../../helpers/Admin/but_aside/page";
 import { updateCurso, getCursos, deleteCurso, createCurso } from "../../../services/cursos";
 import Image from "next/image";
 import DeleteIcon from "../../../../public/Images/DeleteIcon.png";
@@ -168,7 +168,7 @@ const Cursos: React.FC = () => {
             </div>                  
             
             <h1  className="relative top-40 left-60 mb-5 text-3xl" >Talleres</h1>
-            <button  className="absolute top-60" onClick={() =>{ fetchImages(); console.log(errorMessage)}}>Cargar Imagenes</button>
+           
             <div className="top-60 border p-1 absolute left-40 h-90 max-h-90" style={{background: "#D9D9D9"}}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 my-4">
                     {cursos.map((curso, key) => (
