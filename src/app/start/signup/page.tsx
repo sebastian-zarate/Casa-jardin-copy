@@ -132,8 +132,7 @@ function Signup() {
         <div className="flex justify-center mb-6">
           <Image src={Logo} alt="Logo Casa Jardin" width={150} height={150} />
         </div>
-        <div className="flex flex-col items-center block text-lg font-medium" style={{ marginBottom: '20px', marginTop: '10px' }}>
-          <h2>Registrarte</h2>
+        <div className="flex flex-col items-center text text-2xl font-semibold" style={{ marginBottom: '20px', marginTop: '10px' }}>          <h2>Registrarte</h2>
         </div>
         {boxError && (
           <div className="mb-4 text-red-600">

@@ -15,7 +15,7 @@ export default function Navigate () {
             <a className="mx-2" href="">Talleres</a>
             <a className="mx-2" href="">Profesionales</a>
             <a className="mx-2" href="">Pagos</a>
-            <a className="mx-2" href="http://localhost:3000/login">Salir</a>
+            <a className="mx-2" href="http://localhost:3000/start/login">Salir</a>
         </div>
         </nav>
     )

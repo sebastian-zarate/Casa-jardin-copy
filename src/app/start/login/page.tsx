@@ -86,10 +86,10 @@ function Login() {
     }}
   >
         {/* Logo de la aplicación */}
-        <Image src={Logo} alt="Logo Casa Jardin" width={150} height={150} />
+        <Image src={Logo} alt="Logo Casa Jardin" width={150} height={150} className="mx-16" />
 
         {/* Título del formulario */}
-        <h2 className="text text-2xl font-semibold my-4">Inicia Sesión</h2>
+        <h2 className="text text-2xl font-semibold my-4 mx-16">Inicia Sesión</h2>
 
         {/* Formulario de inicio de sesión */}
         <form onSubmit={handleSubmit} className="w-full">
