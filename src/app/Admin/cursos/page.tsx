@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Navigate from "../../../helpers/Admin/navigate/page";
-import But_aside from "../../../helpers/Admin/but_aside/page";
+import But_aside from "../../../helpers/but_aside/page";
 import { updateCurso, getCursos, deleteCurso, createCurso } from "../../../services/cursos";
 import Image from "next/image";
 import DeleteIcon from "../../../../public/Images/DeleteIcon.png";
@@ -34,7 +34,7 @@ const Cursos: React.FC = () => {
     }, []);
 
     // Efecto para actualizar los detalles del curso seleccionado cuando cambia el curso o el ID del curso
-    useEffect(() => {
+       useEffect(() => {
         if (selectedCursoId !== null) {
             const selectedCurso = cursos.find(curso => curso.id === selectedCursoId); // Busca el curso seleccionado
             if (selectedCurso) {
@@ -45,7 +45,9 @@ const Cursos: React.FC = () => {
                 }); // Actualiza los detalles del curso
             }
         }
-    }, [selectedCursoId, cursos]);
+    }, [selectedCursoId, cursos]); 
+        // Efecto para actualizar los detalles del curso seleccionado cuando cambia el curso o el ID del curso
+    
 
     // Función para obtener la lista de cursos
     async function fetchCursos() {
@@ -70,9 +72,9 @@ const Cursos: React.FC = () => {
     function validateCursoDetails() {
         const { nombre, year, descripcion } = cursoDetails;
 
-        // Validar que el nombre tenga al menos 4 caracteres
-        if (nombre.length < 4) {
-            return "El nombre debe tener al menos 4 caracteres.";
+        // Validar que el nombre tenga al menos 2 caracteres
+        if (nombre.length < 1) {
+            return "El nombre debe tener al menos 2 caracteres.";
         }
         // Validar que el año sea mayor o igual a 2024 y que tenga hasta 4 dígitos
         if (year < 2024 || year > 9999) {
@@ -124,13 +126,14 @@ const Cursos: React.FC = () => {
         }
     }
     async function handleCreateCurso() {
+        const validationError = validateCursoDetails(); // Valida los detalles del curso antes de crear
+    
+        if (validationError) {
+            setErrorMessage(validationError); // Muestra el mensaje de error si la validación falla
+            return;
+        }
+    
         try {
-            const validationError = validateCursoDetails(); // Valida los detalles del curso antes de crear
-
-            if (validationError) {
-                setErrorMessage(validationError); // Muestra el mensaje de error si la validación falla
-                return;
-            }
             const newCurso = await createCurso(cursoDetails);
             console.log("Curso creado!!:", newCurso);
             setCursos([...cursos, newCurso]);
@@ -160,18 +163,18 @@ const Cursos: React.FC = () => {
       
 
     return (
-        <main className="relative min-h-screen ">
-            <Image src={Background} alt="Background" layout="fill" objectFit="cover" quality={100} priority={true}/>
+        <main className="relative min-h-screen w-screen">
+            <Image src={Background} alt="Background" layout="fill" objectFit="cover" quality={80} priority={true}/>
             
             <div className="fixed bg-blue-400  justify-between w-full p-4" >
                 <Navigate />
             </div>                  
-            
-            <h1  className="relative top-40 left-60 mb-5 text-3xl" >Talleres</h1>
+            <h1  className="absolute top-40 left-60 mb-5 text-3xl" >Talleres</h1>
            
+    
             <div className="top-60 border p-1 absolute left-40 h-90 max-h-90" style={{background: "#D9D9D9"}}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 my-4">
-                    {cursos.map((curso, key) => (
+                    {cursos.map((curso) => (
                         <div key={curso.id} className="border p-4 mx-2 relative w-47 h-47 justify-center items-center" >
                             <div className="relative w-30 h-20">
                              {<Image 
@@ -188,7 +191,7 @@ const Cursos: React.FC = () => {
                                     <Image src={DeleteIcon} alt="Eliminar" width={27} height={27}/>
                                 </button>
                                 <button 
-                                    onClick={() => setSelectedCursoId(/*curso.id*/ -1)} 
+                                    onClick={() => setSelectedCursoId(curso.id)} 
                                     className="absolute top-0 right-8 text-red-600 font-bold">
                                     <Image src={EditIcon} alt="Editar" width={27} height={27}/>
                                 </button>   
@@ -197,9 +200,15 @@ const Cursos: React.FC = () => {
                         </div>
                     ))}
                 </div>
-                <button onClick={handleCreateCurso} className="mt-6 mx-4">
-                    <Image src={ButtonAdd} className="mx-3" alt="Image Alt Text" width={70} height={70}/>
+                <button onClick={() => setSelectedCursoId(-1)} className="mt-6 mx-4">
+                    <Image src={ButtonAdd} 
+                    className="mx-3" 
+                    alt="Image Alt Text" 
+                    width={70} 
+                    height={70}/>
                 </button>
+
+
             </div>
 
             <div className="fixed bottom-0 mt-20 bg-white w-full" style={{opacity: 0.66}}>
@@ -208,66 +217,66 @@ const Cursos: React.FC = () => {
 
 
             {selectedCursoId !== null && (
-                  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-                  <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative">
-                      <h2 className="text-2xl font-bold mb-4">
-                          {selectedCursoId === -1 ? "Crear Talleres" : "Editar Talleres"}
-                      </h2>
-                      {errorMessage && (
-                          <div className="mb-4 text-red-600">
-                              {errorMessage} {/* Muestra el mensaje de error */}
-                          </div>
-                      )}
-                      <div className="mb-4">
-                          <label htmlFor="nombre" className="block">Nombre:</label>
-                          <input
-                              type="text"
-                              id="nombre"
-                              name="nombre"
-                              value={cursoDetails.nombre}
-                              onChange={handleChange}
-                              className="p-2 w-full border rounded"
-                          />
-                      </div>
-                      <div className="mb-4">
-                          <label htmlFor="year" className="block">Año:</label>
-                          <input
-                              type="number"
-                              id="year"
-                              name="year"
-                              value={cursoDetails.year}
-                              onChange={handleChange}
-                              className="p-2 w-full border rounded"
-                          />
-                      </div>
-                      <div className="mb-4">
-                          <label htmlFor="descripcion" className="block">Descripción:</label>
-                          <input
-                              type="text"
-                              id="descripcion"
-                              name="descripcion"
-                              value={cursoDetails.descripcion}
-                              onChange={handleChange}
-                              className="p-2 w-full border rounded"
-                          />
-                      </div>
-                      <div className="flex justify-end space-x-4">
-                          <button 
-                              onClick={selectedCursoId === -1 ? handleCreateCurso : handleSaveChanges} 
-                              className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800"
-                          >
-                              Guardar
-                          </button>
-                          <button 
-                              onClick={() => setSelectedCursoId(null)} 
-                              className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800"
-                          >
-                              Cancelar
-                          </button>
-                      </div>
-                  </div>
-              </div>
-          )}
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative">
+            <h2 className="text-2xl font-bold mb-4">
+                {selectedCursoId === -1 ? "Crear Talleres" : "Editar Talleres"}
+            </h2>
+            {errorMessage && (
+                <div className="mb-4 text-red-600">
+                    {errorMessage} {/* Muestra el mensaje de error */}
+                </div>
+            )}
+            <div className="mb-4">
+                <label htmlFor="nombre" className="block">Nombre:</label>
+                <input
+                    type="text"
+                    id="nombre"
+                    name="nombre"
+                    value={cursoDetails.nombre}
+                    onChange={handleChange}
+                    className="p-2 w-full border rounded"
+                />
+            </div>
+            <div className="mb-4">
+                <label htmlFor="year" className="block">Año:</label>
+                <input
+                    type="number"
+                    id="year"
+                    name="year"
+                    value={cursoDetails.year}
+                    onChange={handleChange}
+                    className="p-2 w-full border rounded"
+                />
+            </div>
+            <div className="mb-4">
+                <label htmlFor="descripcion" className="block">Descripción:</label>
+                <input
+                    type="text"
+                    id="descripcion"
+                    name="descripcion"
+                    value={cursoDetails.descripcion}
+                    onChange={handleChange}
+                    className="p-2 w-full border rounded"
+                />
+            </div>
+            <div className="flex justify-end space-x-4">
+                <button 
+                    onClick={((selectedCursoId === -1 ? handleCreateCurso: handleSaveChanges ))} 
+                    className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800"
+                >
+                    Guardar
+                </button>
+                <button 
+                    onClick={() => setSelectedCursoId(null)} 
+                    className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800"
+                >
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+)}
         </main>
     );
 }
