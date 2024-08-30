@@ -34,8 +34,8 @@ const Cursos: React.FC = () => {
     }, []);
 
     // Efecto para actualizar los detalles del curso seleccionado cuando cambia el curso o el ID del curso
-       useEffect(() => {
-        if (selectedCursoId !== null) {
+    useEffect(() => {
+        if (selectedCursoId !== null && selectedCursoId !== -1) {
             const selectedCurso = cursos.find(curso => curso.id === selectedCursoId); // Busca el curso seleccionado
             if (selectedCurso) {
                 setCursoDetails({
@@ -44,8 +44,15 @@ const Cursos: React.FC = () => {
                     descripcion: selectedCurso.descripcion
                 }); // Actualiza los detalles del curso
             }
+        } else if (selectedCursoId === -1) {
+            // Reinicia los detalles del curso al crear un nuevo curso
+            setCursoDetails({
+                nombre: '',
+                year: 2024,
+                descripcion: ''
+            });
         }
-    }, [selectedCursoId, cursos]); 
+    }, [selectedCursoId, cursos]);
         // Efecto para actualizar los detalles del curso seleccionado cuando cambia el curso o el ID del curso
     
 
@@ -126,6 +133,7 @@ const Cursos: React.FC = () => {
         }
     }
     async function handleCreateCurso() {
+        
         const validationError = validateCursoDetails(); // Valida los detalles del curso antes de crear
     
         if (validationError) {

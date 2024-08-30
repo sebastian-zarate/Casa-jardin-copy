@@ -3,7 +3,6 @@
 import { PrismaClient } from "@prisma/client";
 import { hashPassword } from "../helpers/hashPassword";
 import { verifyPassword } from "../helpers/hashPassword";
-import exp from "constants";
 const prisma = new PrismaClient();
 
 export type Alumno = {
@@ -17,46 +16,127 @@ export type Alumno = {
 }
 
 // Crear Alumnos
+// Crear Alumnos
 export async function createAlumno(data: {
-    nombre: string;
-    apellido: string;
-    email: string;
-    password: string;
-    dni?: number;
-    telefono?: number;
-    direccionId?: number;
-  }) {
-    // Encriptar la contraseña
-    const hashedPassword = await hashPassword(data.password);
+  nombre: string;
+  apellido: string;
+  email: string;
+  password: string;
+  dni: number;
+  telefono: number;
+  pais: number;
+  provincia: number;
+  localidad: number;
+  calle: string;
+}) {
+  // Encriptar la contraseña
+
+  const hashedPassword = await hashPassword(data.password);
+
+  // Verificar que el país, provincia y localidad existen
+  const paisExiste = await prisma.nacionalidad.findUnique({
+    where: { id: data.pais },
+  });
   
-    // Crear la estructura de datos del alumno
-    const alumnoData: any = {
-      nombre: data.nombre,
-      apellido: data.apellido,
-      email: data.email,
-      password: hashedPassword,
-      dni: data.dni,
-      telefono: data.telefono,
-    };
-  
-    if (data.direccionId) {
-      // Verificar si el direccionId existe en la base de datos
-      const direccionExiste = await prisma.direccion.findUnique({
-        where: { id: data.direccionId },
-      });
-      // por si no existe la direccion
-      if (!direccionExiste) {
-        throw new Error("El direccionId no es válido.");
-      }
-      alumnoData.direccionId = data.direccionId;
-    }
-  
-    // Guardar el alumno
-    return await prisma.alumno.create({
-      data: alumnoData,
-    });
+  if (!paisExiste) {
+    throw new Error("El país seleccionado no es válido.");
   }
-  
+
+  // Verificar que la provincia existe y pertenece al país
+  const provinciaExiste = await prisma.provincia.findUnique({
+    where: { id: data.provincia },
+    include: { nacionalidad: true }, // Incluye la nacionalidad asociada para validación
+  });
+
+  if (!provinciaExiste) {
+    throw new Error("La provincia seleccionada no es válida.");
+  }
+
+  if (provinciaExiste.nacionalidad.id !== data.pais) {
+    throw new Error("La provincia seleccionada no es válida para el país indicado.");
+  }
+
+  // Verificar que la localidad existe y pertenece a la provincia
+  const localidadExiste = await prisma.localidad.findUnique({
+    where: { id: data.localidad },
+    include: { provincia: true }, // Incluye la provincia asociada para validación
+  });
+
+  if (!localidadExiste) {
+    throw new Error("La localidad seleccionada no es válida.");
+  }
+
+  if (localidadExiste.provincia.id !== data.provincia) {
+    throw new Error("La localidad seleccionada no es válida para la provincia indicada.");
+  }
+
+  // Crear la dirección del alumno con la localidad seleccionada y la calle
+  const nuevaDireccion = await prisma.direccion.create({
+    data: {
+      calle: data.calle,
+      localidadId: data.localidad,
+    },
+  });
+
+  // Crear el alumno con la dirección creada anteriormente y la contraseña encriptada con bcrypt  
+  const alumnoData: any = {
+    nombre: data.nombre,
+    apellido: data.apellido,
+    email: data.email,
+    password: hashedPassword,
+    dni: data.dni,
+    telefono: data.telefono,
+    direccionId: nuevaDireccion.id,
+  };
+
+  // Guardar el alumno
+  return await prisma.alumno.create({
+    data: alumnoData,
+  });
+}
+
+
+
+// en esta funsion se obtienen los paises
+// para poder mostrarlos en el formulario de registro
+export async function getPaises() {
+  return await prisma.nacionalidad.findMany({
+    select: {
+      id: true,
+      nombre: true,
+    },
+  });
+}
+
+// en esta funsion se obtienen las provincias por pais segun lo que se seleccione en el formulario de registro
+// para poder mostrarlas en el formulario de registro de alumno
+export async function getProvinciasByPais(paisId: number) {
+  return await prisma.provincia.findMany({
+    where: {
+      nacionalidadId: Number(paisId),
+    },
+    select: {
+      id: true,
+      nombre: true,
+    },
+  });
+}
+// en esta funsion se obtienen las localidades por provincia segun lo que se seleccione en el formulario de registro
+// para poder mostrarlas en el formulario de registro de alumno
+export async function getLocalidadesByProvincia(provinciaId: number) {
+  return await prisma.localidad.findMany({
+    where: {
+      provinciaId: Number(provinciaId),
+    },
+    select: {
+      id: true,
+      nombre: true,
+    },
+  });
+}
+
+
+
 
 // valida los datos del alumno para iniciar sesión
 export async function login(email: string, password: string) {
@@ -71,42 +151,6 @@ export async function login(email: string, password: string) {
     }
   }
 
-// Modificar Alumno
-export async function updateAlumno(id: number, data: {
-    nombre: string;
-    apellido: string;
-    dni: string;
-    telefono: number;
-    pais: string;
-    provincia: string;
-    localidad: string;
-    calle: string;
-    numero: number;
 
-  }) {
-    // Verificar si el alumno existe
-    const alumno = await prisma.alumno.findUnique({ where: { id } });
-    if (!alumno) {
-      throw new Error("El alumno no existe.");
-    }
+
   
-    // Crear la estructura de datos del alumno
-    const alumnoData: any = {
-      id: id,
-      nombre: data.nombre,
-      apellido: data.apellido,
-      dni: data.dni,
-      telefono: data.telefono,
-      pais: data.pais,
-      provincia: data.provincia,
-      localidad: data.localidad,
-      calle: data.calle,
-      numero: data.numero,
-    };
-  
-    // Actualizar el alumno
-    return await prisma.alumno.update({
-      where: { id },
-      data: alumnoData,
-    });
-  }
