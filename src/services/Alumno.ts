@@ -17,76 +17,33 @@ export type Alumno = {
 
 // Crear Alumnos
 // Crear Alumnos
+
+
 export async function createAlumno(data: {
   nombre: string;
   apellido: string;
   email: string;
   password: string;
-  dni: number;
-  telefono: number;
-  pais: number;
-  provincia: number;
-  localidad: number;
-  calle: string;
 }) {
-  // Encriptar la contraseña
-
-  const hashedPassword = await hashPassword(data.password);
-
-  // Verificar que el país, provincia y localidad existen
-  const paisExiste = await prisma.nacionalidad.findUnique({
-    where: { id: data.pais },
-  });
-  
-  if (!paisExiste) {
-    throw new Error("El país seleccionado no es válido.");
-  }
-
-  // Verificar que la provincia existe y pertenece al país
-  const provinciaExiste = await prisma.provincia.findUnique({
-    where: { id: data.provincia },
-    include: { nacionalidad: true }, // Incluye la nacionalidad asociada para validación
-  });
-
-  if (!provinciaExiste) {
-    throw new Error("La provincia seleccionada no es válida.");
-  }
-
-  if (provinciaExiste.nacionalidad.id !== data.pais) {
-    throw new Error("La provincia seleccionada no es válida para el país indicado.");
-  }
-
-  // Verificar que la localidad existe y pertenece a la provincia
-  const localidadExiste = await prisma.localidad.findUnique({
-    where: { id: data.localidad },
-    include: { provincia: true }, // Incluye la provincia asociada para validación
-  });
-
-  if (!localidadExiste) {
-    throw new Error("La localidad seleccionada no es válida.");
-  }
-
-  if (localidadExiste.provincia.id !== data.provincia) {
-    throw new Error("La localidad seleccionada no es válida para la provincia indicada.");
-  }
-
-  // Crear la dirección del alumno con la localidad seleccionada y la calle
-  const nuevaDireccion = await prisma.direccion.create({
-    data: {
-      calle: data.calle,
-      localidadId: data.localidad,
+  // Verificar si el email ya existe en la base de datos
+  const existingAlumno = await prisma.alumno.findUnique({
+    where: {
+      email: data.email,
     },
   });
 
-  // Crear el alumno con la dirección creada anteriormente y la contraseña encriptada con bcrypt  
-  const alumnoData: any = {
-    nombre: data.nombre,
-    apellido: data.apellido,
-    email: data.email,
+  if (existingAlumno) {
+    // El email ya existe
+    return "El email ya está registrado";
+  }
+
+  // Encriptar la contraseña
+  const hashedPassword = await hashPassword(data.password);
+
+  // Crear el objeto de datos del alumno
+  const alumnoData = {
+    ...data,
     password: hashedPassword,
-    dni: data.dni,
-    telefono: data.telefono,
-    direccionId: nuevaDireccion.id,
   };
 
   // Guardar el alumno
@@ -94,6 +51,7 @@ export async function createAlumno(data: {
     data: alumnoData,
   });
 }
+
 
 
 

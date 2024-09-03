@@ -13,16 +13,9 @@ function Signup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [dni, setDni] = useState("");
-  const [telefono, setTelefono] = useState("");
-  const [pais, setPais] = useState("");
-  const [provincia, setProvincia] = useState("");
-  const [localidad, setLocalidad] = useState("");
-  const [calle, setCalle] = useState("");
+  
 
-  const [provincias, setProvincias] = useState<{ id: number; nombre: string }[]>([]);
-  const [localidades, setLocalidades] = useState<{ id: number; nombre: string }[]>([]);
-  const [paises, setPaises] = useState<{ id: number; nombre: string }[]>([]);
+  
   const [error, setError] = useState("");
 // en para los errores de registro se muestra un mensaje de error por 5 segundos
 // 
@@ -32,21 +25,6 @@ function Signup() {
       return () => clearInterval(intervalId);
     }
   }, [error]);
-// en esta funsion se obtienen los paises para poder mostrarlos en el formulario de registro
-  useEffect(() => {
-    async function fetchPaises() {
-      try {
-        //  se obtienen los paises
-        const paisesData = await getPaises();
-        setPaises(paisesData);
-      } catch (error) {
-        // en caso de error se muestra un mensaje de error
-        setError("Error al cargar los países");
-      }
-    }
-    // se llama a la funcion fetchPaises
-    fetchPaises();
-  }, []);
 
 
   // en esta funsion se valida el formulario de registro 
@@ -59,8 +37,6 @@ function Signup() {
     if (password.length < 8) return "La contraseña debe tener al menos 8 caracteres";
     const passwordRegex = /^(?=.*[A-Z])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!passwordRegex.test(password)) return "La contraseña debe tener al menos una letra mayúscula y 8 caracteres";
-    if (!/^\d{8,12}$/.test(dni)) return "El DNI debe ser un número válido entre 8 y 12 dígitos";
-    if (!/^\d{10,15}$/.test(telefono)) return "El teléfono debe ser un número válido entre 10 y 15 dígitos";
     return "";
   };
   // en esta funsion se envian los datos del formulario de registro
@@ -79,12 +55,7 @@ function Signup() {
       apellido,
       email,
       password,
-      telefono: Number(telefono),
-      dni: Number(dni),
-      pais: Number(pais),
-      provincia: Number(provincia),
-      localidad: Number(localidad),
-      calle,
+      
     };
     // se envian los datos al servidor para registrar el usuario
     try {
@@ -101,33 +72,7 @@ function Signup() {
     }
   };
 
-// en esta funsion se obtienen las provincias del pais seleccionado
-  const handlePaisChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const paisId = e.target.value;
-    setPais(paisId);
-    setProvincia("");
-    setLocalidad("");
-// se obtienen las provincias del pais seleccionado y se guardan en el estado provincias
-    try {
-      const provinciasData = await getProvinciasByPais(Number(paisId));
-      setProvincias(provinciasData);
-    } catch (error) {
-      setError("Error al cargar las provincias");
-    }
-  };
-// en esta funsion se obtienen las localidades de la provincia seleccionada
-  const handleProvinciaChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const provinciaId = e.target.value;
-    setProvincia(provinciaId);
-    setLocalidad("");
-// se obtienen las localidades de la provincia seleccionada y se guardan en el estado localidades
-    try {
-      const localidadesData = await getLocalidadesByProvincia(Number(provinciaId));
-      setLocalidades(localidadesData);
-    } catch (error) {
-      setError("Error al cargar las localidades");
-    }
-  };
+
  // se muestra el formulario de registro
   return (
     <div
@@ -269,110 +214,6 @@ function Signup() {
             required
           />
 
-          <label className="block text-lg font-medium">DNI</label>
-          <input
-            type="number"
-            id="dni"
-            value={dni}
-            onChange={(e) => setDni(e.target.value)}
-            style={{
-              padding: '3px',
-              borderRadius: '5px',
-              marginBottom: '20px',
-              width: '100%',
-            }}
-            required
-          />
-
-          <label className="block text-lg font-medium">Teléfono</label>
-          <input
-            type="number"
-            id="telefono"
-            value={telefono}
-            onChange={(e) => setTelefono(e.target.value)}
-            style={{
-              padding: '3px',
-              borderRadius: '5px',
-              marginBottom: '20px',
-              width: '100%',
-            }}
-            required
-          />
-
-          <label className="block text-lg font-medium">País</label>
-          <select
-            value={pais}
-            onChange={handlePaisChange}
-            style={{
-              padding: '3px',
-              borderRadius: '5px',
-              marginBottom: '20px',
-              width: '100%',
-            }}
-            required
-          >
-            <option value="">Seleccione un país</option>
-            {paises.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.nombre}
-              </option>
-            ))}
-          </select>
-
-          <label className="block text-lg font-medium">Provincia</label>
-          <select
-            value={provincia}
-            onChange={handleProvinciaChange}
-            style={{
-              padding: '3px',
-              borderRadius: '5px',
-              marginBottom: '20px',
-              width: '100%',
-            }}
-            required
-          >
-            <option value="">Seleccione una provincia</option>
-            {provincias.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.nombre}
-              </option>
-            ))}
-          </select>
-
-          <label className="block text-lg font-medium">Localidad</label>
-          <select
-            value={localidad}
-            onChange={(e) => setLocalidad(e.target.value)}
-            style={{
-              padding: '3px',
-              borderRadius: '5px',
-              marginBottom: '20px',
-              width: '100%',
-            }}
-            required
-          >
-            <option value="">Seleccione una localidad</option>
-            {localidades.map((l) => (
-              <option key={l.id} value={l.id}>
-                {l.nombre}
-              </option>
-            ))}
-          </select>
-
-          <label className="block text-lg font-medium">Calle</label>
-          <input
-            type="text"
-            id="calle"
-            value={calle}
-            onChange={(e) => setCalle(e.target.value)}
-            style={{
-              padding: '3px',
-              borderRadius: '5px',
-              marginBottom: '20px',
-              width: '100%',
-            }}
-            required
-          />
 
         <button
             type="submit"

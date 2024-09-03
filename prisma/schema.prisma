@@ -83,10 +83,10 @@ model Alumno {
   id          Int        @id @default(autoincrement())
   nombre      String
   apellido    String
-  dni         Int      @unique
-  telefono    BigInt     @unique
+  dni         Int?     @unique
+  telefono    BigInt?     @unique
 
-  direccionId Int    
+  direccionId Int?    
   direccion   Direccion? @relation(fields: [direccionId], references: [id])  // Relación de muchos a uno
   email       String     @unique
   password    String
