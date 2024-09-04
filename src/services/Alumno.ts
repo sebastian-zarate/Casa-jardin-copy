@@ -3,6 +3,8 @@
 import { PrismaClient } from "@prisma/client";
 import { hashPassword } from "../helpers/hashPassword";
 import { verifyPassword } from "../helpers/hashPassword";
+import { encrypt } from "@/helpers/jwt";
+import { cookies } from "next/headers";
 const prisma = new PrismaClient();
 
 export type Alumno = {
@@ -98,16 +100,22 @@ export async function getLocalidadesByProvincia(provinciaId: number) {
 
 // valida los datos del alumno para iniciar sesión
 export async function login(email: string, password: string) {
-    const alumno = await prisma.alumno.findUnique({ where: { email } });
-  // verifica si el alumno existe y si la contraseña es correcta
-    if (alumno && await verifyPassword(password, alumno.password)) {
-      // Contraseña correcta
-      return alumno;
-    } else {
-      // Contraseña incorrecta
-      throw new Error("Email o contraseña incorrectos");
-    }
+  const alumno = await prisma.alumno.findUnique({ where: { email } });
+// verifica si el alumno existe y si la contraseña es correcta
+  if (alumno && await verifyPassword(password, alumno.password)) {
+    // Contraseña correcta
+     //duración de la sesión
+    const expires = new Date(Date.now() + 1000 * 60 * 60 * 24);
+    const sesion = await encrypt({email: alumno.email, expires})
+    //setea la cookie de la sesión
+    cookies().set("user", sesion, {expires, httpOnly: false});
+    return true;
+
+  } else {
+    // Contraseña incorrecta
+    throw new Error("Email o contraseña incorrectos");
   }
+}
 
 
 
