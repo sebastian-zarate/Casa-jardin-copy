@@ -11,41 +11,39 @@ generator client {
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
 }
 
 model Nacionalidad {
   id        Int         @id @default(autoincrement())
   nombre    String
-  direccion Direccion[]
+  provincias Provincia[]  // Relación uno a muchos con Provincia
 }
 
 model Provincia {
   id        Int         @id @default(autoincrement())
   nombre    String
-  direccion Direccion[]
+  nacionalidad   Nacionalidad @relation(fields: [nacionalidadId], references: [id])
+  nacionalidadId Int 
+  localidades  Localidad[]   // Relación uno a muchos con Localidad
 }
 
 model Localidad {
   id        Int         @id @default(autoincrement())
   nombre    String
-  direccion Direccion[]
+  provincia   Provincia @relation(fields: [provinciaId], references: [id])
+  provinciaId Int 
+  direcciones Direccion[]  // Relación uno a muchos con Direccion
 }
 
 model Direccion {
-  id          Int       @id @default(autoincrement())
-  localidad   Localidad @relation(fields: [localidadId], references: [id])
-  localidadId Int       @unique
-
-  provincia   Provincia @relation(fields: [provinciaId], references: [id])
-  provinciaId Int       @unique
-
-  nacionalidad   Nacionalidad @relation(fields: [nacionalidadId], references: [id])
-  nacionalidadId Int          @unique
-
-  alumno      Alumno?
-  profesional Profesional?
+  id          Int        @id @default(autoincrement())
+  calle       String
+  localidad   Localidad  @relation(fields: [localidadId], references: [id])
+  localidadId Int     
+  alumnos     Alumno[]   // Relación de uno a muchos con Alumno
+  profesional Profesional[] // Relación de uno a muchos con Profesional
 }
+
 
 model Profesional {
   id           Int       @id @default(autoincrement())
@@ -53,9 +51,10 @@ model Profesional {
   apellido     String
   especialidad String
   email        String    @unique
-  telefono     Int       @unique
+
+  telefono     BigInt      @unique
   direccion    Direccion @relation(fields: [direccionId], references: [id])
-  direccionId  Int       @unique
+  direccionId  Int       
 
   prof_cur Profesional_Curso[]
 }
@@ -84,15 +83,17 @@ model Alumno {
   id          Int        @id @default(autoincrement())
   nombre      String
   apellido    String
-  dni         Int?       @unique
-  telefono    Int?       @unique
-  direccion   Direccion? @relation(fields: [direccionId], references: [id])
-  direccionId Int?       @unique
+  dni         Int?     @unique
+  telefono    BigInt?     @unique
+
+  direccionId Int?    
+  direccion   Direccion? @relation(fields: [direccionId], references: [id])  // Relación de muchos a uno
   email       String     @unique
   password    String
 
-  alum_cur Alumno_Curso[]
+  alum_cur    Alumno_Curso[]
 }
+
 
 model Alumno_Curso {
   id       Int    @id @default(autoincrement())
