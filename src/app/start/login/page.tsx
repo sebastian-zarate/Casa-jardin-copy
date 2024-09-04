@@ -5,12 +5,14 @@ import { useState } from "react";
 import BackgroundLibrary from "../../../../public/Images/BookShell.jpg";
 import Logo from "../../../../public/Images/LogoCasaJardin.png";
 import { login } from "../../../services/Alumno"; // Importa la función `login` desde el servicio
+import {useRouter} from "next/navigation";
 
 function Login() {
   // Estados para gestionar los datos del formulario y errores
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const router = useRouter();
 
   // Función para validar los datos del formulario
   const validate = () => {
@@ -46,10 +48,10 @@ function Login() {
       try {
         // Llama a la función `login` para verificar email y contraseña
         const alumno = await login(email, password);
-        console.log("Inicio de sesión exitoso");
         if (alumno) {
           console.log("Inicio de sesión exitoso", alumno);
-          // Redirige o maneja el inicio de sesión exitoso aquí
+          // por ahora redirige al inicio
+          router.push("/")
         }
       } catch (error) {
         console.error("Error al iniciar sesión:", error);
@@ -58,6 +60,7 @@ function Login() {
       }
     }
   };
+
 
   return (
     <div
