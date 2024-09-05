@@ -1,7 +1,7 @@
 "use client"
 import React, { useEffect, useState } from 'react';
-import Navigate from "../../../helpers/alumno/navigate/page";
-import But_aside from "../../../helpers/but_aside/page";
+import Navigate from "../../../components/alumno/navigate/page";
+import But_aside from "../../../components/but_aside/page";
 import { getCursos } from '@/services/cursos';
 
 const principal: React.FC = () => {
@@ -38,7 +38,7 @@ const principal: React.FC = () => {
                     </div>
                     <div className='m-4'>
                         <img src="" alt="editCuenta" />
-                        <a href="#">Mi cuenta</a>
+                        <a href="/usuario/Cuenta">Mi cuenta</a>
                     </div>
                 </div>
             

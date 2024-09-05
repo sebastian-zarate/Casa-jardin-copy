@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import Navigate from "../../../helpers/Admin/navigate/page";
-import But_aside from "../../../helpers/but_aside/page";
+import Navigate from "../../../components/Admin/navigate/page";
+import But_aside from "../../../components/but_aside/page";
 import { updateCurso, getCursos, deleteCurso, createCurso } from "../../../services/cursos";
 import Image from "next/image";
 import DeleteIcon from "../../../../public/Images/DeleteIcon.png";

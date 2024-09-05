@@ -117,6 +117,45 @@ export async function login(email: string, password: string) {
   }
 }
 
+// Modificar Alumno
+export async function updateAlumno(id: number, data: {
+  nombre: string;
+  apellido: string;
+  dni: number;
+  telefono: number;
+  pais: string;
+  provincia: string;
+  localidad: string;
+  calle: string;
+  numero: number;
+
+}) {
+  // Verificar si el alumno existe
+  const alumno = await prisma.alumno.findUnique({ where: { id } });
+  if (!alumno) {
+    throw new Error("El alumno no existe.");
+  }
+
+  // Crear la estructura de datos del alumno
+  const alumnoData: any = {
+    id: id,
+    nombre: data.nombre,
+    apellido: data.apellido,
+    dni: data.dni,
+    telefono: data.telefono,
+    pais: data.pais,
+    provincia: data.provincia,
+    localidad: data.localidad,
+    calle: data.calle,
+    numero: data.numero,
+  };
+
+  // Actualizar el alumno
+  return await prisma.alumno.update({
+    where: { id },
+    data: alumnoData,
+  });
+}
 
 
   
