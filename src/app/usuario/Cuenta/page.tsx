@@ -1,20 +1,52 @@
 "use client"
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, use } from 'react';
 import Background from "../../../../public/Images/Background.jpg";
 import But_aside from "../../../components/but_aside/page";
 import Image from "next/image";
 import Navigate from '../../../components/alumno/navigate/page';
-import { updateAlumno } from '@/services/Alumno';
+import { getAlumnoByCooki, updateAlumno } from '@/services/Alumno';
 
-const Cuenta: React.FC = () => {
+type Usuario = {
+    id: number;
+    nombre: string;
+    apellido: string;
+    dni: number;
+    telefono: number;
+    correo: string;
+    contraseña: string;
+};
 
-    const [selectedCursoId, setSelectedCursoId] = useState<number | null>(null);
+const Cuenta: React.FC<{}> = () => {
 
-    const [asegurarCambios, setAsegurarCambios] = useState<boolean>(false);
-    // Estado para almacenar mensajes de error
+    const [userId, setuserId] = useState<number | null>(null);const [asegurarCambios, setAsegurarCambios] = useState<boolean>(false);
     const [errorMessage, setErrorMessage] = useState<string>("");
-
     const scrollRef = useRef<HTMLDivElement>(null);
+    const [user, setUser] = useState<Usuario | null>(null);
+
+    async function getUser() {
+        let user = await getAlumnoByCooki();
+        console.log(user?.nombre);
+        const userUpdate: Usuario = {
+            id: user?.id || 0,
+            nombre: user?.nombre || '',
+            apellido: user?.apellido || '',
+            dni: user?.dni || 0,
+            telefono: user?.telefono || 0,
+            correo: user?.email || '',
+            contraseña: user?.password || ''
+        }
+        setCursoDetails({nombre: userUpdate.nombre, apellido: userUpdate.apellido, 
+            dni: Number(userUpdate.dni), telefono: (userUpdate.telefono), pais: '', provincia: '', localidad: '',
+             calle: '', numero: 0, correo: userUpdate.correo, contraseña: userUpdate.contraseña});
+        setUser(userUpdate);
+    }
+
+    useEffect(() => {
+        if (user === null || userId === null) {
+            console.log("se actualiza el usuario");
+            getUser();
+        }
+    }, [user, userId]);
 
     useEffect(() => {
         if ((errorMessage.length > 0) && scrollRef.current) {
@@ -23,116 +55,93 @@ const Cuenta: React.FC = () => {
     }, [errorMessage]);
 
     useEffect(() => {
-        if (errorMessage != null ) {
+        if (errorMessage != null) {
             setInterval(() => {
                 setErrorMessage("")
             }, 10000);
         }
-
     }, [errorMessage]);
 
-    // Estado para almacenar los datos del curso seleccion
     const [cursoDetails, setCursoDetails] = useState<{
         nombre: string; apellido: string; dni: number;
         telefono: number; pais: string; provincia: string;
         localidad: string; calle: string; numero: number;
         correo: string; contraseña: string;
     }>({
-        nombre: '',
-        apellido: '',
-        dni: 0,
-        telefono: 0,
+        nombre: user?.nombre || '',
+        apellido: user?.apellido || '',
+        dni: user?.dni || 0,
+        telefono: user?.telefono || 0,
         pais: '',
         provincia: '',
         localidad: '',
         calle: '',
         numero: 0,
-        correo: '',
-        contraseña: ''
-
+        correo: user?.correo || '',
+        contraseña: user?.contraseña || ''
     });
 
-    // Función para validar los detalles del curso
-    function validateCursoDetails() {
+    function validateAlumnoDetails() {
+  
         const { nombre, apellido, dni, telefono, pais, provincia, localidad, calle, numero } = cursoDetails;
 
-        // Validar que el nombre tenga al menos 4 caracteres
         if (nombre.length < 2) {
             return "El nombre debe tener al menos 3 caracteres.";
         }
-        // Validar que el apellido sea un número válido
-        if (apellido || apellido.length <= 0) {
+        if (!apellido) {
             return "El apellido debe tener más de 0 caracteres.";
         }
-        // Validar que el DNI tenga 8 caracteres
         if (dni.toString().length !== 8) {
             return "El DNI debe tener 8 caracteres.";
         }
-        // Validar que el teléfono sea un número válido
         if (isNaN(telefono) || telefono.toString().length !== 9) {
             return "El teléfono debe ser un número válido de 9 dígitos.";
         }
-        // Validar que el país no esté vacío
         if (pais.trim() === "") {
             return "El país no puede estar vacío.";
         }
-        // Validar que la provincia no esté vacía
         if (provincia.trim() === "") {
             return "La provincia no puede estar vacía.";
         }
-        // Validar que la localidad no esté vacía
         if (localidad.trim() === "") {
             return "La localidad no puede estar vacía.";
         }
-        // Validar que la calle no esté vacía
         if (calle.trim() === "") {
             return "La calle no puede estar vacía.";
         }
-        // Validar que el número sea un número válido
         if (isNaN(numero) || numero <= 0) {
             return "El número debe ser un número válido mayor a 0.";
         }
-        return null; // Retorna null si no hay errores
+        return null;
     }
 
-    // Función para manejar los cambios en los campos del formulario
     function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
         const { name, value } = e.target;
         setCursoDetails(prevDetails => ({
             ...prevDetails,
-            [name]: value
+           /*  [name]: typeof value === 'string' ?  value : parseInt(value) */
+            [name]: (value)
         }));
     }
 
-    // Función para manejar el guardado de cambios en el curso
     async function handleSaveChanges() {
-        const validationError = validateCursoDetails(); // Llama a la función de validación
+        const validationError = validateAlumnoDetails();
         if (validationError) {
-            setErrorMessage(validationError); // Muestra el mensaje de error si hay un error
+            setErrorMessage(validationError);
             return;
         }
 
-        if (selectedCursoId !== null) {
-            try {
-                await updateAlumno(selectedCursoId, cursoDetails); // Actualiza el curso
-                /* setAsegurarCambios(true); */
-  /*               setCursoDetails2(cursoDetails2.map(curso => {
-                    if (curso.id === selectedCursoId) {
-                        return { ...curso, ...cursoDetails };
-                    }
-                    return curso;
-                })); */
-                setSelectedCursoId(null); // Resetea el curso seleccionado
-                setErrorMessage(""); // Limpiar mensaje de error si todo fue bien
-            } catch (error) {
-                console.error("Imposible actualizar curso", error); // Manejo de errores
-            }
+        if (userId !== null) {
+            await updateAlumno(user?.id || 0, {
+                nombre: cursoDetails.nombre, apellido: cursoDetails.apellido, dni: Number(cursoDetails.dni), telefono: Number(cursoDetails.telefono)});
+            setuserId(null);
+            setErrorMessage("");
         }
+        getUser();
     }
 
     return (
         <main className=''>
-
             <Image src={Background} alt="Background" layout="fill" objectFit="cover" quality={20} priority={true} />
             <div className="fixed bg-red-500  justify-between w-full p-4" >
                 <Navigate />
@@ -140,51 +149,55 @@ const Cuenta: React.FC = () => {
 
             <div className='absolute mt-20 top-10 '>
                 <h1 className='flex my-20 items-center justify-center  font-bold text-3xl'>Datos del Estudiante</h1>
-
-     {/*            <img className='absolute bg-blue-300 left-1/2 mt-40 ' src="" alt="r" /> */}
                 <div className='flex  justify-center w-screen'>
-
                     <div className=" mx-auto bg-gray-100 rounded-lg shadow-md px-8 py-6 grid grid-cols-2 gap-x-12 ">
                         <div className="mb-4">
                             <label className="block text-gray-700 font-bold mb-2">Nombre:</label>
-                            <p className="p-2 border rounded bg-gray-100">{cursoDetails.nombre/*  && asegurarCambios */} {cursoDetails.apellido }</p>
+                            <p className="p-2 border rounded bg-gray-100">{user?.nombre} {user?.apellido}</p>
                         </div>
 
                         <div className="mb-4">
                             <label className="block text-gray-700 font-bold mb-2">DNI:</label>
-                            <p className="p-2 border rounded bg-gray-100">{cursoDetails.dni  }</p>
+                            <p className="p-2 border rounded bg-gray-100">{user?.dni ? user?.dni : "DNI no cargado"}</p>
                         </div>
 
                         <div className="mb-4">
                             <label className="block text-gray-700 font-bold mb-2">Talleres:</label>
-                            <p className="p-2 border rounded bg-gray-100">aca van los cursos</p>
+                            <p className="p-2 border rounded bg-gray-100">No hay talleres cargados</p>
                         </div>
 
                         <div className="mb-4">
                             <label className="block text-gray-700 font-bold mb-2">Domicilio:</label>
-                            <p className="p-2 border rounded bg-gray-100">{cursoDetails.pais}, {cursoDetails.provincia}, {cursoDetails.localidad}, {cursoDetails.calle} {cursoDetails.numero}</p>
+                            <p className="p-2 border rounded bg-gray-100">Domicilio no cargado{/* {}, {.provincia}, {.localidad}, {cusoDetails.calle} {.numero} */}</p>
                         </div>
 
                         <div className="mb-4">
                             <label className="block text-gray-700 font-bold mb-2">Teléfono:</label>
-                            <p className="p-2 border rounded bg-gray-100">{cursoDetails.telefono}</p>
+                            <p className="p-2 border rounded bg-gray-100">{user?.telefono ? user?.telefono : "Teléfono no cargado"}</p>
                         </div>
 
                         <div className="mb-4">
                             <label className="block text-gray-700 font-bold mb-2">Correo:</label>
-                            <p className="p-2 border rounded bg-gray-100">{cursoDetails.correo}</p>
+                            <p className="p-2 border rounded bg-gray-100">{user?.correo}</p>
                         </div>
 
                         <div className="mb-4">
                             <label className="block text-gray-700 font-bold mb-2">Contraseña:</label>
-                            <p className="p-2 border rounded bg-gray-100">{cursoDetails.contraseña}</p>
+                            <p className="p-2 border rounded bg-gray-100">
+                                <input
+                                    type="password"
+                                    value={user?.contraseña}
+                                    className="w-full bg-transparent border-none"
+                                    readOnly
+                                />
+                            </p>
                         </div>
                     </div>
                 </div>
                 <div className="flex items-center justify-center mt-5">
                     <button
                         className='bg-red-500 py-2 px-10 text-white rounded hover:bg-red-700'
-                        onClick={() => setSelectedCursoId(-1)}>
+                        onClick={() => setuserId(-1)}>
                         Editar
                     </button>
                 </div>
@@ -192,7 +205,7 @@ const Cuenta: React.FC = () => {
             <div className="fixed bottom-0 mt-20 bg-white w-full" style={{ opacity: 0.66 }}>
                 <But_aside />
             </div>
-            {selectedCursoId !== null && (
+            {userId !== null && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
                     <div ref={scrollRef} className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative" style={{ height: '70vh', overflow: "auto" }}>
                         <h2 className="text-2xl font-bold mb-4">
@@ -200,7 +213,7 @@ const Cuenta: React.FC = () => {
                         </h2>
                         {errorMessage && (
                             <div className="mb-4 text-red-600">
-                                {errorMessage} {/* Muestra el mensaje de error */}
+                                {errorMessage}
                             </div>
                         )}
                         <div className="mb-4">
@@ -220,7 +233,7 @@ const Cuenta: React.FC = () => {
                                 type="text"
                                 id="apellido"
                                 name="apellido"
-                                value={cursoDetails.apellido}
+                                value={(cursoDetails.apellido)}
                                 onChange={handleChange}
                                 className="p-2 w-full border rounded"
                             />
@@ -231,7 +244,7 @@ const Cuenta: React.FC = () => {
                                 type="number"
                                 id="dni"
                                 name="dni"
-                                value={cursoDetails.dni}
+                                value={(cursoDetails.dni)}
                                 onChange={handleChange}
                                 className="p-2 w-full border rounded"
                             />
@@ -242,7 +255,6 @@ const Cuenta: React.FC = () => {
                                 type="file"
                                 id="imagen"
                                 name="imagen"
-                                /* onChange={handleFileChange} */
                                 className="p-2 w-full border rounded"
                             />
                         </div>
@@ -320,7 +332,7 @@ const Cuenta: React.FC = () => {
                                 Guardar
                             </button>
                             <button
-                                onClick={() => setSelectedCursoId(null)}
+                                onClick={() => setuserId(null)}
                                 className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800"
                             >
                                 Cancelar
@@ -329,8 +341,8 @@ const Cuenta: React.FC = () => {
                     </div>
                 </div>
             )}
-
         </main>
     )
 }
+
 export default Cuenta;

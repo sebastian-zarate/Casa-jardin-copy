@@ -84,7 +84,7 @@ model Alumno {
   nombre      String
   apellido    String
   dni         Int?     @unique
-  telefono    BigInt?     @unique
+  telefono    Int?     @unique
 
   direccionId Int?    
   direccion   Direccion? @relation(fields: [direccionId], references: [id])  // Relación de muchos a uno

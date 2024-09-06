@@ -3,7 +3,7 @@
 import { PrismaClient } from "@prisma/client";
 import { hashPassword } from "../helpers/hashPassword";
 import { verifyPassword } from "../helpers/hashPassword";
-import { encrypt } from "@/helpers/jwt";
+import { encrypt, getUserFromCookie } from "@/helpers/jwt";
 import { cookies } from "next/headers";
 const prisma = new PrismaClient();
 
@@ -113,9 +113,12 @@ export async function login(email: string, password: string) {
 
   } else {
     // Contraseña incorrecta
-    throw new Error("Email o contraseña incorrectos");
+    /* throw new Error("Email o contraseña incorrectos"); */
+    return false;
   }
 }
+
+
 
 // Modificar Alumno
 export async function updateAlumno(id: number, data: {
@@ -123,12 +126,7 @@ export async function updateAlumno(id: number, data: {
   apellido: string;
   dni: number;
   telefono: number;
-  pais: string;
-  provincia: string;
-  localidad: string;
-  calle: string;
-  numero: number;
-
+ 
 }) {
   // Verificar si el alumno existe
   const alumno = await prisma.alumno.findUnique({ where: { id } });
@@ -141,13 +139,8 @@ export async function updateAlumno(id: number, data: {
     id: id,
     nombre: data.nombre,
     apellido: data.apellido,
-    dni: data.dni,
+    dni: (data.dni),
     telefono: data.telefono,
-    pais: data.pais,
-    provincia: data.provincia,
-    localidad: data.localidad,
-    calle: data.calle,
-    numero: data.numero,
   };
 
   // Actualizar el alumno
@@ -155,6 +148,18 @@ export async function updateAlumno(id: number, data: {
     where: { id },
     data: alumnoData,
   });
+}
+
+export async function getAlumnoByCooki() {
+  const user = await getUserFromCookie();
+  if (user && user.email) {
+    const email: any = user.email;
+  const alumno = await prisma.alumno.findUnique({
+     where: {
+       email: email
+      } });
+      return alumno;
+  } else return null;
 }
 
 

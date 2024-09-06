@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import BackgroundLibrary from "../../../../public/Images/BookShell.jpg";
 import Logo from "../../../../public/Images/LogoCasaJardin.png";
 import { login } from "../../../services/Alumno"; // Importa la función `login` desde el servicio
@@ -19,9 +19,9 @@ function Login() {
     const newErrors: { email?: string; password?: string } = {};
     
     // Validación del email
-    if (!email) {
+    if (email.length === 0) {
       newErrors.email = "El email es requerido.";
-    } else if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email)) {
+  } else if (errors.email) {
       newErrors.email = "El email no es válido.";
     }
 
@@ -39,25 +39,31 @@ function Login() {
     return Object.keys(newErrors).length === 0;
   };
 
+  useEffect(() => {
+    if (errors != null ) {
+        setInterval(() => {
+            setErrors({email: "", password: ""});
+        }, 10000);
+    }
+
+}, [errors]);
   // Función para manejar el envío del formulario
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+/*     const alumno = await login(email, password);
+    console.log("EL ALUMNOOOOOOO",alumno); */
     // Valida los datos del formulario
     if (validate()) {
-      try {
         // Llama a la función `login` para verificar email y contraseña
         const alumno = await login(email, password);
+        console.log("EL ALUMNOOOOOOO",alumno);
         if (alumno) {
           console.log("Inicio de sesión exitoso", alumno);
           // por ahora redirige al inicio
-          router.push("/")
+          router.push("/usuario/principal");
+        }else{
+          setErrors({ email: "Email o contraseña incorrectos." });
         }
-      } catch (error) {
-        console.error("Error al iniciar sesión:", error);
-        // Muestra un mensaje de error si las credenciales son incorrectas
-        setErrors({ email: "Email o contraseña incorrectos." });
-      }
     }
   };
 
@@ -128,6 +134,7 @@ function Login() {
           <button
             type="submit"
             className="w-full p-3 bg-red-500 text rounded-md font-medium hover:bg-red-600 transition duration-300"
+            onClick={() => console.log(errors.email, errors.password)}
           >
             Iniciar Sesión
           </button>

@@ -1,5 +1,6 @@
 "use server"
 
+import { getUserFromCookie } from "@/helpers/jwt"
 import { PrismaClient } from "@prisma/client"
 
 const prisma = new PrismaClient()

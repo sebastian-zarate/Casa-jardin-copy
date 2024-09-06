@@ -3,13 +3,19 @@ import React, { useEffect, useState } from 'react';
 import Navigate from "../../../components/alumno/navigate/page";
 import But_aside from "../../../components/but_aside/page";
 import { getCursos } from '@/services/cursos';
+import { getAlumnoByCooki } from '@/services/Alumno';
+
 
 const principal: React.FC = () => {
 
     const [cursos, setCursos] = useState<any[]>([]);
+    const [userName, setUserName] = useState<any>('');
 
     async function getAllCursos() {
         const talleres = await getCursos();
+        const user = await getAlumnoByCooki();
+        console.log(user?.nombre);
+        setUserName(user?.nombre);
         setCursos(talleres);
     }
 
@@ -22,7 +28,7 @@ const principal: React.FC = () => {
             <Navigate /> 
 
             <div className='absolute top-20 p-10'>
-                <h1 className=''>Bienvenido de regreso, "ACA VA EL NOMBRE"</h1>
+                <h1 className=''>Bienvenido de regreso, {userName}</h1>
                 <div className=' flex justify-center items-center mt-40 w-screen'>
                     <div className='m-4'>
                         <img src="" alt="contacto" />
