@@ -9,7 +9,7 @@ import DeleteIcon from "../../../../public/Images/DeleteIcon.png";
 import EditIcon from "../../../../public/Images/EditIcon.png";
 import Background from "../../../../public/Images/Background.jpg";
 import ButtonAdd from "../../../../public/Images/Button.png";
-import { getImages } from "@/services/repoImage";
+import { getImages_talleresAdmin } from "@/services/repoImage";
 
 const Cursos: React.FC = () => {
     // Estado para almacenar la lista de cursos
@@ -159,7 +159,7 @@ const Cursos: React.FC = () => {
 
     // Método para obtener las imagenes
     const fetchImages = async () => {
-        const result = await getImages();
+        const result = await getImages_talleresAdmin();
         if (result.error) {
           setErrorMessage(result.error)
         } else {
