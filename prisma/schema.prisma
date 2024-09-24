@@ -38,25 +38,48 @@ model Localidad {
 model Direccion {
   id          Int        @id @default(autoincrement())
   calle       String
+  numero      Int
   localidad   Localidad  @relation(fields: [localidadId], references: [id])
   localidadId Int     
   alumnos     Alumno[]   // Relación de uno a muchos con Alumno
   profesional Profesional[] // Relación de uno a muchos con Profesional
+  administrador Administrador[] // Relación de uno a muchos con Administrador
+
 }
 
+model Rol {
+  id   Int    @id @default(autoincrement())
+  nombre String
+  Alumno Alumno?
+  Profesional Profesional?
+  Administrador Administrador?
+}
 
+model Administrador {
+  id       Int       @id @default(autoincrement())
+  nombre   String
+  apellido String
+  email    String    @unique
+  password String
+  direccion Direccion @relation(fields: [direccionId], references: [id])
+  direccionId Int
+  rolId Int @unique
+  rol Rol @relation(fields: [rolId], references: [id])
+}
 model Profesional {
   id           Int       @id @default(autoincrement())
   nombre       String
   apellido     String
   especialidad String
   email        String    @unique
-
+  password     String      @unique
   telefono     BigInt      @unique
   direccion    Direccion @relation(fields: [direccionId], references: [id])
   direccionId  Int       
 
   prof_cur Profesional_Curso[]
+  rolId Int @unique
+  rol Rol @relation(fields: [rolId], references: [id])
 }
 
 model Profesional_Curso {
@@ -92,6 +115,8 @@ model Alumno {
   password    String
 
   alum_cur    Alumno_Curso[]
+  rolId Int @unique
+  rol Rol @relation(fields: [rolId], references: [id])
 }
 
 

@@ -33,7 +33,7 @@ export const getImages_talleresAdmin = async () => {
 
         // Parse the response JSON data for the files
         const fileData = await filesResponse.json();
-        console.log("FILEEEEE", fileData);
+      //  console.log("FILEEEEE", fileData);
        
         // Filter the files and get their download URLs
         const downloadUrls = fileData.map((file: any) => file.download_url);

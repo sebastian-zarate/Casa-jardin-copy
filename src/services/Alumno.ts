@@ -7,20 +7,9 @@ import { encrypt, getUserFromCookie } from "@/helpers/jwt";
 import { cookies } from "next/headers";
 const prisma = new PrismaClient();
 
-export type Alumno = {
-  id: number;
-  nombre: string;
-  apellido: string;
-  dni: number;
-  email: string;
-  telefono: number;
-  password: string;
-}
+
 
 // Crear Alumnos
-// Crear Alumnos
-
-
 export async function createAlumno(data: {
   nombre: string;
   apellido: string;
@@ -57,47 +46,6 @@ export async function createAlumno(data: {
 
 
 
-// en esta funsion se obtienen los paises
-// para poder mostrarlos en el formulario de registro
-export async function getPaises() {
-  return await prisma.nacionalidad.findMany({
-    select: {
-      id: true,
-      nombre: true,
-    },
-  });
-}
-
-// en esta funsion se obtienen las provincias por pais segun lo que se seleccione en el formulario de registro
-// para poder mostrarlas en el formulario de registro de alumno
-export async function getProvinciasByPais(paisId: number) {
-  return await prisma.provincia.findMany({
-    where: {
-      nacionalidadId: Number(paisId),
-    },
-    select: {
-      id: true,
-      nombre: true,
-    },
-  });
-}
-// en esta funsion se obtienen las localidades por provincia segun lo que se seleccione en el formulario de registro
-// para poder mostrarlas en el formulario de registro de alumno
-export async function getLocalidadesByProvincia(provinciaId: number) {
-  return await prisma.localidad.findMany({
-    where: {
-      provinciaId: Number(provinciaId),
-    },
-    select: {
-      id: true,
-      nombre: true,
-    },
-  });
-}
-
-
-
-
 // valida los datos del alumno para iniciar sesión
 export async function login(email: string, password: string) {
   const alumno = await prisma.alumno.findUnique({ where: { email } });
@@ -126,6 +74,7 @@ export async function updateAlumno(id: number, data: {
   apellido: string;
   dni: number;
   telefono: number;
+  direccionId?: number;
  
 }) {
   // Verificar si el alumno existe
@@ -162,5 +111,14 @@ export async function getAlumnoByCooki() {
   } else return null;
 }
 
+// Obtener Alumnos
+export async function getAlumnos() {
+  return await prisma.alumno.findMany();
+}
 
+export async function deleteAlumno(id: number) {
+  return await prisma.alumno.delete({
+    where: { id },
+  });
+}
   

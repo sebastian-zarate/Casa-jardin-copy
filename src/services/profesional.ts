@@ -1,5 +1,5 @@
 'use server'
-import { PrismaClient } from "@prisma/client";
+import { Curso, PrismaClient, Profesional_Curso } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
