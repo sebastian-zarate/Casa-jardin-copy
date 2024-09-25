@@ -15,7 +15,7 @@ export async function createAlumno(data: {
   apellido: string;
   email: string;
   password: string;
-  rolId: number;
+
 }) {
   // Verificar si el email ya existe en la base de datos
   const existingAlumno = await prisma.alumno.findUnique({
@@ -36,6 +36,7 @@ export async function createAlumno(data: {
   const alumnoData = {
     ...data,
     password: hashedPassword,
+    rolId: 2
   };
 
   // Guardar el alumno
@@ -50,14 +51,14 @@ export async function createAlumno(data: {
 // valida los datos del alumno para iniciar sesión
 export async function login(email: string, password: string) {
   const alumno = await prisma.alumno.findUnique({ where: { email } });
-// verifica si el alumno existe y si la contraseña es correcta
+  // verifica si el alumno existe y si la contraseña es correcta
   if (alumno && await verifyPassword(password, alumno.password)) {
     // Contraseña correcta
-     //duración de la sesión
+    //duración de la sesión
     const expires = new Date(Date.now() + 1000 * 60 * 60 * 24);
-    const sesion = await encrypt({email: alumno.email, expires})
+    const sesion = await encrypt({ email: alumno.email, expires })
     //setea la cookie de la sesión
-    cookies().set("user", sesion, {expires, httpOnly: false});
+    cookies().set("user", sesion, { expires, httpOnly: false });
     return true;
 
   } else {
@@ -76,39 +77,76 @@ export async function updateAlumno(id: number, data: {
   dni: number;
   telefono: number;
   direccionId?: number;
- 
+
 }) {
   // Verificar si el alumno existe
   const alumno = await prisma.alumno.findUnique({ where: { id } });
   if (!alumno) {
     throw new Error("El alumno no existe.");
   }
-
-  // Crear la estructura de datos del alumno
-  const alumnoData: any = {
-    id: id,
-    nombre: data.nombre,
-    apellido: data.apellido,
-    dni: (data.dni),
-    telefono: data.telefono,
-  };
-
-  // Actualizar el alumno
-  return await prisma.alumno.update({
-    where: { id },
-    data: alumnoData,
-  });
+  let alumnoData: any = {};
+  console.log(data, alumno);
+  if (data.dni === alumno.dni) {
+    // Crear la estructura de datos del alumno
+    alumnoData = {
+      id: id,
+      nombre: data.nombre,
+      apellido: data.apellido,
+      telefono: data.telefono
+    };
+    console.log(alumnoData);
+    // Actualizar el alumno
+    return await prisma.alumno.update({
+      where: { id },
+      data: alumnoData,
+    });
+  } else if (data.telefono === alumno.telefono) {
+    // Crear la estructura de datos del alumno
+    alumnoData = {
+      id: id,
+      nombre: data.nombre,
+      apellido: data.apellido,
+      dni: (data.dni)
+    };
+    console.log(alumnoData);
+    // Actualizar el alumno
+    return await prisma.alumno.update({
+      where: { id },
+      data: alumnoData,
+    });
+  } else {
+    // Crear la estructura de datos del alumno
+    alumnoData = {
+      id: id,
+      nombre: data.nombre,
+      apellido: data.apellido,
+      dni: (data.dni),
+      telefono: data.telefono
+    }
+    console.log(alumnoData);
+    // Actualizar el alumno
+    return await prisma.alumno.update({
+      where: { id },
+      data: alumnoData,
+    });
+  }
 }
 
+export async function getAlumnoById(id: number) {
+  return await prisma.alumno.findUnique({
+    where: { id },
+  });
+}
 export async function getAlumnoByCooki() {
   const user = await getUserFromCookie();
   if (user && user.email) {
     const email: any = user.email;
-  const alumno = await prisma.alumno.findUnique({
-     where: {
-       email: email
-      } });
-      return alumno;
+    const alumno = await prisma.alumno.findUnique({
+      where: {
+        email: email
+      }
+    });
+    return alumno;
   } else return null;
 }
 
@@ -125,4 +163,3 @@ export async function deleteAlumno(id: number) {
     where: { id },
   });
 }
-  

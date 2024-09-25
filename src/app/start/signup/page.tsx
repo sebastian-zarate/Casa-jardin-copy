@@ -56,7 +56,6 @@ function Signup() {
       apellido,
       email,
       password,
-      rolId:2 // rol de alumno
       
     };
     // se envian los datos al servidor para registrar el usuario

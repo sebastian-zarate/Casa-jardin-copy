@@ -139,7 +139,7 @@ const Profesionales = () => {
     //region solo considera repetidos
     async function createUbicacion() {
         // Obtener la localidad asociada a la dirección
-
+        console.log("Antes de crear la ubicacion", (localidadName), calle, numero);
         const localidad: Localidad | null = await getLocalidadByName(String(localidadName));
         console.log("ESTEEE SI ES TODOSSS", (localidad));
         // Obtener la provincia asociada a la localidad
@@ -215,6 +215,26 @@ const Profesionales = () => {
         const { direccion, localidad, prov, nacionalidad } = await getUbicacion(obProfesional);
         if (validationError) {
             setErrorMessage(validationError);
+            return;
+        }
+        if(!obProfesional.direccionId) {
+
+            const newProfesional = await updateProfesional(obProfesional?.id || 0, {
+                nombre: profesionalDetails.nombre, apellido: profesionalDetails.apellido,
+                especialidad: String(profesionalDetails.especialidad), email: String(profesionalDetails.email),
+                telefono: Number(profesionalDetails.telefono), password: String(profesionalDetails.password),
+                direccionId: Number(direccion?.id)
+            });
+            newProfesional
+            setNacionalidadName("");
+            setProvinciaName("");
+            setLocalidadName("");
+            setcalle("");
+            setNumero(null);
+            setObProfesional(null);
+            setSelectedProfesional(null);
+            fetchProfesionales();
+            setErrorMessage("");
             return;
         }
         try {

@@ -1,6 +1,6 @@
 "use client";
 // #region Imports
-import React, { useEffect, useRef, useState } from "react";
+import React, { use, useEffect, useRef, useState } from "react";
 import Navigate from "../../../components/Admin/navigate/page";
 import But_aside from "../../../components/but_aside/page";
 import { deleteAlumno, getAlumnoByCooki, getAlumnos, updateAlumno } from "../../../services/Alumno";
@@ -62,9 +62,14 @@ const Alumnos: React.FC = () => {
     useEffect(() => {
         fetchAlumnos();
         fetchImages();
-        if (obAlumno) getUbicacion(obAlumno);
+       // if (obAlumno.direccionId) getUbicacion(obAlumno);
     }, []);
 
+    useEffect(() => {
+        if (obAlumno && obAlumno.direccionId) {
+            getUbicacion(obAlumno);
+        }
+    }, [obAlumno]);
     useEffect(() => {
         if ((errorMessage.length > 0) && scrollRef.current) {
             scrollRef.current.scrollTop = 0;
@@ -74,6 +79,7 @@ const Alumnos: React.FC = () => {
     useEffect(() => {
         if (selectedAlumno !== null && selectedAlumno !== -1) {
             setAlumnoDetails({
+                id: selectedAlumno.id,
                 nombre: selectedAlumno.nombre,
                 apellido: selectedAlumno.apellido,
                 dni: selectedAlumno.dni,
@@ -112,10 +118,10 @@ const Alumnos: React.FC = () => {
 
         }
     };
-    async function getUbicacion(userUpdate: any) {
+    async function getUbicacion(obAlumno: any) {
         // Obtener la dirección del usuario por su ID
-        console.log("SI DIRECCIONID ES FALSE:", Number(userUpdate?.direccionId));
-        const direccion = await getDireccionById(Number(userUpdate?.direccionId));
+        console.log("SI DIRECCIONID ES FALSE:", Number(obAlumno?.direccionId));
+        const direccion = await getDireccionById(Number(obAlumno?.direccionId));
         console.log("DIRECCION", direccion);
 
         // Obtener la localidad asociada a la dirección
@@ -130,11 +136,11 @@ const Alumnos: React.FC = () => {
         const nacionalidad = await getPaisById(Number(prov?.nacionalidadId));
 
         // Actualizar los estados con los datos obtenidos
-        setLocalidadName(String(localidad?.nombre));
+/*         setLocalidadName(String(localidad?.nombre));
         setProvinciaName(String(prov?.nombre));
         setNacionalidadName(String(nacionalidad?.nombre));
         setNumero(Number(direccion?.numero));
-        setcalle(String(direccion?.calle));
+        setcalle(String(direccion?.calle)); */
         console.log("TODOSSS", localidadName, provinciaName, nacionalidadName, calle, numero);
         return { direccion, localidad, prov, nacionalidad };
     }
@@ -163,12 +169,32 @@ const Alumnos: React.FC = () => {
     async function handleSaveChanges() {
         const validationError = validatealumnoDetails();
         console.log(obAlumno)
-        const { direccion, localidad, prov, nacionalidad } = await getUbicacion(obAlumno);
 
         if (validationError) {
             setErrorMessage(validationError);
             return;
         }
+        if(!obAlumno.direccionId) {
+            console.log("ALUMNODETAILS", alumnoDetails);
+            const newAlumno = await updateAlumno(alumnoDetails?.id || 0, {
+                nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
+                dni: Number(alumnoDetails.dni), telefono: Number(alumnoDetails.telefono),
+                
+            });
+            newAlumno
+            setNacionalidadName("");
+            setProvinciaName("");
+            setLocalidadName("");
+            setcalle("");
+            setNumero(null);
+            setObAlumno(null);
+            setSelectedAlumno(null);
+            fetchAlumnos();
+            setErrorMessage("");
+            return;
+        }
+        const { direccion, localidad, prov, nacionalidad } = await getUbicacion(obAlumno);
+
         try {
             const newDireccion = await updateDireccionById(Number(direccion?.id), {
                 calle: String(calle),
@@ -186,8 +212,8 @@ const Alumnos: React.FC = () => {
                 nacionalidadId: Number(nacionalidad?.id)
             });
 
-
-            const newAlumno = await updateAlumno(user?.id || 0, {
+            console.log("ALUMNODETAILS", alumnoDetails);
+            const newAlumno = await updateAlumno(alumnoDetails?.id || 0, {
                 nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
                 dni: Number(alumnoDetails.dni), telefono: Number(alumnoDetails.telefono),
                 direccionId: Number(newDireccion?.id)
@@ -197,6 +223,12 @@ const Alumnos: React.FC = () => {
                 await createAlumno_Curso({ cursoId: curso.id, alumnoId: newAlumno.id });
                 //console.log(prof_cur)
             }
+            setNacionalidadName("");
+            setProvinciaName("");
+            setLocalidadName("");
+            setcalle("");
+            setNumero(null);
+            setObAlumno(null);
             setSelectedAlumno(null);
             fetchAlumnos();
             setErrorMessage("");
@@ -213,7 +245,14 @@ const Alumnos: React.FC = () => {
             console.error("Error al eliminar el profesional", error);
         }
     }
-
+    async function handleCancel() {
+        setNacionalidadName("");
+        setProvinciaName("");
+        setLocalidadName("");
+        setcalle("");
+        setNumero(null);
+        setObAlumno(null);
+    }
     // #endregion
 
 
@@ -236,7 +275,8 @@ const Alumnos: React.FC = () => {
                                     <button onClick={() => handleEliminarAlumno(alumno) } className="text-red-600 font-bold">
                                         <Image src={DeleteIcon} alt="Eliminar" width={27} height={27} />
                                     </button>
-                                    <button onClick={() => {setSelectedAlumno(alumno);setObAlumno(alumno); getUbicacion(alumno)}} className="text-blue-600 font-bold">
+                                    <button onClick={() => {
+                                        setSelectedAlumno(alumno);setObAlumno(alumno);console.log(alumno);}} className="text-blue-600 font-bold">
                                         <Image src={EditIcon} alt="Editar" width={27} height={27} />
                                     </button>
                                 </div>
@@ -389,7 +429,7 @@ const Alumnos: React.FC = () => {
                                 Guardar
                             </button>
                             <button
-                                onClick={() => setSelectedAlumno(null)}
+                                onClick={() => {setSelectedAlumno(null); handleCancel()}}
                                 className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800">
                                 Cancelar
                             </button>

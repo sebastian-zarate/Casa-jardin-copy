@@ -121,11 +121,13 @@ export async function addDireccion(data: {
 } */
 //obtengo dirección por ID
 export async function getDireccionById(DireccionId: number) {
-  return await prisma.direccion.findUnique({
+  const direccion = await prisma.direccion.findFirst({
     where: {
       id: DireccionId
     }
   })
+  console.log(direccion);
+  return direccion;
 }
 //obtengo dirección por ID
 export async function getDireccionByLocalidadId(LocalidadId: number) {
