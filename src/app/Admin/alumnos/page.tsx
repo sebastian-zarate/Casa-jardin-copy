@@ -1,40 +1,48 @@
 "use client";
 // #region Imports
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Navigate from "../../../components/Admin/navigate/page";
 import But_aside from "../../../components/but_aside/page";
-import { deleteAlumno, getAlumnos, updateAlumno } from "../../../services/Alumno";
+import { deleteAlumno, getAlumnoByCooki, getAlumnos, updateAlumno } from "../../../services/Alumno";
 import Image from "next/image";
 import DeleteIcon from "../../../../public/Images/DeleteIcon.png";
 import EditIcon from "../../../../public/Images/EditIcon.png";
 import Background from "../../../../public/Images/Background.jpeg"
-import ButtonAdd from "../../../../public/Images/Button.png";
 import { getImages_talleresAdmin } from "@/services/repoImage";
-import Provincias from "@/components/ubicacion/provincia";
-import Localidades from "@/components/ubicacion/localidad";
-import Direcciones from "@/components/ubicacion/direccion";
+
 import Talleres from "@/components/talleres/page";
+import { addDireccion, getDireccionById, updateDireccionById, updateDireccionByIdUser } from "@/services/ubicacion/direccion";
+import { addLocalidad, getLocalidadById, getLocalidadByName, Localidad, updateLocalidad } from "@/services/ubicacion/localidad";
+import { addProvincias, getProvinciasById, getProvinciasByName, updateProvinciaById } from "@/services/ubicacion/provincia";
+import { getPaisById } from "@/services/ubicacion/pais";
+import { createAlumno_Curso } from "@/services/alumno_curso";
+import { Curso } from "@/services/cursos";
 // #endregion
 
 const Alumnos: React.FC = () => {
     // #region UseStates
     const [alumnos, setAlumnos] = useState<any[]>([]);
     const [selectedAlumno, setSelectedAlumno] = useState<any>(null);
+
+    const [obAlumno, setObAlumno] = useState<any>(null);
+
     const [alumnoDetails, setAlumnoDetails] = useState<any>({});
     // Estado para almacenar mensajes de error
     const [errorMessage, setErrorMessage] = useState<string>("");
     //Estado para almacenar las imagenes
     const [images, setImages] = useState<any[]>([]);
 
-      //useState para almacenar la dirección
+    //useState para almacenar la dirección
+    //useState para almacenar la dirección
+    const [nacionalidadName, setNacionalidadName] = useState<string>();
     // Estado para almacenar el ID de la provincia, inicialmente nulo
-    const [provinciaId, setprovinciaId] = useState<number | null>(null);
+    const [provinciaName, setProvinciaName] = useState<string>();
 
     // Estado para almacenar el ID de la localidad, inicialmente nulo
-    const [localidadId, setLocalidadId] = useState<number | null>(null);
+    const [localidadName, setLocalidadName] = useState<string>();
 
     // Estado para almacenar la direccionID, inicialmente nulo
-    const [direccionId, setDireccionId] = useState<number | null>(null);
+    const [user, setUser] = useState<any>(null);
 
     // Estado para almacenar la calle, inicialmente nulo
     const [calle, setcalle] = useState<string | null>(null);
@@ -43,7 +51,10 @@ const Alumnos: React.FC = () => {
     const [numero, setNumero] = useState<number | null>(null);
 
     // Estado para almacenar los cursos elegidos, inicialmente un array vacío
-    const [cursosElegido, setCursosElegido] = useState<number[]>([]);
+    const [cursosElegido, setCursosElegido] = useState<Curso[]>([]);
+
+    // Referencia para el contenedor de desplazamiento
+    const scrollRef = useRef<HTMLDivElement>(null);
     // #endregion
 
     // #region UseEffects
@@ -51,10 +62,17 @@ const Alumnos: React.FC = () => {
     useEffect(() => {
         fetchAlumnos();
         fetchImages();
+        if (obAlumno) getUbicacion(obAlumno);
     }, []);
 
     useEffect(() => {
-        if (selectedAlumno !== null) {
+        if ((errorMessage.length > 0) && scrollRef.current) {
+            scrollRef.current.scrollTop = 0;
+        }
+    }, [errorMessage]);
+
+    useEffect(() => {
+        if (selectedAlumno !== null && selectedAlumno !== -1) {
             setAlumnoDetails({
                 nombre: selectedAlumno.nombre,
                 apellido: selectedAlumno.apellido,
@@ -73,6 +91,8 @@ const Alumnos: React.FC = () => {
     // #region Métodos
     async function fetchAlumnos() {
         try {
+            let user = await getAlumnoByCooki();
+            setUser(user);
             const data = await getAlumnos();
             console.log(data);
             setAlumnos(data);
@@ -92,6 +112,34 @@ const Alumnos: React.FC = () => {
 
         }
     };
+    async function getUbicacion(userUpdate: any) {
+        // Obtener la dirección del usuario por su ID
+        console.log("SI DIRECCIONID ES FALSE:", Number(userUpdate?.direccionId));
+        const direccion = await getDireccionById(Number(userUpdate?.direccionId));
+        console.log("DIRECCION", direccion);
+
+        // Obtener la localidad asociada a la dirección
+        const localidad = await getLocalidadById(Number(direccion?.localidadId));
+        console.log("LOCALIDAD", localidad);
+
+        // Obtener la provincia asociada a la localidad
+        const prov = await getProvinciasById(Number(localidad?.provinciaId));
+        console.log("PROVINCIA", prov);
+
+        // Obtener el país asociado a la provincia
+        const nacionalidad = await getPaisById(Number(prov?.nacionalidadId));
+
+        // Actualizar los estados con los datos obtenidos
+        setLocalidadName(String(localidad?.nombre));
+        setProvinciaName(String(prov?.nombre));
+        setNacionalidadName(String(nacionalidad?.nombre));
+        setNumero(Number(direccion?.numero));
+        setcalle(String(direccion?.calle));
+        console.log("TODOSSS", localidadName, provinciaName, nacionalidadName, calle, numero);
+        return { direccion, localidad, prov, nacionalidad };
+    }
+
+    
     function validatealumnoDetails() {
         const { nombre, apellido, email, especialidad } = alumnoDetails;
 
@@ -114,20 +162,47 @@ const Alumnos: React.FC = () => {
     }
     async function handleSaveChanges() {
         const validationError = validatealumnoDetails();
+        console.log(obAlumno)
+        const { direccion, localidad, prov, nacionalidad } = await getUbicacion(obAlumno);
+
         if (validationError) {
             setErrorMessage(validationError);
             return;
         }
-        if (selectedAlumno === null) {
-            try {
-                await updateAlumno(selectedAlumno.id, alumnoDetails); //actualizar el profesional
-                setSelectedAlumno(null);
-                fetchAlumnos();
-                setErrorMessage("");
-            } catch (error) {
-                console.error("Error al actualizar el profesional", error);
+        try {
+            const newDireccion = await updateDireccionById(Number(direccion?.id), {
+                calle: String(calle),
+                numero: Number(numero),
+                localidadId: Number(localidad?.id)
+            });
+            console.log("newDireccion", newDireccion);
+            const newLocalidad = await updateLocalidad(Number(localidad?.id), {
+                nombre: String(localidadName),
+                provinciaId: Number(prov?.id)
+            });
+            console.log("newLocalidad", newLocalidad);
+            await updateProvinciaById(Number(prov?.id), {
+                nombre: String(provinciaName),
+                nacionalidadId: Number(nacionalidad?.id)
+            });
+
+
+            const newAlumno = await updateAlumno(user?.id || 0, {
+                nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
+                dni: Number(alumnoDetails.dni), telefono: Number(alumnoDetails.telefono),
+                direccionId: Number(newDireccion?.id)
+            });
+
+            for (const curso of cursosElegido) {                                  //recorre los cursos elegidos y los guarda en la tabla intermedia
+                await createAlumno_Curso({ cursoId: curso.id, alumnoId: newAlumno.id });
+                //console.log(prof_cur)
             }
-        };
+            setSelectedAlumno(null);
+            fetchAlumnos();
+            setErrorMessage("");
+        } catch (error) {
+            console.error("Error al actualizar el profesional", error);
+        }
     }
 
     async function handleEliminarAlumno(alumno: any) {
@@ -158,10 +233,10 @@ const Alumnos: React.FC = () => {
                             <div className="flex justify-between w-full mb-2">
                                 <h3 className="text-lg font-semibold text-black">{alumno.nombre} {alumno.apellido}</h3>
                                 <div className="flex space-x-2">
-                                    <button onClick={() => handleEliminarAlumno(alumno)} className="text-red-600 font-bold">
+                                    <button onClick={() => handleEliminarAlumno(alumno) } className="text-red-600 font-bold">
                                         <Image src={DeleteIcon} alt="Eliminar" width={27} height={27} />
                                     </button>
-                                    <button onClick={() => setSelectedAlumno(alumno)} className="text-blue-600 font-bold">
+                                    <button onClick={() => {setSelectedAlumno(alumno);setObAlumno(alumno); getUbicacion(alumno)}} className="text-blue-600 font-bold">
                                         <Image src={EditIcon} alt="Editar" width={27} height={27} />
                                     </button>
                                 </div>
@@ -179,7 +254,7 @@ const Alumnos: React.FC = () => {
             </div>
             {selectedAlumno !== null && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-                    <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative">
+                    <div ref={scrollRef} className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative" style={{ height: '70vh', overflow: "auto" }}>
                         <h2 className="text-2xl font-bold mb-4">
                             {"Editar Alumno"}
                         </h2>
@@ -220,7 +295,7 @@ const Alumnos: React.FC = () => {
                             />
                         </div>
                         <div className="mb-4">
-                            <label htmlFor="dni" className="block">Especialidad:</label>
+                            <label htmlFor="dni" className="block">dni:</label>
                             <input
                                 type="number"
                                 id="dni"
@@ -251,21 +326,62 @@ const Alumnos: React.FC = () => {
                                 className="p-2 w-full border rounded"
                             />
                         </div>
+                        <div className="mb-4">
+                            <label htmlFor="pais" className="block">País:</label>
+                            <input
+                                type="text"
+                                id="pais"
+                                name="pais"
+                                value={String(nacionalidadName)}
+                                onChange={(e) => setNacionalidadName(e.target.value)}
+                                className="p-2 w-full border rounded"
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label htmlFor="provincia" className="block">Provincia:</label>
+                            <input
+                                type="text"
+                                id="provincia"
+                                name="provincia"
+                                value={String(provinciaName)}
+                                onChange={(e) => setProvinciaName(e.target.value)}
+                                className="p-2 w-full border rounded"
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label htmlFor="localidad" className="block">Localidad:</label>
+                            <input
+                                type="text"
+                                id="localidad"
+                                name="localidad"
+                                value={String(localidadName)}
+                                onChange={(e) => setLocalidadName(e.target.value)}
+                                className="p-2 w-full border rounded"
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label htmlFor="calle" className="block">Calle:</label>
+                            <input
+                                type="text"
+                                id="calle"
+                                name="calle"
+                                value={String(calle)}
+                                onChange={(e) => setcalle(e.target.value)}
+                                className="p-2 w-full border rounded"
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label htmlFor="numero" className="block">Número:</label>
+                            <input
+                                type="text"
+                                id="numero"
+                                name="numero"
+                                value={Number(numero)}
+                                onChange={(e) => setNumero(Number(e.target.value))}
+                                className="p-2 w-full border rounded"
+                            />
+                        </div>
 
-                        <div>
-                            <h1>Provincia:</h1>
-                            <Provincias setprovinciaId={setprovinciaId} />
-                        </div>
-                        <div>
-                            <h1>Localidad:</h1>
-                            <Localidades provinciaId={(provinciaId)} setLocalidadId={setLocalidadId} />
-                        </div>
-                        <div>
-                            <Direcciones setCalle={setcalle} setNumero={setNumero} />
-                        </div>
-                        <div>
-                            <Talleres cursosElegido={cursosElegido} setCursosElegido={setCursosElegido} />
-                        </div>
                         <div className="flex justify-end space-x-4">
                             <button
                                 onClick={handleSaveChanges}

@@ -17,6 +17,10 @@ export async function createProfesional_Curso(data: {
   });
 }
 
-export async function getProfesionales() {
-  return await prisma.profesional.findMany();
+export async function getProfesionales_Curso(profesionalId: number) {
+  return await prisma.profesional_Curso.findMany({
+    where: {
+      profesionalId: profesionalId,
+    },
+  });
 }

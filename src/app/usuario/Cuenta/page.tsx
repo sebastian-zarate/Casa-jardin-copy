@@ -5,13 +5,12 @@ import But_aside from "../../../components/but_aside/page";
 import Image from "next/image";
 import Navigate from '../../../components/alumno/navigate/page';
 import { getAlumnoByCooki, updateAlumno } from '@/services/Alumno';
-import Provincias from '@/components/ubicacion/provincia';
-import Localidades from '@/components/ubicacion/localidad';
-import Direcciones from '@/components/ubicacion/direccion';
-import Talleres from '@/components/talleres/page';
-import { getApiDireccionesEstado, getDireccionById, updateDireccionByIdUser } from '@/services/ubicacion/direccion';
-import { getApiProvinciaById, getProvinciasById, updateProvinciasByIdUser } from '@/services/ubicacion/provincia';
-import { getApiLocalidadByName, getLocalidadById, updateLocalidadByIdUser } from '@/services/ubicacion/localidad';
+import { getDireccionById, updateDireccionById, updateDireccionByIdUser } from '@/services/ubicacion/direccion';
+import {  getProvinciasById, updateProvinciaById } from '@/services/ubicacion/provincia';
+import {  getLocalidadById, getLocalidadesByProvinciaId, updateLocalidad } from '@/services/ubicacion/localidad';
+import { addPais, getPaisById } from '@/services/ubicacion/pais';
+import { createAlumno_Curso, getalumnos_cursoByIdAlumno } from '@/services/alumno_curso';
+import { Curso, getCursoById } from '@/services/cursos';
 
 type Usuario = {
     id: number;
@@ -22,15 +21,13 @@ type Usuario = {
     email: string;
     password: string;
     direccionId: number;
+    rolId: number;
 };
 
 const Cuenta: React.FC<{}> = () => {
     //region UseStates
-    // Estado para almacenar el ID del usuario, inicialmente nulo
-    const [openBox, setOpenBox] = useState<number | null>(null);
-
-    // Estado para asegurar cambios, inicialmente falso
-    const [asegurarCambios, setAsegurarCambios] = useState<boolean>(false);
+    // Estado para asegurar cambios, inicialmente 0
+    const [openBox, setOpenBox] = useState<number>(0);
 
     // Estado para almacenar mensajes de error, inicialmente vacío
     const [errorMessage, setErrorMessage] = useState<string>("");
@@ -44,51 +41,47 @@ const Cuenta: React.FC<{}> = () => {
     // Estado para almacenar los detalles del curso, inicialmente vacío
     const [alumnoDetails, setAlumnoDetails] = useState<{
         nombre: string; apellido: string; dni: number;
-        telefono: number; pais: string; provincia: string;
-        localidad: string; calle: string; numero: number;
-        email: string; password: string; direccionId?: number;
+        telefono: number;  email: string; password: string; direccionId?: number; rolId?: number;
     }>({
         nombre: user?.nombre || '',
         apellido: user?.apellido || '',
         dni: user?.dni || 0,
         telefono: user?.telefono || 0,
-        pais: '',
-        provincia: '',
-        localidad: '',
-        calle: '',
-        numero: 0,
         email: user?.email || '',
         password: user?.password || '',
-        direccionId: user?.direccionId || 0
+        direccionId: user?.direccionId || 0,
+        rolId: user?.rolId || 0
     });
 
+    const [nacionalidadName, setNacionalidadName] = useState<string >();
     // Estado para almacenar el ID de la provincia, inicialmente nulo
-    const [provinciaId, setprovinciaId] = useState<number | null>(null);
+    const [provinciaName, setProvinciaName] = useState<string >();
 
     // Estado para almacenar el ID de la localidad, inicialmente nulo
-    const [localidadId, setLocalidadId] = useState<number | null>(null);
-
-    // Estado para almacenar la direccionID, inicialmente nulo
-    const [direccionId, setDireccionId] = useState<number | null>(null);
+    const [localidadName, setLocalidadName] = useState<string >();
 
     // Estado para almacenar la calle, inicialmente nulo
-    const [calle, setcalle] = useState<string | null>(null);
+    const [calle, setcalle] = useState<string | null>();
 
     // Estado para almacenar el número de la dirección, inicialmente nulo
-    const [numero, setNumero] = useState<number | null>(null);
+    const [numero, setNumero] = useState<number | null>();
 
     // Estado para almacenar los cursos elegidos, inicialmente un array vacío
-    const [cursosElegido, setCursosElegido] = useState<number[]>([]);
+    const [cursosElegido, setCursosElegido] = useState<Curso[]>([]);
+
     //endregion
 
     //region UseEffects
     // Función para obtener los datos del usuario
     useEffect(() => {
-        if (!user && !openBox) {
+        if (!user && openBox === 0) {
             console.log("se actualiza el usuario");
             getUser();
+            
+            
         }
     }, [user, openBox]);
+
 
     useEffect(() => {
         if ((errorMessage.length > 0) && scrollRef.current) {
@@ -106,6 +99,45 @@ const Cuenta: React.FC<{}> = () => {
     //endregion
 
     //region Funciones
+    async function getCursosElegidos(id:number) {
+        const cursos = await getalumnos_cursoByIdAlumno(id);
+        console.log("CURSOS1", cursos);
+        let array: Curso[] = [];
+        cursos.forEach(async (curso) => {
+            const curs = await getCursoById(curso.id);
+
+            if (curs) array.push(curs);
+            console.log("CURSOS2", curs);
+
+        });
+        setCursosElegido(array); 
+        console.log("CURSOS3", cursosElegido);
+    }
+    async function getUbicacion(userUpdate: any) {
+        // Obtener la dirección del usuario por su ID
+        console.log("SI DIRECCIONID ES FALSE:", Number(userUpdate?.direccionId));
+        const direccion = await getDireccionById(Number(userUpdate?.direccionId));
+        console.log("DIRECCION", direccion);
+
+        // Obtener la localidad asociada a la dirección
+        const localidad = await getLocalidadById(Number(direccion?.localidadId));
+        console.log("LOCALIDAD", localidad);
+
+        // Obtener la provincia asociada a la localidad
+        const prov = await getProvinciasById(Number(localidad?.provinciaId));
+        console.log("PROVINCIA", prov);
+
+        // Obtener el país asociado a la provincia
+        const nacionalidad = await getPaisById(Number(prov?.nacionalidadId));
+
+        // Actualizar los estados con los datos obtenidos
+        setLocalidadName(String(localidad?.nombre));
+        setProvinciaName(String(prov?.nombre)); 
+        setNacionalidadName(String(nacionalidad?.nombre));
+        setNumero(direccion?.numero);
+        setcalle(direccion?.calle);
+        return {direccion, localidad, prov, nacionalidad};
+    }
     async function getUser() {
         let user = await getAlumnoByCooki();
         console.log(user?.nombre);
@@ -117,18 +149,25 @@ const Cuenta: React.FC<{}> = () => {
             telefono: user?.telefono || 0,
             email: user?.email || '',
             password: user?.password || '',
-            direccionId: user?.direccionId || 0
+            direccionId: user?.direccionId || 0,
+            rolId: user?.rolId || 0
         }
+
+        getUbicacion(userUpdate);
+
+        getCursosElegidos(userUpdate.id);
+
         setAlumnoDetails({
             nombre: userUpdate.nombre, apellido: userUpdate.apellido,
-            dni: Number(userUpdate.dni), telefono: (userUpdate.telefono), pais: '', provincia: '', localidad: '',
-            calle: '', numero: 0, email: userUpdate.email, password: userUpdate.password
+            dni: Number(userUpdate.dni), telefono: (userUpdate.telefono),
+            email: userUpdate.email, password: userUpdate.password, direccionId: userUpdate.direccionId, rolId: userUpdate.rolId
         });
         setUser(userUpdate);
+        //setOpenBox(!openBox)
     }
-    function validateAlumnoDetails(estado: boolean) {
+    function validateAlumnoDetails() {
 
-        const { nombre, apellido, dni, telefono, pais, provincia, localidad, calle, numero } = alumnoDetails;
+        const { nombre, apellido, dni, telefono } = alumnoDetails;
 
         if ( nombre.length < 2) {
             return "El nombre debe tener al menos 3 caracteres.";
@@ -142,9 +181,7 @@ const Cuenta: React.FC<{}> = () => {
         if ( telefono.toString().length === 9) {
             return "El teléfono debe ser un número válido de 9 dígitos.";
         }
-        if ( (estado === false)) {
-            return "El nombre de la calle o el número son incorrectos"
-        }
+
         return null;
     }
 
@@ -157,50 +194,66 @@ const Cuenta: React.FC<{}> = () => {
     }
 
     async function handleSaveChanges() {
-        const estado = await getApiDireccionesEstado(String(calle), Number(numero))
 
-        const validationError = validateAlumnoDetails(estado);
+        const validationError = validateAlumnoDetails();
         if (validationError) {
             setErrorMessage(validationError);
             return;
         }
-        if (openBox !== null) {
             console.log("openBoxDD", user?.id);
-            // Obtener el nombre de la provincia usando el ID de la provincia
-            const provinciaNombre = await getApiProvinciaById(Number(provinciaId));
+            console.log("AAAAAAAAA", calle, numero, provinciaName, localidadName);
+            let pais = await getPaisById(1)
+            if(pais?.nombre !== nacionalidadName){
+                pais = await addPais({nombre: String(nacionalidadName)});   
+            }
 
-            // Agregar la provincia a la base de datos y obtener el nuevo objeto de provincia
-            const newProvincia = await updateProvinciasByIdUser(Number(user?.id), {
-                nombre: provinciaNombre,
-                nacionalidadId: 1 // ID para Argentina
-            });
-            console.log("newProvincia", newProvincia);
-            // Obtener el nombre de la localidad usando el ID de la provincia y el ID de la localidad
-            const localidadNombre = await getApiLocalidadByName(Number(provinciaId), Number(localidadId));
+      /*       console.log("SI DIRECCIONID ES FALSE:", Number(user?.direccionId));
+            const direccion = await getDireccionById(Number(user?.direccionId));
+            console.log("DIRECCION", direccion);
+            const localidad = await getLocalidadById(Number(direccion?.localidadId));
+            console.log("LOCALIDAD", localidad);
+            const prov = await getProvinciasById(Number(localidad?.provinciaId));
+            console.log("PROVINCIA", prov);
+            setLocalidadName(String(localidad?.nombre));
+            console.log(localidadName)
+            setProvinciaName(String(prov?.nombre)); 
+            console.log(provinciaName)
+            setNumero(direccion?.numero);
+            setcalle(direccion?.calle); */
+            const {direccion, localidad, prov} = await getUbicacion(user);
 
-            // Agregar la localidad a la base de datos y obtener el nuevo objeto de localidad
-/*             const newLocalidad = await updateLocalidadByIdUser(Number(user?.id), {
-                nombre: localidadNombre,
-                provinciaId: newProvincia?.id ?? 0 // Usar el nuevo ID de la provincia o 0 si es indefinido
-            });
-            console.log("newLocalidad", newLocalidad); */
-
-            // Agregar la dirección a la base de datos y obtener el nuevo objeto de dirección
-/*             const newDireccion = await updateDireccionByIdUser(Number(user?.id),{
+            //acualizo los datos de la direccion del alumno
+            const newDireccion = await updateDireccionById(Number(direccion?.id),{
                 calle: String(calle),
                 numero: Number(numero),
-                localidadId: newLocalidad?.id ?? 0 // Usar el nuevo ID de la localidad o 0 si es indefinido
+                localidadId: Number(localidad?.id)
+            });
+            console.log("newDireccion", newDireccion);
+            const newLocalidad = await updateLocalidad(Number(localidad?.id), {
+                nombre: String(localidadName),
+                provinciaId: Number(prov?.id)
+            });
+            console.log("newLocalidad", newLocalidad);
+             await updateProvinciaById(Number(prov?.id), {
+                nombre: String(provinciaName),
+                nacionalidadId: Number(pais?.id)
             });
     
-            await updateAlumno(user?.id || 0, {
+            const newAlumno = await updateAlumno(user?.id || 0, {
                 nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
                 dni: Number(alumnoDetails.dni), telefono: Number(alumnoDetails.telefono),
                 direccionId: Number(newDireccion?.id)
-            }); */
-            setOpenBox(null);
+            });
+            //region fijarse este forech
+            cursosElegido.forEach(async (curso) => {
+                await createAlumno_Curso({ cursoId: curso.id, alumnoId: newAlumno.id });
+                
+            });
             setErrorMessage("");
-        }
         getUser();
+        setOpenBox(0);
+        console.log(openBox)
+
     }
     //endregion
 
@@ -227,12 +280,17 @@ const Cuenta: React.FC<{}> = () => {
 
                         <div className="mb-4">
                             <label className="block text-gray-700 font-bold mb-2">Talleres:</label>
-                            <p className="p-2 border rounded bg-gray-100">No hay talleres cargados</p>
+                            {!cursosElegido && <p className="p-2 border rounded bg-gray-100">{"Talleres no cargados"}</p>}
+                            {cursosElegido.length > 0 && (
+                                <p className="p-2 border rounded bg-gray-100">
+                                    {cursosElegido.map((curso) => curso.nombre).join(', ')}
+                                </p>
+                            )}
                         </div>
 
                         <div className="mb-4">
                             <label className="block text-gray-700 font-bold mb-2">Domicilio:</label>
-                            <p className="p-2 border rounded bg-gray-100">Domicilio no cargado{/* {}, {.provincia}, {.localidad}, {cusoDetails.calle} {.numero} */}</p>
+                            <p className="p-2 border rounded bg-gray-100">{nacionalidadName ? nacionalidadName : "-"}, {provinciaName ? provinciaName : "-"}, {localidadName ? localidadName : "-"}, { calle ? calle : "-"} {numero ? numero : "-"}</p>
                         </div>
 
                         <div className="mb-4">
@@ -261,7 +319,7 @@ const Cuenta: React.FC<{}> = () => {
                 <div className="flex items-center justify-center mt-5">
                     <button
                         className='bg-red-500 py-2 px-10 text-white rounded hover:bg-red-700'
-                        onClick={() => setOpenBox(-1)}>
+                        onClick={() => {setOpenBox(1); console.log(openBox)}}>
                         Editar
                     </button>
                 </div>
@@ -269,7 +327,7 @@ const Cuenta: React.FC<{}> = () => {
             <div className="fixed bottom-0 mt-20 bg-white w-full" style={{ opacity: 0.66 }}>
                 <But_aside />
             </div>
-            {openBox !== null && (
+            {openBox === 1  && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
                     <div ref={scrollRef} className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative" style={{ height: '70vh', overflow: "auto" }}>
                         <h2 className="text-2xl font-bold mb-4">
@@ -339,32 +397,64 @@ const Cuenta: React.FC<{}> = () => {
                                 type="text"
                                 id="pais"
                                 name="pais"
-                                value={alumnoDetails.pais}
-                                onChange={handleChange}
+                                value={String(nacionalidadName)}
+                                onChange={(e) => setNacionalidadName(e.target.value)}
                                 className="p-2 w-full border rounded"
                             />
                         </div>
-                        <div>
-                            <h1>Provincia:</h1>
-                            <Provincias setprovinciaId={setprovinciaId} />
+                        <div className="mb-4">
+                            <label htmlFor="provincia" className="block">Provincia:</label>
+                            <input
+                                type="text"
+                                id="provincia"
+                                name="provincia"
+                                value={String(provinciaName)}
+                                onChange={(e) => setProvinciaName(e.target.value)}
+                                className="p-2 w-full border rounded"
+                            />
                         </div>
-                        <div>
-                            <h1>Localidad:</h1>
-                            <Localidades provinciaId={(provinciaId)} setLocalidadId={setLocalidadId} />
+                        <div className="mb-4">
+                            <label htmlFor="localidad" className="block">Localidad:</label>
+                            <input
+                                type="text"
+                                id="localidad"
+                                name="localidad"
+                                value={String(localidadName)}
+                                onChange={(e) => setLocalidadName(e.target.value)}
+                                className="p-2 w-full border rounded"
+                            />
                         </div>
-                        <div>
-                            <Direcciones setCalle={setcalle} setNumero={setNumero} />
+                        <div className="mb-4">
+                            <label htmlFor="calle" className="block">Calle:</label>
+                            <input
+                                type="text"
+                                id="calle"
+                                name="calle"
+                                value={String(calle)}
+                                onChange={(e) => setcalle(e.target.value)}
+                                className="p-2 w-full border rounded"
+                            />
                         </div>
-
+                        <div className="mb-4">
+                            <label htmlFor="numero" className="block">Número:</label>
+                            <input
+                                type="text"
+                                id="numero"
+                                name="numero"
+                                value={Number(numero)}
+                                onChange={(e) => setNumero(Number(e.target.value))}
+                                className="p-2 w-full border rounded"
+                            />
+                        </div>
                         <div className="flex justify-end space-x-4">
                             <button
-                                onClick={() => handleSaveChanges()}
+                                onClick={() => {handleSaveChanges(); console.log("openBox", openBox)}}
                                 className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800"
                             >
                                 Guardar
                             </button>
                             <button
-                                onClick={() => setOpenBox(null)}
+                                onClick={() => {setOpenBox(0);console.log(openBox)}}
                                 className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800"
                             >
                                 Cancelar

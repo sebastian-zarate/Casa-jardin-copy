@@ -1,31 +1,34 @@
 "use client";
 // #region Imports
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Navigate from "../../../components/Admin/navigate/page";
 import But_aside from "../../../components/but_aside/page";
-import { getProfesionales, deleteProfesional, createProfesional, updateProfesional } from "../../../services/profesional";
+import { getProfesionales, deleteProfesional, createProfesional, updateProfesional, Profesional, getProfesionalById } from "../../../services/profesional";
 import Image from "next/image";
 import DeleteIcon from "../../../../public/Images/DeleteIcon.png";
 import EditIcon from "../../../../public/Images/EditIcon.png";
 import Background from "../../../../public/Images/Background.jpeg"
 import ButtonAdd from "../../../../public/Images/Button.png";
 import { getImages_talleresAdmin } from "@/services/repoImage";
-import { addDireccion, getApiDireccionesEstado, getDireccionById } from "@/services/ubicacion/direccion";
-import { addProvincias, getApiProvinciaById } from "@/services/ubicacion/provincia";
-import Localidades from "@/components/ubicacion/localidad";
-import Provincias from "@/components/ubicacion/provincia";
-import Direcciones from "@/components/ubicacion/direccion";
-import { addLocalidad, getApiLocalidadByName } from "@/services/ubicacion/localidad";
+import { addDireccion, getDireccionById, updateDireccionById } from "@/services/ubicacion/direccion";
+import { addProvincias, getProvinciasById, getProvinciasByName, updateProvinciaById } from "@/services/ubicacion/provincia";
+import { addLocalidad, getLocalidadById, getLocalidadByName, Localidad, updateLocalidad } from "@/services/ubicacion/localidad";
 import Talleres from "@/components/talleres/page";
-import { createProfesional_Curso } from "@/services/profesional_curso";
+import { createProfesional_Curso, getProfesionales_Curso } from "@/services/profesional_curso";
+import { Curso, getCursoById } from "@/services/cursos";
+import { addPais, getPaisById } from "@/services/ubicacion/pais";
+import { get } from "http";
 // #endregion
 
 const Profesionales = () => {
     // #region UseStates
     const [profesionales, setProfesionales] = useState<any[]>([]);
     const [selectedProfesional, setSelectedProfesional] = useState<any>(null);
+
+    const [obProfesional, setObProfesional] = useState<any>(null);
+
     const [profesionalDetails, setProfesionalDetails] = useState<any>({});
-    
+
     // Estado para almacenar mensajes de error
     const [errorMessage, setErrorMessage] = useState<string>("");
 
@@ -33,14 +36,12 @@ const Profesionales = () => {
     const [images, setImages] = useState<any[]>([]);
 
     //useState para almacenar la dirección
+    const [nacionalidadName, setNacionalidadName] = useState<string>();
     // Estado para almacenar el ID de la provincia, inicialmente nulo
-    const [provinciaId, setprovinciaId] = useState<number | null>(null);
+    const [provinciaName, setProvinciaName] = useState<string>();
 
     // Estado para almacenar el ID de la localidad, inicialmente nulo
-    const [localidadId, setLocalidadId] = useState<number | null>(null);
-
-    // Estado para almacenar la direccionID, inicialmente nulo
-    const [direccionId, setDireccionId] = useState<number | null>(null);
+    const [localidadName, setLocalidadName] = useState<string>();
 
     // Estado para almacenar la calle, inicialmente nulo
     const [calle, setcalle] = useState<string | null>(null);
@@ -49,7 +50,10 @@ const Profesionales = () => {
     const [numero, setNumero] = useState<number | null>(null);
 
     // Estado para almacenar los cursos elegidos, inicialmente un array vacío
-    const [cursosElegido, setCursosElegido] = useState<number[]>([]);
+    const [cursosElegido, setCursosElegido] = useState<Curso[]>([]);
+
+    // Referencia para el contenedor de desplazamiento
+    const scrollRef = useRef<HTMLDivElement>(null);
     // #endregion
 
     // #region UseEffects
@@ -57,7 +61,15 @@ const Profesionales = () => {
     useEffect(() => {
         fetchProfesionales();
         fetchImages();
+        //getCursosElegidos();
+        if(obProfesional) getUbicacion(obProfesional);
     }, []);
+
+    useEffect(() => {
+        if ((errorMessage.length > 0) && scrollRef.current) {
+            scrollRef.current.scrollTop = 0;
+        }
+    }, [errorMessage]);
 
     useEffect(() => {
         if (selectedProfesional !== null && selectedProfesional !== -1) {
@@ -65,15 +77,91 @@ const Profesionales = () => {
                 nombre: selectedProfesional.nombre,
                 apellido: selectedProfesional.apellido,
                 email: selectedProfesional.email,
+                password: selectedProfesional.password,
+                telefono: selectedProfesional.telefono,
                 especialidad: selectedProfesional.especialidad,
                 direccionId: selectedProfesional.direccionId,
             });
         } else if (selectedProfesional === -1) {
-            setProfesionalDetails({});
+            setProfesionalDetails({
+                nombre: '',
+                apellido: '',
+                email: '',
+                password: '',
+                telefono: 0,
+                especialidad: '',
+                direccionId: 0,
+            });
         }
     }, [selectedProfesional, profesionales]);
     // #endregion
+    async function getCursosElegidos() {
+        const cursos = await getProfesionales_Curso(profesionalDetails.id);
+        console.log("CURSOS1", cursos);
+        let array: Curso[] = [];
+        cursos.forEach(async (curso) => {
+            const curs = await getCursoById(curso.id);
 
+            if (curs) array.push(curs);
+            console.log("CURSOS2", curs);
+
+        });
+        setCursosElegido(array);
+        console.log("CURSOS3", cursosElegido);
+    }
+    async function getUbicacion(userUpdate: any) {
+        // Obtener la dirección del usuario por su ID
+        console.log("SI DIRECCIONID ES FALSE:", Number(userUpdate?.direccionId));
+        const direccion = await getDireccionById(Number(userUpdate?.direccionId));
+        console.log("DIRECCION", direccion);
+
+        // Obtener la localidad asociada a la dirección
+        const localidad = await getLocalidadById(Number(direccion?.localidadId));
+        console.log("LOCALIDAD", localidad);
+
+        // Obtener la provincia asociada a la localidad
+        const prov = await getProvinciasById(Number(localidad?.provinciaId));
+        console.log("PROVINCIA", prov);
+
+        // Obtener el país asociado a la provincia
+        const nacionalidad = await getPaisById(Number(prov?.nacionalidadId));
+
+        // Actualizar los estados con los datos obtenidos
+        setLocalidadName(String(localidad?.nombre));
+        setProvinciaName(String(prov?.nombre)); 
+        setNacionalidadName(String(nacionalidad?.nombre));
+        setNumero(Number(direccion?.numero));
+        setcalle(String(direccion?.calle));
+        console.log("TODOSSS", localidadName, provinciaName, nacionalidadName, calle, numero);
+        return {direccion, localidad, prov, nacionalidad};
+    }
+
+    //region solo considera repetidos
+    async function createUbicacion() {
+        // Obtener la localidad asociada a la dirección
+
+        const localidad: Localidad | null = await getLocalidadByName(String(localidadName));
+        console.log("ESTEEE SI ES TODOSSS", (localidad));
+        // Obtener la provincia asociada a la localidad
+        const nacionalidad = await getPaisById(1);
+        let prov;
+        prov = await getProvinciasByName(String(provinciaName));
+        if(!prov) await addProvincias({ nombre: String(provinciaName), nacionalidadId: Number(nacionalidad?.id )});
+
+
+        if(!localidad){
+            const localidad = await addLocalidad({ nombre: String(localidadName), provinciaId: Number(prov?.id) });
+            console.log("LOCALIDAD", localidad);
+            const direccion = await addDireccion({ calle: String(calle), numero: Number(numero), localidadId: Number(localidad?.id )});
+            console.log("DIRECCION", direccion);
+            return { direccion };
+        }
+        const direccion = await addDireccion({ calle: String(calle), numero: Number(numero), localidadId: Number(localidad?.id )});
+        console.log("DIRECCION", direccion);
+
+        console.log("TODOSSS", prov, localidad, nacionalidad, direccion);
+        return {  direccion };
+    }
     // #region Métodos
     async function fetchProfesionales() {
         try {
@@ -105,7 +193,7 @@ const Profesionales = () => {
         }
     };
     //region check validation!!
-    function validateProfesionalDetails(estado: boolean) {
+    function validateProfesionalDetails() {
         const { nombre, apellido, email, especialidad } = profesionalDetails;
 
         //validar que el nombre sea de al menos 2 caracteres
@@ -113,34 +201,57 @@ const Profesionales = () => {
             return "El nombre debe tener al menos 2 caracteres";
         }
         //validar que el apellido sea de al menos 2 caracteres
-        if (apellido.length <2) {
+        if (apellido.length < 2) {
             return "El apellido debe tener al menos 2 caracteres";
         }
 
-        if(estado === false){
-            return "El nombre de la calle o el número son incorrectos"
-        }
     }
 
 
     async function handleSaveChanges() {
-        const estado = await getApiDireccionesEstado(String(calle), Number(numero))
 
-        const validationError = validateProfesionalDetails(estado);
+        const validationError = validateProfesionalDetails();
+        console.log(obProfesional)
+        const { direccion, localidad, prov, nacionalidad } = await getUbicacion(obProfesional);
         if (validationError) {
             setErrorMessage(validationError);
             return;
         }
-        if (selectedProfesional === null) {
-            try {
-                await updateProfesional(selectedProfesional.id, profesionalDetails); //actualizar el profesional
-                setSelectedProfesional(null);
-                fetchProfesionales();
-                setErrorMessage("");
-            } catch (error) {
-                console.error("Error al actualizar el profesional", error);
+        try {
+            const newDireccion = await updateDireccionById(Number(direccion?.id), {
+                calle: String(calle),
+                numero: Number(numero),
+                localidadId: Number(localidad?.id)
+            });
+            console.log("newDireccion", newDireccion);
+            const newLocalidad = await updateLocalidad(Number(localidad?.id), {
+                nombre: String(localidadName),
+                provinciaId: Number(prov?.id)
+            });
+            console.log("newLocalidad", newLocalidad);
+            await updateProvinciaById(Number(prov?.id), {
+                nombre: String(provinciaName),
+                nacionalidadId: Number(nacionalidad?.id)
+            });
+
+
+            const newProfesional = await updateProfesional(obProfesional?.id || 0, {
+                nombre: profesionalDetails.nombre, apellido: profesionalDetails.apellido,
+                especialidad: String(profesionalDetails.especialidad), email: String(profesionalDetails.email),
+                telefono: Number(profesionalDetails.telefono), password: String(profesionalDetails.password),
+                direccionId: Number(direccion?.id)
+            });
+
+            for (const curso of cursosElegido) {                                  //recorre los cursos elegidos y los guarda en la tabla intermedia
+                await createProfesional_Curso({ cursoId: curso.id, profesionalId: newProfesional.id });
+                //console.log(prof_cur)
             }
-        };
+            setSelectedProfesional(null);
+            fetchProfesionales();
+            setErrorMessage("");
+        } catch (error) {
+            console.error("Error al actualizar el profesional", error);
+        }
     }
 
     async function handleEliminarProfesional(profesional: any) {
@@ -153,72 +264,32 @@ const Profesionales = () => {
     }
 
 
-// en esta funcion se guardan las direcciones en la base de datos
- async function createNewUbicacion(provinciaId:number, localidadId:number,calle:string,numero:number){
-    // Imprimir datos
-    console.log(provinciaId);
-    console.log(localidadId);
-    console.log(calle, numero);
-  
-    // Obtener el nombre de la provincia usando el ID de la provincia
-    const provinciaNombre = await getApiProvinciaById(Number(provinciaId));
-  
-    // Agregar la provincia a la base de datos y obtener el nuevo objeto de provincia
-    const newProvincia = await addProvincias({
-        nombre: provinciaNombre,
-        nacionalidadId: 1 // ID para Argentina
-    });
-  
-    // Obtener el nombre de la localidad usando el ID de la provincia y el ID de la localidad
-    const localidadNombre = await getApiLocalidadByName(Number(provinciaId), Number(localidadId));
-  
-    // Agregar la localidad a la base de datos y obtener el nuevo objeto de localidad
-    const newLocalidad = await addLocalidad({
-        nombre: localidadNombre,
-        provinciaId: newProvincia?.id ?? 0 // Usar el nuevo ID de la provincia o 0 si es indefinido
-    });
-  
-    // Agregar la dirección a la base de datos y obtener el nuevo objeto de dirección
-    const newDireccion = await addDireccion({
-        calle: String(calle),
-        numero: Number(numero),
-        localidadId: newLocalidad?.id ?? 0 // Usar el nuevo ID de la localidad o 0 si es indefinido
-    });
-  
-    // Imprimir los datos obtenidos y creados para fines de depuración
-    console.log(`DATOS: ${provinciaNombre}`);
-    console.log(localidadNombre);
-    console.log("newDireccion", newDireccion);
-    console.log(newLocalidad);
-    console.log(newProvincia);
-    return newDireccion;
-  }
 
     async function handleCreateProfesional() {
-        const estado = await getApiDireccionesEstado(String(calle), Number(numero))
-        console.log("ESTADOOOOO",estado)
-        const validationError = validateProfesionalDetails(estado);
+        const validationError = validateProfesionalDetails();
+        const { direccion} = await createUbicacion();
+        console.log("newDireccion", direccion);
         if (validationError) {
             setErrorMessage(validationError);
             return;
         }
         try {
-            const newDireccion= await createNewUbicacion(Number(provinciaId), Number(localidadId), String(calle), Number(numero));
-            // Actualizar los detalles del profesional con el nuevo ID de dirección
-            setProfesionalDetails({ 
-                ...profesionalDetails, 
-                direccionId: newDireccion?.id,
+            //acualizo los datos de la direccion del alumno
+            const newProfesional = await createProfesional({
+                nombre: profesionalDetails.nombre, apellido: profesionalDetails.apellido,
+                especialidad: String(profesionalDetails.especialidad), email: String(profesionalDetails.email),
+                telefono: Number(profesionalDetails.telefono), password: String(profesionalDetails.password),
+                direccionId: Number(direccion?.id), rolId: 3
             });
-            const newProfesional = await createProfesional(profesionalDetails);
-            for (const cursoId of cursosElegido) {                                  //recorre los cursos elegidos y los guarda en la tabla intermedia
-                const prof_cur= await createProfesional_Curso({ cursoId, profesionalId: newProfesional.id });
+            for (const curso of cursosElegido) {                                  //recorre los cursos elegidos y los guarda en la tabla intermedia
+                await createProfesional_Curso({ cursoId: curso.id, profesionalId: newProfesional.id });
                 //console.log(prof_cur)
             }
-            console.log("newProfesional",newProfesional)
-            console.log("ProfesionalDetails",profesionalDetails)
+            console.log("newProfesional", newProfesional)
+            console.log("ProfesionalDetails", profesionalDetails)
             console.log(cursosElegido)
             setProfesionales([...profesionales, newProfesional]);
-            setSelectedProfesional(newProfesional.id);
+            setSelectedProfesional(null);
             fetchProfesionales();
             setErrorMessage("");
 
@@ -235,15 +306,15 @@ const Profesionales = () => {
         <main className="relative min-h-screen w-screen" >
             <Image src={Background} alt="Background" layout="fill" objectFit="cover" priority={true} />
 
-            <div className="fixed  justify-between w-full p-4" style={{background: "#1CABEB"}} >
+            <div className="fixed  justify-between w-full p-4" style={{ background: "#1CABEB" }} >
                 <Navigate />
             </div>
             <h1 className="absolute top-40 left-60 mb-5 text-3xl" >Profesionales</h1>
-            
+
             <div className="top-60 border p-1 absolute left-40 h-90 max-h-90 w-1/2 bg-gray-400 bg-opacity-50" style={{ height: '50vh', overflow: "auto" }}>
                 <div className="flex flex-col space-y-4 my-4 w-full px-4">
                     {profesionales.map((profesional, index) => (
-                        <div key={index}  className="border p-4 mx-2 relative bg-white w-47 h-47 justify-center items-center" >
+                        <div key={index} className="border p-4 mx-2 relative bg-white w-47 h-47 justify-center items-center" >
                             <div className="relative w-30 h-70">
                                 {<Image
                                     src={images[0]}
@@ -252,13 +323,24 @@ const Profesionales = () => {
                                     className="w-full h-full"
                                     layout="fill"
                                 />}
-                                <button onClick={() => handleEliminarProfesional(profesional)} className="absolute top-0 right-0 text-red-600 font-bold"></button>
-                                <Image src={DeleteIcon} alt="Eliminar" width={27} height={27} />
-                                <button onClick={() => setSelectedProfesional(profesional)} className="absolute top-0 right-8 text-red-600 font-bold">
+                                <button onClick={() => handleEliminarProfesional(profesional)} className="absolute top-0 right-0 text-red-600 font-bold">
+                                    <Image src={DeleteIcon} alt="Eliminar" width={27} height={27} />
+                                </button>
+
+                                <button onClick={() => {setSelectedProfesional(profesional); setObProfesional(profesional);getUbicacion(profesional)}} className="absolute top-0 right-8 text-red-600 font-bold">
                                     <Image src={EditIcon} alt="Editar" width={27} height={27} />
                                 </button>
                             </div>
                             <h3 className="flex  bottom-0 text-black z-1">{profesional.nombre} {profesional.apellido}</h3>
+                            <div className="text-sm text-gray-600">
+                                <p>Email: {profesional.email}</p>
+                                {cursosElegido.length === 0 && <p className="p-2 border rounded bg-gray-100">{"Talleres no cargados"}</p>}
+                                {cursosElegido.length > 0 && (
+                                    <p className="p-2 border rounded bg-gray-100">
+                                        {cursosElegido.map((curso) => curso.nombre).join(', ')}
+                                    </p>
+                                )}
+                            </div>
                         </div>
                     ))}
                 </div>
@@ -275,7 +357,7 @@ const Profesionales = () => {
             </div>
             {selectedProfesional !== null && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-                    <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative">
+                    <div ref={scrollRef} className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative" style={{ height: '70vh', overflow: "auto" }}>
                         <h2 className="text-2xl font-bold mb-4">
                             {selectedProfesional === -1 ? "Nuevo Profesional" : "Editar Profesional"}
                         </h2>
@@ -329,7 +411,7 @@ const Profesionales = () => {
                         <div className="mb-4">
                             <label htmlFor="telefono" className="block">Teléfono:</label>
                             <input
-                                type="text"
+                                type="number"
                                 id="telefono"
                                 name="telefono"
                                 value={profesionalDetails.telefono}
@@ -349,19 +431,63 @@ const Profesionales = () => {
                             />
                         </div>
 
-                        <div>
-                            <h1>Provincia:</h1>
-                            <Provincias setprovinciaId={setprovinciaId}/>
+                        <div className="mb-4">
+                            <label htmlFor="pais" className="block">País:</label>
+                            <input
+                                type="text"
+                                id="pais"
+                                name="pais"
+                                value={String(nacionalidadName)}
+                                onChange={(e) => setNacionalidadName(e.target.value)}
+                                className="p-2 w-full border rounded"
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label htmlFor="provincia" className="block">Provincia:</label>
+                            <input
+                                type="text"
+                                id="provincia"
+                                name="provincia"
+                                value={String(provinciaName)}
+                                onChange={(e) => setProvinciaName(e.target.value)}
+                                className="p-2 w-full border rounded"
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label htmlFor="localidad" className="block">Localidad:</label>
+                            <input
+                                type="text"
+                                id="localidad"
+                                name="localidad"
+                                value={String(localidadName)}
+                                onChange={(e) => setLocalidadName(e.target.value)}
+                                className="p-2 w-full border rounded"
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label htmlFor="calle" className="block">Calle:</label>
+                            <input
+                                type="text"
+                                id="calle"
+                                name="calle"
+                                value={String(calle)}
+                                onChange={(e) => setcalle(e.target.value)}
+                                className="p-2 w-full border rounded"
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label htmlFor="numero" className="block">Número:</label>
+                            <input
+                                type="text"
+                                id="numero"
+                                name="numero"
+                                value={Number(numero)}
+                                onChange={(e) => setNumero(Number(e.target.value))}
+                                className="p-2 w-full border rounded"
+                            />
                         </div>
                         <div>
-                            <h1>Localidad:</h1>
-                            <Localidades provinciaId= {(provinciaId)} setLocalidadId = {setLocalidadId}/>
-                        </div>
-                        <div>
-                            <Direcciones setCalle={setcalle} setNumero={setNumero}/>
-                        </div>
-                        <div>
-                            <Talleres cursosElegido={cursosElegido} setCursosElegido={setCursosElegido}/>
+                            <Talleres cursosElegido={cursosElegido} setCursosElegido={setCursosElegido} />
                         </div>
 
 

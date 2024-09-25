@@ -1,10 +1,10 @@
 // components/LocalitiesSearch.tsx
-import { getCursoById, getCursos } from '@/services/cursos';
+import { Curso, getCursoById, getCursos } from '@/services/cursos';
 import React, { useState, useEffect } from 'react';
 
 interface cursosProps {
-    cursosElegido: number[]
-    setCursosElegido: React.Dispatch<React.SetStateAction<number[]>>;
+    cursosElegido: Curso[]
+    setCursosElegido: React.Dispatch<React.SetStateAction<Curso[]>>;
 }
 const Talleres: React.FC<cursosProps> = ({cursosElegido, setCursosElegido}) => {
     const [cursos, setCursos] = useState<any>([]);
@@ -26,9 +26,13 @@ const Talleres: React.FC<cursosProps> = ({cursosElegido, setCursosElegido}) => {
     }, [cursos]);
 
 //función para agregar los cursos elegidos
-function addCursosElegidos(cursoId: number){
-    if (!cursosElegido.includes(cursoId)) {
-        setCursosElegido([...cursosElegido, cursoId]);
+async function addCursosElegidos(cursoId: number){
+    const curso = await getCursoById(cursoId);
+    if (!curso) {
+        return;
+    }
+    if (!cursosElegido.includes(curso)) {
+        setCursosElegido([...cursosElegido, curso]);
         getCursoById(cursoId).then((curso) => {
             if (curso && curso.nombre) {
                 setCursosElegidosNombre([...cursosElegidosNombre, String(curso.nombre)]);

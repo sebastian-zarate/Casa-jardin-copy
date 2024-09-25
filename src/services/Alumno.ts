@@ -15,6 +15,7 @@ export async function createAlumno(data: {
   apellido: string;
   email: string;
   password: string;
+  rolId: number;
 }) {
   // Verificar si el email ya existe en la base de datos
   const existingAlumno = await prisma.alumno.findUnique({
@@ -117,6 +118,9 @@ export async function getAlumnos() {
 }
 
 export async function deleteAlumno(id: number) {
+  await prisma.alumno_Curso.deleteMany({
+    where: { alumnoId: id }
+  })
   return await prisma.alumno.delete({
     where: { id },
   });

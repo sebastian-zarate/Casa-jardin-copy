@@ -3,7 +3,7 @@ import Image from 'next/image';
 import BackgroundLibrary from '../../../../public/Images/BookShell.jpg';
 import Logo from '../../../../public/Images/LogoCasaJardin.png';
 import { useState, useEffect } from "react";
-import { createAlumno, getLocalidadesByProvincia, getPaises, getProvinciasByPais } from "../../../services/Alumno";
+import { createAlumno} from "../../../services/Alumno";
 
 function Signup() {
   // Se crean los estados para los campos del formulario de registro
@@ -49,12 +49,14 @@ function Signup() {
       setError(validationError);
       return;
     }
+
     // se crea un objeto con los datos del formulario para luego enviarlos al servidor
     const data = {
       nombre,
       apellido,
       email,
       password,
+      rolId:2 // rol de alumno
       
     };
     // se envian los datos al servidor para registrar el usuario

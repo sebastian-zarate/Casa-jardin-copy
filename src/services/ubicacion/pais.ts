@@ -26,17 +26,27 @@ export async function getPaisById(paisId: number) {
       },
     });
 }
-
-
-export async function addPais(Pais: Pais) {
-  /*   const pais = await getPaisById(paisId); */
-  try{
-    const pais = prisma.nacionalidad.create({
-      data: Pais
-    })
-    return pais
-  } catch(error){
-    console.error("Error fetching data:", error);
+export async function updatePaisById(id:number, data: {
+  nombre: string;
+}) {
+  const newPais = {
+    id: id,
+    nombre: data.nombre,
   }
+  console.log("actualizo pais")
+
+  return await prisma.nacionalidad.update({
+    where: { id },
+    data: newPais
+  });
+}
+
+export async function addPais(data: {
+  nombre: string;
+}) {
+  const pais = prisma.nacionalidad.create({
+    data: data
+  })
+  return pais
 
 }

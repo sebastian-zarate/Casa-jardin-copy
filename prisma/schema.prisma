@@ -50,9 +50,9 @@ model Direccion {
 model Rol {
   id   Int    @id @default(autoincrement())
   nombre String
-  Alumno Alumno?
-  Profesional Profesional?
-  Administrador Administrador?
+  Alumno Alumno[]
+  Profesional Profesional[]
+  Administrador Administrador[]
 }
 
 model Administrador {
@@ -63,7 +63,7 @@ model Administrador {
   password String
   direccion Direccion @relation(fields: [direccionId], references: [id])
   direccionId Int
-  rolId Int @unique
+  rolId Int
   rol Rol @relation(fields: [rolId], references: [id])
 }
 model Profesional {
@@ -75,10 +75,10 @@ model Profesional {
   password     String      @unique
   telefono     BigInt      @unique
   direccion    Direccion @relation(fields: [direccionId], references: [id])
-  direccionId  Int       
+  direccionId  Int      
 
   prof_cur Profesional_Curso[]
-  rolId Int @unique
+  rolId Int
   rol Rol @relation(fields: [rolId], references: [id])
 }
 
@@ -115,7 +115,7 @@ model Alumno {
   password    String
 
   alum_cur    Alumno_Curso[]
-  rolId Int @unique
+  rolId Int 
   rol Rol @relation(fields: [rolId], references: [id])
 }
 

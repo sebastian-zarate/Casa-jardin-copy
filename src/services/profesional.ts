@@ -12,6 +12,7 @@ export type Profesional = {
     telefono: number;
     password: string;
     direccionId: number;
+    rolId: number;
   }
 
 export async function getProfesionales() {
@@ -34,9 +35,15 @@ export async function createProfesional(data: {
     telefono: number;
     password: string;
     direccionId: number;
+    rolId: number;
 }) {
+  const newProfesional = {
+    ...data,
+    rolId: 3,
+  }
+  console.log("CREANDO PROFESIONAL")
   return await prisma.profesional.create({
-    data,
+    data: newProfesional
   });
 }
 
@@ -49,6 +56,14 @@ export async function updateProfesional(id: number, data: {
     password?: string;
     direccionId?: number;
 }) {
+  const profesional = await prisma.profesional.findUnique({
+    where: {
+      id,
+    },
+  });
+  if(!profesional) {
+    throw new Error('Profesional not found');
+  }
   return await prisma.profesional.update({
     where: {
       id,
@@ -58,9 +73,15 @@ export async function updateProfesional(id: number, data: {
 }
 
 export async function deleteProfesional(id: number) {
+  await prisma.profesional_Curso.deleteMany({
+    where: {
+      profesionalId: id,
+    },
+  });
   return await prisma.profesional.delete({
     where: {
       id,
     },
   });
+
 }
