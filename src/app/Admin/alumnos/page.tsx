@@ -62,12 +62,17 @@ const Alumnos: React.FC = () => {
     useEffect(() => {
         fetchAlumnos();
         fetchImages();
-       // if (obAlumno.direccionId) getUbicacion(obAlumno);
     }, []);
 
     useEffect(() => {
         if (obAlumno && obAlumno.direccionId) {
             getUbicacion(obAlumno);
+        } else if(obAlumno&& obAlumno.direccionId === null) {
+            setNacionalidadName("");
+            setProvinciaName("");
+            setLocalidadName("");
+            setcalle("");
+            setNumero(0);
         }
     }, [obAlumno]);
     useEffect(() => {
@@ -77,7 +82,7 @@ const Alumnos: React.FC = () => {
     }, [errorMessage]);
 
     useEffect(() => {
-        if (selectedAlumno !== null && selectedAlumno !== -1) {
+        if (selectedAlumno !== null) {
             setAlumnoDetails({
                 id: selectedAlumno.id,
                 nombre: selectedAlumno.nombre,
@@ -89,7 +94,14 @@ const Alumnos: React.FC = () => {
                 password: selectedAlumno.password
             });
         } else {
-            setAlumnoDetails({});
+            setAlumnoDetails({
+                nombre: "",
+                apellido: "",
+                dni: 0,
+                telefono: 0,
+                email: "",
+                password: ""
+            });
         }
     }, [selectedAlumno, alumnos]);
     // #endregion
@@ -118,6 +130,32 @@ const Alumnos: React.FC = () => {
 
         }
     };
+    async function createUbicacion() {
+        // Obtener la localidad asociada a la dirección
+        console.log("Antes de crear la ubicacion", (localidadName), calle, numero);
+        const localidad: Localidad | null = await getLocalidadByName(String(localidadName));
+        console.log("ESTEEE SI ES TODOSSS", (localidad));
+        // Obtener la provincia asociada a la localidad
+        const nacionalidad = await getPaisById(1);
+        let prov;
+        prov = await getProvinciasByName(String(provinciaName));
+        if(!prov) await addProvincias({ nombre: String(provinciaName), nacionalidadId: Number(nacionalidad?.id )});
+
+
+        if(!localidad){
+            const localidad = await addLocalidad({ nombre: String(localidadName), provinciaId: Number(prov?.id) });
+            console.log("LOCALIDAD", localidad);
+            const direccion = await addDireccion({ calle: String(calle), numero: Number(numero), localidadId: Number(localidad?.id )});
+            console.log("DIRECCION", direccion);
+            return direccion ;
+        }
+        const direccion = await addDireccion({ calle: String(calle), numero: Number(numero), localidadId: Number(localidad?.id )});
+        console.log("DIRECCION", direccion);
+
+        console.log("TODOSSS", prov, localidad, nacionalidad, direccion);
+        return direccion;
+
+    }
     async function getUbicacion(obAlumno: any) {
         // Obtener la dirección del usuario por su ID
         console.log("SI DIRECCIONID ES FALSE:", Number(obAlumno?.direccionId));
@@ -136,11 +174,11 @@ const Alumnos: React.FC = () => {
         const nacionalidad = await getPaisById(Number(prov?.nacionalidadId));
 
         // Actualizar los estados con los datos obtenidos
-/*         setLocalidadName(String(localidad?.nombre));
+        setLocalidadName(String(localidad?.nombre));
         setProvinciaName(String(prov?.nombre));
         setNacionalidadName(String(nacionalidad?.nombre));
         setNumero(Number(direccion?.numero));
-        setcalle(String(direccion?.calle)); */
+        setcalle(String(direccion?.calle));
         console.log("TODOSSS", localidadName, provinciaName, nacionalidadName, calle, numero);
         return { direccion, localidad, prov, nacionalidad };
     }
@@ -166,6 +204,18 @@ const Alumnos: React.FC = () => {
             [name]: name === 'telefono' ? parseInt(value, 10) : value // Convierte `telefono` a número entero si el campo es `telefono`
         }));
     }
+    function setVariablesState(){
+        setNacionalidadName("");
+        setProvinciaName("");
+        setLocalidadName("");
+        setcalle("");
+        setNumero(0);
+        setObAlumno(null);
+        setSelectedAlumno(null);
+        setCursosElegido([]);
+        fetchAlumnos();
+        setErrorMessage("");
+    }
     async function handleSaveChanges() {
         const validationError = validatealumnoDetails();
         console.log(obAlumno)
@@ -175,22 +225,16 @@ const Alumnos: React.FC = () => {
             return;
         }
         if(!obAlumno.direccionId) {
+            const dir = await createUbicacion();
             console.log("ALUMNODETAILS", alumnoDetails);
-            const newAlumno = await updateAlumno(alumnoDetails?.id || 0, {
+             const newAlumno = await updateAlumno(alumnoDetails?.id || 0, {
                 nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
-                dni: Number(alumnoDetails.dni), telefono: Number(alumnoDetails.telefono),
-                
+                dni: Number(alumnoDetails.dni), email: alumnoDetails.email,telefono: Number(alumnoDetails.telefono),
+                direccionId: Number(dir?.id)
             });
-            newAlumno
-            setNacionalidadName("");
-            setProvinciaName("");
-            setLocalidadName("");
-            setcalle("");
-            setNumero(null);
-            setObAlumno(null);
-            setSelectedAlumno(null);
-            fetchAlumnos();
-            setErrorMessage("");
+            newAlumno.direccionId = dir?.id;
+            console.log("newAlumno", newAlumno);
+            setVariablesState();
             return;
         }
         const { direccion, localidad, prov, nacionalidad } = await getUbicacion(obAlumno);
@@ -216,22 +260,14 @@ const Alumnos: React.FC = () => {
             const newAlumno = await updateAlumno(alumnoDetails?.id || 0, {
                 nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
                 dni: Number(alumnoDetails.dni), telefono: Number(alumnoDetails.telefono),
-                direccionId: Number(newDireccion?.id)
+                direccionId: Number(newDireccion?.id), email: alumnoDetails.email
             });
 
             for (const curso of cursosElegido) {                                  //recorre los cursos elegidos y los guarda en la tabla intermedia
                 await createAlumno_Curso({ cursoId: curso.id, alumnoId: newAlumno.id });
                 //console.log(prof_cur)
             }
-            setNacionalidadName("");
-            setProvinciaName("");
-            setLocalidadName("");
-            setcalle("");
-            setNumero(null);
-            setObAlumno(null);
-            setSelectedAlumno(null);
-            fetchAlumnos();
-            setErrorMessage("");
+            setVariablesState();
         } catch (error) {
             console.error("Error al actualizar el profesional", error);
         }
@@ -245,13 +281,14 @@ const Alumnos: React.FC = () => {
             console.error("Error al eliminar el profesional", error);
         }
     }
-    async function handleCancel() {
+    async function handleCancel_init() {
         setNacionalidadName("");
         setProvinciaName("");
         setLocalidadName("");
         setcalle("");
         setNumero(null);
         setObAlumno(null);
+        setCursosElegido([]);
     }
     // #endregion
 
@@ -429,7 +466,7 @@ const Alumnos: React.FC = () => {
                                 Guardar
                             </button>
                             <button
-                                onClick={() => {setSelectedAlumno(null); handleCancel()}}
+                                onClick={() => {setSelectedAlumno(null); handleCancel_init()}}
                                 className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800">
                                 Cancelar
                             </button>

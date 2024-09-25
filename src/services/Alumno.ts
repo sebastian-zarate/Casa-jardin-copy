@@ -76,6 +76,7 @@ export async function updateAlumno(id: number, data: {
   apellido: string;
   dni: number;
   telefono: number;
+  email: string;
   direccionId?: number;
 
 }) {
@@ -86,50 +87,23 @@ export async function updateAlumno(id: number, data: {
   }
   let alumnoData: any = {};
   console.log(data, alumno);
-  if (data.dni === alumno.dni) {
-    // Crear la estructura de datos del alumno
-    alumnoData = {
-      id: id,
-      nombre: data.nombre,
-      apellido: data.apellido,
-      telefono: data.telefono
-    };
-    console.log(alumnoData);
+
     // Actualizar el alumno
-    return await prisma.alumno.update({
-      where: { id },
-      data: alumnoData,
-    });
-  } else if (data.telefono === alumno.telefono) {
-    // Crear la estructura de datos del alumno
+
+
     alumnoData = {
-      id: id,
-      nombre: data.nombre,
-      apellido: data.apellido,
-      dni: (data.dni)
-    };
-    console.log(alumnoData);
-    // Actualizar el alumno
-    return await prisma.alumno.update({
-      where: { id },
-      data: alumnoData,
-    });
-  } else {
-    // Crear la estructura de datos del alumno
-    alumnoData = {
-      id: id,
-      nombre: data.nombre,
-      apellido: data.apellido,
-      dni: (data.dni),
-      telefono: data.telefono
-    }
-    console.log(alumnoData);
-    // Actualizar el alumno
-    return await prisma.alumno.update({
-      where: { id },
-      data: alumnoData,
-    });
+    id: id,
+    nombre: data.nombre,
+    apellido: data.apellido,
+    dni: (data.dni),
+    telefono: data.telefono,
+    direccionId: data.direccionId
   }
+  console.log(alumnoData);
+  return await prisma.alumno.update({
+    where: { id },
+    data: alumnoData,
+  });
 }
 
 export async function getAlumnoById(id: number) {

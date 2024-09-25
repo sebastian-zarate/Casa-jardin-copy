@@ -14,7 +14,7 @@ import { addDireccion, getDireccionById, updateDireccionById } from "@/services/
 import { addProvincias, getProvinciasById, getProvinciasByName, updateProvinciaById } from "@/services/ubicacion/provincia";
 import { addLocalidad, getLocalidadById, getLocalidadByName, Localidad, updateLocalidad } from "@/services/ubicacion/localidad";
 import Talleres from "@/components/talleres/page";
-import { createProfesional_Curso, getProfesionales_Curso } from "@/services/profesional_curso";
+import { createProfesional_Curso, getProfesional_Curso } from "@/services/profesional_curso";
 import { Curso, getCursoById } from "@/services/cursos";
 import { addPais, getPaisById } from "@/services/ubicacion/pais";
 import { get } from "http";
@@ -61,10 +61,21 @@ const Profesionales = () => {
     useEffect(() => {
         fetchProfesionales();
         fetchImages();
-        //getCursosElegidos();
-        if(obProfesional) getUbicacion(obProfesional);
-    }, []);
+        handleCancel_init();
 
+    }, []);
+    useEffect(() => {
+        if (obProfesional && obProfesional.direccionId) {
+            getUbicacion(obProfesional);
+        } else if(obProfesional && obProfesional.direccionId === null) {
+            setNacionalidadName("");
+            setProvinciaName("");
+            setLocalidadName("");
+            setcalle("");
+            setNumero(0);
+            setCursosElegido([]);
+        }
+    }, [obProfesional]);
     useEffect(() => {
         if ((errorMessage.length > 0) && scrollRef.current) {
             scrollRef.current.scrollTop = 0;
@@ -90,16 +101,15 @@ const Profesionales = () => {
                 password: '',
                 telefono: 0,
                 especialidad: '',
-                direccionId: 0,
             });
         }
     }, [selectedProfesional, profesionales]);
     // #endregion
-    async function getCursosElegidos() {
-        const cursos = await getProfesionales_Curso(profesionalDetails.id);
+/*     async function getCursosElegidos() {
+        const cursos = await get(profesionalDetails.id);
         console.log("CURSOS1", cursos);
         let array: Curso[] = [];
-        cursos.forEach(async (curso) => {
+        cursos.forEach(async (curso: Curso) => {
             const curs = await getCursoById(curso.id);
 
             if (curs) array.push(curs);
@@ -108,7 +118,7 @@ const Profesionales = () => {
         });
         setCursosElegido(array);
         console.log("CURSOS3", cursosElegido);
-    }
+    } */
     async function getUbicacion(userUpdate: any) {
         // Obtener la dirección del usuario por su ID
         console.log("SI DIRECCIONID ES FALSE:", Number(userUpdate?.direccionId));
@@ -139,7 +149,7 @@ const Profesionales = () => {
     //region solo considera repetidos
     async function createUbicacion() {
         // Obtener la localidad asociada a la dirección
-        console.log("Antes de crear la ubicacion", (localidadName), calle, numero);
+        console.log("Antes de crear la ubicacion", (localidadName), calle, numero, provinciaName, nacionalidadName);
         const localidad: Localidad | null = await getLocalidadByName(String(localidadName));
         console.log("ESTEEE SI ES TODOSSS", (localidad));
         // Obtener la provincia asociada a la localidad
@@ -148,19 +158,20 @@ const Profesionales = () => {
         prov = await getProvinciasByName(String(provinciaName));
         if(!prov) await addProvincias({ nombre: String(provinciaName), nacionalidadId: Number(nacionalidad?.id )});
 
-
+        if(!prov) return
         if(!localidad){
             const localidad = await addLocalidad({ nombre: String(localidadName), provinciaId: Number(prov?.id) });
             console.log("LOCALIDAD", localidad);
             const direccion = await addDireccion({ calle: String(calle), numero: Number(numero), localidadId: Number(localidad?.id )});
             console.log("DIRECCION", direccion);
-            return { direccion };
+            return  direccion ;
         }
+        if(!localidad) {console.log("nose pudo jefe"); return}
         const direccion = await addDireccion({ calle: String(calle), numero: Number(numero), localidadId: Number(localidad?.id )});
         console.log("DIRECCION", direccion);
 
         console.log("TODOSSS", prov, localidad, nacionalidad, direccion);
-        return {  direccion };
+        return  direccion ;
     }
     // #region Métodos
     async function fetchProfesionales() {
@@ -171,6 +182,17 @@ const Profesionales = () => {
         } catch (error) {
             console.error("Imposible obetener Profesionales", error);
         }
+    }
+    function setVariablesState(){
+        setNacionalidadName("");
+        setProvinciaName("");
+        setLocalidadName("");
+        setcalle("");
+        setNumero(0);
+        setObProfesional(null);
+        setSelectedProfesional(null);
+        fetchProfesionales();
+        setErrorMessage("");
     }
     // Función para manejar los cambios en los campos del formulario
     function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -212,31 +234,24 @@ const Profesionales = () => {
 
         const validationError = validateProfesionalDetails();
         console.log(obProfesional)
-        const { direccion, localidad, prov, nacionalidad } = await getUbicacion(obProfesional);
+       
         if (validationError) {
             setErrorMessage(validationError);
             return;
         }
         if(!obProfesional.direccionId) {
-
+            const dir = await createUbicacion();
             const newProfesional = await updateProfesional(obProfesional?.id || 0, {
                 nombre: profesionalDetails.nombre, apellido: profesionalDetails.apellido,
                 especialidad: String(profesionalDetails.especialidad), email: String(profesionalDetails.email),
                 telefono: Number(profesionalDetails.telefono), password: String(profesionalDetails.password),
-                direccionId: Number(direccion?.id)
+                direccionId: Number(dir?.id)
             });
             newProfesional
-            setNacionalidadName("");
-            setProvinciaName("");
-            setLocalidadName("");
-            setcalle("");
-            setNumero(null);
-            setObProfesional(null);
-            setSelectedProfesional(null);
-            fetchProfesionales();
-            setErrorMessage("");
+            setVariablesState();
             return;
         }
+        const { direccion, localidad, prov, nacionalidad } = await getUbicacion(obProfesional);
         try {
             const newDireccion = await updateDireccionById(Number(direccion?.id), {
                 calle: String(calle),
@@ -263,12 +278,11 @@ const Profesionales = () => {
             });
 
             for (const curso of cursosElegido) {                                  //recorre los cursos elegidos y los guarda en la tabla intermedia
-                await createProfesional_Curso({ cursoId: curso.id, profesionalId: newProfesional.id });
+
+                 await createProfesional_Curso({ cursoId: curso.id, profesionalId: newProfesional.id });
                 //console.log(prof_cur)
             }
-            setSelectedProfesional(null);
-            fetchProfesionales();
-            setErrorMessage("");
+            setVariablesState();
         } catch (error) {
             console.error("Error al actualizar el profesional", error);
         }
@@ -287,7 +301,7 @@ const Profesionales = () => {
 
     async function handleCreateProfesional() {
         const validationError = validateProfesionalDetails();
-        const { direccion} = await createUbicacion();
+        const direccion = await createUbicacion();
         console.log("newDireccion", direccion);
         if (validationError) {
             setErrorMessage(validationError);
@@ -309,14 +323,21 @@ const Profesionales = () => {
             console.log("ProfesionalDetails", profesionalDetails)
             console.log(cursosElegido)
             setProfesionales([...profesionales, newProfesional]);
-            setSelectedProfesional(null);
-            fetchProfesionales();
-            setErrorMessage("");
+            setVariablesState();
 
 
         } catch (error) {
             console.error("Error al crear el profesional", error);
         }
+    }
+    async function handleCancel_init() {
+        setNacionalidadName("");
+        setProvinciaName("");
+        setLocalidadName("");
+        setcalle("");
+        setCursosElegido([]);
+        setNumero(null);
+        setObProfesional(null);
     }
     // #endregion
 
@@ -347,7 +368,7 @@ const Profesionales = () => {
                                     <Image src={DeleteIcon} alt="Eliminar" width={27} height={27} />
                                 </button>
 
-                                <button onClick={() => {setSelectedProfesional(profesional); setObProfesional(profesional);getUbicacion(profesional)}} className="absolute top-0 right-8 text-red-600 font-bold">
+                                <button onClick={() => {setSelectedProfesional(profesional); setObProfesional(profesional); console.log(profesional)}} className="absolute top-0 right-8 text-red-600 font-bold">
                                     <Image src={EditIcon} alt="Editar" width={27} height={27} />
                                 </button>
                             </div>
@@ -518,7 +539,7 @@ const Profesionales = () => {
                                 Guardar
                             </button>
                             <button
-                                onClick={() => setSelectedProfesional(null)}
+                                onClick={() =>{ setSelectedProfesional(null); handleCancel_init()}}
                                 className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800">
                                 Cancelar
                             </button>
