@@ -31,7 +31,10 @@ export async function getProvinciasById(ProvinciasId: number) {
 export async function getProvinciasByName(ProvinciasName: string) {
   return await prisma.provincia.findFirst({
     where: {
-      nombre: ProvinciasName,
+      nombre: {
+        equals: ProvinciasName,
+        mode: 'insensitive',
+      }
     },
   });
 }
@@ -40,21 +43,16 @@ export async function addProvincias(data: {
   nombre: string;
   nacionalidadId: number;
 }) {
-  console.log("CREANDO PROVINCIA")
-  let estado = false
-  const provincias = await getProvincias();
-  for (let index = 0; index < provincias.length; index++) {
-    if (provincias[index].nombre === data.nombre) {
-      estado = true
-      return provincias[index];
-    }
+  const provinciaExistente = await getProvinciasByName(data.nombre);
+  if(provinciaExistente){
+    console.log("PROVINCIA EXISTENTE")
+    return provinciaExistente;
   }
-  if(!estado){
-    const prov = await prisma.provincia.create({
-      data: data
-    });
-    return prov;
-  } 
+  console.log("PROVINCIA NUEVA")
+  const prov = await prisma.provincia.create({
+    data: data
+  });
+  return prov;
 }
 
 export async function updateProvinciaById(id:number, data: {

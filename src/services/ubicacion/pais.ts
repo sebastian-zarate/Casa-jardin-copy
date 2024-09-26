@@ -26,6 +26,16 @@ export async function getPaisById(paisId: number) {
       },
     });
 }
+export async function getPaisByName(pais: string) {
+  return await prisma.nacionalidad.findFirst({
+    where: {
+      nombre: {
+        equals: pais,
+        mode: 'insensitive',
+      }
+    },
+  });
+}
 export async function updatePaisById(id:number, data: {
   nombre: string;
 }) {
@@ -44,6 +54,19 @@ export async function updatePaisById(id:number, data: {
 export async function addPais(data: {
   nombre: string;
 }) {
+  const paisExistente = await prisma.nacionalidad.findFirst({
+    where: {
+      nombre: {
+        equals: data.nombre,
+        mode: 'insensitive', // This ensures case-insensitive comparison
+      },
+    },
+  });
+  if (paisExistente) {
+    console.log("PAIS EXISTENTE")
+    return paisExistente;
+  }
+  console.log("PAIS NUEVO")
   const pais = prisma.nacionalidad.create({
     data: data
   })

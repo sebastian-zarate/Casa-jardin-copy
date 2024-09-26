@@ -14,7 +14,7 @@ import Talleres from "@/components/talleres/page";
 import { addDireccion, getDireccionById, updateDireccionById, updateDireccionByIdUser } from "@/services/ubicacion/direccion";
 import { addLocalidad, getLocalidadById, getLocalidadByName, Localidad, updateLocalidad } from "@/services/ubicacion/localidad";
 import { addProvincias, getProvinciasById, getProvinciasByName, updateProvinciaById } from "@/services/ubicacion/provincia";
-import { getPaisById } from "@/services/ubicacion/pais";
+import { addPais, getPaisById } from "@/services/ubicacion/pais";
 import { createAlumno_Curso } from "@/services/alumno_curso";
 import { Curso } from "@/services/cursos";
 // #endregion
@@ -62,6 +62,7 @@ const Alumnos: React.FC = () => {
     useEffect(() => {
         fetchAlumnos();
         fetchImages();
+        handleCancel_init();
     }, []);
 
     useEffect(() => {
@@ -130,32 +131,20 @@ const Alumnos: React.FC = () => {
 
         }
     };
-    async function createUbicacion() {
+       //region solo considera repetidos
+       async function createUbicacion() {
         // Obtener la localidad asociada a la dirección
-        console.log("Antes de crear la ubicacion", (localidadName), calle, numero);
-        const localidad: Localidad | null = await getLocalidadByName(String(localidadName));
-        console.log("ESTEEE SI ES TODOSSS", (localidad));
-        // Obtener la provincia asociada a la localidad
-        const nacionalidad = await getPaisById(1);
-        let prov;
-        prov = await getProvinciasByName(String(provinciaName));
-        if(!prov) await addProvincias({ nombre: String(provinciaName), nacionalidadId: Number(nacionalidad?.id )});
+        console.log("Antes de crear la ubicacion", (localidadName), calle, numero, provinciaName, nacionalidadName);
+        const nacionalidad = await addPais({ nombre: String(nacionalidadName) });
+        const prov = await addProvincias({ nombre: String(localidadName), nacionalidadId: Number(nacionalidad?.id) });
 
-
-        if(!localidad){
-            const localidad = await addLocalidad({ nombre: String(localidadName), provinciaId: Number(prov?.id) });
-            console.log("LOCALIDAD", localidad);
-            const direccion = await addDireccion({ calle: String(calle), numero: Number(numero), localidadId: Number(localidad?.id )});
-            console.log("DIRECCION", direccion);
-            return direccion ;
-        }
+        const localidad = await addLocalidad({ nombre: String(localidadName), provinciaId: Number(prov?.id) });
+        console.log("LOCALIDAD", localidad);
         const direccion = await addDireccion({ calle: String(calle), numero: Number(numero), localidadId: Number(localidad?.id )});
         console.log("DIRECCION", direccion);
-
-        console.log("TODOSSS", prov, localidad, nacionalidad, direccion);
-        return direccion;
-
+        return  direccion ;
     }
+
     async function getUbicacion(obAlumno: any) {
         // Obtener la dirección del usuario por su ID
         console.log("SI DIRECCIONID ES FALSE:", Number(obAlumno?.direccionId));

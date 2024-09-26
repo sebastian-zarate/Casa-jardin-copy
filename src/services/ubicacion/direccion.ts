@@ -23,16 +23,15 @@ export async function updateDireccionById(direccionId: number, data: {
       id: direccionId,
     },
   });
-
-  if (!direccion) {
-    throw new Error("La dirección no existe.");
-  }
-
   const newDireccion = {
     calle: data.calle,
     numero: data.numero,
     localidadId: data.localidadId,
   };
+  
+  if (!direccion) {
+    throw new Error("La dirección no existe.");
+  }
 
   console.log("actualizo direccion");
   return await prisma.direccion.update({
@@ -85,40 +84,35 @@ export async function updateDireccionByIdUser(userId: number, rolId: number, dat
     })
   }
 }
-
+export async function getDireccionByCalleNumero(calle: string, numero: number) {
+  return await prisma.direccion.findFirst({
+    where: {
+      calle: {
+        equals: calle,
+        mode: 'insensitive', // This ensures case-insensitive comparison
+      },
+      numero: numero,
+    },
+  });
+}
 //agrego una dirección a la DB
 export async function addDireccion(data: {
   calle: string;
   numero: number;
   localidadId: number;
 }) {
+  const direccionExistente = await getDireccionByCalleNumero(data.calle, data.numero);
+  if (direccionExistente) {
+    console.log("DIRECCION EXISTENTE")
+    return direccionExistente;
+  }
+  console.log("DIRECCION NUEVA")
   const dirr = await prisma.direccion.create({
     data: data
   });
   return dirr;
 }
-/* export async function addDireccion(data: {
-  calle: string;
-  numero: number;
-  localidadId: number;
-}) {
 
-  console.log("CREANDO DIRECCION")
-  let estado = false
-  const direcciones = await getDireccionByLocalidadId(Number(data.localidadId));
-  for (let index = 0; index < direcciones.length; index++) {
-    if (direcciones[index].calle === data.calle) {
-      estado = true
-      return direcciones[index];
-    }
-  }
-  if(!estado){
-    const dirr = await prisma.direccion.create({
-      data: data
-    });
-    return dirr;
-  } 
-} */
 //obtengo dirección por ID
 export async function getDireccionById(DireccionId: number) {
   const direccion = await prisma.direccion.findFirst({

@@ -26,21 +26,16 @@ export async function addLocalidad(data: {
   nombre: string;
   provinciaId: number}) {
 
-    console.log("CREANDO Localidad")
-    let estado = false
-    const localidades = await getLocalidadesByProvinciaId(Number(data.provinciaId));
-    for (let index = 0; index < localidades.length; index++) {
-      if (localidades[index].nombre === data.nombre) {
-        estado = true
-        return localidades[index];
-      }
+    const localidades = await getLocalidadByName(data.nombre);
+    if(localidades) {
+      console.log("LOCALIDAD EXISTENTE")
+      return localidades;
     }
-    if(!estado){
-      const loc = await prisma.localidad.create({
-        data: data
-      });
-      return loc;
-    } 
+    console.log("LOCALIDAD NUEVA")
+    const loc = await prisma.localidad.create({
+      data: data
+    });
+    return loc;
 }
 export async function updateLocalidad(id:number, data: {
   nombre: string;
@@ -69,7 +64,10 @@ export async function getLocalidadById(id: number) {
 export async function getLocalidadByName(LocalidadName: string) {
   return await prisma.localidad.findFirst({
     where: {
-      nombre: LocalidadName,
+      nombre: {
+        equals: LocalidadName,
+        mode: 'insensitive', // This ensures case-insensitive comparison
+      },
     },
   });
 }
