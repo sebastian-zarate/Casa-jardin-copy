@@ -7,6 +7,18 @@ import { encrypt, getUserFromCookie } from "@/helpers/jwt";
 import { cookies } from "next/headers";
 const prisma = new PrismaClient();
 
+// Definir el tipo Alumno
+export type Alumno = {
+  id: number;
+  nombre: string;
+  apellido: string;
+  dni: number;
+  telefono: number;
+  email: string;
+  password: string;
+  direccionId?: number;
+  rolId: number;
+};
 
 
 // Crear Alumnos

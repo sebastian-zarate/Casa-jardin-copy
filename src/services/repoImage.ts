@@ -19,7 +19,7 @@ export const getImages_talleresAdmin = async () => {
         const data = await response.json();
 
         // Check if data contains a directory and access its files
-        const file = data.find((file: any) => file.type === 'dir');
+        const file = data.find((file: any) => (file.type === 'dir' && file.name === 'talleres_img'));
         const filesUrl = file._links.self;
 
         // Make a GET request to fetch the files in the directory
@@ -33,13 +33,15 @@ export const getImages_talleresAdmin = async () => {
 
         // Parse the response JSON data for the files
         const fileData = await filesResponse.json();
-      //  console.log("FILEEEEE", fileData);
+       // console.log("FILEEEEE", fileData);
        
         // Filter the files and get their download URLs
-        const downloadUrls = fileData.map((file: any) => file.download_url);
+        const downloadurls = fileData.map((file: any) => file.download_url);
+
+        const cursosName = fileData.map((file: any) => file.name);
 
         // Return the download URLs as images
-        return { images: downloadUrls };
+        return { images: cursosName, downloadurls: downloadurls };
     } catch (error) {
         // Return an error message if the fetch operation fails
         return { error: 'Failed to fetch data' };

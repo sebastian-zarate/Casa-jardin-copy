@@ -143,7 +143,7 @@ const Cuenta: React.FC<{}> = () => {
 
         // Obtener el país asociado a la provincia
         const nacionalidad = await getPaisById(Number(prov?.nacionalidadId));
-
+        console.log("NACIONALIDAD", nacionalidad);
         // Actualizar los estados con los datos obtenidos
         setLocalidadName(String(localidad?.nombre));
         setProvinciaName(String(prov?.nombre)); 
@@ -277,7 +277,7 @@ const Cuenta: React.FC<{}> = () => {
             setErrorMessage("Ha ocurrido un error al guardar los cambios.");
         }
         setNacionalidadName(String(nacionalidad?.nombre))
-        setOpenBox(0);
+        //setOpenBox(0);
         getUser();
         console.log(openBox)
 
@@ -294,7 +294,7 @@ const Cuenta: React.FC<{}> = () => {
             <div className='absolute mt-20 top-10 '>
                 <h1 className='flex my-20 items-center justify-center  font-bold text-3xl'>Datos del Estudiante</h1>
                 <div className='flex  justify-center w-screen'>
-                    <div className=" mx-auto bg-gray-100 rounded-lg shadow-md px-8 py-6 grid grid-cols-2 gap-x-12 ">
+                    <div className=" mx-auto bg-gray-100 rounded-lg shadow-md px-8 py-6 grid grid-cols-2 gap-x-12 max-w-2xl">
                         <div className="mb-4">
                             <label className="block text-gray-700 font-bold mb-2">Nombre:</label>
                             <p className="p-2 border rounded bg-gray-100">{user?.nombre} {user?.apellido}</p>
@@ -474,7 +474,7 @@ const Cuenta: React.FC<{}> = () => {
                         </div>
                         <div className="flex justify-end space-x-4">
                             <button
-                                onClick={() => {handleSaveChanges(); console.log("openBox", openBox)}}
+                                onClick={() => {handleSaveChanges();setOpenBox(0); console.log("openBox", openBox)}}
                                 className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800"
                             >
                                 Guardar

@@ -26,6 +26,7 @@ export async function getCursos() {
     return prisma.curso.findMany()
 }
 
+
 //Obtener un Curso por ID
 export async function getCursoById(id: number) {
     return prisma.curso.findUnique({

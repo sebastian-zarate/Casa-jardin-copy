@@ -161,7 +161,7 @@ const Alumnos: React.FC = () => {
 
         // Obtener el país asociado a la provincia
         const nacionalidad = await getPaisById(Number(prov?.nacionalidadId));
-
+        console.log("Nacionalidad", nacionalidad);
         // Actualizar los estados con los datos obtenidos
         setLocalidadName(String(localidad?.nombre));
         setProvinciaName(String(prov?.nombre));

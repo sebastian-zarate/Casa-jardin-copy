@@ -10,6 +10,7 @@ import EditIcon from "../../../../public/Images/EditIcon.png";
 import Background from "../../../../public/Images/Background.jpeg";
 import ButtonAdd from "../../../../public/Images/Button.png";
 import { getImages_talleresAdmin } from "@/services/repoImage";
+import { get } from "http";
 
 const Cursos: React.FC = () => {
     // Estado para almacenar la lista de cursos
@@ -26,6 +27,7 @@ const Cursos: React.FC = () => {
     const [errorMessage, setErrorMessage] = useState<string>("");
     //Estado para almacenar las imagenes
     const [images, setImages] = useState<any[]>([]);
+    const [downloadurls, setDownloadurls] = useState<any[]>([]);
     // Efecto para obtener la lista de cursos al montar el componente
 
 //region useEffect
@@ -83,11 +85,14 @@ const Cursos: React.FC = () => {
         //await getApiLocalidades(22);
         //await getApiDirecciones("Libertador San Martin");
         const result = await getImages_talleresAdmin();
+        console.log(result.images,"LAS IMAGENESSSSS")
+        console.log(result.downloadurls,"LOS DOWNLOADURLS")
         if (result.error) {
             setErrorMessage(result.error)
         } else {
             console.log(result)
             setImages(result.images);
+            setDownloadurls(result.downloadurls);
 
         }
     };
@@ -173,6 +178,14 @@ const Cursos: React.FC = () => {
             console.error("Imposible crear", error);
         }
     }
+    const getUrlImage = (cursoName: string) => {
+        const image = images.find((image:any, index) => {
+            if((image.name) == cursoName + ".jpg") {
+                console.log("EL DOWLOADDD",downloadurls[index]);
+                return downloadurls[index];
+            } });
+        return image;
+    }
     //endregion funciones
 
     //region return
@@ -188,11 +201,12 @@ const Cursos: React.FC = () => {
 
             <div className="top-60 border p-1 absolute left-40 h-90 max-h-90" style={{ background: "#D9D9D9" }}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 my-4">
-                    {cursos.map((curso) => (
+                    {cursos.map((curso,index) => (
                         <div key={curso.id} className="border p-4 mx-2 relative w-47 h-47 justify-center items-center" >
                             <div className="relative w-30 h-20">
                                 {<Image
-                                    src={images[0]}
+                            /*         src={getUrlImage(curso.nombre)} */
+                                    src={downloadurls[index]}
                                     alt="Background Image"
                                     objectFit="cover"
                                     className="w-full h-full"
