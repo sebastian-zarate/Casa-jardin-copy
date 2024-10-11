@@ -51,11 +51,18 @@ const Cursos: React.FC = () => {
             // Reinicia los detalles del curso al crear un nuevo curso
             setCursoDetails({
                 nombre: '',
-                year: 2024,
+                year: new Date().getFullYear(),
                 descripcion: ''
             });
         }
     }, [selectedCursoId, cursos]);  // Efecto para actualizar los detalles del curso seleccionado cuando cambia el curso o el ID del curso
+    useEffect(() => {
+        if (errorMessage != null) {
+            setInterval(() => {
+                setErrorMessage("")
+            }, 10000);
+        }
+    }, [errorMessage]);
     //endregion useEffect
 
 
@@ -174,6 +181,7 @@ const Cursos: React.FC = () => {
                 descripcion: ''
             });
             setErrorMessage(''); // Limpia el mensaje de error si todo sale bien
+            setSelectedCursoId(null)
         } catch (error) {
             console.error("Imposible crear", error);
         }
@@ -290,7 +298,7 @@ const Cursos: React.FC = () => {
                         </div>
                         <div className="flex justify-end space-x-4">
                             <button
-                                onClick={((selectedCursoId === -1 ? handleCreateCurso : handleSaveChanges))}
+                                onClick={((selectedCursoId === -1 ? handleCreateCurso : handleSaveChanges)) }
                                 className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800"
                             >
                                 Guardar
