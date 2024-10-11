@@ -11,12 +11,7 @@ export type Profesional_Curso = {
 export async function createProfesional_Curso(data: { cursoId: number, profesionalId: number }) {
   try {
       // Check if a record with the same cursoId already exists
-/*       const existingRecord = await prisma.profesional_Curso.findUnique({
-          where: {
-              cursoId: data.cursoId,
-          },
-      }); */
-      const prof_cur = await getProfesional_Curso(data.cursoId, data.profesionalId);
+      const prof_cur = await getProfesional_CursoById_curso_prof(data.cursoId, data.profesionalId);
       if(prof_cur) return prof_cur;
       // Proceed with creating the new record
       const newRecord = await prisma.profesional_Curso.create({
@@ -32,7 +27,7 @@ export async function createProfesional_Curso(data: { cursoId: number, profesion
       throw error;
   }
 }
-export async function getProfesional_Curso(cursoId: number, profesionalId: number){
+export async function getProfesional_CursoById_curso_prof(cursoId: number, profesionalId: number){
   return await prisma.profesional_Curso.findFirst({
     where: {
       cursoId: cursoId,
@@ -41,10 +36,29 @@ export async function getProfesional_Curso(cursoId: number, profesionalId: numbe
   });
 }
 
-export async function getProfesionales_Curso(profesionalId: number) {
+// Get all profesionales_cursos
+export async function getProfesionales_CursoByIdProf(profesionalId: number) {
   return await prisma.profesional_Curso.findMany({
     where: {
       profesionalId: profesionalId,
     },
   });
+}
+export async function getCursosByIdProfesional(profesionalId: number) {
+  const prof_cur=  await prisma.profesional_Curso.findMany({
+    where: {
+      profesionalId: profesionalId,
+    },
+  });
+  let arrayCursos: any[] = [];
+  for (const pc of prof_cur) {
+    const curso = await prisma.curso.findFirst({
+      where: {
+        id: pc.cursoId,
+      },
+    });
+    arrayCursos.push(curso);
+    console.log("CURSO", curso);
+  }
+  return arrayCursos;
 }

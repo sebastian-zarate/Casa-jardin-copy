@@ -9,12 +9,12 @@ import DeleteIcon from "../../../../public/Images/DeleteIcon.png";
 import EditIcon from "../../../../public/Images/EditIcon.png";
 import Background from "../../../../public/Images/Background.jpeg"
 import ButtonAdd from "../../../../public/Images/Button.png";
-import { getImages_talleresAdmin } from "@/services/repoImage";
+import { getImagesUser } from "@/services/repoImage";
 import { addDireccion, getDireccionById, updateDireccionById } from "@/services/ubicacion/direccion";
 import { addProvincias, getProvinciasById, getProvinciasByName, updateProvinciaById } from "@/services/ubicacion/provincia";
 import { addLocalidad, getLocalidadById, getLocalidadByName, Localidad, updateLocalidad } from "@/services/ubicacion/localidad";
 import Talleres from "@/components/talleres/page";
-import { createProfesional_Curso, getProfesional_Curso } from "@/services/profesional_curso";
+import { createProfesional_Curso, getCursosByIdProfesional } from "@/services/profesional_curso";
 import { Curso, getCursoById } from "@/services/cursos";
 import { addPais, getPaisById } from "@/services/ubicacion/pais";
 import { get } from "http";
@@ -50,7 +50,7 @@ const Profesionales = () => {
     const [numero, setNumero] = useState<number | null>(null);
 
     // Estado para almacenar los cursos elegidos, inicialmente un array vacío
-    const [cursosElegido, setCursosElegido] = useState<Curso[]>([]);
+    const [cursosElegido, setCursosElegido] = useState<any[]>([]);
 
     // Referencia para el contenedor de desplazamiento
     const scrollRef = useRef<HTMLDivElement>(null);
@@ -60,7 +60,8 @@ const Profesionales = () => {
     //useEffect para obtener los profesionales
     useEffect(() => {
         fetchProfesionales();
-        fetchImages();
+        //getCursosElegidos()
+        //fetchImages();
         handleCancel_init();
 
     }, []);
@@ -105,20 +106,7 @@ const Profesionales = () => {
         }
     }, [selectedProfesional, profesionales]);
     // #endregion
-/*     async function getCursosElegidos() {
-        const cursos = await get(profesionalDetails.id);
-        console.log("CURSOS1", cursos);
-        let array: Curso[] = [];
-        cursos.forEach(async (curso: Curso) => {
-            const curs = await getCursoById(curso.id);
 
-            if (curs) array.push(curs);
-            console.log("CURSOS2", curs);
-
-        });
-        setCursosElegido(array);
-        console.log("CURSOS3", cursosElegido);
-    } */
     async function getUbicacion(userUpdate: any) {
         // Obtener la dirección del usuario por su ID
         console.log("SI DIRECCIONID ES FALSE:", Number(userUpdate?.direccionId));
@@ -164,6 +152,12 @@ const Profesionales = () => {
     async function fetchProfesionales() {
         try {
             const data = await getProfesionales();
+            data.map(async (profesional) => {
+                const cursos = await getCursosByIdProfesional(profesional.id);
+                setCursosElegido(prevCursosElegido => [...prevCursosElegido, {id: profesional.id, cursos: cursos}]);
+                console.log("Fetching cursos", cursos);
+            });
+           // const cursos = await getCursosByIdProfesional(data);
             console.log(data);
             setProfesionales(data);
         } catch (error) {
@@ -192,7 +186,7 @@ const Profesionales = () => {
 
     // Método para obtener las imagenes
     const fetchImages = async () => {
-        const result = await getImages_talleresAdmin();
+        const result = await getImagesUser();
         if (result.error) {
             setErrorMessage(result.error)
         } else {
@@ -299,8 +293,8 @@ const Profesionales = () => {
             const newProfesional = await createProfesional({
                 nombre: profesionalDetails.nombre, apellido: profesionalDetails.apellido,
                 especialidad: String(profesionalDetails.especialidad), email: String(profesionalDetails.email),
-                telefono: Number(profesionalDetails.telefono), password: String(profesionalDetails.password),
-                direccionId: Number(direccion?.id), rolId: 3
+                telefono: BigInt(profesionalDetails.telefono), password: String(profesionalDetails.password),
+                direccionId: Number(direccion?.id)
             });
             for (const curso of cursosElegido) {                                  //recorre los cursos elegidos y los guarda en la tabla intermedia
                 await createProfesional_Curso({ cursoId: curso.id, profesionalId: newProfesional.id });
@@ -326,6 +320,13 @@ const Profesionales = () => {
         setNumero(null);
         setObProfesional(null);
     }
+    function getCursosElegidos(profesionalId:number) {
+        const cursos = cursosElegido.find((curso) => curso.id === profesionalId);
+       // console.log("Cursos", cursos);
+        return cursos?.cursos;
+
+    }    
+    
     // #endregion
 
 
@@ -337,13 +338,13 @@ const Profesionales = () => {
             <div className="fixed  justify-between w-full p-4" style={{ background: "#1CABEB" }} >
                 <Navigate />
             </div>
-            <h1 className="absolute top-40 left-60 mb-5 text-3xl" >Profesionales</h1>
+            <h1 className="absolute top-40 left-60 mb-5 text-3xl" onClick={()=>console.log(cursosElegido)} >Profesionales</h1>
 
             <div className="top-60 border p-1 absolute left-40 h-90 max-h-90 w-1/2 bg-gray-400 bg-opacity-50" style={{ height: '50vh', overflow: "auto" }}>
                 <div className="flex flex-col space-y-4 my-4 w-full px-4">
                     {profesionales.map((profesional, index) => (
                         <div key={index} className="border p-4 mx-2 relative bg-white w-47 h-47 justify-center items-center" >
-                            <div className="relative w-30 h-70">
+                            <div className="relative w-30 h-70" >
                                 {<Image
                                     src={images[0]}
                                     alt="Background Image"
@@ -362,10 +363,15 @@ const Profesionales = () => {
                             <h3 className="flex  bottom-0 text-black z-1">{profesional.nombre} {profesional.apellido}</h3>
                             <div className="text-sm text-gray-600">
                                 <p>Email: {profesional.email}</p>
+
                                 {cursosElegido.length === 0 && <p className="p-2 border rounded bg-gray-100">{"Talleres no cargados"}</p>}
                                 {cursosElegido.length > 0 && (
                                     <p className="p-2 border rounded bg-gray-100">
-                                        {cursosElegido.map((curso) => curso.nombre).join(', ')}
+                                        {getCursosElegidos(profesional.id).map((curso:any, index:number, array:any) => (
+                                            <span key={index}>
+                                                {curso.nombre}{index < array.length - 1 ? ' - ' : ''}
+                                            </span>
+                                        ))}
                                     </p>
                                 )}
                             </div>
@@ -447,7 +453,8 @@ const Profesionales = () => {
                                 className="p-2 w-full border rounded"
                             />
                         </div>
-                        <div className="mb-4">
+
+{/*                         <div className="mb-4">
                             <label htmlFor="password" className="block">Contraseña:</label>
                             <input
                                 type="password"
@@ -457,7 +464,7 @@ const Profesionales = () => {
                                 onChange={handleChange}
                                 className="p-2 w-full border rounded"
                             />
-                        </div>
+                        </div> */}
 
                         <div className="mb-4">
                             <label htmlFor="pais" className="block">País:</label>
@@ -516,6 +523,12 @@ const Profesionales = () => {
                         </div>
                         <div>
                             <Talleres cursosElegido={cursosElegido} setCursosElegido={setCursosElegido} />
+                        </div>
+                        <div>
+                            <button
+                                className="py-2  text-black rounded hover:underline">
+                                Cambiar contraseña
+                            </button>
                         </div>
 
 

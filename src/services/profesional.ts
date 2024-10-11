@@ -1,5 +1,7 @@
 'use server'
+import { hashPassword } from "@/helpers/hashPassword";
 import { Curso, PrismaClient, Profesional_Curso } from "@prisma/client";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 
 const prisma = new PrismaClient();
 
@@ -28,23 +30,27 @@ export async function getProfesionalById(id: number) {
 }
 
 export async function createProfesional(data: {
-    nombre: string;
-    apellido: string;
-    especialidad: string;
-    email: string;
-    telefono: number;
-    password: string;
-    direccionId: number;
-    rolId: number;
+  nombre: string;
+  apellido: string;
+  especialidad: string;
+  email: string;
+  telefono: bigint;
+  password: string;
+  direccionId: number;
 }) {
-  const newProfesional = {
-    ...data,
-    rolId: 3,
-  }
-  console.log("CREANDO PROFESIONAL")
-  return await prisma.profesional.create({
-    data: newProfesional
-  });
+
+
+// Encriptar la contraseña
+const hashedPassword = await hashPassword(data.password);
+const newProfesional = {
+  ...data,
+  password: hashedPassword,
+  rolId: 3,
+}
+console.log("CREANDO PROFESIONAL")
+return await prisma.profesional.create({
+  data: newProfesional
+});
 }
 
 export async function updateProfesional(id: number, data: {
