@@ -14,6 +14,8 @@ export default function Navigate () {
             <div className="ml-auto flex space-x-4 py-2">
                 <a className="mx-2" href="#">Inicio</a>
                 <a className="mx-2" href="/Admin/cursos">Talleres</a>
+                <a className="mx-2" href="/Admin/aulaSelector">Cronogramas</a>
+                <a className="mx-2" href="/Admin/aulas">Aulas</a>
                 <label className="mx-2 cursor-pointer" onClick={() => setUserLink(userLink ? "" : "open")}>
                     Usuario
                 </label>

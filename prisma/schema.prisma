@@ -96,7 +96,7 @@ model Curso {
   nombre      String
   year        Int
   descripcion String
-
+  imagen      String?
   prof_cur   Profesional_Curso[]
   cronograma Cronograma[]
   alum_cur   Alumno_Curso[]
@@ -137,30 +137,47 @@ model Pagos {
   Id       Int          @unique
 }
 
+
+
+
+
 model Cronograma {
-  id      Int   @id @default(autoincrement())
-  curso   Curso @relation(fields: [cursoId], references: [id])
-  cursoId Int   @unique
-
-  fecha   Fecha @relation(fields: [fechaId], references: [id])
-  fechaId Int   @unique
-
-  aula   Aula @relation(fields: [aulaId], references: [id])
-  aulaId Int  @unique
+  id        Int                 @id @default(autoincrement())
+  curso     Curso               @relation(fields: [cursoId], references: [id])
+  cursoId   Int
+  aula      Aula                @relation(fields: [aulaId], references: [id])
+  aulaId    Int                
+  diasHoras CronogramaDiaHora[] // Relación con la tabla intermedia para días y horas
 }
 
 model Aula {
-  id     Int @id @default(autoincrement())
-  numero Int
-
-  cronograma Cronograma?
+  id         Int                     @id @default(autoincrement())
+  nombre     String
+  cronogramas Cronograma[]           // Relación uno a muchos con Cronograma
 }
 
-model Fecha {
-  id          Int      @id @default(autoincrement())
-  dia         DateTime
-  hora_inicio DateTime
-  hora_fin    DateTime
-
-  cronograma Cronograma[]
+model Dia {
+  id                  Int                 @id @default(autoincrement())
+  nombre              String // Ejemplo: Lunes, Martes, Miércoles
+  cronogramaDiasHoras CronogramaDiaHora[] // Relación con la tabla intermedia
 }
+
+model CronogramaDiaHora {
+  id          Int        @id @default(autoincrement())
+  cronograma  Cronograma @relation(fields: [cronogramaId], references: [id])
+  cronogramaId Int
+  dia         Dia        @relation(fields: [diaId], references: [id])
+  diaId       Int
+  hora        Hora       @relation(fields: [horaId], references: [id])
+  horaId      Int
+
+  @@unique([cronogramaId, diaId, horaId]) // Evitar duplicados
+}
+
+
+model Hora {
+  id                  Int                 @id @default(autoincrement())
+  hora_inicio         String
+  cronogramaDiasHoras CronogramaDiaHora[] // Relación con la tabla intermedia
+}
+
