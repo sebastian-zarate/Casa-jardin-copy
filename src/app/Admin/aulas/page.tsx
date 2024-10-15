@@ -50,7 +50,7 @@ const Aulas: React.FC = () => {
             return;
         }
        // no puede ser solo caracteres especiales
-        const regex = /^[a-zA-Z0-9_ ]*$/;
+       const regex = /^[a-zA-Z0-9_ ,.;áéíóúÁÉÍÓÚñÑüÜ]*$/;
         if(!regex.test(aulaDetails.nombre)){
                 setErrorMessage("El nombre del aula no puede contener caracteres especiales");
                 return;

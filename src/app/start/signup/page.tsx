@@ -37,6 +37,10 @@ function Signup() {
     if (password.length < 8) return "La contraseña debe tener al menos 8 caracteres";
     const passwordRegex = /^(?=.*[A-Z])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!passwordRegex.test(password)) return "La contraseña debe tener al menos una letra mayúscula y 8 caracteres";
+    const regex = /^[a-zA-Z0-9_ ,.;áéíóúÁÉÍÓÚñÑüÜ]*$/; // no quiero que tenga caracteres especiales que las comas y acentos puntos sean permitidos
+    if(!regex.test(nombre) || !regex.test(apellido)){
+            return "El nombre no puede contener caracteres especiales";     
+    }
     return "";
   };
   // en esta funsion se envian los datos del formulario de registro

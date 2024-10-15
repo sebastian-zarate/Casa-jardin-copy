@@ -125,6 +125,16 @@ const Cursos: React.FC = () => {
         if (descripcionWords > 300) {
             return "La descripción no puede exceder las 300 palabras.";
         }
+        // carrateres especiales en el nombre y la descripción
+        const regex = /^[a-zA-Z0-9_ ,.;áéíóúÁÉÍÓÚñÑüÜ]*$/;; // no quiero que tenga caracteres especiales que las comas y puntos afecten 
+        if(!regex.test(nombre)){
+                return "El nombre del curso no puede contener caracteres especiales";
+                
+        }
+        if(!regex.test(descripcion)){
+            return "La descripción no puede contener carateres especiales"
+        }
+
         return null; // Retorna null si no hay errores
     }
 
