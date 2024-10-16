@@ -142,12 +142,15 @@ export default function Horario({ idAula }: HorarioProps) {
       }
 
       try {
-        // Guardar el nuevo cronograma en la base de datos
+        // Guardar en el cronograma
         const op = await createCronograma({
           id_aula: idAula, // Usar el id del aula actual
-          id_curso: cursoId, // ID del curso seleccionado
-          diasHoras: [{ id_dia, id_hora }], // Día y hora correspondientes
+          id_curso: cursoId,
+          diasHoras: [{ id_dia, id_hora }],
+
         });
+
+
 
         // Si la creación fue exitosa, actualizar la tabla en el estado
         if (op === 1) {

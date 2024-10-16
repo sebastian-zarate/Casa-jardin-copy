@@ -214,6 +214,14 @@ const Cuenta: React.FC<{}> = () => {
         if ( !numero) {
             return "El número no puede estar vacío.";
         }
+        // no puede contener caracteres especiales solo letras y numeros y comas y puntos y acentos
+        const regex = /^[a-zA-Z0-9_ ,.;áéíóúÁÉÍÓÚñÑüÜ]*$/;
+        if(!regex.test(nombre) || !regex.test(apellido)){
+            return "El nombre no puede contener caracteres especiales";
+        }
+        if(!regex.test(calle)){
+            return "La calle no puede contener caracteres especiales";
+        }
         return false;
     }
 

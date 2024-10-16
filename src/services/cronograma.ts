@@ -268,34 +268,36 @@ export async function getCursosByDiaHoraAula(dia: number, hora: number, cursoId:
 //eliminar un cronograma de la base de datos pasando el id del de cronogramadiahora
 
 export async function deleteCronogramaDiaHora(idAula: number, id_dia: number, id_hora: number) {
-
-  // Buscar el id  cronogramadiahora a eliminar
-  const cronogramaDiaHora = await prisma.cronogramaDiaHora.findUnique({ // Buscar el cronograma con el ID proporcionado
-    where: {
-      cronogramaId_diaId_horaId: {
-        cronogramaId: (await prisma.cronograma.findFirst({
-          where: { aulaId: idAula },
-        }))?.id!,
-        diaId: id_dia,
-        horaId: id_hora ,
-      },
-    },
-  });
- console.log(cronogramaDiaHora?.id);
   try {
-    // Elimina el cronograma con el ID proporcionado
-    const result = await prisma.cronogramaDiaHora.delete({
+    // Buscar el cronogramaDiaHora correspondiente al aula, día y hora
+    const cronogramaDiaHora = await prisma.cronogramaDiaHora.findFirst({
       where: {
-        id: Number(cronogramaDiaHora?.id),
+        diaId: id_dia,
+        horaId: id_hora,
+        cronograma: {
+          aulaId: idAula,
+        },
       },
     });
-    return result; // Opcional: retorna el resultado de la operación
 
-  }
-  catch (error) {
-    console.error(`Error eliminando cronograma con ID ${cronogramaDiaHora?.id}:`, error);
+    // Si no se encuentra el cronogramaDiaHora, retornar un error
+    if (!cronogramaDiaHora) {
+      //console.log(`No se encontró el cronograma para el aula con ID ${idAula}, día ${id_dia} y hora ${id_hora}.`);
+      return { error: `No se encontró el cronograma para el aula con ID ${idAula}, día ${id_dia}, y hora ${id_hora}.` };
+    }
+
+    // Si se encuentra, eliminar el cronogramaDiaHora
+    const result = await prisma.cronogramaDiaHora.delete({
+      where: { id: cronogramaDiaHora.id },
+    });
+
+   // console.log(`El cronograma con ID ${cronogramaDiaHora.id} ha sido eliminado.`);
+    return { success: `El cronograma del aula con ID ${idAula}, día ${id_dia} y hora ${id_hora} ha sido eliminado exitosamente.` };
+
+  } catch (error) {
+   // console.error('Error eliminando el cronogramaDiaHora:', error);
+    return { error: 'Ocurrió un error eliminando el cronograma.' };
   }
 }
-
 
 
