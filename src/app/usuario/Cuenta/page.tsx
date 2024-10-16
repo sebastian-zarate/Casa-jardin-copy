@@ -285,7 +285,7 @@ const Cuenta: React.FC<{}> = () => {
             setErrorMessage("Ha ocurrido un error al guardar los cambios.");
         }
         setNacionalidadName(String(nacionalidad?.nombre))
-        //setOpenBox(0);
+        setOpenBox(0);
         getUser();
         console.log(openBox)
 
@@ -482,7 +482,7 @@ const Cuenta: React.FC<{}> = () => {
                         </div>
                         <div className="flex justify-end space-x-4">
                             <button
-                                onClick={() => {handleSaveChanges();setOpenBox(0); console.log("openBox", openBox)}}
+                                onClick={() => {handleSaveChanges(); console.log("openBox", openBox)}}
                                 className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800"
                             >
                                 Guardar
