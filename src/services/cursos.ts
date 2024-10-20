@@ -42,7 +42,8 @@ export async function getCursoById(id: number) {
 // si no tiene un cronograma asignado se elimina el curso, si tiene un cronograma asignado busca ese id de cronograma en la tabla de cronogramaDiaHora  
 // si encuentra un cronogramaDiaHora con ese id de cronograma asignado al curso, no se puede eliminar el curso
 // si no encuentra un cronogramaDiaHora con ese id de cronograma asignado al curso, se elimina el cronograma asignado al curso y luego se elimina el curso
-export async function deleteCurso(id: number) {
+export async function deleteCurso(id: number): Promise<{ success: boolean, message: string }> {
+
     try {
         // Verificar si el curso tiene un cronograma asignado
        const cronograma = await prisma.cronograma.findFirst({
@@ -59,7 +60,7 @@ export async function deleteCurso(id: number) {
                 }
             })
             if (cronogramaDiaHora) {
-                return "No se puede eliminar el curso, tiene un horario asignado"
+               return { success: false, message: "El Curso seleccionado está asignado a un horario y no puede ser eliminado." };
             } else {
                 // Eliminar el cronograma asignado al curso
                 await prisma.cronograma.delete({
@@ -70,15 +71,17 @@ export async function deleteCurso(id: number) {
             }
         }
         // Eliminar el curso
-        return prisma.curso.delete({
+        await prisma.curso.delete({
             where: {
                 id
             }
         })
+          // Si todo fue exitoso, devolver success con true
+        return { success: true, message: "Curso eliminado con éxito." };
 
     } catch (error) {
         
-        return error;
+        return { success: false, message: "Error al eliminar el curso. Vuelve a intentarlo más tarde!" };
     }
 }
 
