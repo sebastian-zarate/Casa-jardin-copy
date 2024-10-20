@@ -301,3 +301,7 @@ export async function deleteCronogramaDiaHora(idAula: number, id_dia: number, id
 }
 
 
+// parte de profesional
+// el profesional puede ver los cursos que tiene asignados y modificar su curso en el cronograma pero no puede modificar los que ya estan asignados
+// el administrador puede modificar los cursos que ya estan asignados en el cronograma
+
