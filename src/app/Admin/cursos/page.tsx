@@ -257,7 +257,7 @@ const Cursos: React.FC = () => {
 
             </div>
 
-            <div className="fixed bottom-0 mt-20 bg-white w-full" style={{ opacity: 0.66 }}>
+            <div className="fixed bottom-0 py-5 bg-white w-full" style={{ opacity: 0.66 }}>
                 <But_aside />
             </div>
 

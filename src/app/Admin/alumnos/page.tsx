@@ -315,8 +315,7 @@ const Alumnos: React.FC = () => {
                     ))}
                 </div>
             </div>
-            <div className="fixed bottom-0 mt-20 bg-white w-full" style={{ opacity: 0.66 }}>
-                <But_aside />
+            <div className="fixed bottom-0 py-5 bg-white w-full" style={{ opacity: 0.66 }}>
             </div>
             {selectedAlumno !== null && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
