@@ -163,6 +163,7 @@ export const getCronogramas = async () => {
 // obtener en base a el aula 
 export const getCronogramasPorAula = async (id_aula: number) => {
   try {
+    
     // Hacer la consulta en la base de datos con el filtro por aula
     const cronogramas = await prisma.cronogramaDiaHora.findMany({
       where: {
