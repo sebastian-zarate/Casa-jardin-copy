@@ -19,12 +19,12 @@ const Inscripcion: React.FC<{}> = () => {
                 <h1 className='font-bold text-xg'>Elija el tipo de inscripción</h1>
             </div>
             <div className='mt-4 border-b mx-auto px-8 py-6 grid grid-cols-2 gap-x-12 max-w-2xl'>
-                <button className="flex flex-col items-center" onClick={()=> window.location.href = "/usuario/Solicitud_inscripcion/Menores"}>
+                <button className="flex flex-col items-center" onClick={()=> window.location.href = "/usuario/Solicitud/Menores"}>
                     <Image src={menores} alt="menores" width={300} height={180} />
-                    <span className='mt-2'>Inscripción para menores Uso de imagen y salidas cercanas</span>
+                    <span className='mt-2'>Inscripción para menores <br/> Uso de imagen y salidas cercanas</span>
                 </button>
 
-                <button className="flex flex-col items-center" onClick={() => window.location.href = "/usuario/Solicitud_inscripcion/#"}>
+                <button className="flex flex-col items-center" onClick={() => window.location.href = "/usuario/Solicitud/#"}>
                     <Image src={adultos} alt="adultos" width={280} height={100} />
                     <span className='mt-2'>Inscripción para adultos</span>
                 </button>
