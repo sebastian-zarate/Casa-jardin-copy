@@ -18,6 +18,8 @@ export type Alumno = {
   password: string;
   direccionId?: number;
   rolId: number;
+  fechaNacimiento?: Date;
+  mayoriaEdad?: Boolean
 };
 
 
@@ -90,6 +92,8 @@ export async function updateAlumno(id: number, data: {
   telefono: number;
   email: string;
   direccionId?: number;
+  fechaNacimiento?: Date;
+  mayoriaEdad?: Boolean
 
 }) {
   // Verificar si el alumno existe
