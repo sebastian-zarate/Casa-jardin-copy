@@ -72,7 +72,7 @@ export async function login(email: string, password: string) {
     const expires = new Date(Date.now() + 1000 * 60 * 60 * 24);
     const sesion = await encrypt({ email: alumno.email, expires })
     //setea la cookie de la sesión
-    cookies().set("user", sesion, { expires, httpOnly: false });
+    cookies().set("user", sesion, { expires, httpOnly: true });
     return true;
 
   } else {
@@ -127,7 +127,7 @@ export async function getAlumnoById(id: number) {
     where: { id },
   });
 }
-export async function getAlumnoByCooki() {
+export async function getAlumnoByCookie() {
   const user = await getUserFromCookie();
   if (user && user.email) {
     const email: any = user.email;
@@ -151,5 +151,14 @@ export async function deleteAlumno(id: number) {
   })
   return await prisma.alumno.delete({
     where: { id },
+  });
+}
+
+//get by email
+export async function getAlumnoByEmail(email: string) {
+  return await prisma.alumno.findUnique({
+    where: {
+      email: email,
+    },
   });
 }
