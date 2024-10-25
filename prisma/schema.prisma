@@ -9,125 +9,137 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Nacionalidad {
-  id        Int         @id @default(autoincrement())
-  nombre    String
-  provincias Provincia[]  // Relación uno a muchos con Provincia
+  id         Int         @id @default(autoincrement())
+  nombre     String
+  provincias Provincia[] // Relación uno a muchos con Provincia
 }
 
 model Provincia {
-  id        Int         @id @default(autoincrement())
-  nombre    String
+  id             Int          @id @default(autoincrement())
+  nombre         String
   nacionalidad   Nacionalidad @relation(fields: [nacionalidadId], references: [id])
-  nacionalidadId Int 
-  localidades  Localidad[]   // Relación uno a muchos con Localidad
+  nacionalidadId Int
+  localidades    Localidad[] // Relación uno a muchos con Localidad
 }
 
 model Localidad {
-  id        Int         @id @default(autoincrement())
-  nombre    String
-  provincia   Provincia @relation(fields: [provinciaId], references: [id])
-  provinciaId Int 
-  direcciones Direccion[]  // Relación uno a muchos con Direccion
+  id          Int         @id @default(autoincrement())
+  nombre      String
+  provincia   Provincia   @relation(fields: [provinciaId], references: [id])
+  provinciaId Int
+  direcciones Direccion[] // Relación uno a muchos con Direccion
 }
 
 model Direccion {
-  id          Int        @id @default(autoincrement())
-  calle       String
-  numero      Int
-  localidad   Localidad  @relation(fields: [localidadId], references: [id])
-  localidadId Int     
-  alumnos     Alumno[]   // Relación de uno a muchos con Alumno
-  profesional Profesional[] // Relación de uno a muchos con Profesional
-  administrador Administrador[] // Relación de uno a muchos con Administrador
+  id            Int             @id @default(autoincrement())
+  calle         String
+  numero        Int
+  localidad     Localidad       @relation(fields: [localidadId], references: [id])
+  localidadId   Int
 
+  // Relaciones
+  alumnos       Alumno? // Relación de uno a muchos con Alumno
+  profesional   Profesional? // Relación de uno a muchos con Profesional
+  administrador Administrador? // Relación de uno a muchos con Administrado
+  responsable Responsable? // Relación de uno a uno con Responsable
 }
 
 model Rol {
-  id   Int    @id @default(autoincrement())
-  nombre String
-  Alumno Alumno[]
-  Profesional Profesional[]
+  id            Int             @id @default(autoincrement())
+  nombre        String
+  Alumno        Alumno[]
+  Profesional   Profesional[]
   Administrador Administrador[]
 }
 
 model Administrador {
-  id       Int       @id @default(autoincrement())
-  nombre   String
-  apellido String
-  email    String    @unique
-  password String
-  direccion Direccion @relation(fields: [direccionId], references: [id])
-  direccionId Int
-  rolId Int
-  rol Rol @relation(fields: [rolId], references: [id])
+  id          Int       @id @default(autoincrement())
+  nombre      String
+  apellido    String
+  email       String    @unique
+  password    String
+  direccion   Direccion @relation(fields: [direccionId], references: [id])
+  direccionId Int @unique
+  rolId       Int
+  rol         Rol       @relation(fields: [rolId], references: [id])
 }
+
 model Profesional {
   id           Int       @id @default(autoincrement())
   nombre       String
   apellido     String
   especialidad String
   email        String    @unique
-  password     String      @unique
-  telefono     BigInt      @unique
+  password     String    @unique
+  telefono     BigInt    @unique
   direccion    Direccion @relation(fields: [direccionId], references: [id])
-  direccionId  Int      
+  direccionId  Int  @unique
 
   prof_cur Profesional_Curso[]
-  rolId Int
-  rol Rol @relation(fields: [rolId], references: [id])
+  rolId    Int
+  rol      Rol                 @relation(fields: [rolId], references: [id])
 }
 
 model Profesional_Curso {
   id      Int   @id @default(autoincrement())
   curso   Curso @relation(fields: [cursoId], references: [id])
-  cursoId Int   
+  cursoId Int
 
   profesional   Profesional @relation(fields: [profesionalId], references: [id])
-  profesionalId Int         
+  profesionalId Int
 }
 
 model Curso {
-  id          Int    @id @default(autoincrement())
+  id          Int                 @id @default(autoincrement())
   nombre      String
   year        Int
   descripcion String
   imagen      String?
-  prof_cur   Profesional_Curso[]
-  cronograma Cronograma[]
-  alum_cur   Alumno_Curso[]
+
+  // Relaciones
+  prof_cur    Profesional_Curso[]
+  cronograma  Cronograma[]
+  alum_cur    Alumno_Curso[]
+  cursoSolicitud CursoSolicitud[]
 }
 
 model Alumno {
-  id          Int        @id @default(autoincrement())
-  nombre      String
-  apellido    String
-  dni         Int?     @unique
-  telefono    Int?     @unique
+  id       Int    @id @default(autoincrement())
+  nombre   String
+  apellido String
+  dni      Int?   @unique
+  telefono Int?   @unique
 
-  direccionId Int?    
-  direccion   Direccion? @relation(fields: [direccionId], references: [id])  // Relación de muchos a uno
+  direccionId Int?    @unique
+  direccion   Direccion? @relation(fields: [direccionId], references: [id]) // Relación de muchos a uno
   email       String     @unique
   password    String
+  rolId       Int
+  rol         Rol        @relation(fields: [rolId], references: [id])
+  mayoriaEdad Boolean
+  fechaNacimiento DateTime
 
-  alum_cur    Alumno_Curso[]
-  rolId Int 
-  rol Rol @relation(fields: [rolId], references: [id])
+  // Relaciones
+  alum_cur        Alumno_Curso[]
+  solcitudMayores SolicitudMayores[]
+  solcitudMenores SolicitudMenores[]
+  responsable     Responsable?
 }
-
 
 model Alumno_Curso {
   id       Int    @id @default(autoincrement())
   alumno   Alumno @relation(fields: [alumnoId], references: [id])
-  alumnoId Int    
+  alumnoId Int
 
   curso   Curso @relation(fields: [cursoId], references: [id])
-  cursoId Int   
+  cursoId Int
 
+  // Relaciones
   pagos Pagos[]
 }
 
@@ -137,47 +149,101 @@ model Pagos {
   Id       Int          @unique
 }
 
-
-
-
-
 model Cronograma {
   id        Int                 @id @default(autoincrement())
   curso     Curso               @relation(fields: [cursoId], references: [id])
   cursoId   Int
   aula      Aula                @relation(fields: [aulaId], references: [id])
-  aulaId    Int                
+  aulaId    Int
+  
+  // Relaciones
   diasHoras CronogramaDiaHora[] // Relación con la tabla intermedia para días y horas
 }
 
 model Aula {
-  id         Int                     @id @default(autoincrement())
-  nombre     String
-  cronogramas Cronograma[]           // Relación uno a muchos con Cronograma
+  id          Int          @id @default(autoincrement())
+  nombre      String
+
+  // Relaciones
+  cronogramas Cronograma[] // Relación uno a muchos con Cronograma
 }
 
 model Dia {
   id                  Int                 @id @default(autoincrement())
   nombre              String // Ejemplo: Lunes, Martes, Miércoles
+  // Relaciones
   cronogramaDiasHoras CronogramaDiaHora[] // Relación con la tabla intermedia
 }
 
 model CronogramaDiaHora {
-  id          Int        @id @default(autoincrement())
-  cronograma  Cronograma @relation(fields: [cronogramaId], references: [id])
+  id           Int        @id @default(autoincrement())
+  cronograma   Cronograma @relation(fields: [cronogramaId], references: [id])
   cronogramaId Int
-  dia         Dia        @relation(fields: [diaId], references: [id])
-  diaId       Int
-  hora        Hora       @relation(fields: [horaId], references: [id])
-  horaId      Int
+  dia          Dia        @relation(fields: [diaId], references: [id])
+  diaId        Int
+  hora         Hora       @relation(fields: [horaId], references: [id])
+  horaId       Int
 
   @@unique([cronogramaId, diaId, horaId]) // Evitar duplicados
 }
 
-
 model Hora {
   id                  Int                 @id @default(autoincrement())
   hora_inicio         String
+  // Relaciones
   cronogramaDiasHoras CronogramaDiaHora[] // Relación con la tabla intermedia
 }
 
+//region Solicitudes
+model Solicitud {
+  id Int @id @default(autoincrement())
+
+  // Relaciones
+  solicitudMayores SolicitudMayores? // Relación de uno a uno con SolicitudMayores
+  solicitudMenores SolicitudMenores? // Relación de uno a uno con SolicitudMenores
+  cursoSolicitud   CursoSolicitud[] // Relación de uno a muchos con CursoSolicitud
+}
+model CursoSolicitud {
+  id Int @id @default(autoincrement())
+  solicitud Solicitud @relation(fields: [solicitudId], references: [id])
+  solicitudId Int
+  curso Curso @relation(fields: [cursoId], references: [id])
+  cursoId Int
+}
+model SolicitudMayores {
+  id          Int       @id @default(autoincrement())
+  solicitud   Solicitud @relation(fields: [solicitudId], references: [id])
+  solicitudId Int       @unique
+  alumno      Alumno    @relation(fields: [alumnoId], references: [id])
+  alumnoId    Int
+
+  // Relaciones
+}
+
+model SolicitudMenores {
+  id          Int       @id @default(autoincrement())
+  solicitud   Solicitud @relation(fields: [solicitudId], references: [id])
+  solicitudId Int       @unique
+  alumno      Alumno    @relation(fields: [alumnoId], references: [id])
+  alumnoId    Int
+  enfermedad String
+  alergia   String
+  medicacion String
+  terapia    String
+  especialista String
+  motivoAsistencia String
+}
+
+model Responsable {
+  id Int @id @default(autoincrement())
+  alumno Alumno @relation(fields: [alumnoId], references: [id])
+  alumnoId Int @unique  // Relación de uno a uno con Alumno
+  nombre String
+  apellido String
+  dni Int @unique
+  telefono Int @unique
+  email String @unique
+  direccion Direccion @relation(fields: [direccionId], references: [id])
+  direccionId Int @unique
+
+}

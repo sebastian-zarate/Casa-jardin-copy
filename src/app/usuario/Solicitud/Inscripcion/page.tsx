@@ -24,7 +24,7 @@ const Inscripcion: React.FC<{}> = () => {
                     <span className='mt-2'>Inscripción para menores <br/> Uso de imagen y salidas cercanas</span>
                 </button>
 
-                <button className="flex flex-col items-center" onClick={() => window.location.href = "/usuario/Solicitud/Adultos"}>
+                <button className="flex flex-col items-center" onClick={() => window.location.href = "/usuario/Solicitud/Mayores"}>
                     <Image src={adultos} alt="adultos" width={280} height={100} />
                     <span className='mt-2'>Inscripción para adultos</span>
                 </button>

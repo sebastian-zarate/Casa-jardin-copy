@@ -257,10 +257,12 @@ const Profesionales = () => {
                 telefono: Number(profesionalDetails.telefono), password: String(profesionalDetails.password),
                 direccionId: Number(direccion?.id)
             });
+            // si el resultado es un string, entonces es un mensaje de error
+            if (typeof newProfesional === "string") return setErrorMessage(newProfesional);
 
             for (const curso of cursosElegido) {                                  //recorre los cursos elegidos y los guarda en la tabla intermedia
-
-                 await createProfesional_Curso({ cursoId: curso.id, profesionalId: newProfesional.id });
+                 const prof_cur = await createProfesional_Curso({ cursoId: curso.id, profesionalId: newProfesional.id });
+                 if (typeof prof_cur === "string") return setErrorMessage(prof_cur);
                 //console.log(prof_cur)
             }
             setVariablesState();

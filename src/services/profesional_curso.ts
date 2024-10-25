@@ -23,8 +23,7 @@ export async function createProfesional_Curso(data: { cursoId: number, profesion
 
       return newRecord;
   } catch (error) {
-      console.error('Error creating profesional_Curso:', error);
-      throw error;
+      return "Error creating profesional_Curso"
   }
 }
 export async function getProfesional_CursoById_curso_prof(cursoId: number, profesionalId: number){

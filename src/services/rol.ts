@@ -1,13 +1,7 @@
 "use server"
 
 import { PrismaClient } from "@prisma/client";
-import { hashPassword } from "../helpers/hashPassword";
-import { verifyPassword } from "../helpers/hashPassword";
-import { encrypt, getUserFromCookie } from "@/helpers/jwt";
-import { cookies } from "next/headers";
 const prisma = new PrismaClient();
-
-
 
 // Crear Alumnos
 export async function createRol(data: {

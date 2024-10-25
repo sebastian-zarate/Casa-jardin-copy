@@ -10,10 +10,10 @@ export default function Navigate () {
             <h1 className="ml-2">Casa Jardín</h1>
         </div>
         <div className="ml-auto flex space-x-4 py-2">
-            <a className="mx-2" href="">Inicio</a>
-            <a className="mx-2" href="">Nosotros</a>
-            <a className="mx-2" href="">Contacto</a>
-            <a className="mx-2" href="http://localhost:3000/Start/signup">Ingresar</a>
+        <a className="mx-2" href="/start/Inicio">Inicio</a>
+            <a className="mx-2" href="/start/Nosotros">Nosotros</a>
+            <a className="mx-2" href="/start/Contacto">Contacto</a>
+            <a className="mx-2" href="/start/signup">Ingresar</a>
         </div>
         </nav>
     )

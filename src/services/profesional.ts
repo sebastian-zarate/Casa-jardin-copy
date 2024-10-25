@@ -68,7 +68,7 @@ export async function updateProfesional(id: number, data: {
     },
   });
   if(!profesional) {
-    throw new Error('Profesional not found');
+    return "Profesional no encontrado";
   }
   return await prisma.profesional.update({
     where: {
