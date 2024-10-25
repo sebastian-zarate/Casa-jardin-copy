@@ -30,16 +30,28 @@ function Signup() {
   // en esta funsion se valida el formulario de registro 
   // para que los datos sean correctos
   const validateForm = () => {
-    if (nombre.length < 2) return "El nombre debe tener al menos 2 caracteres";
-    if (apellido.length < 2) return "El apellido debe tener al menos 2 caracteres";
+    if (nombre.length < 2 || nombre.length > 50) {
+      return "El nombre debe tener entre 2 y 50 caracteres.";
+    }
+    if (apellido.length < 2 || apellido.length > 50) {
+      return "El apellido debe tener entre 2 y 50 caracteres.";
+    }
     if (!email.includes('@')) return "El email debe ser válido";
     if (password !== confirmPassword) return "Las contraseñas no coinciden";
     if (password.length < 8) return "La contraseña debe tener al menos 8 caracteres";
     const passwordRegex = /^(?=.*[A-Z])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!passwordRegex.test(password)) return "La contraseña debe tener al menos una letra mayúscula y 8 caracteres";
-    const regex = /^[a-zA-Z0-9_ ,.;áéíóúÁÉÍÓÚñÑüÜ]*$/; // no quiero que tenga caracteres especiales que las comas y acentos puntos sean permitidos
-    if(!regex.test(nombre) || !regex.test(apellido)){
-            return "El nombre no puede contener caracteres especiales";     
+    // no quiero que tenga caracteres especiales que las comas y acentos puntos sean permitidos
+    const regex = /^[a-zA-ZÀ-ÿ\u00f1\u00d1\u00fc\u00dc\s]*$/; // caracteres permitidos
+    if (!regex.test(nombre) && !regex.test(apellido)) {
+      
+      return "El nombre y en apellido no puede contener números ni caracteres especiales";
+    }
+    else if (!regex.test(nombre)) {
+      return "El nombre no puede contener números ni caracteres especiales";
+    }
+    else if (!regex.test(apellido)) {
+      return "El apellido no puede contener números ni caracteres especiales";
     }
     return "";
   };
@@ -120,6 +132,7 @@ function Signup() {
           boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
           textAlign: 'left',
           alignItems: 'center',
+          
         }}
       >
         <div className="flex justify-center mb-6">
@@ -132,7 +145,7 @@ function Signup() {
           <h2>Registrarte</h2>
         </div>
         { (
-          <div className="mb-4 text-red-600">
+          <div className="mb-4 text-red-600 mx-16">
             <p>{error}</p>
           </div>
         )}

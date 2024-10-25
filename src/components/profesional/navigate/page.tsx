@@ -1,6 +1,7 @@
 "use client"
 import Image from "next/image"
 import Logo from "../../../../public/Images/LogoCasaJardin.png";
+
 export default function Navigate () {
     return (
         <nav className="bg-red-500 flex justify-between w-full p-5">
@@ -9,9 +10,9 @@ export default function Navigate () {
                 <h1 className="ml-2">Casa Jardín</h1>
             </div>
             <div className="ml-auto flex space-x-4 py-2">
-                <a className="mx-2" href="">Calendario</a>
-                <a className="mx-2" href="/start/principal">Principal</a>            
-                <a className="mx-2" href="/start/login">Salir</a>
+                <a className="mx-2" href="http://localhost:3000/profesional/cronogramap/listar">Calendario</a>
+                <a className="mx-2" href="http://localhost:3000/profesional/principal">Principal</a>            
+                <a className="mx-2" href="http://localhost:3000/start/login">Salir</a>
             </div>
         </nav>
     )

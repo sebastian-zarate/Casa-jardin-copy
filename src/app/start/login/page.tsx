@@ -24,6 +24,7 @@ function Login() {
   } else if (errors.email) {
       newErrors.email = "El email no es válido.";
     }
+    if (!email.includes('@'))  newErrors.email = "El email debe ser válido";
 
     // Validación de la contraseña
     if (!password) {
@@ -56,7 +57,7 @@ function Login() {
     if (validate()) {
         // Llama a la función `login` para verificar email y contraseña
         const alumno = await login(email, password);
-        console.log("EL ALUMNOOOOOOO",alumno);
+      
         if (alumno) {
           console.log("Inicio de sesión exitoso", alumno);
           // por ahora redirige al inicio
@@ -114,7 +115,7 @@ function Login() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
-            {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+            {errors.email && <p className="text-red-500 text-sm mt-1 mx-16">{errors.email}</p>}
           </div>
 
           <div className="mb-4">
@@ -128,7 +129,7 @@ function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
-            {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
+            {errors.password && <p className="text-red-500 text-sm mt-1 mx-16">{errors.password}</p>}
           </div>
 
           {/* Botón de inicio de sesión */}

@@ -121,8 +121,8 @@ model Alumno {
   password    String
   rolId       Int
   rol         Rol        @relation(fields: [rolId], references: [id])
-  mayoriaEdad Boolean
-  fechaNacimiento DateTime
+  mayoriaEdad Boolean ?
+  fechaNacimiento DateTime?
 
   // Relaciones
   alum_cur        Alumno_Curso[]

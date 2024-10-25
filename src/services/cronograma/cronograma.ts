@@ -11,7 +11,7 @@ export async function createCronograma(data: {
   diasHoras: { id_dia: number; id_hora: number }[];
 }) {
   let existe = false;
-  let bol = 1; // variable para verificar si el curso ya esta asignado a esa hora y dia en otra aula
+
   // Verificar si el curso ya está asignado en la misma hora y día en otra aula
   for (const diaHora of data.diasHoras) {
     const cursoAsignado = await prisma.cronogramaDiaHora.findFirst({
@@ -30,7 +30,6 @@ export async function createCronograma(data: {
     // Si ya está asignado en otra aula, marcamos que existe y rompemos el ciclo
     if (cursoAsignado) {
       existe = true;
-      bol = 0;
       break;
     }
   }
@@ -38,7 +37,7 @@ export async function createCronograma(data: {
   // Si existe el conflicto, retornamos un error
   if (existe) {
     return {
-      error: `El curso ya está asignado a la misma hora y día en otra aula.`,
+      error: `El curso seleccionado ya está asignado a la misma hora y día en otra aula.`, // Mensaje de error personalizado
     };
   }
 
@@ -87,7 +86,7 @@ export async function createCronograma(data: {
   }
 
   // Retornamos el ID del cronograma creado o actualizado
-  return bol;
+  return { cronogramaId };
 }
 
 
@@ -282,7 +281,7 @@ export async function deleteCronogramaDiaHora(idAula: number, id_dia: number, id
 
     // Si no se encuentra el cronogramaDiaHora, retornar un error
     if (!cronogramaDiaHora) {
-      //console.log(`No se encontró el cronograma para el aula con ID ${idAula}, día ${id_dia} y hora ${id_hora}.`);
+     
       return { error: `No se encontró el cronograma para el aula con ID ${idAula}, día ${id_dia}, y hora ${id_hora}.` };
     }
 

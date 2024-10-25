@@ -18,6 +18,7 @@ export type Alumno = {
   password: string;
   direccionId?: number;
   rolId: number;
+  
 };
 
 
@@ -48,7 +49,9 @@ export async function createAlumno(data: {
   const alumnoData = {
     ...data,
     password: hashedPassword,
-    rolId: 2
+    rolId: 2,
+    
+  
   };
 
   // Guardar el alumno

@@ -7,7 +7,7 @@ import { deleteAlumno, getAlumnoByCooki, getAlumnos, updateAlumno } from "../../
 import Image from "next/image";
 import DeleteIcon from "../../../../public/Images/DeleteIcon.png";
 import EditIcon from "../../../../public/Images/EditIcon.png";
-import Background from "../../../../public/Images/Background.jpeg"
+import Background from "../../../../public/Images/Background.jpeg";
 import { getImages_talleresAdmin } from "@/services/repoImage";
 
 import Talleres from "@/components/talleres/page";
