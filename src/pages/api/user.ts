@@ -1,14 +1,13 @@
+'use server'
 import { NextApiRequest, NextApiResponse } from 'next';
-import { jwtVerify } from 'jose';
+import { verifyJWT } from '@/helpers/jwt';
 import { getAlumnoByEmail } from '@/services/Alumno';
+import { getProfesionalByEmail } from '@/services/profesional';
+import { getAdminByEmail } from '@/services/admin';
 
-const secret = process.env.SECRET;
-const key = new TextEncoder().encode(secret);
-
-export default async function loginHandler(req: NextApiRequest, res: NextApiResponse) {
+// Para obtener la información del usuario
+export default async function userDataHandler(req: NextApiRequest, res: NextApiResponse) {
     try {
-        // Asegúrate de que este código se ejecute en el servidor
-
         // Obtener la cookie desde la solicitud
         const cookieHeader = req.headers.cookie;
         const token = cookieHeader?.split('; ').find(row => row.startsWith('user='))
@@ -19,10 +18,25 @@ export default async function loginHandler(req: NextApiRequest, res: NextApiResp
         }
 
         // Verificar y decodificar el JWT
-        const { payload } = await jwtVerify(token, key, { algorithms: ["HS256"] });
+        const { payload } = await verifyJWT(token);
 
         // Obtener el usuario desde la base de datos utilizando el email del payload
-        const user = await getAlumnoByEmail(String(payload.email)); // Suponiendo que el payload tiene el email
+        let user: any;
+        //switch para saber en que tabla buscar el usuario
+        switch (payload.rolId) {
+            case 1:
+                 user = await getAdminByEmail(String(payload.email));
+                break;
+            case 2:
+                 user = await getAlumnoByEmail(String(payload.email));
+                break;
+            case 3:
+                user = await getProfesionalByEmail(String(payload.email));
+                break;
+            default:
+                user = null;
+                break;
+        }
 
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
@@ -36,3 +50,5 @@ export default async function loginHandler(req: NextApiRequest, res: NextApiResp
         return res.status(500).json({ error: 'Error retrieving user data' });
     }
 }
+
+

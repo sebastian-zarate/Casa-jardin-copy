@@ -1,7 +1,9 @@
-"use client"
+"use client";
 import { useState, useEffect } from "react";
 import { emailTest } from "@/helpers/email";
 import { obtenerCodigoConfirmacion } from "@/services/redis";
+import {autorizarUser, fetchUserData } from "@/helpers/cookies";
+import { useRouter } from "next/navigation";
 
 function EmailPage() {
   // Estados para gestionar los datos del formulario y errores
@@ -9,29 +11,29 @@ function EmailPage() {
   const [codigo, setCodigo] = useState("");
   const [correcto, setCorrecto] = useState(false);
 
-  useEffect(() => {
-    async function fetchUserData() {
-      try {
-        const response = await fetch('/api/user');
-        if (response.ok) {
-          const data = await response.json();
-          console.log('User data:', data);
-          setEmail(data.user.email);
-        } else {
-          console.error('Failed to fetch user data');
-        }
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-      }
-    }
+  const router = useRouter();
 
-    fetchUserData();
-  }, []);
+  // Para cambiar al usuario de página si no está logeado
+  useEffect(() => {
+    const authorizeAndFetchData = async () => {
+      console.time("authorizeAndFetchData");
+      // Primero verifico que el user esté logeado
+      await autorizarUser(router);
+      // Una vez autorizado obtengo los datos del user y seteo el email
+      const user = await fetchUserData();
+      setEmail(user.email);
+      console.timeEnd("authorizeAndFetchData");
+    };
+
+    authorizeAndFetchData();
+  }, [router]);
+
 
   const handleEmail = async () => {
     if (email === "") return;
     emailTest(email);
   };
+
 
   const handleVerificarCodigo = async () => {
     const codigoGuardado = await obtenerCodigoConfirmacion(email);
@@ -44,8 +46,17 @@ function EmailPage() {
     }
   };
 
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', padding: '2rem' }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: "1rem",
+        padding: "2rem",
+      }}
+    >
       <h1>Escriba mail para recibir el código: </h1>
       <input
         type="text"
@@ -54,7 +65,9 @@ function EmailPage() {
         className="p-2 border rounded"
         placeholder="Ingrese su correo"
       />
-      <button className="bg-slate-500 p-2 rounded" onClick={handleEmail}>Enviar Código</button>
+      <button className="bg-slate-500 p-2 rounded" onClick={handleEmail}>
+        Enviar Código
+      </button>
       <h1>Verificar código:</h1>
       <input
         type="text"
@@ -63,11 +76,16 @@ function EmailPage() {
         className="p-2 border rounded"
         placeholder="Ingrese el código"
       />
-      <button className="bg-slate-500 p-2 rounded" onClick={handleVerificarCodigo}>Verificar</button>
+      <button
+        className="bg-slate-500 p-2 rounded"
+        onClick={handleVerificarCodigo}
+      >
+        Verificar
+      </button>
       {correcto ? (
-        <h1 style={{ color: 'green' }}>Código correcto!</h1>
+        <h1 style={{ color: "green" }}>Código correcto!</h1>
       ) : (
-        <h1 style={{ color: 'red' }}></h1>
+        <h1 style={{ color: "red" }}></h1>
       )}
     </div>
   );

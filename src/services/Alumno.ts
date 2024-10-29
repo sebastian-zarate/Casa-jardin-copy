@@ -70,7 +70,7 @@ export async function login(email: string, password: string) {
     // Contraseña correcta
     //duración de la sesión
     const expires = new Date(Date.now() + 1000 * 60 * 60 * 24);
-    const sesion = await encrypt({ email: alumno.email, expires })
+    const sesion = await encrypt({ email: alumno.email, rolId: alumno.rolId, expires })
     //setea la cookie de la sesión
     cookies().set("user", sesion, { expires, httpOnly: true });
     return true;
