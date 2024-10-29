@@ -60,7 +60,7 @@ const Menores: React.FC = () => {
         firma: "",
     });
 
-
+   
     const [error, setError] = useState<string>('');
     //datos menor: nombre, apellido, edad, fecha de nacimiento, dni,pais, localidad,calle
     //datos mayor: nombre, apellido, telefono, correo electronico, dni, pais, localidad, calle
@@ -69,7 +69,27 @@ const Menores: React.FC = () => {
     //datos autorizacionSalidas: firmo el mayor a cargo?, observaciones? puede ser nulo
     //datos reglamentacion: firmo?
     // Asegúrate de que tu archivo TypeScript esté correctamente referenciado en tu HTML
+    //traer los datos del alumno logeado
 
+    function UserProfile() {
+        const [userData, setUserData] = useState(null);
+    
+        useEffect(() => {
+            async function fetchUserData() {
+                const response = await fetch('/api/user');
+                if (response.ok) {
+                    const data = await response.json();
+                    setUserData(data);
+                    console.log(data);
+                } else {
+                    console.error('Failed to fetch user data');
+                }
+            }
+    
+            fetchUserData();
+        }, []);
+    }
+    UserProfile();
     function validateDatos() {
         // carrateres especiales en el nombre y la descripción
         const regex = /^[a-zA-Z0-9_ ,.;áéíóúÁÉÍÓÚñÑüÜ@]*$/; // no quiero que tenga caracteres especiales que las comas y puntos afecten 
