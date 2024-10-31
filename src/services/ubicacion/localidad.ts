@@ -1,7 +1,7 @@
 "use server"
 import axios from "axios";
 import { API } from "@/helpers/Api";
-import { PrismaClient } from "@prisma/client";
+import { Direccion, PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 export type Localidad = {
@@ -14,34 +14,35 @@ export type Localidad = {
 // en esta funcion se obtienen los Localidades
 // para poder mostrarlos en el formulario de registro
 export async function getLocalidades() {
-    return await prisma.nacionalidad.findMany({
-      select: {
-        id: true,
-        nombre: true,
-      },
-    });
+  return await prisma.nacionalidad.findMany({
+    select: {
+      id: true,
+      nombre: true,
+    },
+  });
 }
 //añado una localidad
 export async function addLocalidad(data: {
   nombre: string;
-  provinciaId: number}) {
+  provinciaId: number
+}) {
 
-    const localidades = await getLocalidadByName(data.nombre);
-    if(localidades) {
-      console.log("LOCALIDAD EXISTENTE")
-      return localidades;
-    }
-    console.log("LOCALIDAD NUEVA")
-    const loc = await prisma.localidad.create({
-      data: data
-    });
-    return loc;
+  const localidades = await getLocalidadByName(data.nombre);
+  if (localidades) {
+    console.log("LOCALIDAD EXISTENTE")
+    return localidades;
+  }
+  console.log("LOCALIDAD NUEVA")
+  const loc = await prisma.localidad.create({
+    data: data
+  });
+  return loc;
 }
-export async function updateLocalidad(id:number, data: {
+export async function updateLocalidad(id: number, data: {
   nombre: string;
   provinciaId: number;
 }) {
-  const newLocalidad= {
+  const newLocalidad = {
     id: id,
     nombre: data.nombre,
     provinciaId: data.provinciaId,
@@ -74,10 +75,12 @@ export async function getLocalidadByName(LocalidadName: string) {
 export async function getLocalidadesByProvinciaId(provinciaId: number) {
   return await prisma.localidad.findMany({
     where: {
-    provinciaId: Number(provinciaId),
+      provinciaId: Number(provinciaId),
     },
   });
 }
+
+
 
 
 

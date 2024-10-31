@@ -11,9 +11,12 @@ const googleTransporter = nodemailer.createTransport({
   port: 587,
   secure: false,
   auth: {
-    user: "maldonado12net@gmail.com", // por ahora es mi correo, despues hay que cambiarlo
+    user: "maldonado12net@gmail.com",
     pass: process.env.EMAIL_APP_PASSWORD,
   },
+  tls: {
+    rejectUnauthorized: false, // Ignora la verificación de certificados
+},
 });
 
 //Código de confirmación de 6 dígitos

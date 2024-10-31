@@ -2,6 +2,7 @@
 
 import { API } from "@/helpers/Api";
 import { PrismaClient } from "@prisma/client";
+import { get } from "http";
 
 
 const prisma = new PrismaClient();
@@ -41,6 +42,8 @@ export async function updateDireccionById(direccionId: number, data: {
     data: newDireccion,
   });
 }
+
+
 export async function updateDireccionByIdUser(userId: number, rolId: number, data: {
   calle: string;
   numero: number;
@@ -157,3 +160,15 @@ export async function getLocalidadesByProvincia(provinciaId: number) {
     },
   });
 }
+
+/* export async function getAllDireccionesProfesionales() {
+  const allDire = await prisma.direccion.findMany({});
+  const allProf = await prisma.profesional.findMany({});
+  const newDirecciones = allDire.filter((dir) => {
+    return allProf.some((prof) => {
+      return prof.direccionId === dir.id;
+    });
+  });
+  return newDirecciones;
+}
+ */

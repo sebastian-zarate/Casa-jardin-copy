@@ -1,5 +1,6 @@
 "use client"
 import React, { useState } from 'react';
+import EmailPage from '../../email/page';
 
 
 interface Datos {
@@ -84,7 +85,7 @@ const Reglamentacion: React.FC<Datos> = ({ setDatosReglamentacion }) => {
                     <p>En mi carácter de alumno, manifiesto por medio de la presente mi conformidad con el reglamento establecido por el Centro Educativo Terapéutico “Casa Jardín” y con el código de convivencia que se me ha dado a conocer. De no ser cumplido el centro se reserva el derecho de admisión.</p>
                 </div>
                 <div>
-                    {alertaFinal && <div className="absolute top-2/3 right-1/3 transform -translate-x-1/3 -translate-y-1/9 bg-white p-6 rounded-md shadow-md w-96">
+                    {alertaFinal && <div className="absolute top-1/2 right-1/3 transform -translate-x-1/3 -translate-y-1/9 bg-white p-6 rounded-md shadow-md w-96">
                         <h2 className="text-lg font-bold mb-2">Términos y condiciones</h2>
                         <p className="text-sm text-gray-600 mb-4">
                             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras purus mauris, congue in elit eu, hendrerit interdum mi.
@@ -107,10 +108,12 @@ const Reglamentacion: React.FC<Datos> = ({ setDatosReglamentacion }) => {
                     <div className='flex justify-center items-center mt-8 flex-col border-t p-2 '>
                         <label htmlFor="firma">Firma de Padre/Madre/Tutor</label>
                         <input type="text" name="firma" id="firma" className="border rounded w-96" placeholder='Ingrese su firma' onChange={(e) => setDatosReglamentacion(prev => ({ ...prev, firma: e.target.value }))} />
-                        <div className='flex'>
+                        <div className='flex '>
                             <span>Al hacer clic en enviar usted esta aceptando el&nbsp;</span>
                             <button className="text-red-500 underline" onClick={() => setAlertaFinal(true)}>Consentimiento</button>
+
                         </div>
+
                     </div>
 
                 </div>

@@ -22,7 +22,7 @@ export const verifyJWT = (token: string) => {
     return jwtVerify(token, key, { algorithms: ["HS256"] });
 }
 
-export async function getUserFromCookie() {
+/* export async function getUserFromCookie() {
   try {
       // Obtener la cookie desde la solicitud
       const cookieStore = cookies();
@@ -40,4 +40,4 @@ export async function getUserFromCookie() {
       console.error("Error al verificar el JWT:", error);
       return null; // En caso de error, retorna null
   }
-}
+} */

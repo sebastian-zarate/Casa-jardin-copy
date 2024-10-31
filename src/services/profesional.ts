@@ -91,3 +91,12 @@ export async function deleteProfesional(id: number) {
   });
 
 }
+
+//para la cookie
+export async function getProfesionalByEmail(email: string) {
+  return await prisma.profesional.findUnique({
+    where: {
+      email: email,
+    },
+  });
+}

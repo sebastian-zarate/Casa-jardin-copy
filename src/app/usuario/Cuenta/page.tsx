@@ -4,13 +4,15 @@ import Background from "../../../../public/Images/Background.jpeg";
 import But_aside from "../../../components/but_aside/page";
 import Image from "next/image";
 import Navigate from '../../../components/alumno/navigate/page';
-import { getAlumnoByCooki, updateAlumno } from '@/services/Alumno';
-import { addDireccion, getDireccionById, updateDireccionById, updateDireccionByIdUser } from '@/services/ubicacion/direccion';
-import {  addProvincias, getProvinciasById, updateProvinciaById } from '@/services/ubicacion/provincia';
-import {  addLocalidad, getLocalidadById, getLocalidadesByProvinciaId, updateLocalidad } from '@/services/ubicacion/localidad';
-import { addPais, getPaisById } from '@/services/ubicacion/pais';
+import { getAlumnoByEmail, updateAlumno } from '@/services/Alumno';
+import { addDireccion, Direccion, getDireccionById, updateDireccionById, updateDireccionByIdUser } from '@/services/ubicacion/direccion';
+import {  addProvincias, getProvinciasById, Provincia, updateProvinciaById } from '@/services/ubicacion/provincia';
+import {  addLocalidad, getLocalidadById, getLocalidadesByProvinciaId, Localidad, updateLocalidad } from '@/services/ubicacion/localidad';
+import { addPais, getPaisById, Pais } from '@/services/ubicacion/pais';
 import { createAlumno_Curso, getalumnos_cursoByIdAlumno } from '@/services/alumno_curso';
 import { Curso, getCursoById } from '@/services/cursos';
+import { autorizarUser, fetchUserData } from '@/helpers/cookies';
+import { useRouter } from 'next/navigation';
 
 type Usuario = {
     id: number;
@@ -24,7 +26,8 @@ type Usuario = {
     rolId: number;
 };
 
-const Cuenta: React.FC<{}> = () => {
+
+export default function Cuenta() {
     //region UseStates
     // Estado para asegurar cambios, inicialmente 0
     const [openBox, setOpenBox] = useState<number>(0);
@@ -69,18 +72,39 @@ const Cuenta: React.FC<{}> = () => {
 
     // Estado para almacenar los cursos elegidos, inicialmente un array vacío
     const [cursosElegido, setCursosElegido] = useState<Curso[]>([]);
-
+    //para obtener user by email
+    const [email, setEmail] = useState<any>();
     //endregion
 
     //region UseEffects
     // Función para obtener los datos del usuario
-    useEffect(() => {
-        if (!user && openBox === 0) {
+
+    const router = useRouter();
+    useEffect(() =>  {
+        if (openBox === 0 && email) {
             console.log("se actualiza el usuario");
-            getUser();       
+            getUser();  
+ 
             
         }
-    }, [user, openBox]);
+    }, [email]);
+
+    // Para cambiar al usuario de página si no está logeado
+    useEffect(() => {
+      const authorizeAndFetchData = async () => {
+        console.time("authorizeAndFetchData");
+        // Primero verifico que el user esté logeado
+        console.log("router", router);
+        await autorizarUser(router);
+        // Una vez autorizado obtengo los datos del user y seteo el email
+        const user = await fetchUserData();
+        console.log("user", user);  
+        setEmail(user.email);
+        console.timeEnd("authorizeAndFetchData");
+      };
+  
+      authorizeAndFetchData();
+    }, [router]);
 
 
     useEffect(() => {
@@ -153,7 +177,7 @@ const Cuenta: React.FC<{}> = () => {
         return {direccion, localidad, prov, nacionalidad};
     }
     async function getUser() {
-        let user = await getAlumnoByCooki();
+        let user = await getAlumnoByEmail(email);
         console.log(user?.nombre);
         const userUpdate: Usuario = {
             id: user?.id || 0,
@@ -183,6 +207,8 @@ const Cuenta: React.FC<{}> = () => {
         });
         setUser(userUpdate);
         //setOpenBox(!openBox)
+
+        //CARGAR TODAS LAS DIRECCIONES
     }
     function validateAlumnoDetails() {
 
@@ -243,11 +269,12 @@ const Cuenta: React.FC<{}> = () => {
         if(!alumnoDetails.direccionId) {
             const {direccion} = await createUbicacion();
             console.log("ALUMNODETAILS", alumnoDetails);
-             const newAlumno = await updateAlumno(Number(alumnoDetails?.id ), {
+            const newAlumno = await updateAlumno(Number(alumnoDetails?.id ), {
                 nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
                 dni: Number(alumnoDetails.dni), email: alumnoDetails.email,telefono: Number(alumnoDetails.telefono),
                 direccionId: Number(direccion?.id)
             });
+            if(typeof newAlumno === "string") return setErrorMessage(newAlumno);
             newAlumno.direccionId = direccion?.id;
             console.log("newAlumno", newAlumno);
             setOpenBox(0);
@@ -425,7 +452,8 @@ const Cuenta: React.FC<{}> = () => {
                                 className="p-2 w-full border rounded"
                             />
                         </div>
-                        <div className="mb-4">
+                        {!nacionalidadName && !provinciaName && !localidadName && !calle && !numero && <p className=" text-red-600">Cargando su ubicación...</p>}
+                        {nacionalidadName && <div className="mb-4">
                             <label htmlFor="pais" className="block">País:</label>
                             <input
                                 type="text"
@@ -435,8 +463,8 @@ const Cuenta: React.FC<{}> = () => {
                                 onChange={(e) => setNacionalidadName(e.target.value)}
                                 className="p-2 w-full border rounded"
                             />
-                        </div>
-                        <div className="mb-4">
+                        </div>}
+                        {provinciaName && <div className="mb-4">
                             <label htmlFor="provincia" className="block">Provincia:</label>
                             <input
                                 type="text"
@@ -446,8 +474,8 @@ const Cuenta: React.FC<{}> = () => {
                                 onChange={(e) => setProvinciaName(e.target.value)}
                                 className="p-2 w-full border rounded"
                             />
-                        </div>
-                        <div className="mb-4">
+                        </div>}
+                        {localidadName &&<div className="mb-4">
                             <label htmlFor="localidad" className="block">Localidad:</label>
                             <input
                                 type="text"
@@ -457,8 +485,8 @@ const Cuenta: React.FC<{}> = () => {
                                 onChange={(e) => setLocalidadName(e.target.value)}
                                 className="p-2 w-full border rounded"
                             />
-                        </div>
-                        <div className="mb-4">
+                        </div>}
+                       {calle&& numero && <div className="mb-4">
                             <label htmlFor="calle" className="block">Calle:</label>
                             <input
                                 type="text"
@@ -467,9 +495,9 @@ const Cuenta: React.FC<{}> = () => {
                                 value={String(calle)}
                                 onChange={(e) => setcalle(e.target.value)}
                                 className="p-2 w-full border rounded"
-                            />
-                        </div>
-                        <div className="mb-4">
+                            />                      
+                            </div> &&
+                            <div className="mb-4">
                             <label htmlFor="numero" className="block">Número:</label>
                             <input
                                 type="text"
@@ -479,7 +507,8 @@ const Cuenta: React.FC<{}> = () => {
                                 onChange={(e) => setNumero(Number(e.target.value))}
                                 className="p-2 w-full border rounded"
                             />
-                        </div>
+                        </div>                                
+                            }
                         <div className="flex justify-end space-x-4">
                             <button
                                 onClick={() => {handleSaveChanges(); console.log("openBox", openBox)}}
@@ -501,4 +530,3 @@ const Cuenta: React.FC<{}> = () => {
     )
 }
 
-export default Cuenta;

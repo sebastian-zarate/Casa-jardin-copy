@@ -25,7 +25,7 @@ export default function Navigate () {
                         <a className="block px-4 py-2 text-gray-800 hover:bg-gray-200" href="/Admin/profesionales">Profesionales</a>
                     </div>
                 )}
-                <a className="mx-2" href="">Pagos</a>
+                <a className="mx-2" href="/Admin/Solicitudes">Solicitudes</a>
                 <a className="mx-2" href="/start/login">Salir</a>
             </div>
         </nav>

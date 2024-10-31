@@ -121,8 +121,8 @@ model Alumno {
   password    String
   rolId       Int
   rol         Rol        @relation(fields: [rolId], references: [id])
-  mayoriaEdad Boolean
-  fechaNacimiento DateTime
+  mayoriaEdad Boolean?
+  fechaNacimiento DateTime?
 
   // Relaciones
   alum_cur        Alumno_Curso[]
@@ -197,7 +197,7 @@ model Hora {
 //region Solicitudes
 model Solicitud {
   id Int @id @default(autoincrement())
-
+  leida Boolean @default(false)
   // Relaciones
   solicitudMayores SolicitudMayores? // Relación de uno a uno con SolicitudMayores
   solicitudMenores SolicitudMenores? // Relación de uno a uno con SolicitudMenores
@@ -216,8 +216,13 @@ model SolicitudMayores {
   solicitudId Int       @unique
   alumno      Alumno    @relation(fields: [alumnoId], references: [id])
   alumnoId    Int
+  //firmas
+  firmaUsoImagenes String
+  observacionesUsoImagenes String 
+  firmaReglamento String
 
   // Relaciones
+  
 }
 
 model SolicitudMenores {
@@ -232,6 +237,12 @@ model SolicitudMenores {
   terapia    String
   especialista String
   motivoAsistencia String
+  //firmas
+  firmaUsoImagenes String
+  observacionesUsoImagenes String
+  firmaSalidas String
+  observacionesSalidas String
+  firmaReglamento String
 }
 
 model Responsable {
@@ -245,5 +256,4 @@ model Responsable {
   email String @unique
   direccion Direccion @relation(fields: [direccionId], references: [id])
   direccionId Int @unique
-
 }

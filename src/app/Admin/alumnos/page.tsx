@@ -3,7 +3,7 @@
 import React, { use, useEffect, useRef, useState } from "react";
 import Navigate from "../../../components/Admin/navigate/page";
 import But_aside from "../../../components/but_aside/page";
-import { deleteAlumno, getAlumnoByCooki, getAlumnos, updateAlumno } from "../../../services/Alumno";
+import { deleteAlumno, getAlumnos, updateAlumno } from "../../../services/Alumno";
 import Image from "next/image";
 import DeleteIcon from "../../../../public/Images/DeleteIcon.png";
 import EditIcon from "../../../../public/Images/EditIcon.png";
@@ -68,7 +68,7 @@ const Alumnos: React.FC = () => {
     useEffect(() => {
         if (obAlumno && obAlumno.direccionId) {
             getUbicacion(obAlumno);
-        } else if(obAlumno&& obAlumno.direccionId === null) {
+        } else if (obAlumno && obAlumno.direccionId === null) {
             setNacionalidadName("");
             setProvinciaName("");
             setLocalidadName("");
@@ -110,8 +110,6 @@ const Alumnos: React.FC = () => {
     // #region Métodos
     async function fetchAlumnos() {
         try {
-            let user = await getAlumnoByCooki();
-            setUser(user);
             const data = await getAlumnos();
             console.log(data);
             setAlumnos(data);
@@ -131,8 +129,8 @@ const Alumnos: React.FC = () => {
 
         }
     };
-       //region solo considera repetidos
-       async function createUbicacion() {
+    //region solo considera repetidos
+    async function createUbicacion() {
         // Obtener la localidad asociada a la dirección
         console.log("Antes de crear la ubicacion", (localidadName), calle, numero, provinciaName, nacionalidadName);
         const nacionalidad = await addPais({ nombre: String(nacionalidadName) });
@@ -140,9 +138,9 @@ const Alumnos: React.FC = () => {
 
         const localidad = await addLocalidad({ nombre: String(localidadName), provinciaId: Number(prov?.id) });
         console.log("LOCALIDAD", localidad);
-        const direccion = await addDireccion({ calle: String(calle), numero: Number(numero), localidadId: Number(localidad?.id )});
+        const direccion = await addDireccion({ calle: String(calle), numero: Number(numero), localidadId: Number(localidad?.id) });
         console.log("DIRECCION", direccion);
-        return  direccion ;
+        return direccion;
     }
 
     async function getUbicacion(obAlumno: any) {
@@ -172,7 +170,7 @@ const Alumnos: React.FC = () => {
         return { direccion, localidad, prov, nacionalidad };
     }
 
-    
+
     function validatealumnoDetails() {
         const { nombre, apellido, email, especialidad } = alumnoDetails;
 
@@ -193,7 +191,7 @@ const Alumnos: React.FC = () => {
             [name]: name === 'telefono' ? parseInt(value, 10) : value // Convierte `telefono` a número entero si el campo es `telefono`
         }));
     }
-    function setVariablesState(){
+    function setVariablesState() {
         setNacionalidadName("");
         setProvinciaName("");
         setLocalidadName("");
@@ -213,14 +211,15 @@ const Alumnos: React.FC = () => {
             setErrorMessage(validationError);
             return;
         }
-        if(!obAlumno.direccionId) {
+        if (!obAlumno.direccionId) {
             const dir = await createUbicacion();
             console.log("ALUMNODETAILS", alumnoDetails);
-             const newAlumno = await updateAlumno(alumnoDetails?.id || 0, {
+            const newAlumno = await updateAlumno(alumnoDetails?.id || 0, {
                 nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
-                dni: Number(alumnoDetails.dni), email: alumnoDetails.email,telefono: Number(alumnoDetails.telefono),
+                dni: Number(alumnoDetails.dni), email: alumnoDetails.email, telefono: Number(alumnoDetails.telefono),
                 direccionId: Number(dir?.id)
             });
+            if (typeof newAlumno === "string") return setErrorMessage(newAlumno);
             newAlumno.direccionId = dir?.id;
             console.log("newAlumno", newAlumno);
             setVariablesState();
@@ -251,6 +250,7 @@ const Alumnos: React.FC = () => {
                 dni: Number(alumnoDetails.dni), telefono: Number(alumnoDetails.telefono),
                 direccionId: Number(newDireccion?.id), email: alumnoDetails.email
             });
+            if (typeof newAlumno === "string") return setErrorMessage(newAlumno);
 
             for (const curso of cursosElegido) {                                  //recorre los cursos elegidos y los guarda en la tabla intermedia
                 await createAlumno_Curso({ cursoId: curso.id, alumnoId: newAlumno.id });
@@ -298,11 +298,12 @@ const Alumnos: React.FC = () => {
                             <div className="flex justify-between w-full mb-2">
                                 <h3 className="text-lg font-semibold text-black">{alumno.nombre} {alumno.apellido}</h3>
                                 <div className="flex space-x-2">
-                                    <button onClick={() => handleEliminarAlumno(alumno) } className="text-red-600 font-bold">
+                                    <button onClick={() => handleEliminarAlumno(alumno)} className="text-red-600 font-bold">
                                         <Image src={DeleteIcon} alt="Eliminar" width={27} height={27} />
                                     </button>
                                     <button onClick={() => {
-                                        setSelectedAlumno(alumno);setObAlumno(alumno);console.log(alumno);}} className="text-blue-600 font-bold">
+                                        setSelectedAlumno(alumno); setObAlumno(alumno); console.log(alumno);
+                                    }} className="text-blue-600 font-bold">
                                         <Image src={EditIcon} alt="Editar" width={27} height={27} />
                                     </button>
                                 </div>
@@ -381,7 +382,7 @@ const Alumnos: React.FC = () => {
                                 className="p-2 w-full border rounded"
                             />
                         </div>
-                        <div className="mb-4">
+                        {/*                        <div className="mb-4">
                             <label htmlFor="password" className="block">Contraseña:</label>
                             <input
                                 type="text"
@@ -390,8 +391,9 @@ const Alumnos: React.FC = () => {
                                 value={alumnoDetails.password}
                                 className="p-2 w-full border rounded"
                             />
-                        </div>
-                        <div className="mb-4">
+                        </div> */}
+                        {(!nacionalidadName && !provinciaName && !localidadName && !calle && !numero && alumnoDetails?.direccionId !== null) && <p className=" text-red-600">Cargando su ubicación...</p>}
+                        {(nacionalidadName || alumnoDetails?.direccionId === null) && <div className="mb-4">
                             <label htmlFor="pais" className="block">País:</label>
                             <input
                                 type="text"
@@ -401,8 +403,8 @@ const Alumnos: React.FC = () => {
                                 onChange={(e) => setNacionalidadName(e.target.value)}
                                 className="p-2 w-full border rounded"
                             />
-                        </div>
-                        <div className="mb-4">
+                        </div>}
+                        {(provinciaName || alumnoDetails.direccionId === null) && <div className="mb-4">
                             <label htmlFor="provincia" className="block">Provincia:</label>
                             <input
                                 type="text"
@@ -412,8 +414,8 @@ const Alumnos: React.FC = () => {
                                 onChange={(e) => setProvinciaName(e.target.value)}
                                 className="p-2 w-full border rounded"
                             />
-                        </div>
-                        <div className="mb-4">
+                        </div>}
+                        {(localidadName || !alumnoDetails.direccionId) && <div className="mb-4">
                             <label htmlFor="localidad" className="block">Localidad:</label>
                             <input
                                 type="text"
@@ -423,8 +425,8 @@ const Alumnos: React.FC = () => {
                                 onChange={(e) => setLocalidadName(e.target.value)}
                                 className="p-2 w-full border rounded"
                             />
-                        </div>
-                        <div className="mb-4">
+                        </div>}
+                        {((calle && numero) || !alumnoDetails.direccionId) && <div className="mb-4">
                             <label htmlFor="calle" className="block">Calle:</label>
                             <input
                                 type="text"
@@ -434,19 +436,25 @@ const Alumnos: React.FC = () => {
                                 onChange={(e) => setcalle(e.target.value)}
                                 className="p-2 w-full border rounded"
                             />
+                        </div> &&
+                            <div className="mb-4">
+                                <label htmlFor="numero" className="block">Número:</label>
+                                <input
+                                    type="text"
+                                    id="numero"
+                                    name="numero"
+                                    value={Number(numero)}
+                                    onChange={(e) => setNumero(Number(e.target.value))}
+                                    className="p-2 w-full border rounded"
+                                />
+                            </div>
+                        }
+                        <div>
+                            <button
+                                className="py-2  text-black font-bold rounded hover:underline">
+                                Cambiar contraseña
+                            </button>
                         </div>
-                        <div className="mb-4">
-                            <label htmlFor="numero" className="block">Número:</label>
-                            <input
-                                type="text"
-                                id="numero"
-                                name="numero"
-                                value={Number(numero)}
-                                onChange={(e) => setNumero(Number(e.target.value))}
-                                className="p-2 w-full border rounded"
-                            />
-                        </div>
-
                         <div className="flex justify-end space-x-4">
                             <button
                                 onClick={handleSaveChanges}
@@ -454,7 +462,7 @@ const Alumnos: React.FC = () => {
                                 Guardar
                             </button>
                             <button
-                                onClick={() => {setSelectedAlumno(null); handleCancel_init()}}
+                                onClick={() => { setSelectedAlumno(null); handleCancel_init() }}
                                 className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800">
                                 Cancelar
                             </button>
