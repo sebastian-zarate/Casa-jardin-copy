@@ -5,9 +5,9 @@ import But_aside from "../../../components/but_aside/page";
 import Image from "next/image";
 import Navigate from "../../../components/alumno/navigate/page";
 import { getAlumnoByCookie, getAlumnoByEmail, updateAlumno } from '@/services/Alumno';
-import { addDireccion, getDireccionById, updateDireccionById, updateDireccionByIdUser } from '@/services/ubicacion/direccion';
-import {  addProvincias, getProvinciasById, updateProvinciaById } from '@/services/ubicacion/provincia';
-import {  addLocalidad, getLocalidadById, getLocalidadesByProvinciaId, updateLocalidad } from '@/services/ubicacion/localidad';
+import { addDireccion, getDireccionById, getDireccionCompleta, updateDireccionById } from '@/services/ubicacion/direccion';
+import { addProvincias, getProvinciasById, updateProvinciaById } from '@/services/ubicacion/provincia';
+import { addLocalidad, getLocalidadById, getLocalidadesByProvinciaId, updateLocalidad } from '@/services/ubicacion/localidad';
 import { addPais, getPaisById } from '@/services/ubicacion/pais';
 import { createAlumno_Curso, getalumnos_cursoByIdAlumno } from '@/services/alumno_curso';
 import { Curso, getCursoById } from '@/services/cursos';
@@ -22,7 +22,7 @@ type Usuario = {
     dni: number;
     telefono: number;
     email: string;
-/*     password: string; */
+    /*     password: string; */
     direccionId: number;
     rolId: number;
 };
@@ -142,41 +142,42 @@ const Cuenta: React.FC = () => {
 
 
     async function createUbicacion() {
-        // Obtener la localidad asociada a la dirección
-        console.log("Antes de crear la ubicacion", (localidadName), calle, numero, provinciaName, nacionalidadName);
         const nacionalidad = await addPais({ nombre: String(nacionalidadName) });
         const prov = await addProvincias({ nombre: String(localidadName), nacionalidadId: Number(nacionalidad?.id) });
-
         const localidad = await addLocalidad({ nombre: String(localidadName), provinciaId: Number(prov?.id) });
-        console.log("LOCALIDAD", localidad);
+
         const direccion = await addDireccion({ calle: String(calle), numero: Number(numero), localidadId: Number(localidad?.id) });
-        console.log("DIRECCION", direccion);
         return { direccion, nacionalidad };
     }
     async function getUbicacion(userUpdate: any) {
         // Obtener la dirección del usuario por su ID
-        console.log("SI DIRECCIONID ES FALSE:", Number(userUpdate?.direccionId));
-        const direccion = await getDireccionById(Number(userUpdate?.direccionId));
+        //console.log("SI DIRECCIONID ES FALSE:", Number(userUpdate?.direccionId));
+        /*         const direccion = await getDireccionById(Number(userUpdate?.direccionId));
+                //console.log("DIRECCION", direccion);
+        
+                // Obtener la localidad asociada a la dirección
+                const localidad = await getLocalidadById(Number(direccion?.localidadId));
+                //console.log("LOCALIDAD", localidad);
+        
+                // Obtener la provincia asociada a la localidad
+                const prov = await getProvinciasById(Number(localidad?.provinciaId));
+                //console.log("PROVINCIA", prov);
+        
+                // Obtener el país asociado a la provincia
+                const nacionalidad = await getPaisById(Number(prov?.nacionalidadId)); */
+       const direccion = await getDireccionCompleta(userUpdate?.direccionId);
         console.log("DIRECCION", direccion);
-
-        // Obtener la localidad asociada a la dirección
-        const localidad = await getLocalidadById(Number(direccion?.localidadId));
-        console.log("LOCALIDAD", localidad);
-
-        // Obtener la provincia asociada a la localidad
-        const prov = await getProvinciasById(Number(localidad?.provinciaId));
-        console.log("PROVINCIA", prov);
-
-        // Obtener el país asociado a la provincia
-        const nacionalidad = await getPaisById(Number(prov?.nacionalidadId));
-        console.log("NACIONALIDAD", nacionalidad);
+        console.log("LOCALIDAD", direccion?.localidad);
+        console.log("PROVINCIA", direccion?.localidad?.provincia);
+        console.log("PAIS", direccion?.localidad?.provincia?.nacionalidad);
+        //console.log("NACIONALIDAD", nacionalidad);
         // Actualizar los estados con los datos obtenidos
-        setLocalidadName(String(localidad?.nombre));
-        setProvinciaName(String(prov?.nombre));
-        setNacionalidadName(String(nacionalidad?.nombre));
+        setLocalidadName(String(direccion?.localidad?.nombre));
+        setProvinciaName(String(direccion?.localidad?.provincia?.nombre));
+        setNacionalidadName(String(direccion?.localidad?.provincia?.nacionalidad?.nombre));
         setNumero(direccion?.numero);
         setcalle(direccion?.calle);
-        return { direccion, localidad, prov, nacionalidad };
+        return { direccion };
     }
     async function getUser() {
         let user = await getAlumnoByEmail(email);
@@ -283,24 +284,24 @@ const Cuenta: React.FC = () => {
             getUser();
             return;
         }
-        const { direccion, localidad, prov, nacionalidad } = await getUbicacion(alumnoDetails);
+        const { direccion } = await getUbicacion(alumnoDetails);
 
         try {
 
             const newDireccion = await updateDireccionById(Number(direccion?.id), {
                 calle: String(calle),
                 numero: Number(numero),
-                localidadId: Number(localidad?.id)
+                localidadId: Number(direccion?.localidad?.id)
             });
             console.log("newDireccion", newDireccion);
-            const newLocalidad = await updateLocalidad(Number(localidad?.id), {
+            const newLocalidad = await updateLocalidad(Number(direccion?.localidad?.id), {
                 nombre: String(localidadName),
-                provinciaId: Number(prov?.id)
+                provinciaId: Number(direccion?.localidad?.provincia?.id)
             });
             console.log("newLocalidad", newLocalidad);
-            await updateProvinciaById(Number(prov?.id), {
+            await updateProvinciaById(Number(direccion?.localidad?.provincia?.id), {
                 nombre: String(provinciaName),
-                nacionalidadId: Number(nacionalidad?.id)
+                nacionalidadId: Number(direccion?.localidad?.provincia?.nacionalidad?.id)
             });
 
             console.log("ALUMNODETAILS", alumnoDetails);
@@ -313,7 +314,7 @@ const Cuenta: React.FC = () => {
         } catch (error) {
             setErrorMessage("Ha ocurrido un error al guardar los cambios.");
         }
-        setNacionalidadName(String(nacionalidad?.nombre))
+        setNacionalidadName(String(direccion?.localidad?.provincia?.nacionalidad?.nombre))
         setOpenBox(0);
         getUser();
         console.log(openBox)

@@ -32,10 +32,10 @@ export default function Navigate() {
         <h1 className="ml-2">Casa Jardín</h1>
       </div>
       <div className="ml-auto flex space-x-4 py-2">
-        <a className="mx-2" href="/Admin/Inicio">Inicio</a>
         <a className="mx-2" href="/Admin/cursos">Talleres</a>
         <a className="mx-2" href="/Admin/aulaSelector">Cronogramas</a>
         <a className="mx-2" href="/Admin/aulas">Aulas</a>
+        <a className="mx-2" href="/Admin/Solicitudes">Solicitudes</a>
         <label className="mx-2 cursor-pointer" onClick={() => setUserLink(userLink ? "" : "open")}>
           Usuario
         </label>

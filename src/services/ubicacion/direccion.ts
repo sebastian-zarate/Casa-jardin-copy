@@ -41,49 +41,7 @@ export async function updateDireccionById(direccionId: number, data: {
     data: newDireccion,
   });
 }
-export async function updateDireccionByIdUser(userId: number, rolId: number, data: {
-  calle: string;
-  numero: number;
-  localidadId: number;
-}) {
-  // Verificar si la provincia existe
-  //si el rol es 2 es de alumno
-  if (rolId === 2) {
-    const alumno = await prisma.alumno.findUnique({ where: { id: userId } });
-    console.log(alumno);
-    if (!alumno) {
-      throw new Error("El usuario no existe.");
-    }
-    const direccion = await prisma.direccion.findUnique({ where: { id: Number(alumno?.direccionId) } });
-    console.log(direccion);
-    return await prisma.direccion.update({
-      where: { id: Number(alumno?.direccionId) },
-      data: {
-        calle: data.calle,
-        numero: data.numero,
-        localidadId: data.localidadId,
-      },
-    })
-  }
-  //si el rol es 3 es de profesional
-  if (rolId === 3) {
-    const profesional = await prisma.profesional.findUnique({ where: { id: userId } });
-    console.log(profesional);
-    if (!profesional) {
-      throw new Error("El usuario no existe.");
-    }
-    const direccion = await prisma.direccion.findUnique({ where: { id: Number(profesional?.direccionId) } });
-    console.log(direccion);
-    return await prisma.direccion.update({
-      where: { id: Number(profesional?.direccionId) },
-      data: {
-        calle: data.calle,
-        numero: data.numero,
-        localidadId: data.localidadId,
-      },
-    })
-  }
-}
+
 export async function getDireccionByCalleNumero(calle: string, numero: number) {
   return await prisma.direccion.findFirst({
     where: {
@@ -156,4 +114,22 @@ export async function getLocalidadesByProvincia(provinciaId: number) {
       nombre: true,
     },
   });
+}
+
+export async function getDireccionCompleta (DireccionId: number) {
+  const direccion = await prisma.direccion.findUnique({
+    where: { id: DireccionId },
+    include: {
+      localidad: {
+        include: {
+          provincia: {
+            include: {
+              nacionalidad: true
+            }
+          }
+        }
+      }
+    }
+  });
+  return direccion;
 }

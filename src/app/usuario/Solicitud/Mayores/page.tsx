@@ -9,7 +9,7 @@ import SeleccionTaller from './componentes/seleccionTaller';
 import DatosAlumno from './componentes/datosAlumno';
 import EmailPage from '../email/page';
 import { Alumno, createAlumno, getAlumnoByEmail, updateAlumno } from '@/services/Alumno';
-import { addDireccion, getDireccionById } from '@/services/ubicacion/direccion';
+import { addDireccion, getDireccionById, getDireccionCompleta } from '@/services/ubicacion/direccion';
 import { addPais, getPaisById } from '@/services/ubicacion/pais';
 import { addProvincias, getProvinciasById } from '@/services/ubicacion/provincia';
 import { createSolicitudMayor } from '@/services/Solicitud/SolicitudMayor';
@@ -84,11 +84,15 @@ const Mayores: React.FC = () => {
     useEffect(() => {
         if (user) {
             const cargarAlumno = async () => {
-                const direccion = await getDireccionById(Number(user.direccionId))
+                /* const direccion = await getDireccionById(Number(user.direccionId))
                 const localidad = await getLocalidadById(Number(direccion?.localidadId))
                 const provincia = await getProvinciasById(Number(localidad?.provinciaId))
                 const pais = await getPaisById(Number(provincia?.nacionalidadId))
-
+ */
+                const direccion = await getDireccionCompleta(Number(user.direccionId))
+                const localidad = direccion?.localidad
+                const provincia = localidad?.provincia
+                const pais = provincia?.nacionalidad
                 setDatosAlumno({
                     nombre: user.nombre,
                     apellido: user.apellido,
@@ -97,7 +101,7 @@ const Mayores: React.FC = () => {
                     dni: user.dni,
                     pais: pais?.nombre || "",
                     provincia: provincia?.nombre || "",
-                    localidad: localidad?.nombre || "",
+                    localidad: (localidad?.nombre) || "",
                     calle: direccion?.calle || "",
                     numero: direccion?.numero || 0,
                 })

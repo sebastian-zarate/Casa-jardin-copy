@@ -14,6 +14,7 @@ import { useRouter } from 'next/navigation';
 import { autorizarUser, fetchUserData } from '@/helpers/cookies';
 import { getAlumnoByEmail } from '@/services/Alumno';
 import withAuthUser from "../../../components/alumno/userAuth";
+import { getDireccionCompleta } from '@/services/ubicacion/direccion';
 
 
 const principal: React.FC = () => {
@@ -22,47 +23,55 @@ const principal: React.FC = () => {
     const [userName, setUserName] = useState<string>('');
 
     const [email, setEmail] = useState<string>('');
-
+    const [usuario, setUsuario] = useState<any>(null);
 
     const router = useRouter();
     // Para cambiar al usuario de página si no está logeado
     useEffect(() => {
         const authorizeAndFetchData = async () => {
-            console.time("authorizeAndFetchData");
+            
             // Primero verifico que el user esté logeado
-            console.log("router", router);
+          //  console.log("router", router);
             await autorizarUser(router);
             // Una vez autorizado obtengo los datos del user y seteo el email
             const user = await fetchUserData();
-            console.log("user", user);
-            setEmail(user.email);
-            console.timeEnd("authorizeAndFetchData");
+           // console.log("user", user);
+            //const direccion = await getDireccionByIdDef(Number(user?.direccionId));
+            setUsuario(user);
+            setUserName(user?.nombre + " " + user?.apellido);            
+   /*          if (direccion) {
+                console.log("DIRECCION", String(direccion.calle));
+            } */
+            
         };
 
         authorizeAndFetchData();
     }, [router]);
 
     async function getAllCursos() {
-        const user = await getAlumnoByEmail(email);
+  //      console.log("USER", usuario);
+        //const direccion = await getDireccionByIdDef(Number(user?.direccionId));
+//        console.log("DIRECCION", usuario?.direccionId);
+        //console.log("DIRECCION DEFINIT",direccion);
         let talleres: Curso[] = [];
-        if(user) {
-            const result = await getcursosByIdAlumno(Number(user?.id)) ?? [];
+        if (usuario) {
+            const result = await getcursosByIdAlumno(Number(usuario?.id)) ?? [];
             if (result.length > 0) {
                 talleres = result as Curso[];
             }
         }
-        console.log(user?.nombre);
-        setUserName(String(user?.nombre));
-        if(talleres.length > 0) setCursos(talleres);
+      //  console.log(usuario?.nombre);
+        //setUserName(String(usuario?.nombre));
+        if (talleres.length > 0) setCursos(talleres);
     }
 
     useEffect(() => {
-        if (cursos.length === 0)   getAllCursos();
+        if (cursos.length === 0) getAllCursos();
     }, [cursos]);
 
     return (
         <main className='flex'>
-            <Navigate /> 
+            <Navigate />
 
             <div className='absolute top-20 p-10'>
                 <h1 className=''>Bienvenido de regreso, {userName}</h1>
@@ -84,7 +93,7 @@ const principal: React.FC = () => {
                         <span>Mi cuenta</span>
                     </button>
                 </div>
-            
+
                 <h1 className='mt-40 mb-10'>Mis Talleres</h1>
                 <div className='flex ml-5 mt-5'>
                     {cursos.map((curso) => (

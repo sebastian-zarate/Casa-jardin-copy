@@ -12,7 +12,7 @@ import Background from "../../../../public/Images/Background.jpeg"
 import { getImages_talleresAdmin } from "@/services/repoImage";
 
 import Talleres from "@/components/talleres/page";
-import { addDireccion, getDireccionById, updateDireccionById, updateDireccionByIdUser } from "@/services/ubicacion/direccion";
+import { addDireccion, getDireccionById, getDireccionCompleta, updateDireccionById } from "@/services/ubicacion/direccion";
 import { addLocalidad, getLocalidadById, getLocalidadByName, Localidad, updateLocalidad } from "@/services/ubicacion/localidad";
 import { addProvincias, getProvinciasById, getProvinciasByName, updateProvinciaById } from "@/services/ubicacion/provincia";
 import { addPais, getPaisById } from "@/services/ubicacion/pais";
@@ -145,31 +145,35 @@ const Alumnos: React.FC = () => {
         return direccion;
     }
 
-    async function getUbicacion(obAlumno: any) {
+    async function getUbicacion(userUpdate: any) {
         // Obtener la dirección del usuario por su ID
-        console.log("SI DIRECCIONID ES FALSE:", Number(obAlumno?.direccionId));
-        const direccion = await getDireccionById(Number(obAlumno?.direccionId));
+        //console.log("SI DIRECCIONID ES FALSE:", Number(userUpdate?.direccionId));
+        /*         const direccion = await getDireccionById(Number(userUpdate?.direccionId));
+                //console.log("DIRECCION", direccion);
+        
+                // Obtener la localidad asociada a la dirección
+                const localidad = await getLocalidadById(Number(direccion?.localidadId));
+                //console.log("LOCALIDAD", localidad);
+        
+                // Obtener la provincia asociada a la localidad
+                const prov = await getProvinciasById(Number(localidad?.provinciaId));
+                //console.log("PROVINCIA", prov);
+        
+                // Obtener el país asociado a la provincia
+                const nacionalidad = await getPaisById(Number(prov?.nacionalidadId)); */
+       const direccion = await getDireccionCompleta(userUpdate?.direccionId);
         console.log("DIRECCION", direccion);
-
-        // Obtener la localidad asociada a la dirección
-        const localidad = await getLocalidadById(Number(direccion?.localidadId));
-        console.log("LOCALIDAD", localidad);
-
-        // Obtener la provincia asociada a la localidad
-        const prov = await getProvinciasById(Number(localidad?.provinciaId));
-        console.log("PROVINCIA", prov);
-
-        // Obtener el país asociado a la provincia
-        const nacionalidad = await getPaisById(Number(prov?.nacionalidadId));
-        console.log("Nacionalidad", nacionalidad);
+        console.log("LOCALIDAD", direccion?.localidad);
+        console.log("PROVINCIA", direccion?.localidad?.provincia);
+        console.log("PAIS", direccion?.localidad?.provincia?.nacionalidad);
+        //console.log("NACIONALIDAD", nacionalidad);
         // Actualizar los estados con los datos obtenidos
-        setLocalidadName(String(localidad?.nombre));
-        setProvinciaName(String(prov?.nombre));
-        setNacionalidadName(String(nacionalidad?.nombre));
+        setLocalidadName(String(direccion?.localidad?.nombre));
+        setProvinciaName(String(direccion?.localidad?.provincia?.nombre));
+        setNacionalidadName(String(direccion?.localidad?.provincia?.nacionalidad?.nombre));
         setNumero(Number(direccion?.numero));
         setcalle(String(direccion?.calle));
-        console.log("TODOSSS", localidadName, provinciaName, nacionalidadName, calle, numero);
-        return { direccion, localidad, prov, nacionalidad };
+        return { direccion };
     }
 
 
@@ -227,8 +231,10 @@ const Alumnos: React.FC = () => {
             setVariablesState();
             return;
         }
-        const { direccion, localidad, prov, nacionalidad } = await getUbicacion(obAlumno);
-
+        const { direccion } = await getUbicacion(obAlumno);
+        const localidad = direccion?.localidad;
+        const prov = localidad?.provincia;
+        const nacionalidad = prov?.nacionalidad;
         try {
             const newDireccion = await updateDireccionById(Number(direccion?.id), {
                 calle: String(calle),
@@ -476,5 +482,4 @@ const Alumnos: React.FC = () => {
     )
     // #endregion
 }
-
 export default withAuth(Alumnos);
