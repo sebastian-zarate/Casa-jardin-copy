@@ -5,7 +5,7 @@ import menores from "../../../../../public/Images/menores.jpg";
 import But_aside from "../../../../components/but_aside/page";
 import Image from "next/image";
 import Navigate from '../../../../components/alumno/navigate/page';
-
+import withAuthUser from "../../../../components/alumno/userAuth";
 const Inscripcion: React.FC<{}> = () => {
     return (
         <main>
@@ -48,4 +48,4 @@ const Inscripcion: React.FC<{}> = () => {
         </main>
     )
 }
-export default Inscripcion;
+export default withAuthUser(Inscripcion);

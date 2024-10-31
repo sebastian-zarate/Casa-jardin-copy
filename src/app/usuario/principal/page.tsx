@@ -3,21 +3,21 @@ import React, { useEffect, useState } from 'react';
 import Navigate from "../../../components/alumno/navigate/page";
 import But_aside from "../../../components/but_aside/page";
 import { getcursosByIdAlumno } from '@/services/alumno_curso';
-import { getAlumnoByCooki } from '@/services/Alumno';
+import { getAlumnoByCookie } from '@/services/Alumno';
 import { Curso } from '@/services/cursos';
 import Image from "next/image";
 import correoIcon from "../../../../public/Images/correoIcon.png";
 import phoneIcon from "../../../../public/Images/phoneIcon.png";
 import propuestasIcon from "../../../../public/Images/LogoCasaJardin.png";
 import editCuentaIcon from "../../../../public/Images/PenIcon.png";
-
+import withAuthUser from "../../../components/alumno/userAuth";
 const principal: React.FC = () => {
 
     const [cursos, setCursos] = useState<Curso[]>([]);
     const [userName, setUserName] = useState<string>('');
 
     async function getAllCursos() {
-        const user = await getAlumnoByCooki();
+        const user = await getAlumnoByCookie();
         let talleres: Curso[] = [];
         if(user) {
             const result = await getcursosByIdAlumno(Number(user?.id)) ?? [];
@@ -77,4 +77,4 @@ const principal: React.FC = () => {
         </main>
     )
 }
-export default principal;
+export default withAuthUser(principal);

@@ -11,7 +11,7 @@ import Background from "../../../../public/Images/Background.jpeg";
 import ButtonAdd from "../../../../public/Images/Button.png";
 import { getImages_talleresAdmin } from "@/services/repoImage";
 import { get } from "http";
-
+import withAuth from "../../../components/Admin/adminAuth";
 const Cursos: React.FC = () => {
     // Estado para almacenar la lista de cursos
     const [cursos, setCursos] = useState<{ id: number; nombre: string; year: number; descripcion: string }[]>([]);
@@ -24,13 +24,14 @@ const Cursos: React.FC = () => {
         descripcion: ''
     });
     // Estado para almacenar mensajes de error
-    const [errorMessage, setErrorMessage] = useState<string>("");
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
     //Estado para almacenar las imagenes
     const [images, setImages] = useState<any[]>([]);
     const [downloadurls, setDownloadurls] = useState<any[]>([]);
     // Efecto para obtener la lista de cursos al montar el componente
-
-//region useEffect
+    const [cursoAEliminar, setCursoAEliminar] = useState<{ id: number; nombre: string } | null>(null);
+    const [isDeleting, setIsDeleting] = useState<boolean>(false);
+    //region useEffect
     useEffect(() => {
         fetchCursos(); // Llama a la función para obtener cursos
         fetchImages();
@@ -92,8 +93,8 @@ const Cursos: React.FC = () => {
         //await getApiLocalidades(22);
         //await getApiDirecciones("Libertador San Martin");
         const result = await getImages_talleresAdmin();
-        console.log(result.images,"LAS IMAGENESSSSS")
-        console.log(result.downloadurls,"LOS DOWNLOADURLS")
+        console.log(result.images, "LAS IMAGENESSSSS")
+        console.log(result.downloadurls, "LOS DOWNLOADURLS")
         if (result.error) {
             setErrorMessage(result.error)
         } else {
@@ -109,8 +110,15 @@ const Cursos: React.FC = () => {
         const { nombre, year, descripcion } = cursoDetails;
 
         // Validar que el nombre tenga al menos 2 caracteres
-        if (nombre.length < 1) {
+        if (nombre.length < 2 && nombre.length > 50) {
+
+            return "El nombre debe tener al menos 2 caracteres y debe tener menos de 50 caracteres.";
+        }
+        else if (nombre.length < 2) {
             return "El nombre debe tener al menos 2 caracteres.";
+        }
+        else if (nombre.length > 50) {
+            return "El nombre no puede exceder los 50 caracteres.";
         }
         // Validar que el año sea mayor o igual a 2024 y que tenga hasta 4 dígitos
         if (year < 2024 || year > 9999) {
@@ -118,20 +126,20 @@ const Cursos: React.FC = () => {
         }
         // Validar que la descripción tenga al menos 10 palabras
         const descripcionWords = descripcion.trim().split(/\s+/).length;
-        if (descripcionWords < 10) {
-            return "La descripción debe tener al menos 10 palabras.";
+        if (descripcionWords < 5) {
+            return "La descripción debe tener al menos 5 palabras.";
         }
         // Validar que la descripción no tenga más de 300 palabras
         if (descripcionWords > 300) {
             return "La descripción no puede exceder las 300 palabras.";
         }
         // carrateres especiales en el nombre y la descripción
-        const regex = /^[a-zA-Z0-9_ ,.;áéíóúÁÉÍÓÚñÑüÜ]*$/;; // no quiero que tenga caracteres especiales que las comas y puntos afecten 
-        if(!regex.test(nombre)){
-                return "El nombre del curso no puede contener caracteres especiales";
-                
+        const regex = /^[a-zA-Z0-9À-ÿ\u00f1\u00d1\u00fc\u00dc\s.,:-]*$/; // no quiero que tenga caracteres especiales que las comas y puntos afecten  /^[a-zA-ZÀ-ÿ\u00f1\u00d1\u00fc\u00dc\s]*$/
+        if (!regex.test(nombre)) {
+            return "El nombre del curso no puede contener caracteres especiales";
+
         }
-        if(!regex.test(descripcion)){
+        if (!regex.test(descripcion)) {
             return "La descripción no puede contener carateres especiales"
         }
 
@@ -149,7 +157,11 @@ const Cursos: React.FC = () => {
 
         if (selectedCursoId !== null) {
             try {
-                await updateCurso(selectedCursoId, cursoDetails); // Actualiza el curso
+                const reponse = await updateCurso(selectedCursoId, cursoDetails); // Actualiza el curso
+                if (typeof reponse === "string") {
+                    setErrorMessage(reponse); // Muestra el mensaje de error si no se puede actualizar
+                    return;
+                }
                 setSelectedCursoId(null); // Resetea el curso seleccionado
                 fetchCursos(); // Refresca la lista de cursos
                 setErrorMessage(""); // Limpiar mensaje de error si todo fue bien
@@ -161,28 +173,45 @@ const Cursos: React.FC = () => {
     async function handleEliminarCurso(id: number) {
         try {
             //Ventana de confirmación para eliminar el curso
-            if (window.confirm("¿Estás seguro de que deseas eliminar este curso?")) {
-                await deleteCurso(id);
-                console.log("Curso eliminado con éxito:", id);
+           
+                const result = await deleteCurso(id); // Ahora devuelve un objeto con success y message
+                //console.log("Curso eliminado con éxito:", id);
                 //Actualizar la lista de cursos despues de eliminar alguno de ellos
-                setCursos(cursos.filter((curso) => curso.id !== id));
-            }
+
+                if (result.success === true) {
+                    console.log(result.message); // "Curso eliminado con éxito"
+                    setErrorMessage(null); // Limpiar mensaje de error en caso de éxito
+
+                    // Actualizar la lista de cursos, excluyendo el curso eliminado
+                    setCursos(cursos.filter((curso) => curso.id !== id));
+                    setCursoAEliminar(null); // Cerrar la ventana de confirmación
+                } else {
+                    // Si la eliminación falló, mostrar el mensaje de error devuelto
+                    setErrorMessage(result.message);
+                }
+            
         } catch (error) {
-            console.error("Imposible eliminar", error); //Manejo de errores
+            setErrorMessage("Hubo un error inesperado al intentar eliminar el curso."); // Manejo de errores
+
         }
     }
     async function handleCreateCurso() {
-
         const validationError = validateCursoDetails(); // Valida los detalles del curso antes de crear
-
+    
         if (validationError) {
             setErrorMessage(validationError); // Muestra el mensaje de error si la validación falla
             return;
         }
-
+    
         try {
             const newCurso = await createCurso(cursoDetails);
-            console.log("Curso creado!!:", newCurso);
+            // manejo del error si no se puede crear el curso
+        
+            if (typeof newCurso === "string") {
+                setErrorMessage(newCurso);
+            } else {
+
+
             setCursos([...cursos, newCurso]);
             setSelectedCursoId(newCurso.id); // Cierra el formulario y resetea el curso seleccionado
             setCursoDetails({
@@ -191,48 +220,38 @@ const Cursos: React.FC = () => {
                 descripcion: ''
             });
             setErrorMessage(''); // Limpia el mensaje de error si todo sale bien
-            setSelectedCursoId(null)
+            setSelectedCursoId(null);
+        }
         } catch (error) {
             console.error("Imposible crear", error);
         }
     }
-    const getUrlImage = (cursoName: string) => {
-        const image = images.find((image:any, index) => {
-            if((image.name) == cursoName + ".jpg") {
-                console.log("EL DOWLOADDD",downloadurls[index]);
-                return downloadurls[index];
-            } });
-        return image;
-    }
-    //endregion funciones
 
     //region return
     return (
         <main className="relative min-h-screen w-screen">
             <Image src={Background} alt="Background" layout="fill" objectFit="cover" quality={80} priority={true} />
-
-            <div className="fixed  justify-between w-full p-4" style={{background: "#1CABEB"}}>
+            <div className="fixed justify-between w-full p-4" style={{ background: "#1CABEB" }}>
                 <Navigate />
             </div>
-            <h1 className="absolute top-40 left-60 mb-5 text-3xl" >Talleres</h1>
 
+            <h1 className="absolute top-40 left-60 mb-5 text-3xl">Talleres</h1>
 
             <div className="top-60 border p-1 absolute left-40 h-90 max-h-90" style={{ background: "#D9D9D9" }}>
+                
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 my-4">
-                    {cursos.map((curso,index) => (
-                        <div key={curso.id} className="border p-4 mx-2 relative w-47 h-47 justify-center items-center" >
+                    {cursos.map((curso, index) => (
+                        <div key={curso.id} className="border p-4 mx-2 relative w-47 h-47 justify-center items-center">
                             <div className="relative w-30 h-20">
-                                {<Image
-                            /*         src={getUrlImage(curso.nombre)} */
+                                <Image
                                     src={downloadurls[index]}
                                     alt="Background Image"
                                     objectFit="cover"
                                     className="w-full h-full"
                                     layout="fill"
-                                />}
-
+                                />
                                 <button
-                                    onClick={() => handleEliminarCurso(curso.id)}
+                                    onClick={() => setCursoAEliminar(curso)}
                                     className="absolute top-0 right-0 text-red-600 font-bold">
                                     <Image src={DeleteIcon} alt="Eliminar" width={27} height={27} />
                                 </button>
@@ -242,25 +261,18 @@ const Cursos: React.FC = () => {
                                     <Image src={EditIcon} alt="Editar" width={27} height={27} />
                                 </button>
                             </div>
-                            <h3 className="flex  bottom-0 text-black z-1">{curso.nombre}</h3>
+                            <h3 className="flex bottom-0 text-black z-1">{curso.nombre}</h3>
                         </div>
                     ))}
                 </div>
                 <button onClick={() => setSelectedCursoId(-1)} className="mt-6 mx-4">
-                    <Image src={ButtonAdd}
-                        className="mx-3"
-                        alt="Image Alt Text"
-                        width={70}
-                        height={70} />
+                    <Image src={ButtonAdd} className="mx-3" alt="Image Alt Text" width={70} height={70} />
                 </button>
-
-
             </div>
 
-            <div className="fixed bottom-0 py-5 bg-white w-full" style={{ opacity: 0.66 }}>
+            <div className="fixed bottom-0 mt-20 bg-white w-full" style={{ opacity: 0.66 }}>
                 <But_aside />
             </div>
-
 
             {selectedCursoId !== null && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
@@ -270,7 +282,7 @@ const Cursos: React.FC = () => {
                         </h2>
                         {errorMessage && (
                             <div className="mb-4 text-red-600">
-                                {errorMessage} {/* Muestra el mensaje de error */}
+                                {errorMessage}
                             </div>
                         )}
                         <div className="mb-4">
@@ -308,7 +320,7 @@ const Cursos: React.FC = () => {
                         </div>
                         <div className="flex justify-end space-x-4">
                             <button
-                                onClick={((selectedCursoId === -1 ? handleCreateCurso : handleSaveChanges)) }
+                                onClick={((selectedCursoId === -1 ? handleCreateCurso : handleSaveChanges))}
                                 className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800"
                             >
                                 Guardar
@@ -323,8 +335,34 @@ const Cursos: React.FC = () => {
                     </div>
                 </div>
             )}
+
+            {cursoAEliminar && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                  
+
+                    <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative">
+                    {errorMessage && <div style={{ color: 'red' }}>{errorMessage}</div>}
+
+                        <h2 className="text-lg mb-4">Confirmar Eliminación</h2>
+                        <p>¿Estás seguro de que deseas eliminar el taller: <strong>{cursoAEliminar.nombre}</strong>?</p>
+                        <div className="flex justify-end space-x-4 mt-4">
+                            <button
+                                onClick={() => {
+                                    handleEliminarCurso(cursoAEliminar.id);
+                                }}
+                                disabled={isDeleting}
+                                className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800"
+                            >
+                                {isDeleting ? "Eliminando..." : "Confirmar Eliminación"}
+                            </button>
+                            <button onClick={() => setCursoAEliminar(null)} className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800">
+                                Cancelar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </main>
     );
-}
-
-export default Cursos;
+};
+export default  withAuth(Cursos);

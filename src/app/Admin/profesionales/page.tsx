@@ -17,7 +17,7 @@ import Talleres from "@/components/talleres/page";
 import { createProfesional_Curso, getCursosByIdProfesional } from "@/services/profesional_curso";
 import { Curso, getCursoById } from "@/services/cursos";
 import { addPais, getPaisById } from "@/services/ubicacion/pais";
-import { get } from "http";
+import withAuth from "../../../components/Admin/adminAuth";
 // #endregion
 
 const Profesionales = () => {
@@ -553,4 +553,4 @@ const Profesionales = () => {
     )
     // #endregion
 }
-export default Profesionales
+export default withAuth(Profesionales);

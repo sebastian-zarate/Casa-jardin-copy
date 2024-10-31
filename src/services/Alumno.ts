@@ -1,8 +1,8 @@
 "use server"
 
 import { PrismaClient } from "@prisma/client";
-import { hashPassword } from "../helpers/hashPassword";
-import { verifyPassword } from "../helpers/hashPassword";
+import { hashPassword, verifyPassword } from "../helpers/hashPassword";
+
 import { encrypt, getUserFromCookie } from "@/helpers/jwt";
 import { cookies } from "next/headers";
 const prisma = new PrismaClient();
@@ -63,24 +63,33 @@ export async function createAlumno(data: {
 
 
 // valida los datos del alumno para iniciar sesión
-export async function login(email: string, password: string) {
-  const alumno = await prisma.alumno.findUnique({ where: { email } });
-  // verifica si el alumno existe y si la contraseña es correcta
-  if (alumno && await verifyPassword(password, alumno.password)) {
-    // Contraseña correcta
-    //duración de la sesión
-    const expires = new Date(Date.now() + 1000 * 60 * 60 * 24);
-    const sesion = await encrypt({ email: alumno.email, rolId: alumno.rolId, expires })
-    //setea la cookie de la sesión
-    cookies().set("user", sesion, { expires, httpOnly: true });
-    return true;
+export async function authenticateUser(email: string, password: string): Promise<number | null> {
+  const tables = ['alumno', 'administrador', 'profesional'] as const;
+  type Table = typeof tables[number];
+  
+  // Realiza búsquedas en paralelo para cada tabla y espera el primer resultado exitoso
+  const userResults = await Promise.all(
+    tables.map((table) => (prisma[table as Table] as any).findUnique({ where: { email } }))
+  );
 
-  } else {
-    // Contraseña incorrecta
-    /* throw new Error("Email o contraseña incorrectos"); */
-    return false;
+  // Busca el primer usuario que no sea null y verifique la contraseña
+  for (const user of userResults) {
+    if (user && await verifyPassword(password, user.password)) {
+      // Crear sesión y establecer la cookie
+      // La sesión expira en 30 minutos
+      const expires = new Date(Date.now() + 15 * 60 * 1000);
+      const session = await encrypt({ email: user.email, rolId: user.rolId, expires });
+      cookies().set("user", session, { expires, httpOnly: true });
+
+      return user.rolId; // Retorna el rol del usuario autenticado
+    }
   }
+  
+  return null; // Devuelve null si no se encuentra usuario válido en ninguna tabla
 }
+
+
+
 
 
 
@@ -102,7 +111,7 @@ export async function updateAlumno(id: number, data: {
     throw new Error("El alumno no existe.");
   }
   let alumnoData: any = {};
-  console.log(data, alumno);
+
 
     // Actualizar el alumno
 
@@ -115,7 +124,7 @@ export async function updateAlumno(id: number, data: {
     telefono: data.telefono,
     direccionId: data.direccionId
   }
-  console.log(alumnoData);
+  
   return await prisma.alumno.update({
     where: { id },
     data: alumnoData,
@@ -127,6 +136,7 @@ export async function getAlumnoById(id: number) {
     where: { id },
   });
 }
+// Obtener Alumno por cookie (sesión)
 export async function getAlumnoByCookie() {
   const user = await getUserFromCookie();
   if (user && user.email) {
@@ -137,7 +147,10 @@ export async function getAlumnoByCookie() {
       }
     });
     return alumno;
-  } else return null;
+  } else{
+    return null;
+  }
+   
 }
 
 // Obtener Alumnos

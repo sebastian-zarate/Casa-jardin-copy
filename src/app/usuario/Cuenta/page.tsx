@@ -3,15 +3,15 @@ import React, { useRef, useState, useEffect, use } from 'react';
 import Background from "../../../../public/Images/Background.jpeg";
 import But_aside from "../../../components/but_aside/page";
 import Image from "next/image";
-import Navigate from '../../../components/alumno/navigate/page';
-import { getAlumnoByCooki, updateAlumno } from '@/services/Alumno';
+import Navigate from "../../../components/alumno/navigate/page";
+import { getAlumnoByCookie, updateAlumno } from '@/services/Alumno';
 import { addDireccion, getDireccionById, updateDireccionById, updateDireccionByIdUser } from '@/services/ubicacion/direccion';
 import {  addProvincias, getProvinciasById, updateProvinciaById } from '@/services/ubicacion/provincia';
 import {  addLocalidad, getLocalidadById, getLocalidadesByProvinciaId, updateLocalidad } from '@/services/ubicacion/localidad';
 import { addPais, getPaisById } from '@/services/ubicacion/pais';
 import { createAlumno_Curso, getalumnos_cursoByIdAlumno } from '@/services/alumno_curso';
 import { Curso, getCursoById } from '@/services/cursos';
-
+import withAuthUser from "../../../components/alumno/userAuth";
 type Usuario = {
     id: number;
     nombre: string;
@@ -153,7 +153,7 @@ const Cuenta: React.FC<{}> = () => {
         return {direccion, localidad, prov, nacionalidad};
     }
     async function getUser() {
-        let user = await getAlumnoByCooki();
+        let user = await getAlumnoByCookie();
         console.log(user?.nombre);
         const userUpdate: Usuario = {
             id: user?.id || 0,
@@ -501,4 +501,4 @@ const Cuenta: React.FC<{}> = () => {
     )
 }
 
-export default Cuenta;
+export default withAuthUser(Cuenta);

@@ -4,7 +4,7 @@ import { emailTest } from "@/helpers/email";
 import { obtenerCodigoConfirmacion } from "@/services/redis";
 import {autorizarUser, fetchUserData } from "@/helpers/cookies";
 import { useRouter } from "next/navigation";
-
+import withAuthUser from "../../../../components/alumno/userAuth";
 function EmailPage() {
   // Estados para gestionar los datos del formulario y errores
   const [email, setEmail] = useState("");
@@ -91,4 +91,4 @@ function EmailPage() {
   );
 }
 
-export default EmailPage;
+export default withAuthUser(EmailPage);

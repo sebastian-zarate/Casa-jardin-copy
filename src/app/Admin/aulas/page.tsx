@@ -8,7 +8,7 @@ import Image from "next/image";
 import DeleteIcon from "../../../../public/Images/DeleteIcon.png";
 import ButtonAdd from "../../../../public/Images/Button.png";
 import Background from "../../../../public/Images/Background.jpeg";
-
+import withAuth from "../../../components/Admin/adminAuth";
 // Define the Aula interface para definir la estructura de los datos de aula
 interface Aula {
     id: number;
@@ -167,4 +167,4 @@ const Aulas: React.FC = () => {
     );
 };
 
-export default Aulas;
+export default withAuth(Aulas); // Corrige el nombre del componente

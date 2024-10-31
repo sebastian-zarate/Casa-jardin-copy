@@ -5,7 +5,7 @@ import Navigate from "../../../components/Admin/navigate/page";
 
 import { createAula, getAulas, getAulaByNombre, deleteAulas } from "../../../services/aulas";
 import Image from "next/image";
-
+import withAuth from "../../../components/Admin/adminAuth";
 import Background from "../../../../public/Images/Background.jpeg";
 import Horario from "../cronograma/page"; // Importar el componente Horario
 
@@ -99,4 +99,4 @@ const Aulas: React.FC = () => {
 
 };
 
-export default Aulas;
+export default withAuth(Aulas);

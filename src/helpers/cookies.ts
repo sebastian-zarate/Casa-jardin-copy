@@ -1,5 +1,6 @@
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 
+
 //todos los metodos son del lado del cliente ya que usan llamadas a la api
 
 //chequea si el user esta logeado
@@ -55,3 +56,5 @@ export const autorizarProfesional = async (router: AppRouterInstance) => {
         router.push("/start/login");
     }
 };
+// Elimina una cookie en el cliente
+

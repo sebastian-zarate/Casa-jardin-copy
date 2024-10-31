@@ -3,7 +3,8 @@
 import React, { use, useEffect, useRef, useState } from "react";
 import Navigate from "../../../components/Admin/navigate/page";
 import But_aside from "../../../components/but_aside/page";
-import { deleteAlumno, getAlumnoByCooki, getAlumnos, updateAlumno } from "../../../services/Alumno";
+import { deleteAlumno, getAlumnos, updateAlumno } from "../../../services/Alumno";
+import { getAlumnoByCookie } from "../../../services/Alumno";
 import Image from "next/image";
 import DeleteIcon from "../../../../public/Images/DeleteIcon.png";
 import EditIcon from "../../../../public/Images/EditIcon.png";
@@ -17,6 +18,7 @@ import { addProvincias, getProvinciasById, getProvinciasByName, updateProvinciaB
 import { addPais, getPaisById } from "@/services/ubicacion/pais";
 import { createAlumno_Curso } from "@/services/alumno_curso";
 import { Curso } from "@/services/cursos";
+import withAuth from "../../../components/Admin/adminAuth";
 // #endregion
 
 const Alumnos: React.FC = () => {
@@ -110,7 +112,7 @@ const Alumnos: React.FC = () => {
     // #region Métodos
     async function fetchAlumnos() {
         try {
-            let user = await getAlumnoByCooki();
+            let user = await getAlumnoByCookie();
             setUser(user);
             const data = await getAlumnos();
             console.log(data);
@@ -466,4 +468,5 @@ const Alumnos: React.FC = () => {
     )
     // #endregion
 }
-export default Alumnos
+
+export default withAuth(Alumnos);

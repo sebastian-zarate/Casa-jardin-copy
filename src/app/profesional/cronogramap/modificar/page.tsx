@@ -8,11 +8,11 @@ import {
   getCronogramasPorAula,
   deleteCronogramas,
   deleteCronogramaDiaHora,
-} from "../../../services/cronograma/cronograma";
-import { getCursos } from "../../../services/cursos";
-import { getDias, getHoras } from "../../../services/dia";
+} from "../../../../services/cronograma/cronograma";
+import { getCursos } from "../../../../services/cursos";
+import { getDias, getHoras } from "../../../../services/dia";
 import { getAulaById } from "@/services/aulas";
-import withAuth from "../../../components/Admin/adminAuth";
+
 // Definimos una interfaz para los cursos para tipar correctamente los datos
 interface Curso {
   id: number;
@@ -133,31 +133,31 @@ export default function Horario({ idAula }: { idAula: number }) {
       const { row, col } = selectedCell;
       const id_dia = col + 1;
       const id_hora = horas[row].id;
-
+  
       if (tabla[row][col]) {
         setErrorMessage("Ya hay un curso asignado a esta hora y día.");
         return;
       }
-
+  
       try {
         const result = await createCronograma({
           id_aula: idAula,
           id_curso: cursoId,
           diasHoras: [{ id_dia, id_hora }],
         });
-
+  
         if (result.error) {
           setErrorMessage(result.error);
           return;
         }
-
+  
         setTabla((prevTabla) => {
           const newTabla = [...prevTabla];
           newTabla[row][col] =
             cursos.find((curso) => curso.id === cursoId)?.nombre || "";
           return newTabla;
         });
-
+  
         setErrorMessage(null); // Limpiar el mensaje de error
         setIsModalOpen(false); // Cerrar el modal si la operación fue exitosa
       } catch (error) {
@@ -166,7 +166,6 @@ export default function Horario({ idAula }: { idAula: number }) {
       }
     }
   };
-
   // Función para manejar la eliminación de un curso en una celda específica
   const handleDeleteContent = (rowIndex: number, colIndex: number) => {
     setDeleteTarget({ row: rowIndex, col: colIndex }); // Establecer la celda objetivo para eliminar
@@ -337,35 +336,24 @@ export default function Horario({ idAula }: { idAula: number }) {
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 z-40 flex justify-center items-center">
           <div className="bg-white p-4 rounded-lg shadow-lg max-w-md w-full z-50">
             <h2 className="text-lg font-bold mb-4">Selecciona un curso</h2>
-
-            {/* Mensaje de error en rojo */}
-            {errorMessage && (
-              <div className="text-red-700 px-4 py-2 rounded mb-4">
-                {errorMessage}
-              </div>
-            )}
-
             <ul className="max-h-60 overflow-auto">
               {loadingCursos ? (
-                <li>Cargando cursos...</li>
+                <li>Cargando cursos...</li> // Mensaje de carga de cursos
               ) : (
                 cursos.map((curso) => (
                   <li
                     key={curso.id}
                     className="p-2 hover:bg-gray-200 cursor-pointer"
-                    onClick={() => handleSelectCurso(curso.id)}
+                    onClick={() => handleSelectCurso(curso.id)} // Seleccionar el curso al hacer clic
                   >
                     {curso.nombre}
                   </li>
                 ))
               )}
             </ul>
-
+            {/* Botón para cancelar la selección de curso */}
             <button
-              onClick={() => {
-                setIsModalOpen(false);
-                setErrorMessage(null); // Limpiar mensaje de error al cerrar modal
-              }}
+              onClick={() => setIsModalOpen(false)}
               className="mt-4 bg-gray-500 text-white px-4 py-2 rounded"
             >
               Cancelar
@@ -373,7 +361,6 @@ export default function Horario({ idAula }: { idAula: number }) {
           </div>
         </div>
       )}
-
 
       {/* Modal para confirmar la eliminación de un curso específico */}
       {isDeleteModalOpen && deleteTarget && (
@@ -386,7 +373,7 @@ export default function Horario({ idAula }: { idAula: number }) {
             {deleteTarget ? (
               <p>¿Estás seguro de que deseas eliminar este curso?</p>
             ) : (
-              <p>¿Estás seguro de que deseas eliminar todo el cronograma de {aulaNombre}?</p>
+              <p>¿Estás seguro de que deseas eliminar todo el cronograma de este aula?</p>
             )}
             <div className="flex justify-end mt-4">
               {/* Botón para cancelar la eliminación */}
@@ -410,12 +397,12 @@ export default function Horario({ idAula }: { idAula: number }) {
           </div>
         </div>
       )}
-
-      {/* Modal de confirmación para limpiar todo el cronograma */}
+        
+        {/* Modal de confirmación para limpiar todo el cronograma */}
       {isConfirmModalOpen && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 z-40 flex justify-center items-center">
           <div className="bg-white p-4 rounded-lg shadow-lg max-w-md w-full z-50">
-            <h2 className="text-lg font-bold mb-4">¿Estás seguro de eliminar todo el cronograma del {aulaNombre}?</h2>
+            <h2 className="text-lg font-bold mb-4">¿Estás seguro de eliminar todo el cronograma?</h2>
             <div className="flex justify-between mt-4">
               <button
                 onClick={Limpiartodoelcronogrma}
