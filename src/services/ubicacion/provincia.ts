@@ -12,14 +12,6 @@ export type Provincia = {
 }
 
 
-export async function getProvincias() {
-  return await prisma.nacionalidad.findMany({
-    select: {
-      id: true,
-      nombre: true,
-    },
-  });
-}
 
 export async function getProvinciasById(ProvinciasId: number) {
   return await prisma.provincia.findUnique({

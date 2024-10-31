@@ -81,40 +81,6 @@ export async function getDireccionById(DireccionId: number) {
   console.log(direccion);
   return direccion;
 }
-//obtengo dirección por ID
-export async function getDireccionByLocalidadId(LocalidadId: number) {
-  return await prisma.direccion.findMany({
-    where: {
-      localidadId: Number(LocalidadId),
-    }
-  })
-}
-// en esta funsion se obtienen las provincias por pais segun lo que se seleccione en el formulario de registro
-// para poder mostrarlas en el formulario de registro de alumno
-export async function getProvinciasByPais(paisId: number) {
-  return await prisma.provincia.findMany({
-    where: {
-      nacionalidadId: Number(paisId),
-    },
-    select: {
-      id: true,
-      nombre: true,
-    },
-  });
-}
-// en esta funsion se obtienen las localidades por provincia segun lo que se seleccione en el formulario de registro
-// para poder mostrarlas en el formulario de registro de alumno
-export async function getLocalidadesByProvincia(provinciaId: number) {
-  return await prisma.localidad.findMany({
-    where: {
-      provinciaId: Number(provinciaId),
-    },
-    select: {
-      id: true,
-      nombre: true,
-    },
-  });
-}
 
 export async function getDireccionCompleta (DireccionId: number) {
   const direccion = await prisma.direccion.findUnique({

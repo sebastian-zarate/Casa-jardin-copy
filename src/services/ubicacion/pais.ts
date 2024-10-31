@@ -10,14 +10,6 @@ export type Pais = {
 
 // en esta funcion se obtienen los paises
 // para poder mostrarlos en el formulario de registro
-export async function getPaises() {
-    return await prisma.nacionalidad.findMany({
-      select: {
-        id: true,
-        nombre: true,
-      },
-    });
-}
 
 export async function getPaisById(paisId: number) {
     return await prisma.nacionalidad.findUnique({
