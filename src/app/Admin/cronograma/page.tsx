@@ -8,24 +8,21 @@ import {
   getCronogramasPorAula,
   deleteCronogramas,
   deleteCronogramaDiaHora,
-} from "../../../services/cronograma";
+} from "../../../services/cronograma/cronograma";
 import { getCursos } from "../../../services/cursos";
 import { getDias, getHoras } from "../../../services/dia";
 import { getAulaById } from "@/services/aulas";
-
+import withAuth from "../../../components/Admin/adminAuth";
 // Definimos una interfaz para los cursos para tipar correctamente los datos
 interface Curso {
   id: number;
   nombre: string;
 }
 
-// Interfaz para las propiedades del componente, en este caso, el ID del aula
-interface HorarioProps {
-  idAula: number; // Recibir el id del aula como prop
-}
+
 
 // Componente principal Horario
-export default function Horario({ idAula }: HorarioProps) {
+export default function Horario({ idAula }: { idAula: number }) {
   // Estados para almacenar datos y manejar la UI
   const [horas, setHoras] = useState<{ id: number; hora_inicio: string }[]>([]); // Horas del cronograma
   const [dias, setDias] = useState<string[]>([]); // Días de la semana
@@ -129,43 +126,43 @@ export default function Horario({ idAula }: HorarioProps) {
   };
 
   // Función para manejar la selección de un curso
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
   const handleSelectCurso = async (cursoId: number) => {
     if (selectedCell) {
       const { row, col } = selectedCell;
-      const id_dia = col + 1; // Día correspondiente (1 = Lunes, etc.)
+      const id_dia = col + 1;
       const id_hora = horas[row].id;
 
-      // Verificar si ya existe un curso en esa celda
       if (tabla[row][col]) {
-        alert("Ya hay un curso asignado a esta hora y día.");
+        setErrorMessage("Ya hay un curso asignado a esta hora y día.");
         return;
       }
 
       try {
-        // Guardar en el cronograma
-        const op = await createCronograma({
-          id_aula: idAula, // Usar el id del aula actual
+        const result = await createCronograma({
+          id_aula: idAula,
           id_curso: cursoId,
           diasHoras: [{ id_dia, id_hora }],
-
         });
 
-
-
-        // Si la creación fue exitosa, actualizar la tabla en el estado
-        if (op === 1) {
-          setTabla((prevTabla) => {
-            const newTabla = [...prevTabla];
-            newTabla[row][col] =
-              cursos.find((curso) => curso.id === cursoId)?.nombre || "";
-            return newTabla;
-          });
+        if (result.error) {
+          setErrorMessage(result.error);
+          return;
         }
 
+        setTabla((prevTabla) => {
+          const newTabla = [...prevTabla];
+          newTabla[row][col] =
+            cursos.find((curso) => curso.id === cursoId)?.nombre || "";
+          return newTabla;
+        });
+
+        setErrorMessage(null); // Limpiar el mensaje de error
         setIsModalOpen(false); // Cerrar el modal si la operación fue exitosa
       } catch (error) {
         console.error("Error al crear el cronograma:", error);
-        setError("Error al asignar el curso. Intente nuevamente."); // Establecer mensaje de error
+        setErrorMessage("Error al asignar el curso. Intente nuevamente.");
       }
     }
   };
@@ -340,24 +337,35 @@ export default function Horario({ idAula }: HorarioProps) {
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 z-40 flex justify-center items-center">
           <div className="bg-white p-4 rounded-lg shadow-lg max-w-md w-full z-50">
             <h2 className="text-lg font-bold mb-4">Selecciona un curso</h2>
+
+            {/* Mensaje de error en rojo */}
+            {errorMessage && (
+              <div className="text-red-700 px-4 py-2 rounded mb-4">
+                {errorMessage}
+              </div>
+            )}
+
             <ul className="max-h-60 overflow-auto">
               {loadingCursos ? (
-                <li>Cargando cursos...</li> // Mensaje de carga de cursos
+                <li>Cargando cursos...</li>
               ) : (
                 cursos.map((curso) => (
                   <li
                     key={curso.id}
                     className="p-2 hover:bg-gray-200 cursor-pointer"
-                    onClick={() => handleSelectCurso(curso.id)} // Seleccionar el curso al hacer clic
+                    onClick={() => handleSelectCurso(curso.id)}
                   >
                     {curso.nombre}
                   </li>
                 ))
               )}
             </ul>
-            {/* Botón para cancelar la selección de curso */}
+
             <button
-              onClick={() => setIsModalOpen(false)}
+              onClick={() => {
+                setIsModalOpen(false);
+                setErrorMessage(null); // Limpiar mensaje de error al cerrar modal
+              }}
               className="mt-4 bg-gray-500 text-white px-4 py-2 rounded"
             >
               Cancelar
@@ -365,6 +373,7 @@ export default function Horario({ idAula }: HorarioProps) {
           </div>
         </div>
       )}
+
 
       {/* Modal para confirmar la eliminación de un curso específico */}
       {isDeleteModalOpen && deleteTarget && (
@@ -377,7 +386,7 @@ export default function Horario({ idAula }: HorarioProps) {
             {deleteTarget ? (
               <p>¿Estás seguro de que deseas eliminar este curso?</p>
             ) : (
-              <p>¿Estás seguro de que deseas eliminar todo el cronograma de este aula?</p>
+              <p>¿Estás seguro de que deseas eliminar todo el cronograma de {aulaNombre}?</p>
             )}
             <div className="flex justify-end mt-4">
               {/* Botón para cancelar la eliminación */}
@@ -401,12 +410,12 @@ export default function Horario({ idAula }: HorarioProps) {
           </div>
         </div>
       )}
-        
-        {/* Modal de confirmación para limpiar todo el cronograma */}
+
+      {/* Modal de confirmación para limpiar todo el cronograma */}
       {isConfirmModalOpen && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 z-40 flex justify-center items-center">
           <div className="bg-white p-4 rounded-lg shadow-lg max-w-md w-full z-50">
-            <h2 className="text-lg font-bold mb-4">¿Estás seguro de eliminar todo el cronograma?</h2>
+            <h2 className="text-lg font-bold mb-4">¿Estás seguro de eliminar todo el cronograma del {aulaNombre}?</h2>
             <div className="flex justify-between mt-4">
               <button
                 onClick={Limpiartodoelcronogrma}

@@ -23,14 +23,12 @@ export default async function userDataHandler(req: NextApiRequest, res: NextApiR
         // Obtener el usuario desde la base de datos utilizando el email del payload
         let user: any;
         //switch para saber en que tabla buscar el usuario
-        console.log("payloadDDDDDDDDDDDDDDDDDDDD", payload);
         switch (payload.rolId) {
             case 1:
                  user = await getAdminByEmail(String(payload.email));
                 break;
             case 2:
                  user = await getAlumnoByEmail(String(payload.email));
-                 console.log("1. user", user);
                 break;
             case 3:
                 user = await getProfesionalByEmail(String(payload.email));
@@ -39,10 +37,11 @@ export default async function userDataHandler(req: NextApiRequest, res: NextApiR
                 user = null;
                 break;
         }
-        console.log("2. user", user);
+
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
+
         // Retornar la información del usuario
         console.log("User data:", user);
         return res.status(200).json({ user });
@@ -51,4 +50,5 @@ export default async function userDataHandler(req: NextApiRequest, res: NextApiR
         return res.status(500).json({ error: 'Error retrieving user data' });
     }
 }
+
 

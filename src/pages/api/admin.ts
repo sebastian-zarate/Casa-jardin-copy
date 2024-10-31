@@ -1,7 +1,9 @@
+
 'use server'
 import { NextApiRequest, NextApiResponse } from 'next';
 import { verifyJWT } from '@/helpers/jwt';
-
+import router from 'next/router';
+import { cookies } from "next/headers";
 
 //llamada a la api para verificar que el usuario logeado sea un admin
 export default async function userDataHandler(req: NextApiRequest, res: NextApiResponse) {
@@ -28,3 +30,4 @@ export default async function userDataHandler(req: NextApiRequest, res: NextApiR
         return res.status(500).json({ error: 'Error retrieving user data' });
     }
 }
+

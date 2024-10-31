@@ -3,21 +3,47 @@ import React, { useEffect, useState } from 'react';
 import Navigate from "../../../components/alumno/navigate/page";
 import But_aside from "../../../components/but_aside/page";
 import { getcursosByIdAlumno } from '@/services/alumno_curso';
-import { getAlumnoByCooki } from '@/services/Alumno';
+
 import { Curso } from '@/services/cursos';
 import Image from "next/image";
 import correoIcon from "../../../../public/Images/correoIcon.png";
 import phoneIcon from "../../../../public/Images/phoneIcon.png";
 import propuestasIcon from "../../../../public/Images/LogoCasaJardin.png";
 import editCuentaIcon from "../../../../public/Images/PenIcon.png";
+import { useRouter } from 'next/navigation';
+import { autorizarUser, fetchUserData } from '@/helpers/cookies';
+import { getAlumnoByEmail } from '@/services/Alumno';
+import withAuthUser from "../../../components/alumno/userAuth";
+
 
 const principal: React.FC = () => {
 
     const [cursos, setCursos] = useState<Curso[]>([]);
     const [userName, setUserName] = useState<string>('');
 
+    const [email, setEmail] = useState<string>('');
+
+
+    const router = useRouter();
+    // Para cambiar al usuario de página si no está logeado
+    useEffect(() => {
+        const authorizeAndFetchData = async () => {
+            console.time("authorizeAndFetchData");
+            // Primero verifico que el user esté logeado
+            console.log("router", router);
+            await autorizarUser(router);
+            // Una vez autorizado obtengo los datos del user y seteo el email
+            const user = await fetchUserData();
+            console.log("user", user);
+            setEmail(user.email);
+            console.timeEnd("authorizeAndFetchData");
+        };
+
+        authorizeAndFetchData();
+    }, [router]);
+
     async function getAllCursos() {
-        const user = await getAlumnoByCooki();
+        const user = await getAlumnoByEmail(email);
         let talleres: Curso[] = [];
         if(user) {
             const result = await getcursosByIdAlumno(Number(user?.id)) ?? [];
@@ -77,4 +103,4 @@ const principal: React.FC = () => {
         </main>
     )
 }
-export default principal;
+export default withAuthUser(principal);

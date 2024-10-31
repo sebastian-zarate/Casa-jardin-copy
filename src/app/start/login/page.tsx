@@ -4,8 +4,9 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import BackgroundLibrary from "../../../../public/Images/BookShell.jpg";
 import Logo from "../../../../public/Images/LogoCasaJardin.png";
-import { login } from "../../../services/Alumno"; // Importa la función `login` desde el servicio
-import {useRouter} from "next/navigation";
+import { authenticateUser } from "../../../services/Alumno"; // Importa la función `login` desde el servicio
+import { useRouter } from "next/navigation";
+
 
 function Login() {
   // Estados para gestionar los datos del formulario y errores
@@ -19,9 +20,9 @@ function Login() {
     const newErrors: { email?: string; password?: string } = {};
     
     // Validación del email
-    if (email.length === 0) {
+    if (!email) {
       newErrors.email = "El email es requerido.";
-  } else if (errors.email) {
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
       newErrors.email = "El email no es válido.";
     }
 
@@ -40,33 +41,47 @@ function Login() {
   };
 
   useEffect(() => {
-    if (errors != null ) {
-        setInterval(() => {
-            setErrors({email: "", password: ""});
-        }, 10000);
-    }
+    if (errors.email || errors.password) {
+      const timer = setTimeout(() => {
+        setErrors({ email: "", password: "" });
+      }, 10000);
 
-}, [errors]);
+      return () => clearTimeout(timer); // Limpiar el timer si el componente se desmonta
+    }
+  }, [errors]);
+
   // Función para manejar el envío del formulario
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-/*     const alumno = await login(email, password);
-    console.log("EL ALUMNOOOOOOO",alumno); */
+    
     // Valida los datos del formulario
     if (validate()) {
-        // Llama a la función `login` para verificar email y contraseña
-        const alumno = await login(email, password);
-        console.log("EL ALUMNOOOOOOO",alumno);
-        if (alumno) {
-          console.log("Inicio de sesión exitoso", alumno);
-          // por ahora redirige al inicio
-          router.push("/usuario/principal");
-        }else{
-          setErrors({ email: "Email o contraseña incorrectos." });
-        }
+      // Llama a la función `login` para verificar email y contraseña
+      const rolId = await authenticateUser(email, password);
+      if (rolId) {
+         redirectToRolePage(rolId, router);
+      } else {
+        setErrors({ email: "Email o contraseña incorrectos." });
+      }
     }
   };
+ 
 
+
+  function redirectToRolePage(rolId: number | null, router: ReturnType<typeof useRouter>) {
+    if (!rolId) {
+      return; // No se pudo autenticar al usuario
+    }
+    // Redirige según el rol del usuario
+    const routes: { [key: number]: string; default: string } = {
+      1: "/Admin/Inicio",
+      2: "/usuario/principal",
+      3: "/profesional/principal",
+      default:"/start/login",
+    };
+  
+    router.replace(routes[rolId] || routes.default);
+  }
 
   //region Return
   return (
@@ -83,18 +98,18 @@ function Login() {
 
       {/* Contenedor principal del formulario de inicio de sesión */}
       <div
-    style={{
-      backgroundColor: 'rgba(28, 171, 235, 1)', // Fondo con opacidad aplicada
-      position: 'relative',
-      zIndex: 2,
-      display: 'flex',
-      flexDirection: 'column',
-      padding: '50px 100px',
-      height: '828px',
-      borderRadius: '50px', // Bordes redondeados
-      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)', // Sombra para dar profundidad
-    }}
-  >
+        style={{
+          backgroundColor: 'rgba(28, 171, 235, 1)', // Fondo con opacidad aplicada
+          position: 'relative',
+          zIndex: 2,
+          display: 'flex',
+          flexDirection: 'column',
+          padding: '50px 100px',
+          height: '828px',
+          borderRadius: '50px', // Bordes redondeados
+          boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)', // Sombra para dar profundidad
+        }}
+      >
         {/* Logo de la aplicación */}
         <Image src={Logo} alt="Logo Casa Jardin" width={150} height={150} className="mx-16" />
 
@@ -135,7 +150,6 @@ function Login() {
           <button
             type="submit"
             className="w-full p-3 bg-red-500 text rounded-md font-medium hover:bg-red-600 transition duration-300"
-            onClick={() => console.log(errors.email, errors.password)}
           >
             Iniciar Sesión
           </button>

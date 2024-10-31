@@ -8,17 +8,18 @@ import Reglamentacion from './componentes/reglamentacion';
 import SeleccionTaller from './componentes/seleccionTaller';
 import DatosAlumno from './componentes/datosAlumno';
 import EmailPage from '../email/page';
-import { createSolicitud } from '@/services/Solicitud/Solicitud';
 import { Alumno, createAlumno, getAlumnoByEmail, updateAlumno } from '@/services/Alumno';
 import { addDireccion, getDireccionById } from '@/services/ubicacion/direccion';
 import { addPais, getPaisById } from '@/services/ubicacion/pais';
 import { addProvincias, getProvinciasById } from '@/services/ubicacion/provincia';
 import { createSolicitudMayor } from '@/services/Solicitud/SolicitudMayor';
-import { createCursoSolicitud } from '@/services/curso_solicitud';
+import { createSolicitud } from '@/services/Solicitud/Solicitud';
 import { useRouter } from 'next/navigation';
 import { autorizarUser, fetchUserData } from '@/helpers/cookies';
-import { getLocalidadById } from '@/services/ubicacion/localidad';
+import { addLocalidad, getLocalidadById } from '@/services/ubicacion/localidad';
 import { createAlumno_Curso } from '@/services/alumno_curso';
+import { createCursoSolicitud } from '@/services/curso_solicitud';
+import withAuthUser from "../../../../components/alumno/userAuth";
 
 const Mayores: React.FC = () => {
     //region UseState
@@ -184,7 +185,7 @@ const Mayores: React.FC = () => {
         //crear ubicaciones
         const pais = await addPais({ "nombre": datosAlumno.pais })
         const provincia = await addProvincias({ "nombre": datosAlumno.provincia, "nacionalidadId": pais.id })
-        const localidad = await addDireccion({ "calle": datosAlumno.calle, "numero": datosAlumno.numero, "localidadId": provincia.id })
+        const localidad = await addLocalidad({ "nombre": datosAlumno.localidad, "provinciaId": provincia.id })
         const direccion = await addDireccion({ "calle": datosAlumno.calle, "numero": datosAlumno.numero, "localidadId": localidad.id })
 
         //alumno que pudo ser actualizado
@@ -322,4 +323,4 @@ const Mayores: React.FC = () => {
         </main>
     )
 }
-export default Mayores;
+export default withAuthUser(Mayores);

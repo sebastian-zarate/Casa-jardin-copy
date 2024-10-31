@@ -3,17 +3,18 @@ import React, { useRef, useState, useEffect, use } from 'react';
 import Background from "../../../../public/Images/Background.jpeg";
 import But_aside from "../../../components/but_aside/page";
 import Image from "next/image";
-import Navigate from '../../../components/alumno/navigate/page';
-import { getAlumnoByEmail, updateAlumno } from '@/services/Alumno';
-import { addDireccion, Direccion, getDireccionById, updateDireccionById, updateDireccionByIdUser } from '@/services/ubicacion/direccion';
-import {  addProvincias, getProvinciasById, Provincia, updateProvinciaById } from '@/services/ubicacion/provincia';
-import {  addLocalidad, getLocalidadById, getLocalidadesByProvinciaId, Localidad, updateLocalidad } from '@/services/ubicacion/localidad';
-import { addPais, getPaisById, Pais } from '@/services/ubicacion/pais';
+import Navigate from "../../../components/alumno/navigate/page";
+import { getAlumnoByCookie, getAlumnoByEmail, updateAlumno } from '@/services/Alumno';
+import { addDireccion, getDireccionById, updateDireccionById, updateDireccionByIdUser } from '@/services/ubicacion/direccion';
+import {  addProvincias, getProvinciasById, updateProvinciaById } from '@/services/ubicacion/provincia';
+import {  addLocalidad, getLocalidadById, getLocalidadesByProvinciaId, updateLocalidad } from '@/services/ubicacion/localidad';
+import { addPais, getPaisById } from '@/services/ubicacion/pais';
 import { createAlumno_Curso, getalumnos_cursoByIdAlumno } from '@/services/alumno_curso';
 import { Curso, getCursoById } from '@/services/cursos';
-import { autorizarUser, fetchUserData } from '@/helpers/cookies';
+import withAuthUser from "../../../components/alumno/userAuth";
 import { useRouter } from 'next/navigation';
-
+import { autorizarUser, fetchUserData } from '@/helpers/cookies';
+import PasswordComponent from '@/components/Password/page';
 type Usuario = {
     id: number;
     nombre: string;
@@ -26,8 +27,7 @@ type Usuario = {
     rolId: number;
 };
 
-
-export default function Cuenta() {
+const Cuenta: React.FC = () => {
     //region UseStates
     // Estado para asegurar cambios, inicialmente 0
     const [openBox, setOpenBox] = useState<number>(0);
@@ -43,8 +43,8 @@ export default function Cuenta() {
 
     // Estado para almacenar los detalles del curso, inicialmente vacío
     const [alumnoDetails, setAlumnoDetails] = useState<{
-        id:Number; nombre: string; apellido: string; dni: number;
-        telefono: number;  email: string; /* password: string; */ direccionId?: number; rolId?: number;
+        id: Number; nombre: string; apellido: string; dni: number;
+        telefono: number; email: string; /* password: string; */ direccionId?: number; rolId?: number;
     }>({
         id: user?.id || 0,
         nombre: user?.nombre || '',
@@ -52,17 +52,17 @@ export default function Cuenta() {
         dni: user?.dni || 0,
         telefono: user?.telefono || 0,
         email: user?.email || '',
-/*         password: user?.password || '', */
+        /*         password: user?.password || '', */
         direccionId: user?.direccionId || 0,
         rolId: user?.rolId || 0
     });
 
-    const [nacionalidadName, setNacionalidadName] = useState<string >();
+    const [nacionalidadName, setNacionalidadName] = useState<string>();
     // Estado para almacenar el ID de la provincia, inicialmente nulo
-    const [provinciaName, setProvinciaName] = useState<string >();
+    const [provinciaName, setProvinciaName] = useState<string>();
 
     // Estado para almacenar el ID de la localidad, inicialmente nulo
-    const [localidadName, setLocalidadName] = useState<string >();
+    const [localidadName, setLocalidadName] = useState<string>();
 
     // Estado para almacenar la calle, inicialmente nulo
     const [calle, setcalle] = useState<string | null>();
@@ -74,36 +74,38 @@ export default function Cuenta() {
     const [cursosElegido, setCursosElegido] = useState<Curso[]>([]);
     //para obtener user by email
     const [email, setEmail] = useState<any>();
+    const [habilitarCambioContraseña, setHabilitarCambioContraseña] = useState<boolean>(false);
+    const [correcto, setCorrecto] = useState<boolean>(true);
     //endregion
 
     //region UseEffects
     // Función para obtener los datos del usuario
 
     const router = useRouter();
-    useEffect(() =>  {
+    useEffect(() => {
         if (openBox === 0 && email) {
             console.log("se actualiza el usuario");
-            getUser();  
- 
-            
+            getUser();
+
+
         }
     }, [email]);
 
     // Para cambiar al usuario de página si no está logeado
     useEffect(() => {
-      const authorizeAndFetchData = async () => {
-        console.time("authorizeAndFetchData");
-        // Primero verifico que el user esté logeado
-        console.log("router", router);
-        await autorizarUser(router);
-        // Una vez autorizado obtengo los datos del user y seteo el email
-        const user = await fetchUserData();
-        console.log("user", user);  
-        setEmail(user.email);
-        console.timeEnd("authorizeAndFetchData");
-      };
-  
-      authorizeAndFetchData();
+        const authorizeAndFetchData = async () => {
+            console.time("authorizeAndFetchData");
+            // Primero verifico que el user esté logeado
+            console.log("router", router);
+            await autorizarUser(router);
+            // Una vez autorizado obtengo los datos del user y seteo el email
+            const user = await fetchUserData();
+            console.log("user", user);
+            setEmail(user.email);
+            console.timeEnd("authorizeAndFetchData");
+        };
+
+        authorizeAndFetchData();
     }, [router]);
 
 
@@ -123,7 +125,7 @@ export default function Cuenta() {
     //endregion
 
     //region Funciones
-    async function getCursosElegidos(id:number) {
+    async function getCursosElegidos(id: number) {
         const cursos = await getalumnos_cursoByIdAlumno(id);
         console.log("CURSOS1", cursos);
         let array: Curso[] = [];
@@ -134,12 +136,12 @@ export default function Cuenta() {
             console.log("CURSOS2", curs);
 
         });
-        setCursosElegido(array); 
+        setCursosElegido(array);
         console.log("CURSOS3", cursosElegido);
     }
 
 
-       async function createUbicacion() {
+    async function createUbicacion() {
         // Obtener la localidad asociada a la dirección
         console.log("Antes de crear la ubicacion", (localidadName), calle, numero, provinciaName, nacionalidadName);
         const nacionalidad = await addPais({ nombre: String(nacionalidadName) });
@@ -147,9 +149,9 @@ export default function Cuenta() {
 
         const localidad = await addLocalidad({ nombre: String(localidadName), provinciaId: Number(prov?.id) });
         console.log("LOCALIDAD", localidad);
-        const direccion = await addDireccion({ calle: String(calle), numero: Number(numero), localidadId: Number(localidad?.id )});
+        const direccion = await addDireccion({ calle: String(calle), numero: Number(numero), localidadId: Number(localidad?.id) });
         console.log("DIRECCION", direccion);
-        return  {direccion, nacionalidad} ;
+        return { direccion, nacionalidad };
     }
     async function getUbicacion(userUpdate: any) {
         // Obtener la dirección del usuario por su ID
@@ -170,11 +172,11 @@ export default function Cuenta() {
         console.log("NACIONALIDAD", nacionalidad);
         // Actualizar los estados con los datos obtenidos
         setLocalidadName(String(localidad?.nombre));
-        setProvinciaName(String(prov?.nombre)); 
+        setProvinciaName(String(prov?.nombre));
         setNacionalidadName(String(nacionalidad?.nombre));
         setNumero(direccion?.numero);
         setcalle(direccion?.calle);
-        return {direccion, localidad, prov, nacionalidad};
+        return { direccion, localidad, prov, nacionalidad };
     }
     async function getUser() {
         let user = await getAlumnoByEmail(email);
@@ -186,17 +188,17 @@ export default function Cuenta() {
             dni: user?.dni || 0,
             telefono: user?.telefono || 0,
             email: user?.email || '',
-/*             password: user?.password || '', */
+            /*             password: user?.password || '', */
             direccionId: user?.direccionId || 0,
             rolId: user?.rolId || 0
         }
-        if(!userUpdate.direccionId) {
+        if (!userUpdate.direccionId) {
             setNacionalidadName("")
             setProvinciaName("")
             setLocalidadName("")
             setcalle("")
             setNumero(0)
-        } else if(userUpdate.direccionId) getUbicacion(userUpdate);
+        } else if (userUpdate.direccionId) getUbicacion(userUpdate);
         getCursosElegidos(userUpdate.id);
 
         setAlumnoDetails({
@@ -213,39 +215,39 @@ export default function Cuenta() {
     function validateAlumnoDetails() {
 
         const { nombre, apellido, dni, telefono } = alumnoDetails;
-        if ( nombre.length < 2) {
+        if (nombre.length < 2) {
             return "El nombre debe tener al menos 3 caracteres.";
         }
-        if ( apellido.length === 1) {
+        if (apellido.length === 1) {
             return "El apellido debe tener más de 0 caracteres.";
         }
         if (dni.toString().length !== 8) {
             return "El DNI debe tener 8 caracteres.";
         }
-        if ( telefono.toString().length !== 9) {
+        if (telefono.toString().length !== 9) {
             return "El teléfono debe ser un número válido de 9 dígitos.";
         }
-        if ( !nacionalidadName) {
+        if (!nacionalidadName) {
             return "El país no puede estar vacío.";
         }
-        if ( !provinciaName) {
+        if (!provinciaName) {
             return "La provincia no puede estar vacía.";
         }
-        if ( !localidadName) {
+        if (!localidadName) {
             return "La localidad no puede estar vacía.";
         }
-        if ( !calle) {
+        if (!calle) {
             return "La calle no puede estar vacía.";
         }
-        if ( !numero) {
+        if (!numero) {
             return "El número no puede estar vacío.";
         }
         // no puede contener caracteres especiales solo letras y numeros y comas y puntos y acentos
         const regex = /^[a-zA-Z0-9_ ,.;áéíóúÁÉÍÓÚñÑüÜ]*$/;
-        if(!regex.test(nombre) || !regex.test(apellido)){
+        if (!regex.test(nombre) || !regex.test(apellido)) {
             return "El nombre no puede contener caracteres especiales";
         }
-        if(!regex.test(calle)){
+        if (!regex.test(calle)) {
             return "La calle no puede contener caracteres especiales";
         }
         return false;
@@ -266,15 +268,15 @@ export default function Cuenta() {
             setErrorMessage(validationError);
             return;
         }
-        if(!alumnoDetails.direccionId) {
-            const {direccion} = await createUbicacion();
+        if (!alumnoDetails.direccionId) {
+            const { direccion } = await createUbicacion();
             console.log("ALUMNODETAILS", alumnoDetails);
-            const newAlumno = await updateAlumno(Number(alumnoDetails?.id ), {
+            const newAlumno = await updateAlumno(Number(alumnoDetails?.id), {
                 nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
-                dni: Number(alumnoDetails.dni), email: alumnoDetails.email,telefono: Number(alumnoDetails.telefono),
+                dni: Number(alumnoDetails.dni), email: alumnoDetails.email, telefono: Number(alumnoDetails.telefono),
                 direccionId: Number(direccion?.id)
             });
-            if(typeof newAlumno === "string") return setErrorMessage(newAlumno);
+            if (typeof newAlumno === "string") return setErrorMessage(newAlumno);
             newAlumno.direccionId = direccion?.id;
             console.log("newAlumno", newAlumno);
             setOpenBox(0);
@@ -344,14 +346,14 @@ export default function Cuenta() {
                             <label className="block text-gray-700 font-bold mb-2">Talleres:</label>
                             {cursosElegido.length !== 0 ? (
                                 <p className="p-2 border rounded bg-gray-100">
-                                    {cursosElegido.map((curso) => curso.nombre).join(', ')} 
+                                    {cursosElegido.map((curso) => curso.nombre).join(', ')}
                                 </p>
-                            ) : <p className="p-2 border rounded bg-gray-100">Talleres no cargados</p> }
+                            ) : <p className="p-2 border rounded bg-gray-100">Talleres no cargados</p>}
                         </div>
 
                         <div className="mb-4">
                             <label className="block text-gray-700 font-bold mb-2">Domicilio:</label>
-                            <p className="p-2 border rounded bg-gray-100">{nacionalidadName ? nacionalidadName : "-"}, {provinciaName ? provinciaName : "-"}, {localidadName ? localidadName : "-"}, { calle ? calle : "-"} {numero ? numero : "-"}</p>
+                            <p className="p-2 border rounded bg-gray-100">{nacionalidadName ? nacionalidadName : "-"}, {provinciaName ? provinciaName : "-"}, {localidadName ? localidadName : "-"}, {calle ? calle : "-"} {numero ? numero : "-"}</p>
                         </div>
 
                         <div className="mb-4">
@@ -363,7 +365,7 @@ export default function Cuenta() {
                             <label className="block text-gray-700 font-bold mb-2">email:</label>
                             <p className="p-2 border rounded bg-gray-100">{user?.email}</p>
                         </div>
-{/* 
+                        {/* 
                         <div className="mb-4">
                             <label className="block text-gray-700 font-bold mb-2">password:</label>
                             <p className="p-2 border rounded bg-gray-100">
@@ -380,7 +382,7 @@ export default function Cuenta() {
                 <div className="flex items-center justify-center mt-5">
                     <button
                         className='bg-red-500 py-2 px-10 text-white rounded hover:bg-red-700'
-                        onClick={() => {setOpenBox(1); console.log(openBox)}}>
+                        onClick={() => { setOpenBox(1); console.log(openBox) }}>
                         Editar
                     </button>
                 </div>
@@ -388,7 +390,7 @@ export default function Cuenta() {
             <div className="fixed bottom-10 border-t bg-white w-full" style={{ opacity: 0.66 }}>
                 <But_aside />
             </div>
-            {openBox === 1  && (
+            {openBox === 1 && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
                     <div ref={scrollRef} className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative" style={{ height: '70vh', overflow: "auto" }}>
                         <h2 className="text-2xl font-bold mb-4">
@@ -475,7 +477,7 @@ export default function Cuenta() {
                                 className="p-2 w-full border rounded"
                             />
                         </div>}
-                        {localidadName &&<div className="mb-4">
+                        {localidadName && <div className="mb-4">
                             <label htmlFor="localidad" className="block">Localidad:</label>
                             <input
                                 type="text"
@@ -486,7 +488,7 @@ export default function Cuenta() {
                                 className="p-2 w-full border rounded"
                             />
                         </div>}
-                       {calle&& numero && <div className="mb-4">
+                        {calle && numero && <div className="mb-4">
                             <label htmlFor="calle" className="block">Calle:</label>
                             <input
                                 type="text"
@@ -495,29 +497,41 @@ export default function Cuenta() {
                                 value={String(calle)}
                                 onChange={(e) => setcalle(e.target.value)}
                                 className="p-2 w-full border rounded"
-                            />                      
-                            </div> &&
-                            <div className="mb-4">
-                            <label htmlFor="numero" className="block">Número:</label>
-                            <input
-                                type="text"
-                                id="numero"
-                                name="numero"
-                                value={Number(numero)}
-                                onChange={(e) => setNumero(Number(e.target.value))}
-                                className="p-2 w-full border rounded"
                             />
-                        </div>                                
-                            }
+                        </div> &&
+                            <div className="mb-4">
+                                <label htmlFor="numero" className="block">Número:</label>
+                                <input
+                                    type="text"
+                                    id="numero"
+                                    name="numero"
+                                    value={Number(numero)}
+                                    onChange={(e) => setNumero(Number(e.target.value))}
+                                    className="p-2 w-full border rounded"
+                                />
+                            </div>
+                        }
+                        <div>
+                            <button
+                                className="py-2  text-black font-bold rounded hover:underline"
+                                onClick={() => setHabilitarCambioContraseña(!habilitarCambioContraseña)}
+                            >
+                                Cambiar contraseña
+                            </button>
+                            {habilitarCambioContraseña && <div className=' absolute bg-slate-100 rounded-md shadow-md px-2 left-1/2 top-1/2 tranform -translate-x-1/2 -translate-y-1/2'>
+                                <button className='absolute top-2 right-2' onClick={() => setHabilitarCambioContraseña(false)}>X</button>
+                                <PasswordComponent setCorrecto={setCorrecto} correcto={correcto} />
+                            </div>}
+                        </div>
                         <div className="flex justify-end space-x-4">
                             <button
-                                onClick={() => {handleSaveChanges(); console.log("openBox", openBox)}}
+                                onClick={() => { handleSaveChanges(); console.log("openBox", openBox) }}
                                 className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800"
                             >
                                 Guardar
                             </button>
                             <button
-                                onClick={() => {setOpenBox(0);console.log(openBox)}}
+                                onClick={() => { setOpenBox(0); console.log(openBox) }}
                                 className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800"
                             >
                                 Cancelar
@@ -529,4 +543,4 @@ export default function Cuenta() {
         </main>
     )
 }
-
+export default withAuthUser(Cuenta);

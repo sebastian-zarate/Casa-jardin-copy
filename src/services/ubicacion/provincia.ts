@@ -3,7 +3,6 @@ import { API } from "@/helpers/Api";
 import { PrismaClient } from "@prisma/client";
 import axios from "axios";
 import { getRolById } from "../rol";
-import { Localidad } from "./localidad";
 
 const prisma = new PrismaClient();
 export type Provincia = {
@@ -45,11 +44,10 @@ export async function addProvincias(data: {
   nacionalidadId: number;
 }) {
   const provinciaExistente = await getProvinciasByName(data.nombre);
-  if (provinciaExistente) {
+  if(provinciaExistente){
     console.log("PROVINCIA EXISTENTE")
     return provinciaExistente;
   }
-  
   console.log("PROVINCIA NUEVA")
   const prov = await prisma.provincia.create({
     data: data
@@ -57,7 +55,7 @@ export async function addProvincias(data: {
   return prov;
 }
 
-export async function updateProvinciaById(id: number, data: {
+export async function updateProvinciaById(id:number, data: {
   nombre: string;
   nacionalidadId: number;
 }) {
@@ -70,5 +68,6 @@ export async function updateProvinciaById(id: number, data: {
   return await prisma.provincia.update({
     where: { id },
     data: newProvincia
-  });
+  });  
 }
+

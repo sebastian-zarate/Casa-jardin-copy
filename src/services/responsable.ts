@@ -1,18 +1,16 @@
-"use server"
-
+"use server";
 import { PrismaClient } from "@prisma/client";
-
 const prisma = new PrismaClient();
 
-export type Responsable = {
-    alumnoId: number
-    nombre: String
-    apellido: String
-    dni:number   
-    email: string
-    telefono: number
-    direccionId: number
-};
+//get responsable by alumno ID
+
+export async function getResponsableByAlumnoId(alumnoId: number) {
+  return await prisma.responsable.findUnique({
+    where: {
+      alumnoId: alumnoId,
+    },
+  });
+}
 
 //crear responsable
 export async function createResponsable(data: {
@@ -20,19 +18,27 @@ export async function createResponsable(data: {
   nombre: string;
   apellido: string;
   dni: number;
-  email: string;
   telefono: number;
+  email: string;
+  password: string;
   direccionId: number;
 }) {
   return await prisma.responsable.create({
     data: data,
   });
 }
-//obtener responsable por id
-export async function getResponsableById(responsableId: number) {
-  return await prisma.responsable.findUnique({
-    where: {
-      alumnoId: responsableId,
-    },
+
+//actualizar responsable
+export async function updateResponsable(id: number, data: any) {
+  return await prisma.responsable.update({
+    where: { id },
+    data: data,
+  });
+}
+
+//eliminar responsable
+export async function deleteResponsable(id: number) {
+  return await prisma.responsable.delete({
+    where: { id },
   });
 }

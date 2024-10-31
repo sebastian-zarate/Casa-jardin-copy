@@ -16,7 +16,7 @@ export async function createAlumno_Curso(data: {
     data,
   });
 }
-//obtener alumno_curso por id
+
 export async function getalumnos_cursoByIdAlumno(alumnoId: number) {
   return await prisma.alumno_Curso.findMany({
     where: {
@@ -24,15 +24,7 @@ export async function getalumnos_cursoByIdAlumno(alumnoId: number) {
     },
   });
 }
-//eliminar alumno_curso
-export async function deleteAlumno_Curso(alumno_cursoId: number) {
-  return await prisma.alumno_Curso.delete({
-    where: {
-      id: alumno_cursoId,
-    },
-  });
-}
-//obtener todos los alumnos_curso
+
 export async function getcursosByIdAlumno( alumnoId: number) {
   const alumno_cursos = await prisma.alumno_Curso.findMany({
     where: {

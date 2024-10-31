@@ -1,7 +1,6 @@
 "use server"
 
 import { PrismaClient } from "@prisma/client";
-import { Provincia } from "./provincia";
 
 const prisma = new PrismaClient();
 export type Pais = {
@@ -74,18 +73,3 @@ export async function addPais(data: {
   return pais
 
 }
-
-/* export async function getAllPais(provincias: Provincia[]) {
-  return await prisma.nacionalidad.findMany({
-    where: {
-      provincias: {
-        some: {
-          id: {
-            in: provincias.map(provincia => provincia.id)
-          }
-        }
-      }
-}
-  });
-} */
-

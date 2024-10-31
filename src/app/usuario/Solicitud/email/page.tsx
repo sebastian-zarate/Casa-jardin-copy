@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+"use client";
+import { useState, useEffect } from "react";
 import { emailTest } from "@/helpers/email";
 import { obtenerCodigoConfirmacion } from "@/services/redis";
-import { autorizarUser, fetchUserData } from "@/helpers/cookies";
+import {autorizarUser, fetchUserData } from "@/helpers/cookies";
 import { useRouter } from "next/navigation";
-
+import withAuthUser from "../../../../components/alumno/userAuth";
 interface Datos {
   setCorrecto: React.Dispatch<React.SetStateAction<boolean>>;
   correcto: boolean;
