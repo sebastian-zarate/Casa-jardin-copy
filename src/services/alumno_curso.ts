@@ -42,3 +42,8 @@ export async function getcursosByIdAlumno( alumnoId: number) {
   });
   console.log("Se encontró algún curso??????", cursos);
 }
+export async function deleteAlumno_Curso(id: number) {
+  return await prisma.alumno_Curso.delete({
+    where: { id },
+  });
+}

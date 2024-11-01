@@ -20,7 +20,6 @@ export async function createResponsable(data: {
   dni: number;
   telefono: number;
   email: string;
-  password: string;
   direccionId: number;
 }) {
   return await prisma.responsable.create({

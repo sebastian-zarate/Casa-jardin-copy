@@ -43,7 +43,7 @@ export async function deleteSolicitud(solicitudId: number) {
     });
   }
   // si es una solicitudMayor, eliminarla
-  await deleteSolicitudMayor(solicitudId);
+  if(solicitud) await deleteSolicitudMayor(solicitudId);
   const idAlumno = solicitud?.alumnoId;
   // Si no se encontró la solicitud
   if(!idAlumno) return "No se encontró la solicitud";

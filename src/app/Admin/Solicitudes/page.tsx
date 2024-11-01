@@ -8,6 +8,7 @@ import adultos from "../../../../public/Images/adultos.jpg";
 import menores from "../../../../public/Images/menores.jpg";
 import { deleteSolicitud, getAllSolicitudes, getSolicitudById, Solicitud, updateSolicitud } from "@/services/Solicitud/Solicitud";
 import { getAlumnoById } from "@/services/Alumno";
+import { getAllSolicitudesMenores } from "@/services/Solicitud/SolicitudMenor";
 
 
 const solicitudPage: React.FC = () => {
@@ -26,10 +27,12 @@ const solicitudPage: React.FC = () => {
         if (solicitudesMayores.length === 0) fetchData();
     }, [solicitudesMayores]);
     const fetchData = async () => {
-        const data = await getAllSolicitudesMayores();
+        const dataMa = await getAllSolicitudesMayores();
+        const dataMe = await getAllSolicitudesMenores();
         const soli = await getAllSolicitudes();
         setSolicitudes(soli);
-        setSolicitudesMayores(data);
+        setSolicitudesMayores(dataMa);
+        setSolicitudesMenores(dataMe);
     }
     const handleEliminarSolicitud = async (solicitudId: number) => {
         console.log(solicitudMenores);
@@ -41,13 +44,18 @@ const solicitudPage: React.FC = () => {
         const soli = await updateSolicitud(solicitudId, { leida: true });
         console.log(soli);
     }
-    const handleDatos = async (alumnoId: number, firma: string, observFirma: string, reglam: string, id:number) => {
+    const handleDatos = async (alumnoId: number, firma: string, observFirma: string, reglam: string, id: number) => {
         const alumno = await getAlumnoById(alumnoId);
         setNombreCompleto(alumno?.nombre + " " + alumno?.apellido);
         setFirmaUsoImagenes(firma);
         setObservacionesUsoImagenes(observFirma);
         setFirmaReglamento(reglam);
         setSolicitudSelected(id);
+    }
+    const heandleLeida = (solicitudId: number) => {
+        const leida = solicitudes.find((solicitud) => solicitud.id === solicitudId);
+        console.log(leida);
+        return leida;
     }
     /*
     SolicitudId
@@ -70,7 +78,7 @@ const solicitudPage: React.FC = () => {
                     <h1 className="p-3 ">Solicitudes Mayores</h1>
                 </div>
 
-                <div className="flex cursor-pointer p-5 border rounded hover:bg-slate-200">
+                <div className="flex cursor-pointer p-5 border rounded hover:bg-slate-200" onClick={()=> setHabilitarMenores(!habilitarMenores)}>
                     <Image src={menores} alt="menores" width={180} height={100} />
                     <h1 className="p-3 ">Solicitudes Menores</h1>
                 </div>
@@ -81,16 +89,44 @@ const solicitudPage: React.FC = () => {
                     <button className="absolute top-1 right-2 p-1" onClick={() => setHabilitarMayores(!habilitarMayores)}>X</button>
                     <div className="bg-green-300 p-4">
                         {solicitudesMayores.map((solicitud, key) => (
-                            <div key={key} className="bg-red-400 cursor-pointer" 
-                                onClick={() => {handleDatos(solicitud.alumnoId, solicitud.firmaUsoImagenes, solicitud.observacionesUsoImagenes, solicitud.firmaReglamento, solicitud.id);}}>
+                            <div key={key} className="bg-red-400 cursor-pointer"
+                                onClick={() => { handleDatos(solicitud.alumnoId, solicitud.firmaUsoImagenes, solicitud.observacionesUsoImagenes, solicitud.firmaReglamento, solicitud.id); }}>
                                 <span>Solicitud: {solicitud.solicitudId}</span>
-                                {solicitudes[key].leida && (
+                                { !heandleLeida(solicitud.solicitudId)?.leida && (
                                     <>
                                         <button onClick={() => handleAceptarSolicitud(solicitud.solicitudId)}>Aceptar</button>
                                         <button onClick={() => handleEliminarSolicitud(solicitud.solicitudId)}>Rechazar</button>
                                     </>
                                 )}
-                                { solicitudSelected === solicitud.id &&
+                                {solicitudSelected === solicitud.id &&
+                                    <div>
+                                        <span>{nombreCompleto} </span>
+                                        <span>{firmaUsoImagenes}</span>
+                                        <span>{observacionesUsoImagenes}</span>
+                                        <span>{firmaReglamento}</span>
+                                    </div>
+                                }
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+            {habilitarMenores && (
+                <div className="absolute  p-4 rounded shadow-md bg-white w-1/2 left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2" style={{ height: '70vh', overflow: "auto" }}>
+                    <h1 className="flex justify-center">Historial de solicitudes</h1>
+                    <button className="absolute top-1 right-2 p-1" onClick={() => setHabilitarMenores(!habilitarMenores)}>X</button>
+                    <div className="bg-green-300 p-4">
+                        {solicitudMenores.map((solicitud, key) => (
+                            <div key={key} className="bg-red-400 cursor-pointer"
+                                onClick={() => { handleDatos(solicitud.alumnoId, solicitud.firmaUsoImagenes, solicitud.observacionesUsoImagenes, solicitud.firmaReglamento, solicitud.id); }}>
+                                <span>Solicitud: {solicitud.solicitudId}</span>
+                                { !heandleLeida(solicitud.solicitudId)?.leida && (
+                                    <>
+                                        <button onClick={() => handleAceptarSolicitud(solicitud.solicitudId)}>Aceptar</button>
+                                        <button onClick={() => handleEliminarSolicitud(solicitud.solicitudId)}>Rechazar</button>
+                                    </>
+                                )}
+                                {solicitudSelected === solicitud.id &&
                                     <div>
                                         <span>{nombreCompleto}</span>
                                         <span>{firmaUsoImagenes}</span>

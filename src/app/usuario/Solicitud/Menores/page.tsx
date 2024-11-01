@@ -10,6 +10,20 @@ import AutorizacionImg from './componentes/autorizacionImagen';
 import AutorizacionSalidas from './componentes/autorizacionSalidas';
 import Reglamentacion from './componentes/reglamentacion';
 import DatosMayor from './componentes/datosMayor';
+import EmailPage from '../email/page';
+import { useRouter } from 'next/navigation';
+import { autorizarUser, fetchUserData } from '@/helpers/cookies';
+//server
+import { createSolicitud } from '@/services/Solicitud/Solicitud';
+import { addPais } from '@/services/ubicacion/pais';
+import { addProvincias } from '@/services/ubicacion/provincia';
+import { addDireccion, getDireccionCompleta } from '@/services/ubicacion/direccion';
+import { updateAlumno } from '@/services/Alumno';
+import { createSolicitudMenores } from '@/services/Solicitud/SolicitudMenor';
+import { createCursoSolicitud } from '@/services/curso_solicitud';
+import { createAlumno_Curso } from '@/services/alumno_curso';
+import { createResponsable } from '@/services/responsable';
+import { addLocalidad } from '@/services/ubicacion/localidad';
 
 const Menores: React.FC = () => {
     // Estado para almacenar la pantalla actual
@@ -62,6 +76,10 @@ const Menores: React.FC = () => {
 
    
     const [error, setError] = useState<string>('');
+    const [verificarEmail, setVerificarEmail] = useState<boolean>(false);
+    const [correcto, setCorrecto] = useState(false);
+    const [user, setUser] = useState<any>();
+
     //datos menor: nombre, apellido, edad, fecha de nacimiento, dni,pais, localidad,calle
     //datos mayor: nombre, apellido, telefono, correo electronico, dni, pais, localidad, calle
     //datos salud: enfermedad ?, alergia?, tratamiento o medicacion?, terapia?, consultas a especialistas (neurologo, cardiologo, fisioterapeutas, etc.)
@@ -71,25 +89,50 @@ const Menores: React.FC = () => {
     // Asegúrate de que tu archivo TypeScript esté correctamente referenciado en tu HTML
     //traer los datos del alumno logeado
 
-    function UserProfile() {
-        const [userData, setUserData] = useState(null);
-    
-        useEffect(() => {
-            async function fetchUserData() {
-                const response = await fetch('/api/user');
-                if (response.ok) {
-                    const data = await response.json();
-                    setUserData(data);
-                    console.log(data);
-                } else {
-                    console.error('Failed to fetch user data');
+    const router = useRouter();
+    // Para cambiar al usuario de página si no está logeado
+    useEffect(() => {
+        if(!user){
+            const authorizeAndFetchData = async () => {
+                // Primero verifico que el user esté logeado
+                await autorizarUser(router);
+                // Una vez autorizado obtengo los datos del user y seteo el email
+                const user = await fetchUserData();
+                if (user) {
+                    setUser(user);
+                    const direccion = await getDireccionCompleta(user.direccionId);
+                    const localidad = direccion?.localidad;
+                    const provincia = localidad?.provincia;
+                    const pais = provincia?.nacionalidad;
+                    //cargo los datos del menor obtenidos del usuario
+                    setDatosMenor({
+                        ...datosMenor,
+                        nombre: user.nombre,
+                        apellido: user.apellido,
+                        fechaNacimiento: String(user.fechaNacimiento),
+                        dni: Number(user.dni),
+                        pais: pais?.nombre || '',
+                        provincia: provincia?.nombre || '',
+                        localidad: localidad?.nombre || '',
+                        calle: direccion?.calle || '',
+                        numero: Number(direccion?.numero),
+                        edad: user.edad,
+                                               
+                    });
                 }
-            }
+            };
     
-            fetchUserData();
-        }, []);
-    }
-    UserProfile();
+            authorizeAndFetchData();
+        }
+    }, [router]);
+
+    useEffect(() => {
+        if(correcto) {
+            cargarSolicitud();
+            setVerificarEmail(false);
+        }
+    }, [correcto]);
+
     function validateDatos() {
         // carrateres especiales en el nombre y la descripción
         const regex = /^[a-zA-Z0-9_ ,.;áéíóúÁÉÍÓÚñÑüÜ@]*$/; // no quiero que tenga caracteres especiales que las comas y puntos afecten 
@@ -97,31 +140,31 @@ const Menores: React.FC = () => {
         if(selectedScreen === 0 && selectedCursosId.length === 0) return "Debe seleccionar al menos un taller";
         if (selectedScreen === 1) {
             // Validar que el nombre tenga al menos 2 caracteres
-            if (datosMayor.nombre.length < 1 && regex.test(datosMayor.nombre)) {
+            if (datosMenor.nombre.length < 1 && regex.test(datosMenor.nombre)) {
                 return ("El nombre debe tener al menos 2 caracteres.");
             }
-            if (datosMayor.apellido.length < 1  && regex.test(datosMayor.apellido)) {
+            if (datosMenor.apellido.length < 1  && regex.test(datosMenor.apellido)) {
                 return ("El apellido debe tener al menos 2 caracteres.");
             }
             if ((datosMenor.dni).toString().length != 8) {
                 return ("El DNI debe tener al menos 8 números.");
             }
-            if (datosMayor.pais.length < 1  && regex.test(datosMayor.pais)) {
+            if (datosMenor.pais.length < 1  && regex.test(datosMenor.pais)) {
                 return ("El país debe tener al menos 2 caracteres.");
             }
-            if (datosMayor.provincia.length < 1  && regex.test(datosMayor.provincia)) {
+            if (datosMenor.provincia.length < 1  && regex.test(datosMenor.provincia)) {
                 return ("La provincia debe tener al menos 2 caracteres.");
             }
-            if (datosMayor.localidad.length < 1  && regex.test(datosMayor.localidad)) {
+            if (datosMenor.localidad.length < 1  && regex.test(datosMenor.localidad)) {
                 return ("La localidad debe tener al menos 2 caracteres.");
             }
-            if (datosMayor.calle.length < 1  && regex.test(datosMayor.calle)) {
+            if (datosMenor.calle.length < 1  && regex.test(datosMenor.calle)) {
                 return ("La calle debe tener al menos 2 caracteres.");
             }
-            if (!datosMayor.numero) {
+            if (!datosMenor.numero) {
                 return ("El número debe tener al menos 1 número.");
             }
-            if (!datosMenor.fechaNacimiento) return ("La fecha de nacimiento es obligatoria");
+            if (!datosMenor.fechaNacimiento || datosMenor.fechaNacimiento.length < 1) return ("La fecha de nacimiento es obligatoria");
         }
         if (selectedScreen === 2) {
             // Validar que el nombre tenga al menos 2 caracteres
@@ -170,6 +213,87 @@ const Menores: React.FC = () => {
         if (err != "") return setError(err);
         setSelectedScreen(selectedScreen + 1)
     }
+    //carga de datos post confirmación
+    async function cargarSolicitud() {
+        if (datosReglamentacion.firma.length < 1 && selectedScreen === 3) return setError("Debe firmar la reglamentación");
+        //crear solicitud
+        const solicitud = await createSolicitud()
+
+        //crear ubicaciones del menor
+        const pais = await addPais({ "nombre": datosMenor.pais })
+        const provincia = await addProvincias({ "nombre": datosMenor.provincia, "nacionalidadId": pais.id })
+        const localidad = await addLocalidad({ "nombre": datosMenor.localidad, "provinciaId": provincia.id })
+        const direccion = await addDireccion({ "calle": datosMenor.calle, "numero": datosMenor.numero, "localidadId": localidad.id })
+
+        //alumno que pudo ser actualizado
+        const newAlumno = {
+            Id: Number(user?.id),
+            nombre: datosMenor.nombre,
+            apellido: datosMenor.apellido,
+            dni: datosMenor.dni,
+            telefono: datosMayor.telefono, //??????????
+            email: user.email,
+            direccionId: direccion.id,
+        }
+
+        const alumno = await updateAlumno(Number(newAlumno.Id), newAlumno)
+
+        console.log("ALUMNO::::", alumno)
+        //crear ubicaciones del mayor/responsable
+        const paisMayor = await addPais({ "nombre": datosMayor.pais })
+        const provinciaMayor = await addProvincias({ "nombre": datosMayor.provincia, "nacionalidadId": paisMayor.id })
+        const localidadMayor = await addLocalidad({ "nombre": datosMayor.localidad, "provinciaId": provinciaMayor.id })
+        const direccionMayor = await addDireccion({ "calle": datosMayor.calle, "numero": datosMayor.numero, "localidadId": localidadMayor.id })
+
+        //crear responsable del menor
+        const responsable = await createResponsable({
+            alumnoId: Number(user?.id),
+            nombre: datosMayor.nombre,
+            apellido: datosMayor.apellido,
+            dni: datosMayor.dni,
+            email: datosMayor.correoElectronico,
+            telefono: datosMayor.telefono,
+            direccionId: direccionMayor.id,
+        })
+
+        console.log("RESPONSABLE::::", responsable)
+
+        //si alumno es un string es un error
+        if (typeof alumno === "string") return setError(alumno)
+
+        //crear solicitud menor
+        const soliMenor = await createSolicitudMenores({
+            solicitudId: solicitud.id,
+            alumnoId: Number(user?.id),
+            enfermedad: datosSalud.enfermedad,
+            alergia: datosSalud.alergia,
+            medicacion: datosSalud.tratamiento,
+            terapia: datosSalud.terapia,
+            especialista: datosSalud.consultasEspecialistas,
+            motivoAsistencia: datosSalud.motivoInscripcion,
+            firmaUsoImagenes: datosAutorizacionImage.firma,
+            observacionesUsoImagenes: datosAutorizacionImage.observaciones,
+            firmaSalidas: datosAutorizacionSalidas.firma,
+            observacionesSalidas: datosAutorizacionSalidas.observaciones,
+            firmaReglamento: datosReglamentacion.firma
+        })
+
+
+        console.log("SOLIMenor::::", soliMenor)
+//        console.log("X:::::",x)
+        //crear curso solicitud y alumno_curso
+        for (let i = 0; i < selectedCursosId.length; i++) {
+            await createCursoSolicitud({
+                "cursoId": selectedCursosId[i],
+                "solicitudId": solicitud.id,
+            })
+            await createAlumno_Curso({
+                "alumnoId": Number(user?.id),
+                "cursoId": selectedCursosId[i],
+            })
+        }
+
+    }
     return (
 
         <main>
@@ -186,6 +310,7 @@ const Menores: React.FC = () => {
                 )}
                 {selectedScreen === 1 && (
                     <DatosMenor
+                        datosMenor={datosMenor}
                         setDatosMenor={setDatosMenor}
                     />
                 )}
@@ -225,7 +350,7 @@ const Menores: React.FC = () => {
                             className='mx-2 py-2 text-white rounded bg-black px-6'
                             onClick={() => {
                                 selectedScreen - 1 < 0
-                                    ? window.location.href = "http://localhost:3000/usuario/Solicitud/Inscripcion"
+                                    ? window.location.href = `${window.location.origin}/usuario/Solicitud/Inscripcion"`
                                     : setSelectedScreen(selectedScreen - 1);
                             }}
                         >
@@ -252,6 +377,7 @@ const Menores: React.FC = () => {
                         </button>
                         <button
                             className='mx-2 py-2 text-white rounded bg-black px-5'
+                            onClick={() => setVerificarEmail(true)}
                         /*  onClick={() => validarEnvio()} */
                         >
                             Enviar
@@ -259,7 +385,10 @@ const Menores: React.FC = () => {
                     </div>
                 </div>
             )}
-
+             {verificarEmail && <div className=' absolute bg-slate-100 rounded-md shadow-md px-2 left-1/2 top-1/2 tranform -translate-x-1/2 -translate-y-1/2'>
+                <button className='absolute top-2 right-2' onClick={() => setVerificarEmail(false)}>X</button>
+                <EmailPage setCorrecto={setCorrecto} correcto={correcto} />
+            </div>}
             {error != '' && <div className="absolute top-1/2 right-1/3 transform -translate-x-1/3 -translate-y-1/4 bg-white border p-4 rounded-md shadow-md w-96">
                 <h2 className="text-lg font-bold text-red-600 mb-2">Error</h2>
                 <p className="text-sm text-red-700 mb-4">{error}</p>

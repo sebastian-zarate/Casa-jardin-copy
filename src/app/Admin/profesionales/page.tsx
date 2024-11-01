@@ -19,6 +19,7 @@ import { Curso, getCursoById } from "@/services/cursos";
 import { addPais, getPaisById } from "@/services/ubicacion/pais";
 import withAuth from "../../../components/Admin/adminAuth";
 import PasswordComponent from "@/components/Password/page";
+import { hashPassword } from "@/helpers/hashPassword";
 // #endregion
 
 const Profesionales = () => {
@@ -203,7 +204,15 @@ const Profesionales = () => {
             [name]: /* name === 'password' ? (() => hashPassword(value)) :  */value 
         }));
     }
-
+    async function handlePassword(e: React.ChangeEvent<HTMLInputElement>){
+        const { value } = e.target;
+        const hash = await hashPassword(value);
+        setProfesionalDetails((prevDetails: any) => ({
+            ...prevDetails,
+            password: hash
+        }));
+        
+    }
     // Método para obtener las imagenes
     const fetchImages = async () => {
         const result = await getImagesUser();
@@ -217,7 +226,7 @@ const Profesionales = () => {
     };
     //region check validation!!
     function validateProfesionalDetails() {
-        const { nombre, apellido, email, especialidad } = profesionalDetails;
+        const { nombre, apellido, email, especialidad, password, telefono } = profesionalDetails;
 
         //validar que el nombre sea de al menos 2 caracteres
         if (nombre.length < 2) {
@@ -298,12 +307,6 @@ const Profesionales = () => {
         } catch (error) {
             console.error("Error al eliminar el profesional", error);
         }
-    }
-    function cargarDireccion() {
-        if (!obProfesional.direccionId) {
-            return false
-        }
-
     }
 
 
@@ -488,7 +491,7 @@ const Profesionales = () => {
                                 id="password"
                                 name="password"
                                 value={profesionalDetails.password}
-                                onChange={handleChange}
+                                onChange={handlePassword}
                                 className="p-2 w-full border rounded"
                             />
                         </div>}
