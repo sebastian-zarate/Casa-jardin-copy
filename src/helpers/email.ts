@@ -14,6 +14,11 @@ const googleTransporter = nodemailer.createTransport({
     user: "maldonado12net@gmail.com", // por ahora es mi correo, despues hay que cambiarlo
     pass: process.env.EMAIL_APP_PASSWORD,
   },
+  tls: {
+    rejectUnauthorized: false, // Útil si hay problemas con el certificado.
+  },
+  connectionTimeout: 15000, // Tiempo de espera para la conexión inicial (15 segundos)
+  socketTimeout: 15000, // Tiempo de espera para la transmisión de datos (15 segundos)
 });
 
 //Código de confirmación de 6 dígitos
