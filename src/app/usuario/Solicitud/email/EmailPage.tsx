@@ -33,8 +33,8 @@ interface Datos {
     authorizeAndFetchData();
   }, [router]); */
   const handleEmail = async () => {
-    if (email === "") return
-    emailTest(email)
+    if (email === "") return;
+    else emailTest(email)
   }
 
   const handleVerificarCodigo = async () => {
