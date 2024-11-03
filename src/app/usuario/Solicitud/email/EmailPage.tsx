@@ -1,10 +1,12 @@
 "use client";
 import { useState, useEffect } from "react";
 import { emailTest } from "@/helpers/email";
+import { sendEmail } from "@/helpers/sendmail";
 import { obtenerCodigoConfirmacion } from "@/services/redis";
 import {autorizarUser, fetchUserData } from "@/helpers/cookies";
 import { useRouter } from "next/navigation";
 import withAuthUser from "../../../../components/alumno/userAuth";
+import { send } from "process";
 interface Datos {
   setCorrecto: React.Dispatch<React.SetStateAction<boolean>>;
   correcto: boolean;
@@ -35,7 +37,7 @@ interface Datos {
   const handleEmail = async () => {
     console.log("enviando Email a: ", email);
     if (email === "") return;
-    await emailTest(email);
+    await sendEmail(email);
     console.log("Email enviado");
   }
 
