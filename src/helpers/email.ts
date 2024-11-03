@@ -28,6 +28,7 @@ const logoPath = path.join(process.cwd(), 'public', 'Images', 'LogoCasaJardin.pn
 
 // Función para enviar un correo electrónico con el código de confirmación
 export async function emailTest(receptor: string){
+  console.log("Email Flag: inside emailTest...");
   googleTransporter
     .sendMail({
       from: "maldonado12net@gmail.com",
