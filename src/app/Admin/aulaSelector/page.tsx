@@ -7,7 +7,7 @@ import { createAula, getAulas, getAulaByNombre, deleteAulas } from "../../../ser
 import Image from "next/image";
 import withAuth from "../../../components/Admin/adminAuth";
 import Background from "../../../../public/Images/Background.jpeg";
-import Horario from "../cronograma/page"; // Importar el componente Horario
+import { Horario } from "../cronograma/horario";
 
 // Define the Aula interface para definir la estructura de los datos de aula
 interface Aula {

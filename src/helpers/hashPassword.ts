@@ -1,3 +1,4 @@
+"use server"
 import bcrypt from 'bcrypt';
 // genera un hash de la contraseña ingresada
 export async function hashPassword(password: string): Promise<string> {

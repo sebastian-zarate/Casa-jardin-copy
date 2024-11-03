@@ -63,6 +63,7 @@ const principal: React.FC = () => {
       //  console.log(usuario?.nombre);
         //setUserName(String(usuario?.nombre));
         if (talleres.length > 0) setCursos(talleres);
+        else setCursos([]);
     }
 
     useEffect(() => {

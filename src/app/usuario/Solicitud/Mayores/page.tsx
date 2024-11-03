@@ -7,7 +7,7 @@ import AutorizacionImg from './componentes/autorizacionImagen';
 import Reglamentacion from './componentes/reglamentacion';
 import SeleccionTaller from './componentes/seleccionTaller';
 import DatosAlumno from './componentes/datosAlumno';
-import EmailPage from '../email/page';
+import EmailPage from '../email/EmailPage';
 import { Alumno, createAlumno, getAlumnoByEmail, updateAlumno } from '@/services/Alumno';
 import { addDireccion, getDireccionById, getDireccionCompleta } from '@/services/ubicacion/direccion';
 import { addPais, getPaisById } from '@/services/ubicacion/pais';
