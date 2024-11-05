@@ -19,7 +19,7 @@ export type Alumno = {
   direccionId?: number;
   rolId: number;
   fechaNacimiento?: Date;
-  mayoriaEdad?: Boolean
+  mayoriaEdad?: boolean
 };
 
 
@@ -29,6 +29,10 @@ export async function createAlumno(data: {
   apellido: string;
   email: string;
   password: string;
+  telefono: number;
+  direccionId?: number;
+  fechaNacimiento?: Date;
+  mayoriaEdad?: boolean
 
 }) {
   // Verificar si el email ya existe en la base de datos
@@ -54,9 +58,10 @@ export async function createAlumno(data: {
   };
 
   // Guardar el alumno
-  return await prisma.alumno.create({
+  const alum = await prisma.alumno.create({
     data: alumnoData,
   });
+  return alum
 }
 
 

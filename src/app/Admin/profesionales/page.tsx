@@ -25,6 +25,8 @@ import { hashPassword } from "@/helpers/hashPassword";
 const Profesionales = () => {
     // #region UseStates
     const [profesionales, setProfesionales] = useState<any[]>([]);
+    const [profesionalesBuscados, setProfesionalesBuscados] = useState<any[]>([])
+    const [profesionalAbuscar, setProfesionalAbuscar] = useState<string>("")
     const [selectedProfesional, setSelectedProfesional] = useState<any>(null);
 
     const [obProfesional, setObProfesional] = useState<any>(null);
@@ -356,7 +358,19 @@ const Profesionales = () => {
         return cursos?.cursos;
 
     }
+    // Function to handle search input change
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const searchTerm = e.target.value.toLowerCase();
+        const filteredProfesionales = profesionales.filter(profesional =>
+            profesional.nombre.toLowerCase().includes(searchTerm) ||
+            profesional.apellido.toLowerCase().includes(searchTerm)/*  ||
+            alumno.email.toLowerCase().includes(searchTerm) */
+        );
 
+        setProfesionalesBuscados([]);
+        if(e.target.value.length > 0)setProfesionalesBuscados(filteredProfesionales);
+        setProfesionalAbuscar(e.target.value);
+    };
     // #endregion
 
 
@@ -369,7 +383,29 @@ const Profesionales = () => {
                 <Navigate />
             </div>
             <h1 className="absolute top-40 left-60 mb-5 text-3xl" onClick={() => console.log(cursosElegido)} >Profesionales</h1>
-
+            <div className="absolute top-40 right-20 mb-5">
+                <div className="relative">
+                    <input
+                        type="text"
+                        placeholder="Buscar..."
+                        className="p-2 border rounded"
+                        value={profesionalAbuscar}
+                        onChange={handleSearchChange}
+                    />
+                    <div 
+                        onClick={() =>{ profesionalesBuscados.length> 0 && setProfesionales(profesionalesBuscados)}}
+                    className="absolute cursor-pointer p-3 bg-slate-500 inset-y-0 right-0 flex items-center pr-3">
+                        <Image src="/Images/SearchIcon.png" alt="Buscar" width={20} height={20} />
+                    </div>
+                </div>
+                {profesionalesBuscados.length > 0 && <div className="absolute top-10 right-0 mt-2 w-full max-w-md bg-white border rounded shadow-lg">
+                    {profesionalesBuscados.map((profesional, index) => (
+                        <div key={index} onClick={()=>setProfesionalAbuscar(profesional.nombre + " " +profesional.apellido)} className="p-2 border-b hover:bg-gray-100 cursor-pointer">
+                            <p className="text-black">{profesional.nombre} {profesional.apellido}</p>
+                        </div>
+                    ))}
+                </div>}
+            </div>
             <div className="top-60 border p-1 absolute left-40 h-90 max-h-90 w-1/2 bg-gray-400 bg-opacity-50" style={{ height: '50vh', overflow: "auto" }}>
                 <div className="flex flex-col space-y-4 my-4 w-full px-4">
                     {profesionales.map((profesional, index) => (

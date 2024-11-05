@@ -3,9 +3,10 @@
 import React, { use, useEffect, useRef, useState } from "react";
 import Navigate from "../../../components/Admin/navigate/page";
 import But_aside from "../../../components/but_aside/page";
-import { deleteAlumno, getAlumnos, updateAlumno } from "../../../services/Alumno";
+import { Alumno, createAlumno, deleteAlumno, getAlumnos, updateAlumno } from "../../../services/Alumno";
 import { getAlumnoByCookie } from "../../../services/Alumno";
 import Image from "next/image";
+import ButtonAdd from "../../../../public/Images/Button.png";
 import DeleteIcon from "../../../../public/Images/DeleteIcon.png";
 import EditIcon from "../../../../public/Images/EditIcon.png";
 import Background from "../../../../public/Images/Background.jpeg"
@@ -19,11 +20,14 @@ import { addPais, getPaisById } from "@/services/ubicacion/pais";
 import { createAlumno_Curso } from "@/services/alumno_curso";
 import { Curso } from "@/services/cursos";
 import withAuth from "../../../components/Admin/adminAuth";
+import PasswordComponent from "@/components/Password/page";
 // #endregion
 
 const Alumnos: React.FC = () => {
     // #region UseStates
     const [alumnos, setAlumnos] = useState<any[]>([]);
+    const [alumnosBuscados, setAlumnosBuscados] = useState<Alumno[]>([]);
+    const [alumnoAbuscar, setAlumnoAbuscar] = useState<string>("");
     const [selectedAlumno, setSelectedAlumno] = useState<any>(null);
 
     const [obAlumno, setObAlumno] = useState<any>(null);
@@ -57,6 +61,9 @@ const Alumnos: React.FC = () => {
 
     // Referencia para el contenedor de desplazamiento
     const scrollRef = useRef<HTMLDivElement>(null);
+
+    const [habilitarCambioContraseña, setHabilitarCambioContraseña] = useState<boolean>(false)
+    const [correcto, setCorrecto] = useState(false);
     // #endregion
 
     // #region UseEffects
@@ -161,7 +168,7 @@ const Alumnos: React.FC = () => {
         
                 // Obtener el país asociado a la provincia
                 const nacionalidad = await getPaisById(Number(prov?.nacionalidadId)); */
-       const direccion = await getDireccionCompleta(userUpdate?.direccionId);
+        const direccion = await getDireccionCompleta(userUpdate?.direccionId);
         console.log("DIRECCION", direccion);
         console.log("LOCALIDAD", direccion?.localidad);
         console.log("PROVINCIA", direccion?.localidad?.provincia);
@@ -269,7 +276,39 @@ const Alumnos: React.FC = () => {
             console.error("Error al actualizar el profesional", error);
         }
     }
+    async function handleCreateAlumno() {
+        const validationError = validatealumnoDetails();
+        const direccion = await createUbicacion();
+        console.log("newDireccion", direccion);
+        if (validationError) {
+            setErrorMessage(validationError);
+            return;
+        }
+        try {
+            //acualizo los datos de la direccion del alumno
+            const newAlumno = await createAlumno({
+                nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
+                email: String(alumnoDetails.email),
+                password: String(alumnoDetails.password),
+                telefono: Number(alumnoDetails.telefono),
+                direccionId: Number(direccion?.id)
+            });
+            if (typeof newAlumno === "string") return setErrorMessage(newAlumno);
+            for (const curso of cursosElegido) {                                  //recorre los cursos elegidos y los guarda en la tabla intermedia
+                await createAlumno_Curso({ cursoId: curso.id, alumnoId: newAlumno.id });
+                //console.log(prof_cur)
+            }
+            console.log("newAlumno", newAlumno)
+            console.log("AlumnoDet", alumnoDetails)
+            console.log(cursosElegido)
+            setAlumnos([...alumnos, newAlumno]);
+            setVariablesState();
 
+
+        } catch (error) {
+            console.error("Error al crear el profesional", error);
+        }
+    }
     async function handleEliminarAlumno(alumno: any) {
         try {
             await deleteAlumno(alumno.id);
@@ -288,6 +327,19 @@ const Alumnos: React.FC = () => {
         setCursosElegido([]);
     }
     // #endregion
+    // Function to handle search input change
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const searchTerm = e.target.value.toLowerCase();
+        const filteredAlumnos = alumnos.filter(alumno =>
+            alumno.nombre.toLowerCase().includes(searchTerm) ||
+            alumno.apellido.toLowerCase().includes(searchTerm)/*  ||
+            alumno.email.toLowerCase().includes(searchTerm) */
+        );
+
+        setAlumnosBuscados([]);
+        if (e.target.value.length > 0) setAlumnosBuscados(filteredAlumnos);
+        setAlumnoAbuscar(e.target.value);
+    };
 
 
     // #region Return
@@ -298,7 +350,30 @@ const Alumnos: React.FC = () => {
             <div className="fixed justify-between w-full p-4" style={{ background: "#1CABEB" }} >
                 <Navigate />
             </div>
-            <h1 className="absolute top-40 left-60 mb-5 text-3xl" >Alumnos</h1>
+            <h1 className="absolute bg-slate-100 top-40 left-60 mb-5 text-3xl" >Alumnos</h1>
+            <div className="absolute top-40 right-20 mb-5">
+                <div className="relative">
+                    <input
+                        type="text"
+                        placeholder="Buscar..."
+                        className="p-2 border rounded"
+                        value={alumnoAbuscar}
+                        onChange={handleSearchChange}
+                    />
+                    <div
+                        onClick={() =>{ alumnosBuscados.length> 0 && setAlumnos(alumnosBuscados)}}
+                        className="absolute cursor-pointer p-3 bg-slate-500 inset-y-0 right-0 flex items-center pr-3">
+                        <Image src="/Images/SearchIcon.png" alt="Buscar" width={20} height={20} />
+                    </div>
+                </div>
+                {alumnosBuscados.length > 0 && <div className="absolute top-10 right-0 mt-2 w-full max-w-md bg-white border rounded shadow-lg">
+                    {alumnosBuscados.map((alumno, index) => (
+                        <div key={index} onClick={() => setAlumnoAbuscar(alumno.nombre + " " + alumno.apellido)} className="p-2 border-b hover:bg-gray-100 cursor-pointer">
+                            <p className="text-black">{alumno.nombre} {alumno.apellido}</p>
+                        </div>
+                    ))}
+                </div>}
+            </div>
             <div className="top-60 border p-1 absolute left-40 h-90 max-h-90 w-1/2 bg-gray-400 bg-opacity-50" style={{ height: '50vh', overflow: "auto" }}>
                 <div className="flex flex-col space-y-4 my-4 w-full px-4">
                     {alumnos.map((alumno, index) => (
@@ -323,14 +398,22 @@ const Alumnos: React.FC = () => {
                         </div>
                     ))}
                 </div>
+                <button onClick={() => { setSelectedAlumno(-1); setObAlumno(null) }} className="mt-6 mx-4">
+                    <Image src={ButtonAdd}
+                        className="mx-3"
+                        alt="Image Alt Text"
+                        width={70}
+                        height={70} />
+                </button>
             </div>
             <div className="fixed bottom-0 py-5 bg-white w-full" style={{ opacity: 0.66 }}>
+                <But_aside />
             </div>
             {selectedAlumno !== null && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
                     <div ref={scrollRef} className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative" style={{ height: '70vh', overflow: "auto" }}>
                         <h2 className="text-2xl font-bold mb-4">
-                            {"Editar Alumno"}
+                            {selectedAlumno === -1 ? "Nuevo Alumno" : "Editar Alumno"}
                         </h2>
                         {errorMessage && (
                             <div className="mb-4 text-red-600">
@@ -390,7 +473,7 @@ const Alumnos: React.FC = () => {
                                 className="p-2 w-full border rounded"
                             />
                         </div>
-                        {/*                        <div className="mb-4">
+                        {selectedAlumno === -1 && <div className="mb-4">
                             <label htmlFor="password" className="block">Contraseña:</label>
                             <input
                                 type="text"
@@ -399,9 +482,9 @@ const Alumnos: React.FC = () => {
                                 value={alumnoDetails.password}
                                 className="p-2 w-full border rounded"
                             />
-                        </div> */}
-                        {(!nacionalidadName && !provinciaName && !localidadName && !calle && !numero && alumnoDetails?.direccionId !== null) && <p className=" text-red-600">Cargando su ubicación...</p>}
-                        {(nacionalidadName || alumnoDetails?.direccionId === null) && <div className="mb-4">
+                        </div>}
+                        {((!nacionalidadName && !provinciaName && !localidadName && !calle && !numero && selectedAlumno !== -1) ) && <p className=" text-red-600">Cargando su ubicación...</p>}
+                        {((selectedAlumno === -1) || (nacionalidadName && selectedAlumno !== -1)) && <div className="mb-4">
                             <label htmlFor="pais" className="block">País:</label>
                             <input
                                 type="text"
@@ -412,7 +495,7 @@ const Alumnos: React.FC = () => {
                                 className="p-2 w-full border rounded"
                             />
                         </div>}
-                        {(provinciaName || alumnoDetails.direccionId === null) && <div className="mb-4">
+                        {(provinciaName || selectedAlumno === -1) && <div className="mb-4">
                             <label htmlFor="provincia" className="block">Provincia:</label>
                             <input
                                 type="text"
@@ -423,7 +506,7 @@ const Alumnos: React.FC = () => {
                                 className="p-2 w-full border rounded"
                             />
                         </div>}
-                        {(localidadName || !alumnoDetails.direccionId) && <div className="mb-4">
+                        {(localidadName || selectedAlumno === -1) && <div className="mb-4">
                             <label htmlFor="localidad" className="block">Localidad:</label>
                             <input
                                 type="text"
@@ -434,17 +517,18 @@ const Alumnos: React.FC = () => {
                                 className="p-2 w-full border rounded"
                             />
                         </div>}
-                        {((calle && numero) || !alumnoDetails.direccionId) && <div className="mb-4">
-                            <label htmlFor="calle" className="block">Calle:</label>
-                            <input
-                                type="text"
-                                id="calle"
-                                name="calle"
-                                value={String(calle)}
-                                onChange={(e) => setcalle(e.target.value)}
-                                className="p-2 w-full border rounded"
-                            />
-                        </div> &&
+                        {((calle && numero) || selectedAlumno === -1) && <div>
+                            <div className="mb-4">
+                                <label htmlFor="calle" className="block">Calle:</label>
+                                <input
+                                    type="text"
+                                    id="calle"
+                                    name="calle"
+                                    value={String(calle)}
+                                    onChange={(e) => setcalle(e.target.value)}
+                                    className="p-2 w-full border rounded"
+                                />
+                            </div>
                             <div className="mb-4">
                                 <label htmlFor="numero" className="block">Número:</label>
                                 <input
@@ -456,29 +540,40 @@ const Alumnos: React.FC = () => {
                                     className="p-2 w-full border rounded"
                                 />
                             </div>
+                        </div>
                         }
-                        <div>
-                            <button
-                                className="py-2  text-black font-bold rounded hover:underline">
-                                Cambiar contraseña
-                            </button>
-                        </div>
-                        <div className="flex justify-end space-x-4">
-                            <button
-                                onClick={handleSaveChanges}
-                                className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800">
-                                Guardar
-                            </button>
-                            <button
-                                onClick={() => { setSelectedAlumno(null); handleCancel_init() }}
-                                className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800">
-                                Cancelar
-                            </button>
-                        </div>
+                    <div>
+                        <Talleres cursosElegido={cursosElegido} setCursosElegido={setCursosElegido} />
+                    </div>
+                    {selectedAlumno !== -1 && <div>
+                        <button
+                            className="py-2  text-black font-bold rounded hover:underline"
+                            onClick={() => setHabilitarCambioContraseña(!habilitarCambioContraseña)}
+                        >
+                            Cambiar contraseña
+                        </button>
+                        {habilitarCambioContraseña && <div className=' absolute bg-slate-100 rounded-md shadow-md px-2 left-1/2 top-1/2 tranform -translate-x-1/2 -translate-y-1/2'>
+                            <button className='absolute top-2 right-2' onClick={() => setHabilitarCambioContraseña(false)}>X</button>
+                            <PasswordComponent setCorrecto={setCorrecto} correcto={correcto} />
+                        </div>}
+                    </div>}
+                    <div className="flex justify-end space-x-4">
+                        <button
+                            onClick={((selectedAlumno === -1 ? handleCreateAlumno : handleSaveChanges))}
+                            className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800">
+                            Guardar
+                        </button>
+                        <button
+                            onClick={() => { setSelectedAlumno(null); handleCancel_init() }}
+                            className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800">
+                            Cancelar
+                        </button>
                     </div>
                 </div>
-            )}
-        </main>
+                </div>
+    )
+}
+        </main >
     )
     // #endregion
 }
