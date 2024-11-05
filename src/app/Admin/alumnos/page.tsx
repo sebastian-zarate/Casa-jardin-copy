@@ -483,8 +483,8 @@ const Alumnos: React.FC = () => {
                                 className="p-2 w-full border rounded"
                             />
                         </div>}
-                        {((!nacionalidadName && !provinciaName && !localidadName && !calle && !numero && selectedAlumno !== -1) ) && <p className=" text-red-600">Cargando su ubicación...</p>}
-                        {((selectedAlumno === -1) || (nacionalidadName && selectedAlumno !== -1)) && <div className="mb-4">
+                        {((!nacionalidadName && !provinciaName && !localidadName && !calle && !numero && selectedAlumno !== -1)&& obAlumno.direccionId ) && <p className=" text-red-600">Cargando su ubicación...</p>}
+                        {(selectedAlumno === -1 || (selectedAlumno !== -1 && !obAlumno.direccionId)|| (selectedAlumno !== -1 && obAlumno.direccionId && nacionalidadName)) && <div className="mb-4">
                             <label htmlFor="pais" className="block">País:</label>
                             <input
                                 type="text"
@@ -495,7 +495,7 @@ const Alumnos: React.FC = () => {
                                 className="p-2 w-full border rounded"
                             />
                         </div>}
-                        {(provinciaName || selectedAlumno === -1) && <div className="mb-4">
+                        {(selectedAlumno === -1 || (selectedAlumno !== -1 && !obAlumno.direccionId)|| (selectedAlumno !== -1 && obAlumno.direccionId && provinciaName)) && <div className="mb-4">
                             <label htmlFor="provincia" className="block">Provincia:</label>
                             <input
                                 type="text"
@@ -506,7 +506,7 @@ const Alumnos: React.FC = () => {
                                 className="p-2 w-full border rounded"
                             />
                         </div>}
-                        {(localidadName || selectedAlumno === -1) && <div className="mb-4">
+                        {(selectedAlumno === -1 || (selectedAlumno !== -1 && !obAlumno.direccionId)|| (selectedAlumno !== -1 && obAlumno.direccionId && localidadName)) && <div className="mb-4">
                             <label htmlFor="localidad" className="block">Localidad:</label>
                             <input
                                 type="text"
@@ -517,7 +517,7 @@ const Alumnos: React.FC = () => {
                                 className="p-2 w-full border rounded"
                             />
                         </div>}
-                        {((calle && numero) || selectedAlumno === -1) && <div>
+                        {(selectedAlumno === -1 || (selectedAlumno !== -1 && !obAlumno.direccionId)|| (selectedAlumno !== -1 && obAlumno.direccionId && calle && numero)) && <div>
                             <div className="mb-4">
                                 <label htmlFor="calle" className="block">Calle:</label>
                                 <input
