@@ -10,7 +10,7 @@ import AutorizacionImg from './componentes/autorizacionImagen';
 import AutorizacionSalidas from './componentes/autorizacionSalidas';
 import Reglamentacion from './componentes/reglamentacion';
 import DatosMayor from './componentes/datosMayor';
-import EmailPage from '../email/page';
+import EmailPage from '../email/EmailPage';
 import { useRouter } from 'next/navigation';
 import { autorizarUser, fetchUserData } from '@/helpers/cookies';
 //server

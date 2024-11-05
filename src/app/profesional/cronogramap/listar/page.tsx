@@ -12,7 +12,7 @@ interface Curso {
 
 
 
-export default function Horario({ idProfesor }: { idProfesor: number }) {
+export default function Horario() {
     const [horas, setHoras] = useState<{ id: number; hora_inicio: string }[]>([]);
     const [dias, setDias] = useState<string[]>([]);
     const [tabla, setTabla] = useState<string[][]>([]);
