@@ -21,6 +21,7 @@ import { createAlumno_Curso } from "@/services/alumno_curso";
 import { Curso } from "@/services/cursos";
 import withAuth from "../../../components/Admin/adminAuth";
 import PasswordComponent from "@/components/Password/page";
+import { hashPassword } from "@/helpers/hashPassword";
 // #endregion
 
 const Alumnos: React.FC = () => {
@@ -33,6 +34,16 @@ const Alumnos: React.FC = () => {
     const [obAlumno, setObAlumno] = useState<any>(null);
 
     const [alumnoDetails, setAlumnoDetails] = useState<any>({});
+    const [responsableDetails, setResponsableDetails] = useState<any>({
+        nombre: "",
+        apellido: "",
+        dni: 0,
+        telefono: 0,
+        email: "",
+        alumnoId: 0,
+        direccionId: 0
+    });
+
     // Estado para almacenar mensajes de error
     const [errorMessage, setErrorMessage] = useState<string>("");
     //Estado para almacenar las imagenes
@@ -101,7 +112,8 @@ const Alumnos: React.FC = () => {
                 telefono: selectedAlumno.telefono,
                 direccionId: selectedAlumno.direccionId,
                 email: selectedAlumno.email,
-                password: selectedAlumno.password
+                password: selectedAlumno.password,
+                fechaNacimiento: selectedAlumno.fechaNacimiento
             });
         } else {
             setAlumnoDetails({
@@ -204,6 +216,13 @@ const Alumnos: React.FC = () => {
             [name]: name === 'telefono' ? parseInt(value, 10) : value // Convierte `telefono` a número entero si el campo es `telefono`
         }));
     }
+    function handleChangeResponsable(e: React.ChangeEvent<HTMLInputElement>) {
+        const { name, value } = e.target;
+        setResponsableDetails((prevDetails: any) => ({
+            ...prevDetails,
+            [name]: name === 'telefono' ? parseInt(value, 10) : value // Convierte `telefono` a número entero si el campo es `telefono`
+        }));
+    }
     function setVariablesState() {
         setNacionalidadName("");
         setProvinciaName("");
@@ -285,6 +304,8 @@ const Alumnos: React.FC = () => {
             return;
         }
         try {
+                    //region hashPassword
+            const hash = await hashPassword(alumnoDetails.password);
             //acualizo los datos de la direccion del alumno
             const newAlumno = await createAlumno({
                 nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
@@ -361,7 +382,7 @@ const Alumnos: React.FC = () => {
                         onChange={handleSearchChange}
                     />
                     <div
-                        onClick={() =>{ alumnosBuscados.length> 0 && setAlumnos(alumnosBuscados)}}
+                        onClick={() => { alumnosBuscados.length > 0 && setAlumnos(alumnosBuscados) }}
                         className="absolute cursor-pointer p-3 bg-slate-500 inset-y-0 right-0 flex items-center pr-3">
                         <Image src="/Images/SearchIcon.png" alt="Buscar" width={20} height={20} />
                     </div>
@@ -399,11 +420,15 @@ const Alumnos: React.FC = () => {
                     ))}
                 </div>
                 <button onClick={() => { setSelectedAlumno(-1); setObAlumno(null) }} className="mt-6 mx-4">
-                    <Image src={ButtonAdd}
+                    {/* <Image src={ButtonAdd}
                         className="mx-3"
                         alt="Image Alt Text"
                         width={70}
-                        height={70} />
+                        height={70} /> */}
+                    agregar mayor
+                </button>
+                <button onClick={() => { setSelectedAlumno(-2); setObAlumno(null) }} className="mt-6 mx-4">
+                    agregar menor
                 </button>
             </div>
             <div className="fixed bottom-0 py-5 bg-white w-full" style={{ opacity: 0.66 }}>
@@ -420,6 +445,7 @@ const Alumnos: React.FC = () => {
                                 {errorMessage} {/* Muestra el mensaje de error */}
                             </div>
                         )}
+                        <h1 className=" w-full mt-8 mb-3 font-semibold underline">Datos del alumno</h1>
                         <div className="mb-4">
                             <label htmlFor="nombre" className="block">Nombre:</label>
                             <input
@@ -473,18 +499,19 @@ const Alumnos: React.FC = () => {
                                 className="p-2 w-full border rounded"
                             />
                         </div>
-                        {selectedAlumno === -1 && <div className="mb-4">
+                        {(selectedAlumno === -1 || selectedAlumno === -2) && <div className="mb-4">
                             <label htmlFor="password" className="block">Contraseña:</label>
                             <input
-                                type="text"
+                                type="password"
                                 id="password"
                                 name="password"
                                 value={alumnoDetails.password}
+                                onChange={handleChange}
                                 className="p-2 w-full border rounded"
                             />
                         </div>}
-                        {((!nacionalidadName && !provinciaName && !localidadName && !calle && !numero && selectedAlumno !== -1)&& obAlumno.direccionId ) && <p className=" text-red-600">Cargando su ubicación...</p>}
-                        {(selectedAlumno === -1 || (selectedAlumno !== -1 && !obAlumno.direccionId)|| (selectedAlumno !== -1 && obAlumno.direccionId && nacionalidadName)) && <div className="mb-4">
+                        {((!nacionalidadName && !provinciaName && !localidadName && !calle && !numero && selectedAlumno !== -1 && selectedAlumno !== -2) && obAlumno.direccionId) && <p className=" text-red-600">Cargando su ubicación...</p>}
+                        {((selectedAlumno === -1 || selectedAlumno === -2) || (selectedAlumno !== -1 && selectedAlumno !== -2 && !obAlumno.direccionId) || (selectedAlumno !== -1 && selectedAlumno !== -2 && obAlumno.direccionId && nacionalidadName)) && <div className="mb-4">
                             <label htmlFor="pais" className="block">País:</label>
                             <input
                                 type="text"
@@ -495,7 +522,7 @@ const Alumnos: React.FC = () => {
                                 className="p-2 w-full border rounded"
                             />
                         </div>}
-                        {(selectedAlumno === -1 || (selectedAlumno !== -1 && !obAlumno.direccionId)|| (selectedAlumno !== -1 && obAlumno.direccionId && provinciaName)) && <div className="mb-4">
+                        {((selectedAlumno === -1 || selectedAlumno === -2) || (selectedAlumno !== -1 && selectedAlumno !== -2 && !obAlumno.direccionId) || (selectedAlumno !== -1 && selectedAlumno !== -2 && obAlumno.direccionId && provinciaName)) && <div className="mb-4">
                             <label htmlFor="provincia" className="block">Provincia:</label>
                             <input
                                 type="text"
@@ -506,7 +533,7 @@ const Alumnos: React.FC = () => {
                                 className="p-2 w-full border rounded"
                             />
                         </div>}
-                        {(selectedAlumno === -1 || (selectedAlumno !== -1 && !obAlumno.direccionId)|| (selectedAlumno !== -1 && obAlumno.direccionId && localidadName)) && <div className="mb-4">
+                        {((selectedAlumno === -1 || selectedAlumno === -2) || (selectedAlumno !== -1 && selectedAlumno !== -2 && !obAlumno.direccionId) || (selectedAlumno !== -1 && selectedAlumno !== -2 && obAlumno.direccionId && localidadName)) && <div className="mb-4">
                             <label htmlFor="localidad" className="block">Localidad:</label>
                             <input
                                 type="text"
@@ -517,7 +544,7 @@ const Alumnos: React.FC = () => {
                                 className="p-2 w-full border rounded"
                             />
                         </div>}
-                        {(selectedAlumno === -1 || (selectedAlumno !== -1 && !obAlumno.direccionId)|| (selectedAlumno !== -1 && obAlumno.direccionId && calle && numero)) && <div>
+                        {((selectedAlumno === -1 || selectedAlumno === -2) || (selectedAlumno !== -1 && selectedAlumno !== -2 && !obAlumno.direccionId) || (selectedAlumno !== -1 && selectedAlumno !== -2 && obAlumno.direccionId && calle && numero)) && <div>
                             <div className="mb-4">
                                 <label htmlFor="calle" className="block">Calle:</label>
                                 <input
@@ -542,37 +569,169 @@ const Alumnos: React.FC = () => {
                             </div>
                         </div>
                         }
-                    <div>
-                        <Talleres cursosElegido={cursosElegido} setCursosElegido={setCursosElegido} />
-                    </div>
-                    {selectedAlumno !== -1 && <div>
-                        <button
-                            className="py-2  text-black font-bold rounded hover:underline"
-                            onClick={() => setHabilitarCambioContraseña(!habilitarCambioContraseña)}
-                        >
-                            Cambiar contraseña
-                        </button>
-                        {habilitarCambioContraseña && <div className=' absolute bg-slate-100 rounded-md shadow-md px-2 left-1/2 top-1/2 tranform -translate-x-1/2 -translate-y-1/2'>
-                            <button className='absolute top-2 right-2' onClick={() => setHabilitarCambioContraseña(false)}>X</button>
-                            <PasswordComponent setCorrecto={setCorrecto} correcto={correcto} />
+                        {
+                            selectedAlumno === -2 && <div>
+                                <div className="flex-col flex mb-4">
+                                    <label htmlFor="fechaNacimiento">Fecha de Nacimiento</label>
+                                    <input
+                                        id="fechaNacimiento"
+                                        type="date"
+                                        className="border rounded"
+                                        value={alumnoDetails.fechaNacimiento ?? ''}
+                                        onChange={handleChange}
+                                        min={new Date(new Date().setFullYear(new Date().getFullYear() - 100)).toISOString().split('T')[0]} // Set min to 100 years ago
+                                        max={new Date().toISOString().split('T')[0]} // Set max to today's date
+                                    />
+                                </div>
+                                <h1 className=" w-full mt-8 mb-3 font-semibold underline">Datos del responsable</h1>
+                                <div className="mb-4">
+                                    <label htmlFor="ResponsableNombre" className="block">Nombre :</label>
+                                    <input
+                                        type="text"
+                                        id="ResponsableNombre"
+                                        name="ResponsableNombre"
+                                        value={String(responsableDetails.nombre)}
+                                        onChange={handleChangeResponsable}
+                                        className="p-2 w-full border rounded"
+                                    />
+                                </div>
+                                <div className="mb-4">
+                                    <label htmlFor="ResponsableApellido" className="block">Apellido:</label>
+                                    <input
+                                        type="text"
+                                        id="ResponsableApellido"
+                                        name="ResponsableApellido"
+                                        value={String(responsableDetails.apellido)}
+                                        onChange={handleChangeResponsable}
+                                        className="p-2 w-full border rounded"
+                                    />
+                                </div>
+                                <div className="mb-4">
+                                    <label htmlFor="dniR" className="block">DNI:</label>
+                                    <input
+                                        type="text"
+                                        id="dniR"
+                                        name="dniR"
+                                        value={String(responsableDetails.dni)}
+                                        onChange={handleChangeResponsable}
+                                        className="p-2 w-full border rounded"
+                                    />
+                                </div>
+                                <div className="mb-4">
+                                    <label htmlFor="telefonoR" className="block">Teléfono:</label>
+                                    <input
+                                        type="text"
+                                        id="telefonoR"
+                                        name="telefonoR"
+                                        value={String(responsableDetails.telefono)}
+                                        onChange={handleChangeResponsable}
+                                        className="p-2 w-full border rounded"
+                                    />
+                                </div>
+                                <div className="mb-4">
+                                    <label htmlFor="emailR" className="block">Correo:</label>
+                                    <input
+                                        type="text"
+                                        id="emailR"
+                                        name="emailR"
+                                        value={String(responsableDetails.email)}
+                                        onChange={handleChangeResponsable}
+                                        className="p-2 w-full border rounded"
+                                    />
+                                </div>
+
+
+                                {/*EL ADULTO Y EL MENOR DEBERÍAN TENER LA MISMA DIRECCIÓN */}
+
+
+                                {/*                               <div className="mb-4">
+                                    <label htmlFor="pais" className="block">País:</label>
+                                    <input
+                                        type="text"
+                                        id="pais"
+                                        name="pais"
+                                        value={String(nacionalidadName)}
+                                        onChange={(e) => setNacionalidadName(e.target.value)}
+                                        className="p-2 w-full border rounded"
+                                    />
+                                </div>
+                                <div className="mb-4">
+                                    <label htmlFor="provincia" className="block">Provincia:</label>
+                                    <input
+                                        type="text"
+                                        id="provincia"
+                                        name="provincia"
+                                        value={String(provinciaName)}
+                                        onChange={(e) => setProvinciaName(e.target.value)}
+                                        className="p-2 w-full border rounded"
+                                    />
+                                </div>
+                                <div className="mb-4">
+                                    <label htmlFor="localidad" className="block">Localidad:</label>
+                                    <input
+                                        type="text"
+                                        id="localidad"
+                                        name="localidad"
+                                        value={String(localidadName)}
+                                        onChange={(e) => setLocalidadName(e.target.value)}
+                                        className="p-2 w-full border rounded"
+                                    />
+                                </div>
+                                <div className="mb-4">
+                                    <label htmlFor="calle" className="block">Calle:</label>
+                                    <input
+                                        type="text"
+                                        id="calle"
+                                        name="calle"
+                                        value={String(calle)}
+                                        onChange={(e) => setcalle(e.target.value)}
+                                        className="p-2 w-full border rounded"
+                                    />
+                                </div>
+                                <div className="mb-4">
+                                    <label htmlFor="numero" className="block">Número:</label>
+                                    <input
+                                        type="text"
+                                        id="numero"
+                                        name="numero"
+                                        value={Number(numero)}
+                                        onChange={(e) => setNumero(Number(e.target.value))}
+                                        className="p-2 w-full border rounded"
+                                    />
+                                </div> */}
+                            </div>
+                        }
+                        <div>
+                            <Talleres cursosElegido={cursosElegido} setCursosElegido={setCursosElegido} />
+                        </div>
+                        {selectedAlumno !== -1 && selectedAlumno !== -2 && <div>
+                            <button
+                                className="py-2  text-black font-bold rounded hover:underline"
+                                onClick={() => setHabilitarCambioContraseña(!habilitarCambioContraseña)}
+                            >
+                                Cambiar contraseña
+                            </button>
+                            {habilitarCambioContraseña && <div className=' absolute bg-slate-100 rounded-md shadow-md px-2 left-1/2 top-1/2 tranform -translate-x-1/2 -translate-y-1/2'>
+                                <button className='absolute top-2 right-2' onClick={() => setHabilitarCambioContraseña(false)}>X</button>
+                                <PasswordComponent setCorrecto={setCorrecto} correcto={correcto} />
+                            </div>}
                         </div>}
-                    </div>}
-                    <div className="flex justify-end space-x-4">
-                        <button
-                            onClick={((selectedAlumno === -1 ? handleCreateAlumno : handleSaveChanges))}
-                            className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800">
-                            Guardar
-                        </button>
-                        <button
-                            onClick={() => { setSelectedAlumno(null); handleCancel_init() }}
-                            className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800">
-                            Cancelar
-                        </button>
+                        <div className="flex justify-end space-x-4">
+                            <button
+                                onClick={((selectedAlumno === -1 ? handleCreateAlumno : handleSaveChanges))}
+                                className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800">
+                                Guardar
+                            </button>
+                            <button
+                                onClick={() => { setSelectedAlumno(null); handleCancel_init() }}
+                                className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800">
+                                Cancelar
+                            </button>
+                        </div>
                     </div>
                 </div>
-                </div>
-    )
-}
+            )
+            }
         </main >
     )
     // #endregion

@@ -203,18 +203,18 @@ const Profesionales = () => {
         const { name, value } = e.target;
         setProfesionalDetails((prevDetails: any) => ({
             ...prevDetails,
-            [name]: /* name === 'password' ? (() => hashPassword(value)) :  */value 
+            [name]: /* name === 'password' ? (() => hashPassword(value)) :  */value
         }));
     }
-    async function handlePassword(e: React.ChangeEvent<HTMLInputElement>){
-        const { value } = e.target;
-        const hash = await hashPassword(value);
-        setProfesionalDetails((prevDetails: any) => ({
-            ...prevDetails,
-            password: hash
-        }));
-        
-    }
+    /*     async function handlePassword(e: React.ChangeEvent<HTMLInputElement>){
+            const { value } = e.target;
+            //const hash = await hashPassword(value);
+            setProfesionalDetails((prevDetails: any) => ({
+                ...prevDetails,
+                password: value
+            }));
+            
+        } */
     // Método para obtener las imagenes
     const fetchImages = async () => {
         const result = await getImagesUser();
@@ -321,11 +321,13 @@ const Profesionales = () => {
             return;
         }
         try {
+            //region hashPassword
+            const hash = await hashPassword(profesionalDetails.password);
             //acualizo los datos de la direccion del alumno
             const newProfesional = await createProfesional({
                 nombre: profesionalDetails.nombre, apellido: profesionalDetails.apellido,
                 especialidad: String(profesionalDetails.especialidad), email: String(profesionalDetails.email),
-                telefono: BigInt(profesionalDetails.telefono), password: String(profesionalDetails.password),
+                telefono: BigInt(profesionalDetails.telefono), password: hash,
                 direccionId: Number(direccion?.id)
             });
             for (const curso of cursosElegido) {                                  //recorre los cursos elegidos y los guarda en la tabla intermedia
@@ -368,7 +370,7 @@ const Profesionales = () => {
         );
 
         setProfesionalesBuscados([]);
-        if(e.target.value.length > 0)setProfesionalesBuscados(filteredProfesionales);
+        if (e.target.value.length > 0) setProfesionalesBuscados(filteredProfesionales);
         setProfesionalAbuscar(e.target.value);
     };
     // #endregion
@@ -392,15 +394,15 @@ const Profesionales = () => {
                         value={profesionalAbuscar}
                         onChange={handleSearchChange}
                     />
-                    <div 
-                        onClick={() =>{ profesionalesBuscados.length> 0 && setProfesionales(profesionalesBuscados)}}
-                    className="absolute cursor-pointer p-3 bg-slate-500 inset-y-0 right-0 flex items-center pr-3">
+                    <div
+                        onClick={() => { profesionalesBuscados.length > 0 && setProfesionales(profesionalesBuscados) }}
+                        className="absolute cursor-pointer p-3 bg-slate-500 inset-y-0 right-0 flex items-center pr-3">
                         <Image src="/Images/SearchIcon.png" alt="Buscar" width={20} height={20} />
                     </div>
                 </div>
                 {profesionalesBuscados.length > 0 && <div className="absolute top-10 right-0 mt-2 w-full max-w-md bg-white border rounded shadow-lg">
                     {profesionalesBuscados.map((profesional, index) => (
-                        <div key={index} onClick={()=>setProfesionalAbuscar(profesional.nombre + " " +profesional.apellido)} className="p-2 border-b hover:bg-gray-100 cursor-pointer">
+                        <div key={index} onClick={() => setProfesionalAbuscar(profesional.nombre + " " + profesional.apellido)} className="p-2 border-b hover:bg-gray-100 cursor-pointer">
                             <p className="text-black">{profesional.nombre} {profesional.apellido}</p>
                         </div>
                     ))}
@@ -444,7 +446,7 @@ const Profesionales = () => {
                         </div>
                     ))}
                 </div>
-                <button onClick={() => {setSelectedProfesional(-1); setObProfesional(null)}} className="mt-6 mx-4">
+                <button onClick={() => { setSelectedProfesional(-1); setObProfesional(null) }} className="mt-6 mx-4">
                     <Image src={ButtonAdd}
                         className="mx-3"
                         alt="Image Alt Text"
@@ -527,12 +529,12 @@ const Profesionales = () => {
                                 id="password"
                                 name="password"
                                 value={profesionalDetails.password}
-                                onChange={handlePassword}
+                                onChange={handleChange}
                                 className="p-2 w-full border rounded"
                             />
                         </div>}
-                        {((!nacionalidadName && !provinciaName && !localidadName && !calle && !numero && selectedProfesional !== -1)&& obProfesional.direccionId ) && <p className=" text-red-600">Cargando su ubicación...</p>}
-                        {(selectedProfesional === -1 || (selectedProfesional !== -1 && !obProfesional.direccionId)|| (selectedProfesional !== -1 && obProfesional.direccionId && nacionalidadName)) && <div className="mb-4">
+                        {((!nacionalidadName && !provinciaName && !localidadName && !calle && !numero && selectedProfesional !== -1) && obProfesional.direccionId) && <p className=" text-red-600">Cargando su ubicación...</p>}
+                        {(selectedProfesional === -1 || (selectedProfesional !== -1 && !obProfesional.direccionId) || (selectedProfesional !== -1 && obProfesional.direccionId && nacionalidadName)) && <div className="mb-4">
                             <label htmlFor="pais" className="block">País:</label>
                             <input
                                 type="text"
@@ -543,7 +545,7 @@ const Profesionales = () => {
                                 className="p-2 w-full border rounded"
                             />
                         </div>}
-                        {(selectedProfesional === -1 || (selectedProfesional !== -1 && !obProfesional.direccionId)|| (selectedProfesional !== -1 && obProfesional.direccionId && provinciaName)) && <div className="mb-4">
+                        {((selectedProfesional === -1) || (selectedProfesional !== -1 && !obProfesional.direccionId) || (selectedProfesional !== -1 && obProfesional.direccionId && provinciaName)) && <div className="mb-4">
                             <label htmlFor="provincia" className="block">Provincia:</label>
                             <input
                                 type="text"
@@ -554,7 +556,7 @@ const Profesionales = () => {
                                 className="p-2 w-full border rounded"
                             />
                         </div>}
-                        {(selectedProfesional === -1 || (selectedProfesional !== -1 && !obProfesional.direccionId)|| (selectedProfesional !== -1 && obProfesional.direccionId && localidadName)) && <div className="mb-4">
+                        {(selectedProfesional === -1 || (selectedProfesional !== -1 && !obProfesional.direccionId) || (selectedProfesional !== -1 && obProfesional.direccionId && localidadName)) && <div className="mb-4">
                             <label htmlFor="localidad" className="block">Localidad:</label>
                             <input
                                 type="text"
@@ -565,7 +567,7 @@ const Profesionales = () => {
                                 className="p-2 w-full border rounded"
                             />
                         </div>}
-                        {(selectedProfesional === -1 || (selectedProfesional !== -1 && !obProfesional.direccionId)|| (selectedProfesional !== -1 && obProfesional.direccionId && calle && numero)) && <div className="mb-4">
+                        {(selectedProfesional === -1 || (selectedProfesional !== -1 && !obProfesional.direccionId) || (selectedProfesional !== -1 && obProfesional.direccionId && calle && numero)) && <div className="mb-4">
                             <label htmlFor="calle" className="block">Calle:</label>
                             <input
                                 type="text"
@@ -591,7 +593,7 @@ const Profesionales = () => {
                         <div>
                             <Talleres cursosElegido={cursosElegido} setCursosElegido={setCursosElegido} />
                         </div>
-                        { selectedProfesional !== -1 && <div>
+                        {selectedProfesional !== -1 && <div>
                             <button
                                 className="py-2  text-black font-bold rounded hover:underline"
                                 onClick={() => setHabilitarCambioContraseña(!habilitarCambioContraseña)}
