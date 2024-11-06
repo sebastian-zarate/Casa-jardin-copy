@@ -4,7 +4,7 @@ import Navigate from "../../../components/alumno/navigate/page";
 import But_aside from "../../../components/but_aside/page";
 import { getcursosByIdAlumno } from '@/services/alumno_curso';
 
-import { Curso } from '@/services/cursos';
+import { Curso, getCursoById } from '@/services/cursos';
 import Image from "next/image";
 import correoIcon from "../../../../public/Images/correoIcon.png";
 import phoneIcon from "../../../../public/Images/phoneIcon.png";
@@ -29,41 +29,37 @@ const principal: React.FC = () => {
     // Para cambiar al usuario de página si no está logeado
     useEffect(() => {
         const authorizeAndFetchData = async () => {
-            
+
             // Primero verifico que el user esté logeado
-          //  console.log("router", router);
+            //  console.log("router", router);
             await autorizarUser(router);
             // Una vez autorizado obtengo los datos del user y seteo el email
             const user = await fetchUserData();
-           // console.log("user", user);
+            // console.log("user", user);
             //const direccion = await getDireccionByIdDef(Number(user?.direccionId));
             setUsuario(user);
-            setUserName(user?.nombre + " " + user?.apellido);            
-   /*          if (direccion) {
-                console.log("DIRECCION", String(direccion.calle));
-            } */
-            
+            setUserName(user?.nombre + " " + user?.apellido); 
         };
 
         authorizeAndFetchData();
     }, [router]);
 
     async function getAllCursos() {
-  //      console.log("USER", usuario);
+        //      console.log("USER", usuario);
         //const direccion = await getDireccionByIdDef(Number(user?.direccionId));
-//        console.log("DIRECCION", usuario?.direccionId);
+        //        console.log("DIRECCION", usuario?.direccionId);
         //console.log("DIRECCION DEFINIT",direccion);
         let talleres: Curso[] = [];
         if (usuario) {
-            const result = await getcursosByIdAlumno(Number(usuario?.id)) ?? [];
-            if (result.length > 0) {
-                talleres = result as Curso[];
+            const result = await getcursosByIdAlumno(Number(usuario?.id));
+            for(let i = 0; i < result.length; i++){
+                const curso = await getCursoById(result[i]);
+                talleres.push(curso as Curso);
             }
         }
-      //  console.log(usuario?.nombre);
+        //  console.log(usuario?.nombre);
         //setUserName(String(usuario?.nombre));
-        if (talleres.length > 0) setCursos(talleres);
-        else setCursos([]);
+        setCursos(talleres);
     }
 
     useEffect(() => {
@@ -71,12 +67,13 @@ const principal: React.FC = () => {
     }, [cursos]);
 
     return (
-        <main className='flex'>
-            <Navigate />
-
-            <div className='absolute top-20 p-10'>
-                <h1 className=''>Bienvenido de regreso, {userName}</h1>
-                <div className=' flex justify-center items-center mt-40 w-screen'>
+        <main className=''>
+            <div className="fixed bg-red-500  justify-between w-full p-4" >
+                <Navigate />
+            </div>
+            <div className='absolute top-20 '>
+                <h1 className='absolute top-20 left-10'>Bienvenido de regreso, {userName}</h1>
+                <div className=' flex   justify-center items-center mt-40 w-screen'>
                     <button className='m-4 flex flex-col items-center'/*  onClick={() => window.location.href = '/usuario/Contacto'} */>
                         <Image src={phoneIcon} alt="telefono" width={80} height={80} />
                         <span>Contacto</span>
@@ -94,19 +91,19 @@ const principal: React.FC = () => {
                         <span>Mi cuenta</span>
                     </button>
                 </div>
+                <div className=' mt-40 mb-10 p-5'>
+                    <h1 className=''>Mis Talleres</h1>
+                    <div className='flex ml-5 mt-5 border'>
+                         {cursos.map((curso) => (
+                            <div key={curso.id} className='m-4'>
+                                <img src={""} alt={curso.nombre} />
+                                <h2>{curso.nombre}</h2>
 
-                <h1 className='mt-40 mb-10'>Mis Talleres</h1>
-                <div className='flex ml-5 mt-5'>
-                    {cursos.map((curso) => (
-                        <div key={curso.id} className='m-4'>
-                            <img src={""} alt={curso.nombre} />
-                            <h2>{curso.nombre}</h2>
-
-                        </div>
-                    ))}
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </div>
-
             <div className="fixed bottom-0 py-5 border-t bg-white w-full" style={{ opacity: 0.66 }}>
                 <But_aside />
             </div>

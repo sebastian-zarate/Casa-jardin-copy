@@ -9,7 +9,7 @@ import { addDireccion, getDireccionById, getDireccionCompleta, updateDireccionBy
 import { addProvincias, getProvinciasById, updateProvinciaById } from '@/services/ubicacion/provincia';
 import { addLocalidad, getLocalidadById, getLocalidadesByProvinciaId, updateLocalidad } from '@/services/ubicacion/localidad';
 import { addPais, getPaisById } from '@/services/ubicacion/pais';
-import { createAlumno_Curso, getalumnos_cursoByIdAlumno } from '@/services/alumno_curso';
+import { createAlumno_Curso, getalumnos_cursoByIdAlumno, getcursosByIdAlumno } from '@/services/alumno_curso';
 import { Curso, getCursoById } from '@/services/cursos';
 import withAuthUser from "../../../components/alumno/userAuth";
 import { useRouter } from 'next/navigation';
@@ -73,9 +73,10 @@ const Cuenta: React.FC = () => {
     // Estado para almacenar los cursos elegidos, inicialmente un array vacío
     const [cursosElegido, setCursosElegido] = useState<Curso[]>([]);
     //para obtener user by email
-    const [email, setEmail] = useState<any>();
+
     const [habilitarCambioContraseña, setHabilitarCambioContraseña] = useState<boolean>(false);
     const [correcto, setCorrecto] = useState<boolean>(true);
+
     //endregion
 
     //region UseEffects
@@ -83,14 +84,12 @@ const Cuenta: React.FC = () => {
 
     const router = useRouter();
     useEffect(() => {
-        if (openBox === 0 && email) {
-            console.log("se actualiza el usuario");
-            getUser();
-
-
+        if(((!nacionalidadName || !provinciaName || !localidadName || !calle || !numero) && user && user.direccionId) || !user){
+            getUser()
+            console.log("holaaaaaaaaaaaaaaaaaaaaaa")
         }
-    }, [email]);
 
+    }, [user]);
     // Para cambiar al usuario de página si no está logeado
     useEffect(() => {
         const authorizeAndFetchData = async () => {
@@ -101,7 +100,7 @@ const Cuenta: React.FC = () => {
             // Una vez autorizado obtengo los datos del user y seteo el email
             const user = await fetchUserData();
             console.log("user", user);
-            setEmail(user.email);
+            setUser(user)
             console.timeEnd("authorizeAndFetchData");
         };
 
@@ -125,19 +124,23 @@ const Cuenta: React.FC = () => {
     //endregion
 
     //region Funciones
-    async function getCursosElegidos(id: number) {
-        const cursos = await getalumnos_cursoByIdAlumno(id);
-        console.log("CURSOS1", cursos);
-        let array: Curso[] = [];
-        cursos.forEach(async (curso) => {
-            const curs = await getCursoById(curso.id);
-
-            if (curs) array.push(curs);
-            console.log("CURSOS2", curs);
-
-        });
-        setCursosElegido(array);
-        console.log("CURSOS3", cursosElegido);
+    async function getAllCursos() {
+        //      console.log("USER", usuario);
+        //const direccion = await getDireccionByIdDef(Number(user?.direccionId));
+        //        console.log("DIRECCION", usuario?.direccionId);
+        //console.log("DIRECCION DEFINIT",direccion);
+        let talleres: Curso[] = [];
+        if (user) {
+            const result = await getcursosByIdAlumno(Number(user?.id));
+            for(let i = 0; i < result.length; i++){
+                const curso = await getCursoById(result[i]);
+                talleres.push(curso as Curso);
+            }
+        }
+        //  console.log(usuario?.nombre);
+        //setUserName(String(usuario?.nombre));
+        console.log("TALLERES", talleres);
+        setCursosElegido(talleres);
     }
 
 
@@ -180,7 +183,7 @@ const Cuenta: React.FC = () => {
         return { direccion };
     }
     async function getUser() {
-        let user = await getAlumnoByEmail(email);
+
         console.log(user?.nombre);
         const userUpdate: Usuario = {
             id: user?.id || 0,
@@ -200,7 +203,6 @@ const Cuenta: React.FC = () => {
             setcalle("")
             setNumero(0)
         } else if (userUpdate.direccionId) getUbicacion(userUpdate);
-        getCursosElegidos(userUpdate.id);
 
         setAlumnoDetails({
             id: userUpdate.id,
@@ -388,7 +390,7 @@ const Cuenta: React.FC = () => {
                     </button>
                 </div>
             </div>
-            <div className="fixed bottom-10 border-t bg-white w-full" style={{ opacity: 0.66 }}>
+            <div className="fixed bottom-0 py-5 border-t bg-white w-full" style={{ opacity: 0.66 }}>
                 <But_aside />
             </div>
             {openBox === 1 && (

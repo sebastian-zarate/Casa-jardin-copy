@@ -111,6 +111,7 @@ const DatosMenor: React.FC<Datos> = ({ datosMenor, setDatosMenor }) => {
                 }
                 min={new Date(new Date().setFullYear(new Date().getFullYear() - 100)).toISOString().split('T')[0]} // Set min to 100 years ago
                 max={new Date().toISOString().split('T')[0]} // Set max to today's date
+                required
               />
             </div>
 

@@ -31,16 +31,9 @@ export async function getcursosByIdAlumno( alumnoId: number) {
       alumnoId: alumnoId,
     },
   });
-  let cursos: any = [];  
-  alumno_cursos.forEach(async (alumno_curso) => {
-    const curso = await prisma.curso.findUnique({
-      where: {
-        id: alumno_curso.cursoId,
-      },
-    });
-    cursos.push(curso);
-  });
-  console.log("Se encontró algún curso??????", cursos);
+
+  const cursos = alumno_cursos.map(x => x.cursoId);
+  console.log("2Se encontró algún curso??????", alumno_cursos);
   return cursos;
 }
 export async function deleteAlumno_Curso(id: number) {

@@ -45,7 +45,7 @@ export default function Navigate() {
             <a className="block px-4 py-2 text-gray-800 hover:bg-gray-200" href="/Admin/profesionales">Profesionales</a>
           </div>
         )}
-        <a className="mx-2" onClick={logout}  href="">Salir</a>
+        <a className="mx-2" onClick={logout}  href="/start/login">Salir</a>
       </div>
     </nav>
   );

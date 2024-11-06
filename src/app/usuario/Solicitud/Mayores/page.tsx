@@ -155,7 +155,7 @@ const Mayores: React.FC = () => {
             }
         }
 
-        if (datosAutorizacionImage.firma.length < 1 && selectedScreen === 2) return "Debe firmar la autorización de imagen";
+
 
         return ""
     }
@@ -182,7 +182,7 @@ const Mayores: React.FC = () => {
         }
     */
     async function cargarSolicitud() {
-        if (datosReglamentacion.firma.length < 1 && selectedScreen === 3) return setError("Debe firmar la reglamentación");
+
         //crear solicitud
         const solicitud = await createSolicitud()
 
@@ -270,7 +270,7 @@ const Mayores: React.FC = () => {
                             className='mx-2 py-2 text-white rounded bg-black px-6'
                             onClick={() => {
                                 selectedScreen - 1 < 0
-                                    ? window.location.href = "http://localhost:3000/usuario/Solicitud/Inscripcion"
+                                    ? window.location.href = "/usuario/Solicitud/Inscripcion"
                                     : setSelectedScreen(selectedScreen - 1);
                             }}
                         >
@@ -297,7 +297,11 @@ const Mayores: React.FC = () => {
                         </button>
                         <button
                             className='mx-2 py-2 text-white rounded bg-black px-5'
-                            onClick={() => setVerificarEmail(true)}
+                            onClick={() =>{ 
+
+                                if (datosReglamentacion.firma.length < 1 && selectedScreen === 3) return setError("Debe firmar la reglamentación");
+                                setVerificarEmail(true);
+                            }}
 /*                             onClick={() => cargarSolicitud()} */
                         >
                             Enviar

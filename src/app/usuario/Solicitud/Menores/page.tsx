@@ -164,7 +164,8 @@ const Menores: React.FC = () => {
             if (!datosMenor.numero) {
                 return ("El número debe tener al menos 1 número.");
             }
-            if (!datosMenor.fechaNacimiento || datosMenor.fechaNacimiento.length < 1) return ("La fecha de nacimiento es obligatoria");
+            if(!datosMenor.edad) return "La edad es obligatoria."
+            if (!/\d/.test(datosMenor.fechaNacimiento)) return ("La fecha de nacimiento es obligatoria");
         }
         if (selectedScreen === 2) {
             // Validar que el nombre tenga al menos 2 caracteres
@@ -174,7 +175,7 @@ const Menores: React.FC = () => {
             if (datosMayor.apellido.length < 1  && regex.test(datosMayor.apellido)) {
                 return ("El apellido debe tener al menos 2 caracteres.");
             }
-            if ((datosMayor.telefono).toString().length != 9) {
+            if ((datosMayor.telefono).toString().length < 7) {
                 return ("El telefono debe tener al menos 9 números.");
             }
             if (datosMayor.correoElectronico.length < 11 || !datosMayor.correoElectronico.includes('@')) {
@@ -199,9 +200,7 @@ const Menores: React.FC = () => {
                 return ("El número debe tener al menos 1 número.");
             }
         }
-        if (datosAutorizacionImage.firma.length < 1 && selectedScreen === 4) return "Debe firmar la autorización de imagen";
-        if (datosAutorizacionSalidas.firma.length < 1 && selectedScreen === 5) return "Debe firmar la autorización de salidas";
-        if (datosReglamentacion.firma.length < 1 && selectedScreen === 6) return "Debe firmar la reglamentación";
+
 
         return ""
     }
@@ -350,7 +349,7 @@ const Menores: React.FC = () => {
                             className='mx-2 py-2 text-white rounded bg-black px-6'
                             onClick={() => {
                                 selectedScreen - 1 < 0
-                                    ? window.location.href = `${window.location.origin}/usuario/Solicitud/Inscripcion"`
+                                    ? window.location.href = `${window.location.origin}/usuario/Solicitud/Inscripcion`
                                     : setSelectedScreen(selectedScreen - 1);
                             }}
                         >
@@ -377,9 +376,10 @@ const Menores: React.FC = () => {
                         </button>
                         <button
                             className='mx-2 py-2 text-white rounded bg-black px-5'
-                            onClick={() => setVerificarEmail(true)}
-                        /*  onClick={() => validarEnvio()} */
-                        >
+                            onClick={() => {
+                                if (datosReglamentacion.firma.length < 1 && selectedScreen === 6) return setError("Debe firmar la reglamentación");
+                                setVerificarEmail(true)}}
+                            >
                             Enviar
                         </button>
                     </div>
