@@ -1,5 +1,6 @@
 "use server";
 import { PrismaClient } from "@prisma/client";
+import { getAlumnoById } from "./Alumno";
 const prisma = new PrismaClient();
 
 //get responsable by alumno ID
@@ -12,6 +13,10 @@ export async function getResponsableByAlumnoId(alumnoId: number) {
   });
 }
 
+//obtener todos los responsables
+export async function getAllResponsables() {
+   return await prisma.responsable.findMany();
+}
 //crear responsable
 export async function createResponsable(data: {
   alumnoId: number;
@@ -28,9 +33,13 @@ export async function createResponsable(data: {
 }
 
 //actualizar responsable
-export async function updateResponsable(id: number, data: any) {
+export async function updateResponsable(idAlumno: number, data: any) {
+/*   const alumno = await getAlumnoById(idAlumno);
+  const responsable = await getResponsableByAlumnoId(idAlumno); */
+  //console.log("alumno", alumno)
+  //console.log("responsable", responsable)
   return await prisma.responsable.update({
-    where: { id },
+    where: { alumnoId: idAlumno },
     data: data,
   });
 }

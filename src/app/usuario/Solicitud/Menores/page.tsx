@@ -270,9 +270,9 @@ const Menores: React.FC = () => {
             terapia: datosSalud.terapia,
             especialista: datosSalud.consultasEspecialistas,
             motivoAsistencia: datosSalud.motivoInscripcion,
-            firmaUsoImagenes: datosAutorizacionImage.firma,
+            firmaUsoImagenes: datosAutorizacionImage.firma.length > 0 ? `${user?.nombre} ${user?.apellido}`: "",
             observacionesUsoImagenes: datosAutorizacionImage.observaciones,
-            firmaSalidas: datosAutorizacionSalidas.firma,
+            firmaSalidas: datosAutorizacionSalidas.firma.length > 0 ? `${user?.nombre} ${user?.apellido}`: "",
             observacionesSalidas: datosAutorizacionSalidas.observaciones,
             firmaReglamento: datosReglamentacion.firma
         })

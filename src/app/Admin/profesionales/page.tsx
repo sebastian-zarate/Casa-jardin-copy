@@ -28,6 +28,8 @@ const Profesionales = () => {
     const [profesionalesBuscados, setProfesionalesBuscados] = useState<any[]>([])
     const [profesionalAbuscar, setProfesionalAbuscar] = useState<string>("")
     const [selectedProfesional, setSelectedProfesional] = useState<any>(null);
+    const [profesionalesListaCompleta, setProfesionalesListaCompleta] = useState<any[]>([]);
+    const [habilitarProfesionalesBuscados, setHabilitarProfesionalesBuscados] = useState<boolean>(true);
 
     const [obProfesional, setObProfesional] = useState<any>(null);
 
@@ -131,6 +133,7 @@ const Profesionales = () => {
             });
             console.log(data);
             setProfesionales(data);
+            setProfesionalesListaCompleta(data);
         } catch (error) {
             console.error("Imposible obetener Profesionales", error);
         }
@@ -362,15 +365,16 @@ const Profesionales = () => {
     }
     // Function to handle search input change
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setHabilitarProfesionalesBuscados(true);
         const searchTerm = e.target.value.toLowerCase();
-        const filteredProfesionales = profesionales.filter(profesional =>
-            profesional.nombre.toLowerCase().includes(searchTerm) ||
-            profesional.apellido.toLowerCase().includes(searchTerm)/*  ||
+        let filteredProf = profesionalesListaCompleta.filter(prof =>
+            prof.nombre.toLowerCase().includes(searchTerm) ||
+            prof.apellido.toLowerCase().includes(searchTerm)/*  ||
             alumno.email.toLowerCase().includes(searchTerm) */
         );
 
         setProfesionalesBuscados([]);
-        if (e.target.value.length > 0) setProfesionalesBuscados(filteredProfesionales);
+        if (e.target.value.length > 0) setProfesionalesBuscados(filteredProf);
         setProfesionalAbuscar(e.target.value);
     };
     // #endregion
@@ -400,9 +404,10 @@ const Profesionales = () => {
                         <Image src="/Images/SearchIcon.png" alt="Buscar" width={20} height={20} />
                     </div>
                 </div>
-                {profesionalesBuscados.length > 0 && <div className="absolute top-10 right-0 mt-2 w-full max-w-md bg-white border rounded shadow-lg">
+                <button onClick={()=> setProfesionales(profesionalesListaCompleta)}>Cargar Todos</button>
+                {profesionalesBuscados.length > 0 && habilitarProfesionalesBuscados && <div className="absolute top-10 right-0 mt-2 w-full max-w-md bg-white border rounded shadow-lg">
                     {profesionalesBuscados.map((profesional, index) => (
-                        <div key={index} onClick={() => setProfesionalAbuscar(profesional.nombre + " " + profesional.apellido)} className="p-2 border-b hover:bg-gray-100 cursor-pointer">
+                        <div key={index} onClick={() => {setProfesionalAbuscar(profesional.nombre + " " + profesional.apellido); setHabilitarProfesionalesBuscados(false)}} className="p-2 border-b hover:bg-gray-100 cursor-pointer">
                             <p className="text-black">{profesional.nombre} {profesional.apellido}</p>
                         </div>
                     ))}

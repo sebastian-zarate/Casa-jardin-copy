@@ -34,6 +34,22 @@ const AutorizacionImg: React.FC<Datos> = ({ setDatosAutorizacionImage }) => {
                      los usos autorizados precedentemente indicados, relevando al CET de cualquier 
                      responsabilidad al respecto.</p>
                 </div>
+                <div className='flex justify-center mt-4'>
+                    <label className='flex items-center'>
+                        <input type="checkbox" className='mr-2' onChange={(e) => {
+                            if (e.target.checked) {
+                                setDatosAutorizacionImage(prev => ({ ...prev, firma: "Autorizado" }));
+                            } else {
+                                setDatosAutorizacionImage(prev => ({ ...prev, firma: "" }));
+                            }
+                        }} />
+                        Si está de acuerdo, marque la casilla
+                    </label>
+                </div>
+                <div className='flex flex-col p-2  items-center'>
+                    <label htmlFor="observaciones">Observaciones</label>
+                    <input className="w-[50vh] border rounded-md" type="text" name="observaciones" id="observaciones" onChange={(e) => setDatosAutorizacionImage(prev => ({ ...prev, observaciones: e.target.value }))} />
+                </div>
 {/*                 <div className='p-2   w-full justify-center mt-10'>
                     <div className='flex flex-col p-2  items-center'>
                         <label htmlFor="firma">Firma de Padre/Madre/Tutor</label>

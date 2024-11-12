@@ -97,9 +97,12 @@ model Profesional_Curso {
 model Curso {
   id          Int                 @id @default(autoincrement())
   nombre      String
-  year        Int
   descripcion String
   imagen      String?
+  fechaInicio DateTime?
+  fechaFin    DateTime?
+  edadMinima  Int?
+  edadMaxima  Int?
 
   // Relaciones
   prof_cur    Profesional_Curso[]
@@ -208,7 +211,7 @@ model CursoSolicitud {
   solicitud Solicitud @relation(fields: [solicitudId], references: [id])
   solicitudId Int
   curso Curso @relation(fields: [cursoId], references: [id])
-  cursoId Int
+  cursoId Int 
 }
 model SolicitudMayores {
   id          Int       @id @default(autoincrement())
@@ -217,9 +220,9 @@ model SolicitudMayores {
   alumno      Alumno    @relation(fields: [alumnoId], references: [id])
   alumnoId    Int
   //firmas
-  firmaUsoImagenes String
-  observacionesUsoImagenes String 
-  firmaReglamento String
+  firmaUsoImagenes String?
+  observacionesUsoImagenes String?
+  firmaReglamento String?
 
   // Relaciones
   
@@ -238,11 +241,11 @@ model SolicitudMenores {
   especialista String
   motivoAsistencia String
   //firmas
-  firmaUsoImagenes String
-  observacionesUsoImagenes String
-  firmaSalidas String
-  observacionesSalidas String
-  firmaReglamento String
+  firmaUsoImagenes String?
+  observacionesUsoImagenes String?
+  firmaSalidas String?
+  observacionesSalidas String?
+  firmaReglamento String?
 }
 
 model Responsable {

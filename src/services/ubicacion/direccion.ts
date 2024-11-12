@@ -82,6 +82,7 @@ export async function getDireccionById(DireccionId: number) {
   return direccion;
 }
 
+//obtengo todas las direcciones
 export async function getDireccionCompleta (DireccionId: number) {
   const direccion = await prisma.direccion.findUnique({
     where: { id: DireccionId },
@@ -99,3 +100,4 @@ export async function getDireccionCompleta (DireccionId: number) {
   });
   return direccion;
 }
+

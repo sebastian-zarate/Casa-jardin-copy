@@ -4,12 +4,26 @@ import { getUserFromCookie } from "@/helpers/jwt"
 import { PrismaClient } from "@prisma/client"
 
 const prisma = new PrismaClient()
-export type Curso = {
+
+export type Curso ={
+
     id: number;
+
     nombre: string;
-    year: number;
+
     descripcion: string;
-  }
+
+    imagen?: string | null;
+
+    fechaInicio?: Date;
+
+    fechaFin?: Date;
+
+    edadMinima?: number;
+
+    edadMaxima?: number;
+
+}
 //Crear Crusos
 export async function createCurso(data: {
     nombre: string
@@ -17,10 +31,10 @@ export async function createCurso(data: {
     descripcion: string
 }) {
     // antes de crear un curso se verifica si el curso ya existe en la base de datos con el nombre que se quiere crear y año
-    const curso = await getCursoByNombre(data.nombre, data.year)
+    const curso = await getCursoByNombre(data.nombre)
     // si el curso ya existe se devuelve un error
     if (curso) {
-        return "El talller ya existe con ese nombre y año"
+        return "El talller ya existe con ese nombre "
     }
     // Crear un nuevo curso con los datos que se pasan en el objeto data
     return prisma.curso.create({
@@ -31,11 +45,10 @@ export async function createCurso(data: {
 
 //
 // Obtener un curso por nombre 
-export async function getCursoByNombre(nombre: string, year: number) {
+export async function getCursoByNombre(nombre: string) {
     return prisma.curso.findFirst({
         where: {
-            nombre,
-            year,
+            nombre
         }
     })
 }

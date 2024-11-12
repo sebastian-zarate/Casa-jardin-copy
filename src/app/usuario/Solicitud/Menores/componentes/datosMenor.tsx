@@ -80,23 +80,6 @@ const DatosMenor: React.FC<Datos> = ({ datosMenor, setDatosMenor }) => {
             </div>
 
             <div className="flex-col p-3 flex">
-              <label htmlFor="edad">Edad</label>
-              <input
-                id="edad"
-                type="number"
-                placeholder="Ingrese su edad"
-                className="border rounded"
-                value={datosMenor.edad ?? ''}
-                onChange={(e) =>
-                  setDatosMenor((prev) => ({
-                    ...prev,
-                    edad: parseInt(e.target.value),
-                  }))
-                }
-              />
-            </div>
-
-            <div className="flex-col p-3 flex">
               <label htmlFor="fechaNacimiento">Fecha de Nacimiento</label>
               <input
                 id="fechaNacimiento"

@@ -33,6 +33,7 @@ const Mayores: React.FC = () => {
         nombre: "",
         apellido: "",
         telefono: 0,
+        fechaNacimiento: "",
         correoElectronico: "",
         dni: 0,
         pais: "",
@@ -53,6 +54,7 @@ const Mayores: React.FC = () => {
     const [verificarEmail, setVerificarEmail] = useState<boolean>(false);
     const [correcto, setCorrecto] = useState(false);
     const [user, setUser] = useState<any>();
+
 
     const router = useRouter();
     // Para cambiar al usuario de página si no está logeado
@@ -98,6 +100,7 @@ const Mayores: React.FC = () => {
                     apellido: user.apellido,
                     telefono: user.telefono,
                     correoElectronico: user.email,
+                    fechaNacimiento: user.fechaNacimiento,
                     dni: user.dni,
                     pais: pais?.nombre || "",
                     provincia: provincia?.nombre || "",
@@ -210,7 +213,7 @@ const Mayores: React.FC = () => {
          await createSolicitudMayor({
             alumnoId: Number(user?.id),
             solicitudId: solicitud.id,
-            firmaUsoImagenes: `${user?.nombre} ${user?.apellido}`,
+            firmaUsoImagenes: datosAutorizacionImage.firma.length > 0 ? `${user?.nombre} ${user?.apellido}`: "",
             observacionesUsoImagenes: datosAutorizacionImage.observaciones,
             firmaReglamento: `${user?.nombre} ${user?.apellido}`,
           });

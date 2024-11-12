@@ -3,11 +3,11 @@ import { Curso, getCursoById, getCursos } from '@/services/cursos';
 import React, { useState, useEffect } from 'react';
 
 interface cursosProps {
-    cursosElegido: Curso[]
-    setCursosElegido: React.Dispatch<React.SetStateAction<Curso[]>>;
+    cursosElegido: any[]
+    setCursosElegido: React.Dispatch<React.SetStateAction<any[]>>;
 }
 const Talleres: React.FC<cursosProps> = ({cursosElegido, setCursosElegido}) => {
-    const [cursos, setCursos] = useState<any>([]);
+    const [cursos, setCursos] = useState<any[]>([]);
     const [cursosElegidosNombre, setCursosElegidosNombre] = useState<string[]>([]);
     useEffect(() => {
         const handleCursos = async () => {
@@ -35,7 +35,9 @@ async function addCursosElegidos(cursoId: number){
         setCursosElegido([...cursosElegido, curso]);
         getCursoById(cursoId).then((curso) => {
             if (curso && curso.nombre) {
-                setCursosElegidosNombre([...cursosElegidosNombre, String(curso.nombre)]);
+                if (!cursosElegidosNombre.includes(String(curso.nombre))) {
+                    setCursosElegidosNombre([...cursosElegidosNombre, String(curso.nombre)]);
+                }
             }
         });
     }
@@ -45,7 +47,7 @@ async function addCursosElegidos(cursoId: number){
     return (
         <div>
             <select onChange={(e) => {addCursosElegidos(Number(e.target.value))}}>
-                <option value="">Selecciona un taller:</option>
+                <option value="">Seleccione un taller:</option>
                 {cursos.map((curso: { nombre: string, id: number }) => (
                     <option key={curso.id} value={curso.id}>
                         {curso.nombre}

@@ -63,6 +63,46 @@ export async function createAlumno(data: {
   });
   return alum
 }
+export async function createAlumnoAdmin(data: {
+  nombre: string;
+  apellido: string;
+  email: string;
+  password: string;
+  telefono?: number;
+  direccionId?: number;
+  dni: number;
+  fechaNacimiento: Date;
+  mayoriaEdad?: boolean;
+  rolId: number;
+
+}) {
+  // Verificar si el email ya existe en la base de datos
+  const existingAlumno = await prisma.alumno.findUnique({
+    where: {
+      email: data.email,
+    },
+  });
+  data.fechaNacimiento = new Date(data.fechaNacimiento);
+  if (existingAlumno) {
+    // si ya existe que me actualice al alumno
+    const { email, password, ...updateData } = data;
+    //acutalizar el alumno sin cambiar el email y la contraseña
+    console.log("ACTUALIZANDO ALUMNO EXISTENTE")
+    return await prisma.alumno.update({
+      where: { id: existingAlumno.id },
+      data: updateData
+    });
+  }
+  // Convertir fechaNacimiento a Date si está presente
+
+//  console.log("fecha:", data.fechaNacimiento)
+  console.log("CREANDO ALUMNO COMO ADMIN")
+  // Guardar el alumno
+  const alum = await prisma.alumno.create({
+    data: data,
+  });
+  return alum
+}
 
 
 
@@ -99,7 +139,7 @@ export async function updateAlumno(id: number, data: {
   nombre: string;
   apellido: string;
   dni: number;
-  telefono: number;
+  telefono?: number;
   email: string;
   direccionId?: number;
   fechaNacimiento?: Date;
@@ -111,6 +151,8 @@ export async function updateAlumno(id: number, data: {
   if (!alumno) {
     throw new Error("El alumno no existe.");
   }
+  if (data.fechaNacimiento) data.fechaNacimiento = new Date(data.fechaNacimiento);
+  
   let alumnoData: any = {};
 
     // Actualizar el alumno
@@ -120,7 +162,9 @@ export async function updateAlumno(id: number, data: {
     apellido: data.apellido,
     dni: (data.dni),
     telefono: data.telefono,
-    direccionId: data.direccionId
+    direccionId: data.direccionId,
+    email: data.email,
+    fechaNacimiento: data.fechaNacimiento,
   }
   
   return await prisma.alumno.update({
