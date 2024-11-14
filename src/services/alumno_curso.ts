@@ -12,11 +12,23 @@ export async function createAlumno_Curso(data: {
     cursoId: number;
     alumnoId: number;
 }) {
+  const al_cur = await getalumnos_cursoByIdAlumnoIdCur(data.alumnoId, data.cursoId);
+  if (al_cur) {
+    return "El alumno ya se encuentra inscripto en el curso";
+  }
   return await prisma.alumno_Curso.create({
     data,
   });
 }
 
+export async function getalumnos_cursoByIdAlumnoIdCur(alumnoId: number, cursoId:number) {
+  return await prisma.alumno_Curso.findFirst({
+    where: {
+      alumnoId: alumnoId,
+      cursoId: cursoId,
+    },
+  });
+}
 export async function getalumnos_cursoByIdAlumno(alumnoId: number) {
   return await prisma.alumno_Curso.findMany({
     where: {
@@ -39,10 +51,12 @@ export async function getCursosByIdAlumno(id: number) {
       },
     });
     arrayCursos.push(curso);
-    console.log("CURSO", curso);
+    //console.log("CURSO", curso);
   }
+  console.log("CURSO", arrayCursos);
   return arrayCursos;
 }
+
 export async function deleteAlumno_Curso(id: number) {
   return await prisma.alumno_Curso.delete({
     where: { id },

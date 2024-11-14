@@ -9,10 +9,16 @@ export type Profesional_Curso = {
     cursoId: number;
 }
 export async function createProfesional_Curso(data: { cursoId: number, profesionalId: number }) {
-  try {
       // Check if a record with the same cursoId already exists
       const prof_cur = await getProfesional_CursoById_curso_prof(data.cursoId, data.profesionalId);
-      if(prof_cur) return prof_cur;
+      if(prof_cur) return "El profesional ya se encuentra inscripto en el curso";
+      
+      // Check if the cursoId exists
+      const cursoExists = await prisma.curso.findUnique({
+          where: { id: data.cursoId },
+      });
+      if (!cursoExists) return "El curso no existe";
+
       // Proceed with creating the new record
       const newRecord = await prisma.profesional_Curso.create({
           data: {
@@ -22,10 +28,8 @@ export async function createProfesional_Curso(data: { cursoId: number, profesion
       });
 
       return newRecord;
-  } catch (error) {
-      return "Error creating profesional_Curso"
-  }
 }
+
 export async function getProfesional_CursoById_curso_prof(cursoId: number, profesionalId: number){
   return await prisma.profesional_Curso.findFirst({
     where: {

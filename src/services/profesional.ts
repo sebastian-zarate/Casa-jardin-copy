@@ -11,7 +11,7 @@ export type Profesional = {
     apellido: string;
     especialidad: string;
     email: string;
-    telefono: number;
+    telefono: BigInt;
     password: string;
     direccionId: number;
     rolId: number;
@@ -39,18 +39,28 @@ export async function createProfesional(data: {
   direccionId: number;
 }) {
 
+  // Verificar si el email ya existe
+  const existingProfesional = await prisma.profesional.findUnique({
+    where: {
+      email: data.email,
+    },
+  });
 
-// Encriptar la contraseña
-const hashedPassword = await hashPassword(data.password);
-const newProfesional = {
-  ...data,
-  password: hashedPassword,
-  rolId: 3,
-}
-console.log("CREANDO PROFESIONAL")
-return await prisma.profesional.create({
-  data: newProfesional
-});
+  if (existingProfesional) {
+    return('El email ya está en uso');
+  }
+
+  // Encriptar la contraseña
+  const hashedPassword = await hashPassword(data.password);
+  const newProfesional = {
+    ...data,
+    password: hashedPassword,
+    rolId: 3,
+  }
+  console.log("CREANDO PROFESIONAL")
+  return await prisma.profesional.create({
+    data: newProfesional
+  });
 }
 
 export async function updateProfesional(id: number, data: {

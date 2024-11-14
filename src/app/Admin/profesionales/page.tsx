@@ -63,7 +63,9 @@ const Profesionales = () => {
 
     //habilitar sección de cambio de contraseña
     const [habilitarCambioContraseña, setHabilitarCambioContraseña] = useState<boolean>(false);
+    //estado para responder a la confirmación de cambio de contraseña
     const [correcto, setCorrecto] = useState(false);
+
     /* 
         const[direcciones, setDirecciones] = useState<Direccion[]>([]);
         const[localidades, setLocalidades] = useState<Localidad[]>([]);
@@ -82,6 +84,13 @@ const Profesionales = () => {
         }
 
     }, []);
+    useEffect(() => {
+        if (errorMessage !== "") {
+            setInterval(() => {
+                setErrorMessage("")
+            }, 5000);
+        }
+    }, [errorMessage])
     useEffect(() => {
         if (obProfesional && obProfesional.direccionId) {
             getUbicacion(obProfesional);
@@ -107,8 +116,8 @@ const Profesionales = () => {
                 apellido: selectedProfesional.apellido,
                 email: selectedProfesional.email,
                 password: selectedProfesional.password,
-                telefono: selectedProfesional.telefono,
-                especialidad: selectedProfesional.especialidad,
+                telefono: parseInt(selectedProfesional.telefono),
+                especialidad: (selectedProfesional.especialidad),
                 direccionId: selectedProfesional.direccionId,
             });
         } else if (selectedProfesional === -1) {
@@ -126,12 +135,12 @@ const Profesionales = () => {
     async function fetchProfesionales() {
         try {
             const data = await getProfesionales();
-            data.map(async (profesional) => {
+/*             data.map(async (profesional) => {
                 const cursos = await getCursosByIdProfesional(profesional.id);
                 setCursosElegido(prevCursosElegido => [...prevCursosElegido, { id: profesional.id, cursos: cursos }]);
                 console.log("Fetching cursos", cursos);
-            });
-            console.log(data);
+            }); */
+            //console.log(data);
             setProfesionales(data);
             setProfesionalesListaCompleta(data);
         } catch (error) {
@@ -153,7 +162,7 @@ const Profesionales = () => {
         setNacionalidadName(String(direccion?.localidad?.provincia?.nacionalidad?.nombre));
         setNumero(Number(direccion?.numero));
         setcalle(String(direccion?.calle));
-        return  direccion 
+        return direccion
     }
 
 
@@ -241,10 +250,16 @@ const Profesionales = () => {
             const newProfesional = await updateProfesional(obProfesional?.id || 0, {
                 nombre: profesionalDetails.nombre, apellido: profesionalDetails.apellido,
                 especialidad: String(profesionalDetails.especialidad), email: String(profesionalDetails.email),
-                telefono: Number(profesionalDetails.telefono), password: String(profesionalDetails.password),
+                telefono: (profesionalDetails.telefono), password: String(profesionalDetails.password),
                 direccionId: Number(dir?.id)
             });
-            newProfesional
+            if (typeof newProfesional === "string") return setErrorMessage(newProfesional);
+
+            for (const curso of cursosElegido) {                                  //recorre los cursos elegidos y los guarda en la tabla intermedia
+                 await createProfesional_Curso({ cursoId: curso.id, profesionalId: newProfesional.id });
+                //if (typeof prof_cur === "string") return setErrorMessage(prof_cur);
+                //console.log(prof_cur)
+            }
             setVariablesState();
             return;
         }
@@ -277,8 +292,8 @@ const Profesionales = () => {
             if (typeof newProfesional === "string") return setErrorMessage(newProfesional);
 
             for (const curso of cursosElegido) {                                  //recorre los cursos elegidos y los guarda en la tabla intermedia
-                const prof_cur = await createProfesional_Curso({ cursoId: curso.id, profesionalId: newProfesional.id });
-                if (typeof prof_cur === "string") return setErrorMessage(prof_cur);
+                 await createProfesional_Curso({ cursoId: curso.id, profesionalId: newProfesional.id });
+                //if (typeof prof_cur === "string") return setErrorMessage(prof_cur);
                 //console.log(prof_cur)
             }
             setVariablesState();
@@ -315,8 +330,10 @@ const Profesionales = () => {
                 telefono: BigInt(profesionalDetails.telefono), password: hash,
                 direccionId: Number(direccion?.id)
             });
+            if (typeof newProfesional === "string") return setErrorMessage(newProfesional);
             for (const curso of cursosElegido) {                                  //recorre los cursos elegidos y los guarda en la tabla intermedia
-                await createProfesional_Curso({ cursoId: curso.id, profesionalId: newProfesional.id });
+                 await createProfesional_Curso({ cursoId: curso.id, profesionalId: newProfesional.id });
+                //if (typeof prof_cur === "string") return setErrorMessage(prof_cur);
                 //console.log(prof_cur)
             }
             console.log("newProfesional", newProfesional)
@@ -327,7 +344,7 @@ const Profesionales = () => {
 
 
         } catch (error) {
-            console.error("Error al crear el profesional", error);
+            setErrorMessage("Error al crear el profesional:");
         }
     }
     async function handleCancel_init() {
@@ -386,10 +403,10 @@ const Profesionales = () => {
                         <Image src="/Images/SearchIcon.png" alt="Buscar" width={20} height={20} />
                     </div>
                 </div>
-                <button onClick={()=> setProfesionales(profesionalesListaCompleta)}>Cargar Todos</button>
+                <button onClick={() => setProfesionales(profesionalesListaCompleta)}>Cargar Todos</button>
                 {profesionalesBuscados.length > 0 && habilitarProfesionalesBuscados && <div className="absolute top-10 right-0 mt-2 w-full max-w-md bg-white border rounded shadow-lg">
                     {profesionalesBuscados.map((profesional, index) => (
-                        <div key={index} onClick={() => {setProfesionalAbuscar(profesional.nombre + " " + profesional.apellido); setHabilitarProfesionalesBuscados(false)}} className="p-2 border-b hover:bg-gray-100 cursor-pointer">
+                        <div key={index} onClick={() => { setProfesionalAbuscar(profesional.nombre + " " + profesional.apellido); setHabilitarProfesionalesBuscados(false) }} className="p-2 border-b hover:bg-gray-100 cursor-pointer">
                             <p className="text-black">{profesional.nombre} {profesional.apellido}</p>
                         </div>
                     ))}
@@ -418,17 +435,6 @@ const Profesionales = () => {
                             <h3 className="flex  bottom-0 text-black z-1">{profesional.nombre} {profesional.apellido}</h3>
                             <div className="text-sm text-gray-600">
                                 <p>Email: {profesional.email}</p>
-
-                                {/* {!getCursosElegidos(profesional.id) || cursosElegido.length === 0 && <p className="p-2 border rounded bg-gray-100">{"Talleres no cargados"}</p>}
-                                {getCursosElegidos(profesional.id) && cursosElegido.length > 0 && (
-                                    <p className="p-2 border rounded bg-gray-100">
-                                        {getCursosElegidos(profesional.id).map((curso: any, index: number, array: any) => (
-                                            <span key={index}>
-                                                {curso.nombre}{index < array.length - 1 ? ' - ' : ''}
-                                            </span>
-                                        ))}
-                                    </p>
-                                )} */}
                             </div>
                         </div>
                     ))}
@@ -520,19 +526,67 @@ const Profesionales = () => {
                                 className="p-2 w-full border rounded"
                             />
                         </div>}
-                        {((!nacionalidadName && !provinciaName && !localidadName && !calle && !numero && selectedProfesional !== -1) && obProfesional.direccionId) && <p className=" text-red-600">Cargando su ubicación...</p>}
-                        {(selectedProfesional === -1 || (selectedProfesional !== -1 && !obProfesional.direccionId) || (selectedProfesional !== -1 && obProfesional.direccionId && nacionalidadName)) && <div className="mb-4">
-                            <label htmlFor="pais" className="block">País:</label>
-                            <input
-                                type="text"
-                                id="pais"
-                                name="pais"
-                                value={String(nacionalidadName)}
-                                onChange={(e) => setNacionalidadName(e.target.value)}
-                                className="p-2 w-full border rounded"
-                            />
-                        </div>}
-                        {((selectedProfesional === -1) || (selectedProfesional !== -1 && !obProfesional.direccionId) || (selectedProfesional !== -1 && obProfesional.direccionId && provinciaName)) && <div className="mb-4">
+                        {((!nacionalidadName && !provinciaName && !localidadName && !calle && !numero && selectedProfesional !== -1 && obProfesional) && obProfesional.direccionId) && <p className=" text-red-600">Cargando su ubicación...</p>}
+                        {(selectedProfesional === -1 || ((nacionalidadName && provinciaName && localidadName && calle && numero && selectedProfesional !== -1 ))) &&
+                            <>
+                                <div className="mb-4">
+                                    <label htmlFor="pais" className="block">País:</label>
+                                    <input
+                                        type="text"
+                                        id="pais"
+                                        name="pais"
+                                        value={String(nacionalidadName)}
+                                        onChange={(e) => setNacionalidadName(e.target.value)}
+                                        className="p-2 w-full border rounded"
+                                    />
+                                </div>
+                                <div className="mb-4">
+                                    <label htmlFor="provincia" className="block">Provincia:</label>
+                                    <input
+                                        type="text"
+                                        id="provincia"
+                                        name="provincia"
+                                        value={String(provinciaName)}
+                                        onChange={(e) => setProvinciaName(e.target.value)}
+                                        className="p-2 w-full border rounded"
+                                    />
+                                </div>
+                                <div className="mb-4">
+                                    <label htmlFor="localidad" className="block">Localidad:</label>
+                                    <input
+                                        type="text"
+                                        id="localidad"
+                                        name="localidad"
+                                        value={String(localidadName)}
+                                        onChange={(e) => setLocalidadName(e.target.value)}
+                                        className="p-2 w-full border rounded"
+                                    />
+                                </div>
+                                <div className="mb-4">
+                                    <label htmlFor="calle" className="block">Calle:</label>
+                                    <input
+                                        type="text"
+                                        id="calle"
+                                        name="calle"
+                                        value={String(calle)}
+                                        onChange={(e) => setcalle(e.target.value)}
+                                        className="p-2 w-full border rounded"
+                                    />
+                                </div>
+                                <div className="mb-4">
+                                    <label htmlFor="numero" className="block">Número:</label>
+                                    <input
+                                        type="text"
+                                        id="numero"
+                                        name="numero"
+                                        value={Number(numero)}
+                                        onChange={(e) => setNumero(Number(e.target.value))}
+                                        className="p-2 w-full border rounded"
+                                    />
+                                </div>
+                            </>
+                        }
+{/*                         {((selectedProfesional === -1) || (selectedProfesional !== -1 && !obProfesional.direccionId) || (selectedProfesional !== -1 && obProfesional.direccionId && provinciaName !== null)) && <div className="mb-4">
                             <label htmlFor="provincia" className="block">Provincia:</label>
                             <input
                                 type="text"
@@ -543,7 +597,7 @@ const Profesionales = () => {
                                 className="p-2 w-full border rounded"
                             />
                         </div>}
-                        {(selectedProfesional === -1 || (selectedProfesional !== -1 && !obProfesional.direccionId) || (selectedProfesional !== -1 && obProfesional.direccionId && localidadName)) && <div className="mb-4">
+                        {(selectedProfesional === -1 || (selectedProfesional !== -1 && !obProfesional.direccionId) || (selectedProfesional !== -1 && obProfesional.direccionId && localidadName !== null)) && <div className="mb-4">
                             <label htmlFor="localidad" className="block">Localidad:</label>
                             <input
                                 type="text"
@@ -554,7 +608,7 @@ const Profesionales = () => {
                                 className="p-2 w-full border rounded"
                             />
                         </div>}
-                        {(selectedProfesional === -1 || (selectedProfesional !== -1 && !obProfesional.direccionId) || (selectedProfesional !== -1 && obProfesional.direccionId && calle && numero)) && <div className="mb-4">
+                        {(selectedProfesional === -1 || (selectedProfesional !== -1 && !obProfesional.direccionId) || (selectedProfesional !== -1 && obProfesional.direccionId && calle !== null && numero !== null)) && <div className="mb-4">
                             <label htmlFor="calle" className="block">Calle:</label>
                             <input
                                 type="text"
@@ -576,9 +630,9 @@ const Profesionales = () => {
                                     className="p-2 w-full border rounded"
                                 />
                             </div>
-                        }
+                        } */}
                         <div>
-                            <Talleres user={obProfesional} cursosElegido={cursosElegido} setCursosElegido={setCursosElegido} />
+                            <Talleres crearEstado={selectedProfesional} user={obProfesional} cursosElegido={cursosElegido} setCursosElegido={setCursosElegido} />
                         </div>
                         {selectedProfesional !== -1 && <div>
                             <button

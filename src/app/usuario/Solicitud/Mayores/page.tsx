@@ -52,37 +52,49 @@ const Mayores: React.FC = () => {
 
     const [error, setError] = useState<string>('');
     const [verificarEmail, setVerificarEmail] = useState<boolean>(false);
-    const [correcto, setCorrecto] = useState(false);
+    const [correcto, setCorrecto] = useState(true);
     const [user, setUser] = useState<any>();
+
+    const [codigoEnviado, setCodigoEnviado] = useState<boolean>(false);
 
 
     const router = useRouter();
     // Para cambiar al usuario de página si no está logeado
     useEffect(() => {
-        if(!user){
+        if (!user) {
             const authorizeAndFetchData = async () => {
                 // Primero verifico que el user esté logeado
                 console.log("router", router);
                 await autorizarUser(router);
                 // Una vez autorizado obtengo los datos del user y seteo el email
                 const user = await fetchUserData();
-                
+
                 console.log("user", user);
                 if (user) {
                     setUser(user);
                 }
             };
-    
+
             authorizeAndFetchData();
         }
     }, [router]);
 
     useEffect(() => {
-        if(correcto) {
+        if (correcto) {
             cargarSolicitud();
             setVerificarEmail(false);
         }
     }, [correcto])
+
+    useEffect(() => {
+        if (correcto) {
+            setTimeout(() => {
+                setCorrecto(false)
+                setCodigoEnviado(false)
+                window.location.href = "/usuario/principal"
+            }, 5000);
+        }
+    }, [user])
     useEffect(() => {
         if (user) {
             const cargarAlumno = async () => {
@@ -210,15 +222,15 @@ const Mayores: React.FC = () => {
         if (typeof alumno === "string") return setError(alumno)
 
         //crear solicitud mayor
-         await createSolicitudMayor({
+        const x = await createSolicitudMayor({
             alumnoId: Number(user?.id),
             solicitudId: solicitud.id,
-            firmaUsoImagenes: datosAutorizacionImage.firma.length > 0 ? `${user?.nombre} ${user?.apellido}`: "",
+            firmaUsoImagenes: datosAutorizacionImage.firma.length > 0 ? `${user?.nombre} ${user?.apellido}` : "",
             observacionesUsoImagenes: datosAutorizacionImage.observaciones,
             firmaReglamento: `${user?.nombre} ${user?.apellido}`,
-          });
+        });
 
-//        console.log("X:::::",x)
+        //console.log("X:::::", x)
         //crear curso solicitud y alumno_curso
         for (let i = 0; i < selectedCursosId.length; i++) {
             await createCursoSolicitud({
@@ -300,12 +312,12 @@ const Mayores: React.FC = () => {
                         </button>
                         <button
                             className='mx-2 py-2 text-white rounded bg-black px-5'
-                            onClick={() =>{ 
+                            onClick={() => {
 
                                 if (datosReglamentacion.firma.length < 1 && selectedScreen === 3) return setError("Debe firmar la reglamentación");
-                                setVerificarEmail(true);
+                                setVerificarEmail(true); setCodigoEnviado(true)
                             }}
-/*                             onClick={() => cargarSolicitud()} */
+                        /*                             onClick={() => cargarSolicitud()} */
                         >
                             Enviar
                         </button>
@@ -328,6 +340,18 @@ const Mayores: React.FC = () => {
                     </button>
                 </div>
             </div>}
+            {codigoEnviado && <div className='absolute p-6 bg-white rounded-md border left-1/2 top-1/2'>
+
+                {correcto &&
+                    <h1 className=' text-xl font-semibold' style={{ color: "green" }}>Se ha enviado la solicitud de inscripción correctamente!</h1>
+                }
+
+                {!correcto &&
+                    <h1 className=' text-xl font-semibold' style={{ color: "green" }}>No se pudo generar la solicitud de inscripción!</h1>
+                }
+            </div>
+            }
+
             <div className="py-5 border-t bg-white w-full" style={{ opacity: 0.66 }}>
                 <But_aside />
             </div>

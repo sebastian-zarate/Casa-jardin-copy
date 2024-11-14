@@ -69,11 +69,7 @@ interface Datos {
         placeholder="Ingrese el código"
       />
       <button className="bg-black text-white p-2 rounded" onClick={handleVerificarCodigo}>Verificar</button>
-      {correcto ? (
-        <h1 style={{ color: "green" }}>Código correcto!</h1>
-      ) : (
-        <h1 style={{ color: "red" }}></h1>
-      )}
+
     </div>
   );
 }

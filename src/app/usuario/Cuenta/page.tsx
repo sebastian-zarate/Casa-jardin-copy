@@ -9,7 +9,7 @@ import { addDireccion, getDireccionById, getDireccionCompleta, updateDireccionBy
 import { addProvincias, getProvinciasById, updateProvinciaById } from '@/services/ubicacion/provincia';
 import { addLocalidad, getLocalidadById, getLocalidadesByProvinciaId, updateLocalidad } from '@/services/ubicacion/localidad';
 import { addPais, getPaisById } from '@/services/ubicacion/pais';
-import { createAlumno_Curso, getalumnos_cursoByIdAlumno, getcursosByIdAlumno } from '@/services/alumno_curso';
+import { createAlumno_Curso, getalumnos_cursoByIdAlumno, getCursosByIdAlumno } from '@/services/alumno_curso';
 import { Curso, getCursoById } from '@/services/cursos';
 import withAuthUser from "../../../components/alumno/userAuth";
 import { useRouter } from 'next/navigation';
@@ -24,6 +24,7 @@ type Usuario = {
     email: string;
     /*     password: string; */
     direccionId: number;
+    fechaNacimiento: string;
     rolId: number;
 };
 
@@ -43,8 +44,8 @@ const Cuenta: React.FC = () => {
 
     // Estado para almacenar los detalles del curso, inicialmente vacío
     const [alumnoDetails, setAlumnoDetails] = useState<{
-        id: Number; nombre: string; apellido: string; dni: number;
-        telefono: number; email: string; /* password: string; */ direccionId?: number; rolId?: number;
+        id: number; nombre: string; apellido: string; dni: number;
+        telefono: number; email: string; fechaNacimiento: string; direccionId?: number; rolId?: number;
     }>({
         id: user?.id || 0,
         nombre: user?.nombre || '',
@@ -52,7 +53,7 @@ const Cuenta: React.FC = () => {
         dni: user?.dni || 0,
         telefono: user?.telefono || 0,
         email: user?.email || '',
-        /*         password: user?.password || '', */
+        fechaNacimiento: user?.fechaNacimiento ? new Date(user.fechaNacimiento).toISOString().split('T')[0] : '',
         direccionId: user?.direccionId || 0,
         rolId: user?.rolId || 0
     });
@@ -75,7 +76,7 @@ const Cuenta: React.FC = () => {
     //para obtener user by email
 
     const [habilitarCambioContraseña, setHabilitarCambioContraseña] = useState<boolean>(false);
-    const [correcto, setCorrecto] = useState<boolean>(true);
+    const [correcto, setCorrecto] = useState<boolean>(false);
 
     //endregion
 
@@ -84,7 +85,7 @@ const Cuenta: React.FC = () => {
 
     const router = useRouter();
     useEffect(() => {
-        if(((!nacionalidadName || !provinciaName || !localidadName || !calle || !numero) && user && user.direccionId) || !user){
+        if(!alumnoDetails.email){
             getUser()
             console.log("holaaaaaaaaaaaaaaaaaaaaaa")
         }
@@ -92,22 +93,20 @@ const Cuenta: React.FC = () => {
     }, [user]);
     // Para cambiar al usuario de página si no está logeado
     useEffect(() => {
-        const authorizeAndFetchData = async () => {
-            console.time("authorizeAndFetchData");
-            // Primero verifico que el user esté logeado
-            console.log("router", router);
-            await autorizarUser(router);
-            // Una vez autorizado obtengo los datos del user y seteo el email
-            const user = await fetchUserData();
-            console.log("user", user);
-            setUser(user)
-            console.timeEnd("authorizeAndFetchData");
-        };
-
         authorizeAndFetchData();
     }, [router]);
 
-
+    const authorizeAndFetchData = async () => {
+        console.time("authorizeAndFetchData");
+        // Primero verifico que el user esté logeado
+        console.log("router", router);
+        await autorizarUser(router);
+        // Una vez autorizado obtengo los datos del user y seteo el email
+        const user = await fetchUserData();
+        console.log("user", user);
+        setUser(user)
+        console.timeEnd("authorizeAndFetchData");
+    };
     useEffect(() => {
         if ((errorMessage.length > 0) && scrollRef.current) {
             scrollRef.current.scrollTop = 0;
@@ -131,7 +130,7 @@ const Cuenta: React.FC = () => {
         //console.log("DIRECCION DEFINIT",direccion);
         let talleres: Curso[] = [];
         if (user) {
-            const result = await getcursosByIdAlumno(Number(user?.id));
+            const result = await getCursosByIdAlumno(Number(user?.id));
             for(let i = 0; i < result.length; i++){
                 const curso = await getCursoById(result[i]);
                 talleres.push(curso as Curso);
@@ -192,6 +191,7 @@ const Cuenta: React.FC = () => {
             dni: user?.dni || 0,
             telefono: user?.telefono || 0,
             email: user?.email || '',
+            fechaNacimiento: user?.fechaNacimiento ? new Date(user.fechaNacimiento).toISOString().split('T')[0] : '',
             /*             password: user?.password || '', */
             direccionId: user?.direccionId || 0,
             rolId: user?.rolId || 0
@@ -208,7 +208,8 @@ const Cuenta: React.FC = () => {
             id: userUpdate.id,
             nombre: userUpdate.nombre, apellido: userUpdate.apellido,
             dni: Number(userUpdate.dni), telefono: (userUpdate.telefono),
-            email: userUpdate.email, /* password: userUpdate.password,  */direccionId: userUpdate.direccionId, rolId: userUpdate.rolId
+            fechaNacimiento: (userUpdate.fechaNacimiento),
+            email: userUpdate.email, direccionId: userUpdate.direccionId, rolId: userUpdate.rolId
         });
         setUser(userUpdate);
         //setOpenBox(!openBox)
@@ -277,13 +278,14 @@ const Cuenta: React.FC = () => {
             const newAlumno = await updateAlumno(Number(alumnoDetails?.id), {
                 nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
                 dni: Number(alumnoDetails.dni), email: alumnoDetails.email, telefono: Number(alumnoDetails.telefono),
-                direccionId: Number(direccion?.id)
+                direccionId: Number(direccion?.id), fechaNacimiento: new Date(alumnoDetails.fechaNacimiento)
             });
             if (typeof newAlumno === "string") return setErrorMessage(newAlumno);
             newAlumno.direccionId = direccion?.id;
             console.log("newAlumno", newAlumno);
             setOpenBox(0);
             getUser();
+            authorizeAndFetchData();
             return;
         }
         const { direccion } = await getUbicacion(alumnoDetails);
@@ -310,7 +312,7 @@ const Cuenta: React.FC = () => {
             const newAlumno = await updateAlumno(Number(alumnoDetails?.id), {
                 nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
                 dni: Number(alumnoDetails.dni), telefono: Number(alumnoDetails.telefono),
-                direccionId: Number(newDireccion?.id), email: alumnoDetails.email
+                direccionId: Number(newDireccion?.id), fechaNacimiento: new Date(alumnoDetails.fechaNacimiento), email: alumnoDetails.email
             });
             console.log("newAlumno", newAlumno);
         } catch (error) {
@@ -319,6 +321,7 @@ const Cuenta: React.FC = () => {
         setNacionalidadName(String(direccion?.localidad?.provincia?.nacionalidad?.nombre))
         setOpenBox(0);
         getUser();
+        authorizeAndFetchData();
         console.log(openBox)
 
     }
@@ -331,10 +334,10 @@ const Cuenta: React.FC = () => {
                 <Navigate />
             </div>
 
-            <div className='absolute mt-20 top-10 '>
+            <div className='absolute mt-20 top-5 '>
                 <h1 className='flex my-20 items-center justify-center  font-bold text-3xl'>Datos del Estudiante</h1>
                 <div className='flex  justify-center w-screen'>
-                    <div className=" mx-auto bg-gray-100 rounded-lg shadow-md px-8 py-6 grid grid-cols-2 gap-x-12 max-w-2xl">
+                    <div className=" mx-auto bg-gray-100 rounded-lg shadow-md px-8 py-6 grid grid-cols-2 gap-x-12 w-8/12">
                         <div className="mb-4">
                             <label className="block text-gray-700 font-bold mb-2">Nombre:</label>
                             <p className="p-2 border rounded bg-gray-100">{user?.nombre} {user?.apellido}</p>
@@ -368,6 +371,10 @@ const Cuenta: React.FC = () => {
                             <label className="block text-gray-700 font-bold mb-2">email:</label>
                             <p className="p-2 border rounded bg-gray-100">{user?.email}</p>
                         </div>
+                        <div className="mb-4">
+                            <label className="block text-gray-700 font-bold mb-2">Fecha de Nacimiento:</label>
+                            <p className="p-2 border rounded bg-gray-100">{user?.fechaNacimiento ? new Date(user.fechaNacimiento).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year:'2-digit' }) : ''}</p>
+                        </div>
                         {/* 
                         <div className="mb-4">
                             <label className="block text-gray-700 font-bold mb-2">password:</label>
@@ -385,7 +392,7 @@ const Cuenta: React.FC = () => {
                 <div className="flex items-center justify-center mt-5">
                     <button
                         className='bg-red-500 py-2 px-10 text-white rounded hover:bg-red-700'
-                        onClick={() => { setOpenBox(1); console.log(openBox) }}>
+                        onClick={() => { setOpenBox(1); console.log(openBox); getUser() }}>
                         Editar
                     </button>
                 </div>
@@ -394,7 +401,7 @@ const Cuenta: React.FC = () => {
                 <But_aside />
             </div>
             {openBox === 1 && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                <div className="fixed inset-0 flex items-center w-600 justify-center bg-black bg-opacity-50">
                     <div ref={scrollRef} className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative" style={{ height: '70vh', overflow: "auto" }}>
                         <h2 className="text-2xl font-bold mb-4">
                             Datos del Estudiante
@@ -438,6 +445,17 @@ const Cuenta: React.FC = () => {
                             />
                         </div>
                         <div className="mb-4">
+                            <label htmlFor="email" className="block">Email:</label>
+                            <input
+                                type="text"
+                                id="email"
+                                name="email"
+                                value={(alumnoDetails.email)}
+                                onChange={handleChange}
+                                className="p-2 w-full border rounded"
+                            />
+                        </div>
+                        <div className="mb-4">
                             <label htmlFor="imagen" className="block">Imagen:</label>
                             <input
                                 type="file"
@@ -457,8 +475,21 @@ const Cuenta: React.FC = () => {
                                 className="p-2 w-full border rounded"
                             />
                         </div>
-                        {!nacionalidadName && !provinciaName && !localidadName && !calle && !numero && <p className=" text-red-600">Cargando su ubicación...</p>}
-                        {nacionalidadName && <div className="mb-4">
+                        <div className="flex-col flex mb-4">
+                            <label htmlFor="fechaNacimiento">Fecha de Nacimiento</label>
+                            <input
+                                id="fechaNacimiento"
+                                type="date"
+                                name="fechaNacimiento"
+                                className="border rounded"
+                                value={(alumnoDetails.fechaNacimiento)}
+                                onChange={handleChange}
+                                min={new Date(new Date().setFullYear(new Date().getFullYear() - 100)).toISOString().split('T')[0]} // Set min to 100 years ago
+                                max={new Date().toISOString().split('T')[0]} // Set max to today's date
+                            />
+                        </div>
+                        {!nacionalidadName && !provinciaName && !localidadName && !calle && !numero && user?.direccionId && <p className=" text-red-600">Cargando su ubicación...</p>}
+                        {user?.direccionId && <div className="mb-4">
                             <label htmlFor="pais" className="block">País:</label>
                             <input
                                 type="text"
@@ -469,7 +500,7 @@ const Cuenta: React.FC = () => {
                                 className="p-2 w-full border rounded"
                             />
                         </div>}
-                        {provinciaName && <div className="mb-4">
+                        {user?.direccionId && <div className="mb-4">
                             <label htmlFor="provincia" className="block">Provincia:</label>
                             <input
                                 type="text"
@@ -480,7 +511,7 @@ const Cuenta: React.FC = () => {
                                 className="p-2 w-full border rounded"
                             />
                         </div>}
-                        {localidadName && <div className="mb-4">
+                        {user?.direccionId && <div className="mb-4">
                             <label htmlFor="localidad" className="block">Localidad:</label>
                             <input
                                 type="text"
@@ -491,7 +522,7 @@ const Cuenta: React.FC = () => {
                                 className="p-2 w-full border rounded"
                             />
                         </div>}
-                        {calle && numero && <div className="mb-4">
+                        {user?.direccionId  && <div className="mb-4">
                             <label htmlFor="calle" className="block">Calle:</label>
                             <input
                                 type="text"

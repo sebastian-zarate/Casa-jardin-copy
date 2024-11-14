@@ -74,11 +74,12 @@ const Menores: React.FC = () => {
         firma: "",
     });
 
-   
+
     const [error, setError] = useState<string>('');
     const [verificarEmail, setVerificarEmail] = useState<boolean>(false);
-    const [correcto, setCorrecto] = useState(false);
+    const [correcto, setCorrecto] = useState(true);
     const [user, setUser] = useState<any>();
+    const [codigoEnviado, setCodigoEnviado] = useState<boolean>(true)
 
     //datos menor: nombre, apellido, edad, fecha de nacimiento, dni,pais, localidad,calle
     //datos mayor: nombre, apellido, telefono, correo electronico, dni, pais, localidad, calle
@@ -92,7 +93,7 @@ const Menores: React.FC = () => {
     const router = useRouter();
     // Para cambiar al usuario de página si no está logeado
     useEffect(() => {
-        if(!user){
+        if (!user) {
             const authorizeAndFetchData = async () => {
                 // Primero verifico que el user esté logeado
                 await autorizarUser(router);
@@ -117,54 +118,57 @@ const Menores: React.FC = () => {
                         calle: direccion?.calle || '',
                         numero: Number(direccion?.numero),
                         edad: user.edad,
-                                               
+
                     });
-                    setDatosMayor({...datosMayor, pais: pais?.nombre || '', provincia: provincia?.nombre || '', localidad: localidad?.nombre || '', calle: direccion?.calle || '', numero: Number(direccion?.numero) });
+                    setDatosMayor({ ...datosMayor, pais: pais?.nombre || '', provincia: provincia?.nombre || '', localidad: localidad?.nombre || '', calle: direccion?.calle || '', numero: Number(direccion?.numero) });
                 }
             };
-    
+
             authorizeAndFetchData();
         }
     }, [router]);
 
     useEffect(() => {
-        if(correcto) {
-            cargarSolicitud();
-            setVerificarEmail(false);
+        if (correcto) {
+            setTimeout(() => {
+                setCorrecto(false)
+                setCodigoEnviado(false)
+                window.location.href = "/usuario/principal"
+            }, 5000);
         }
-    }, [correcto]);
+    }, [])
 
     function validateDatos() {
         // carrateres especiales en el nombre y la descripción
         const regex = /^[a-zA-Z0-9_ ,.;áéíóúÁÉÍÓÚñÑüÜ@]*$/; // no quiero que tenga caracteres especiales que las comas y puntos afecten 
 
-        if(selectedScreen === 0 && selectedCursosId.length === 0) return "Debe seleccionar al menos un taller";
+        if (selectedScreen === 0 && selectedCursosId.length === 0) return "Debe seleccionar al menos un taller";
         if (selectedScreen === 1) {
             // Validar que el nombre tenga al menos 2 caracteres
             if (datosMenor.nombre.length < 1 && regex.test(datosMenor.nombre)) {
                 return ("El nombre debe tener al menos 2 caracteres.");
             }
-            if (datosMenor.apellido.length < 1  && regex.test(datosMenor.apellido)) {
+            if (datosMenor.apellido.length < 1 && regex.test(datosMenor.apellido)) {
                 return ("El apellido debe tener al menos 2 caracteres.");
             }
             if ((datosMenor.dni).toString().length != 8) {
                 return ("El DNI debe tener al menos 8 números.");
             }
-            if (datosMenor.pais.length < 1  && regex.test(datosMenor.pais)) {
+            if (datosMenor.pais.length < 1 && regex.test(datosMenor.pais)) {
                 return ("El país debe tener al menos 2 caracteres.");
             }
-            if (datosMenor.provincia.length < 1  && regex.test(datosMenor.provincia)) {
+            if (datosMenor.provincia.length < 1 && regex.test(datosMenor.provincia)) {
                 return ("La provincia debe tener al menos 2 caracteres.");
             }
-            if (datosMenor.localidad.length < 1  && regex.test(datosMenor.localidad)) {
+            if (datosMenor.localidad.length < 1 && regex.test(datosMenor.localidad)) {
                 return ("La localidad debe tener al menos 2 caracteres.");
             }
-            if (datosMenor.calle.length < 1  && regex.test(datosMenor.calle)) {
+            if (datosMenor.calle.length < 1 && regex.test(datosMenor.calle)) {
                 return ("La calle debe tener al menos 2 caracteres.");
             }
             if (!datosMenor.numero) {
                 return ("El número debe tener al menos 1 número.");
-            }           
+            }
             if (!/\d/.test(datosMenor.fechaNacimiento)) return ("La fecha de nacimiento es obligatoria");
         }
         if (selectedScreen === 2) {
@@ -172,7 +176,7 @@ const Menores: React.FC = () => {
             if (datosMayor.nombre.length < 1 && regex.test(datosMayor.nombre)) {
                 return ("El nombre debe tener al menos 2 caracteres.");
             }
-            if (datosMayor.apellido.length < 1  && regex.test(datosMayor.apellido)) {
+            if (datosMayor.apellido.length < 1 && regex.test(datosMayor.apellido)) {
                 return ("El apellido debe tener al menos 2 caracteres.");
             }
             if ((datosMayor.telefono).toString().length < 7) {
@@ -184,16 +188,16 @@ const Menores: React.FC = () => {
             if ((datosMayor.dni).toString().length != 8) {
                 return ("El DNI debe tener al menos 8 números.");
             }
-            if (datosMayor.pais.length < 1  && regex.test(datosMayor.pais)) {
+            if (datosMayor.pais.length < 1 && regex.test(datosMayor.pais)) {
                 return ("El país debe tener al menos 2 caracteres.");
             }
-            if (datosMayor.provincia.length < 1  && regex.test(datosMayor.provincia)) {
+            if (datosMayor.provincia.length < 1 && regex.test(datosMayor.provincia)) {
                 return ("La provincia debe tener al menos 2 caracteres.");
             }
-            if (datosMayor.localidad.length < 1  && regex.test(datosMayor.localidad)) {
+            if (datosMayor.localidad.length < 1 && regex.test(datosMayor.localidad)) {
                 return ("La localidad debe tener al menos 2 caracteres.");
             }
-            if (datosMayor.calle.length < 1  && regex.test(datosMayor.calle)) {
+            if (datosMayor.calle.length < 1 && regex.test(datosMayor.calle)) {
                 return ("La calle debe tener al menos 2 caracteres.");
             }
             if (!datosMayor.numero) {
@@ -270,16 +274,16 @@ const Menores: React.FC = () => {
             terapia: datosSalud.terapia,
             especialista: datosSalud.consultasEspecialistas,
             motivoAsistencia: datosSalud.motivoInscripcion,
-            firmaUsoImagenes: datosAutorizacionImage.firma.length > 0 ? `${user?.nombre} ${user?.apellido}`: "",
+            firmaUsoImagenes: datosAutorizacionImage.firma.length > 0 ? `${user?.nombre} ${user?.apellido}` : "",
             observacionesUsoImagenes: datosAutorizacionImage.observaciones,
-            firmaSalidas: datosAutorizacionSalidas.firma.length > 0 ? `${user?.nombre} ${user?.apellido}`: "",
+            firmaSalidas: datosAutorizacionSalidas.firma.length > 0 ? `${user?.nombre} ${user?.apellido}` : "",
             observacionesSalidas: datosAutorizacionSalidas.observaciones,
             firmaReglamento: datosReglamentacion.firma
         })
 
 
         console.log("SOLIMenor::::", soliMenor)
-//        console.log("X:::::",x)
+        //        console.log("X:::::",x)
         //crear curso solicitud y alumno_curso
         for (let i = 0; i < selectedCursosId.length; i++) {
             await createCursoSolicitud({
@@ -378,17 +382,29 @@ const Menores: React.FC = () => {
                             className='mx-2 py-2 text-white rounded bg-black px-5'
                             onClick={() => {
                                 if (datosReglamentacion.firma.length < 1 && selectedScreen === 6) return setError("Debe firmar la reglamentación");
-                                setVerificarEmail(true)}}
-                            >
+                                setVerificarEmail(true);setCodigoEnviado(true)
+                            }}
+                        >
                             Enviar
                         </button>
                     </div>
                 </div>
             )}
-             {verificarEmail && <div className=' absolute bg-slate-100 rounded-md shadow-md px-2 left-1/2 top-1/2 tranform -translate-x-1/2 -translate-y-1/2'>
+            {verificarEmail && <div className=' absolute bg-slate-100 rounded-md shadow-md px-2 left-1/2 top-1/2 tranform -translate-x-1/2 -translate-y-1/2'>
                 <button className='absolute top-2 right-2' onClick={() => setVerificarEmail(false)}>X</button>
                 <EmailPage setCorrecto={setCorrecto} correcto={correcto} />
             </div>}
+            {codigoEnviado && <div className='absolute p-6 bg-white rounded-md border left-1/2 top-1/2'>
+
+               {correcto &&
+                 <h1 className=' text-xl font-semibold' style={{ color: "green" }}>Se ha enviado la solicitud de inscripción correctamente!</h1>
+                 }
+
+                { !correcto &&
+                    <h1 className=' text-xl font-semibold' style={{ color: "green" }}>No se pudo generar la solicitud de inscripción!</h1>
+                }
+            </div>
+            }
             {error != '' && <div className="absolute top-1/2 right-1/3 transform -translate-x-1/3 -translate-y-1/4 bg-white border p-4 rounded-md shadow-md w-96">
                 <h2 className="text-lg font-bold text-red-600 mb-2">Error</h2>
                 <p className="text-sm text-red-700 mb-4">{error}</p>

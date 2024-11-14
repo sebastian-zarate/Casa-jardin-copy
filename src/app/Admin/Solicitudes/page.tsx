@@ -8,7 +8,7 @@ import adultos from "../../../../public/Images/adultos.jpg";
 import menores from "../../../../public/Images/menores.jpg";
 import { deleteSolicitud, getAllSolicitudes, getSolicitudById, Solicitud, updateSolicitud } from "@/services/Solicitud/Solicitud";
 import { getAlumnoById } from "@/services/Alumno";
-import { getAllSolicitudesMenores } from "@/services/Solicitud/SolicitudMenor";
+import { getAllSolicitudesMenores, SolicitudMenores } from "@/services/Solicitud/SolicitudMenor";
 import { Alumno } from "@prisma/client";
 import { getDireccionCompleta } from "@/services/ubicacion/direccion";
 import { getResponsableByAlumnoId } from "@/services/responsable";
@@ -21,7 +21,7 @@ const solicitudPage: React.FC = () => {
     // Estado para almacenar las solicitudes de mayores
     const [solicitudesMayores, setSolicitudesMayores] = useState<SolicitudMayor[]>([]);
     // Estado para almacenar las solicitud de menores
-    const [solicitudMenores, setSolicitudesMenores] = useState<any[]>([]);
+    const [solicitudMenores, setSolicitudesMenores] = useState<SolicitudMenores[]>([]);
     // Estado para almacenar las solicitudes todas
     const [solicitudes, setSolicitudes] = useState<Solicitud[]>([]);
     // Estado para habilitar solicitudes de mayores
@@ -48,12 +48,14 @@ const solicitudPage: React.FC = () => {
         const fetchDataIfNeeded = async () => {
             if (solicitudes.length === 0) {
                 await fetchData();
+                
             }
         };
         fetchDataIfNeeded();
     }, []);
 
     const fetchData = async () => {
+
         const [dataMa, dataMe, soli] = await Promise.all([
             getAllSolicitudesMayores(),
             getAllSolicitudesMenores(),
@@ -62,47 +64,39 @@ const solicitudPage: React.FC = () => {
         setSolicitudes(soli);
         setSolicitudesMayores(dataMa);
         setSolicitudesMenores(dataMe);
-        const alumnosMayores = await Promise.all(
-            dataMa.map(async (solicitMay) => {
-            const alumno = await getAlumnoById(solicitMay.alumnoId);
-            return alumno;
-            })
-        );
-        const direccionesMayores = await Promise.all(
-            alumnosMayores.map(async (alum) => {
-            return  await getDireccionCompleta(Number(alum?.direccionId));
-            })
-        )
-        const alumnosMenores = await Promise.all(
-            dataMe.map(async (solicitMen) => {
-            const alumno = await getAlumnoById(solicitMen.alumnoId);
-            return alumno;
-            })
-        );
-        const responsablesMenores = await Promise.all(
-            dataMe.map(async (solicitMen) => {
-                const responsable = await getResponsableByAlumnoId(solicitMen.alumnoId);
-                return responsable;
-                })
-        )
-        const direccionesMenores = await Promise.all(
-            alumnosMenores.map(async (alum) => {
-            return  await getDireccionCompleta(Number(alum?.direccionId));
-            })
-        )
 
-/*         console.log("ALUMNOSMAYORES",alumnosMayores)
-        console.log("DIRECC",direccionesMayores) */
-        setAlumnosMayores(alumnosMayores);
-        setDireccionesMayores(direccionesMayores)
-        setAlumnosMenores(alumnosMenores)
-        setResponsables(responsablesMenores)
-        setDireccionesMenores(direccionesMenores)
+            const [alumnosMayores, alumnosMenores, responsablesMenores] = await Promise.all([
+                Promise.all(dataMa.map(async (solicitMay) => {
+                    const alumno = await getAlumnoById(solicitMay.alumnoId);
+                    return alumno;
+                })),
+                Promise.all(dataMe.map(async (solicitMen) => {
+                    const alumno = await getAlumnoById(solicitMen.alumnoId);
+                    return alumno;
+                })),
+                Promise.all(dataMe.map(async (solicitMen) => {
+                    const responsable = await getResponsableByAlumnoId(solicitMen.alumnoId);
+                    return responsable;
+                }))
+            ]);
+            /*         const direccionesMenores = await Promise.all(
+                        alumnosMenores.map(async (alum) => {
+                        return  await getDireccionCompleta(Number(alum?.direccionId));
+                        })
+                    ) */
 
+            console.log("ALUMNOSMAYORES", alumnosMayores)
+            //        console.log("DIRECC",direccionesMayores)
+            setAlumnosMayores(alumnosMayores);
+            //setDireccionesMayores(direccionesMayores)
+            setAlumnosMenores(alumnosMenores)
+            setResponsables(responsablesMenores)
+            //setDireccionesMenores(direccionesMenores)
+        
     }
     const handleEliminarSolicitud = async (solicitudId: number) => {
         //console.log(solicitudMenores);
-        const soliElim = await deleteSolicitud(solicitudId);
+        await deleteSolicitud(solicitudId);
         //console.log(soliElim);
         fetchData()
     }
@@ -113,24 +107,24 @@ const solicitudPage: React.FC = () => {
     }
 
     const handleAceptarSolicitud = async (solicitudId: number) => {
-        const soli = await updateSolicitud(solicitudId, { leida: true });
-       // console.log(soli);
+        await updateSolicitud(solicitudId, { leida: true });
+        // console.log(soli);
         fetchData()
     }
 
     const getSolicitud = (solicitudId: number) => {
         const sol = solicitudes.find((solicitud) => solicitud.id === solicitudId);
-       // console.log(sol);
+        // console.log(sol);
         return sol;
     }
-    const getAl = (id:number) => {
+    const getAl = (id: number) => {
         const alumnoMayor = alumnosMayores?.reduce((acc, alumno) => {
             if (alumno.id === id) {
                 return alumno;
             }
             return acc;
         }, null);
-        if(!alumnoMayor) {
+        if (!alumnoMayor) {
             return alumnosMenores?.reduce((acc, alumno) => {
                 if (alumno.id === id) {
                     return alumno;
@@ -140,7 +134,7 @@ const solicitudPage: React.FC = () => {
         }
         return alumnoMayor
     }
-    const getResp = (id:number) => {
+    const getResp = (id: number) => {
         return responsables?.reduce((acc, resp) => {
             if (resp.alumnoId === id) {
                 return resp;
@@ -182,8 +176,8 @@ const solicitudPage: React.FC = () => {
                         {solicitudesMayores.map((solicitudMay, key) => (
                             <div key={key} className="bg-red-400 cursor-pointer"
                                 onClick={() => {
-                                    setSolicitudSelected(solicitudMay.id)/* handleDatos(solicitudMay.alumnoId, String(solicitudMay.firmaUsoImagenes), String(solicitudMay.observacionesUsoImagenes),
-                                        String(solicitudMay.firmaReglamento), solicitudMay.id); */
+                                    setSolicitudSelected(solicitudMay.id); setFirmaUsoImagenes(String(solicitudMay.firmaUsoImagenes));
+                                     setObservacionesUsoImagenes(String(solicitudMay.observacionesUsoImagenes)); setFirmaReglamento(String(solicitudMay.firmaReglamento));
                                 }}>
                                 <span>Solicitud: {solicitudMay.solicitudId}</span>
                                 {!getSolicitud(solicitudMay.solicitudId)?.leida && (
@@ -229,12 +223,19 @@ const solicitudPage: React.FC = () => {
                         {solicitudMenores.map((solicitudMen, key) => (
                             <div key={key} className="bg-red-400 cursor-pointer"
                                 /* onClick={() => { handleDatos(solicitud.alumnoId, solicitud.firmaUsoImagenes, solicitud.observacionesUsoImagenes, solicitud.firmaReglamento, solicitud.id); }} */
-                                onClick={()=> setSolicitudSelected(solicitudMen.id)}>
+                                onClick={() => setSolicitudSelected(solicitudMen.id)}>
                                 <span>Solicitud: {solicitudMen.solicitudId}</span>
                                 {!getSolicitud(solicitudMen.solicitudId)?.leida && (
                                     <>
-                                        <button onClick={() => handleAceptarSolicitud(solicitudMen.solicitudId)}>Aceptar</button>
-                                        <button onClick={() => handleEliminarSolicitud(solicitudMen.solicitudId)}>Rechazar</button>
+                                        {!getSolicitud(solicitudMen.solicitudId)?.enEspera && (
+                                            <>
+                                                <button onClick={() => handleAceptarSolicitud(solicitudMen.solicitudId)}>Aceptar</button>
+                                                <button className=" p-2 rounded-sm" onClick={() => handleRechazar(solicitudMen.solicitudId, getAl(solicitudMen.alumnoId).correoElectronico)}>Rechazar</button>
+                                            </>
+                                        )}
+                                        {getSolicitud(solicitudMen.solicitudId)?.enEspera &&
+                                            <button className=" p-2 rounded-sm" onClick={() => handleEliminarSolicitud(solicitudMen.solicitudId)}>Solicitud corregida</button>
+                                        }
                                     </>
                                 )}
                                 {solicitudSelected === solicitudMen.id &&
@@ -245,7 +246,7 @@ const solicitudPage: React.FC = () => {
                                             <span>Telefono: {getAl(solicitudMen.alumnoId)?.telefono}</span>
                                             <span>Correo: {getAl(solicitudMen.alumnoId)?.correoElectronico}</span>
                                             <span>DNI: {getAl(solicitudMen.alumnoId)?.dni}</span>
-             {/*                                <span>Pais: {alumnoSelected?.pais}</span>
+                                            {/*                                <span>Pais: {alumnoSelected?.pais}</span>
                                             <span>Provincia: {alumnoSelected?.provincia}</span>
                                             <span>Localidad: {alumnoSelected?.localidad}</span>
                                             <span>Calle: {alumnoSelected?.calle}</span>
@@ -259,8 +260,16 @@ const solicitudPage: React.FC = () => {
                                             <span>Telefono: {getResp(solicitudMen.alumnoId)?.telefono}</span>
                                             <span>Correo: {getResp(solicitudMen.alumnoId)?.email}</span>
                                         </div>
-                                        <span>{firmaUsoImagenes.length > 0 ? "Accedió al uso de la imagenen" : "No estuvo de acuerdo con el uso de la imagen"}</span>
-                                        {observacionesUsoImagenes.length > 0 && <span>Tuvo las siguientes observaciones respecto al uso de Imagen: {observacionesUsoImagenes}</span>}
+                                        <span>{String(solicitudMen.firmaUsoImagenes) .length > 0 ? "Accedió al uso de la imagenen" : "No estuvo de acuerdo con el uso de la imagen"}</span>
+                                        {String(solicitudMen.observacionesUsoImagenes).length > 0 && <span>Tuvo las siguientes observaciones respecto al uso de Imagen: {observacionesUsoImagenes}</span>}
+                                        <span>{String(solicitudMen.firmaSalidas) .length > 0 ? "Accedió a las salidas" : "No estuvo de acuerdo con las salidas fuera de Casa Jardín"}</span>
+                                        <h1>Datos sobre la salud del menor:</h1>
+                                        <span>Enfermedad: {solicitudMen.enfermedad} </span>
+                                        <span>Especialista/s: {solicitudMen.especialista} </span>
+                                        <span>Medicación:{solicitudMen.medicacion}</span>
+                                        <span>Terapia:{solicitudMen.terapia}</span>
+                                        <span>Alergia:{solicitudMen.alergia}</span>
+                                        <span>Motivo de la asistencia a casa jardín:{solicitudMen.motivoAsistencia}</span>
                                         <span>Firmó el reglamento</span>
                                     </div>
                                 }

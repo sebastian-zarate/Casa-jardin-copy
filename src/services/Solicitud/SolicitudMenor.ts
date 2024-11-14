@@ -14,11 +14,11 @@ export type SolicitudMenores = {
   terapia: string;
   especialista: string;
   motivoAsistencia: string;
-  firmaUsoImagenes: string;
-  observacionesUsoImagenes: string;
-  firmaSalidas: string;
-  observacionesSalidas: string;
-  firmaReglamento: string;
+  firmaUsoImagenes: string |null;
+  observacionesUsoImagenes: string |null;
+  firmaSalidas: string |null;
+  observacionesSalidas: string |null;
+  firmaReglamento: string | null;
 };
 
 //obtener solicitudMayor por id de solicitud 

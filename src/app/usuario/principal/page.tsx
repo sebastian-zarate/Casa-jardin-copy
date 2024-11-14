@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import Navigate from "../../../components/alumno/navigate/page";
 import But_aside from "../../../components/but_aside/page";
-import { getcursosByIdAlumno } from '@/services/alumno_curso';
+import { getCursosByIdAlumno } from '@/services/alumno_curso';
 
 import { Curso, getCursoById } from '@/services/cursos';
 import Image from "next/image";
@@ -38,33 +38,21 @@ const principal: React.FC = () => {
             // console.log("user", user);
             //const direccion = await getDireccionByIdDef(Number(user?.direccionId));
             setUsuario(user);
-            setUserName(user?.nombre + " " + user?.apellido); 
+            setUserName(user?.nombre + " " + user?.apellido);
+            let talleres= await getCursosByIdAlumno(Number(user?.id));
+            talleres.map((curso) => {
+                setCursos(prev => [...prev, curso]);
+            })
+
+            console.log("TALLERES", talleres);
+            //  console.log(usuario?.nombre);
+            //setUserName(String(usuario?.nombre));
+            setCursos(talleres);
         };
 
         authorizeAndFetchData();
     }, [router]);
 
-    async function getAllCursos() {
-        //      console.log("USER", usuario);
-        //const direccion = await getDireccionByIdDef(Number(user?.direccionId));
-        //        console.log("DIRECCION", usuario?.direccionId);
-        //console.log("DIRECCION DEFINIT",direccion);
-        let talleres: Curso[] = [];
-        if (usuario) {
-            const result = await getcursosByIdAlumno(Number(usuario?.id));
-            for(let i = 0; i < result.length; i++){
-                const curso = await getCursoById(result[i]);
-                talleres.push(curso as Curso);
-            }
-        }
-        //  console.log(usuario?.nombre);
-        //setUserName(String(usuario?.nombre));
-        setCursos(talleres);
-    }
-
-    useEffect(() => {
-        if (cursos.length === 0) getAllCursos();
-    }, [cursos]);
 
     return (
         <main className=''>
@@ -94,9 +82,9 @@ const principal: React.FC = () => {
                 <div className=' mt-40 mb-10 p-5'>
                     <h1 className=''>Mis Talleres</h1>
                     <div className='flex ml-5 mt-5 border'>
-                         {cursos.map((curso) => (
-                            <div key={curso.id} className='m-4'>
-                                <img src={""} alt={curso.nombre} />
+                        {cursos.map((curso, index) => (
+                            <div key={index} className='m-4'>
+                                <img src={""} alt={String(curso.id)} />
                                 <h2>{curso.nombre}</h2>
 
                             </div>
