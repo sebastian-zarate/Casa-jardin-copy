@@ -140,38 +140,20 @@ const Profesionales = () => {
     }
     async function getUbicacion(userUpdate: any) {
         // Obtener la dirección del usuario por su ID
-        console.log("SI DIRECCIONID ES FALSE:", Number(userUpdate?.direccionId));
-        const direcciProf = await getDireccionById(Number(userUpdate?.direccionId));
-        console.log("DIRECCION", direcciProf);
-
-        // Obtener la localidad asociada a la dirección
-        const localidadProf = await getLocalidadById(Number(direcciProf?.localidadId));
-        console.log("LOCALIDAD", localidadProf);
-
-        // Obtener la provincia asociada a la localidad
-        const provProf = await getProvinciasById(Number(localidadProf?.provinciaId));
-        console.log("PROVINCIA", provProf);
-
-        // Obtener el país asociado a la provincia
-        const nacionalidadProf = await getPaisById(Number(provProf?.nacionalidadId));
-        if (direcciProf && localidadProf && provProf && nacionalidadProf) {
-            setNacionalidadName(String(nacionalidadProf?.nombre));
-            setProvinciaName(String(provProf?.nombre));
-            setLocalidadName(String(localidadProf?.nombre));
-            setcalle(String(direcciProf?.calle));
-            setNumero(Number(direcciProf?.numero));
-
-        }
-        /*         const direcciProf = direcciones.find((dir) => dir.id === userUpdate.direccionId);
-                console.log("DIRECCIONNNNNNNNNNNNNNNNNNNNNNNNNNNN", direcciProf);
-                const localidadProf = localidades.find((loc) => {loc.id === direcciProf?.localidadId});
-                console.log("localidaddddddddddddddd", localidadProf);
-                const provProf = provincias.find((prov) => {prov.id === localidadProf?.provinciaId});
-                const nacionalidadProf = paises.find((pais) => {pais.id === provProf?.nacionalidadId});*/
+        //console.log("SI DIRECCIONID ES FALSE:", Number(userUpdate?.direccionId));
+        const direccion = await getDireccionCompleta(userUpdate?.direccionId);
+        /* console.log("DIRECCION", direccion);
+        console.log("LOCALIDAD", direccion?.localidad);
+        console.log("PROVINCIA", direccion?.localidad?.provincia);
+        console.log("PAIS", direccion?.localidad?.provincia?.nacionalidad); */
+        //console.log("NACIONALIDAD", nacionalidad);
         // Actualizar los estados con los datos obtenidos
-
-        console.log("TODOSSS", localidadName, provinciaName, nacionalidadName, calle, numero);
-        return { direcciProf, localidadProf, provProf, nacionalidadProf };
+        setLocalidadName(String(direccion?.localidad?.nombre));
+        setProvinciaName(String(direccion?.localidad?.provincia?.nombre));
+        setNacionalidadName(String(direccion?.localidad?.provincia?.nacionalidad?.nombre));
+        setNumero(Number(direccion?.numero));
+        setcalle(String(direccion?.calle));
+        return  direccion 
     }
 
 
@@ -266,22 +248,22 @@ const Profesionales = () => {
             setVariablesState();
             return;
         }
-        const { direcciProf, localidadProf, provProf, nacionalidadProf } = await getUbicacion(obProfesional);
+        const direcciProf = await getUbicacion(obProfesional);
         try {
             const newDireccion = await updateDireccionById(Number(direcciProf?.id), {
                 calle: String(calle),
                 numero: Number(numero),
-                localidadId: Number(localidadProf?.id)
+                localidadId: Number(direcciProf?.localidad.id)
             });
             console.log("newDireccion", newDireccion);
-            const newLocalidad = await updateLocalidad(Number(localidadProf?.id), {
+            const newLocalidad = await updateLocalidad(Number(direcciProf?.localidad?.id), {
                 nombre: String(localidadName),
-                provinciaId: Number(provProf?.id)
+                provinciaId: Number(direcciProf?.localidad.provincia.id)
             });
             console.log("newLocalidad", newLocalidad);
-            await updateProvinciaById(Number(provProf?.id), {
+            await updateProvinciaById(Number(direcciProf?.localidad.provincia?.id), {
                 nombre: String(provinciaName),
-                nacionalidadId: Number(nacionalidadProf?.id)
+                nacionalidadId: Number(direcciProf?.localidad.provincia.nacionalidad.id)
             });
 
 
@@ -437,7 +419,7 @@ const Profesionales = () => {
                             <div className="text-sm text-gray-600">
                                 <p>Email: {profesional.email}</p>
 
-                                {!getCursosElegidos(profesional.id) || cursosElegido.length === 0 && <p className="p-2 border rounded bg-gray-100">{"Talleres no cargados"}</p>}
+                                {/* {!getCursosElegidos(profesional.id) || cursosElegido.length === 0 && <p className="p-2 border rounded bg-gray-100">{"Talleres no cargados"}</p>}
                                 {getCursosElegidos(profesional.id) && cursosElegido.length > 0 && (
                                     <p className="p-2 border rounded bg-gray-100">
                                         {getCursosElegidos(profesional.id).map((curso: any, index: number, array: any) => (
@@ -446,7 +428,7 @@ const Profesionales = () => {
                                             </span>
                                         ))}
                                     </p>
-                                )}
+                                )} */}
                             </div>
                         </div>
                     ))}
@@ -596,7 +578,7 @@ const Profesionales = () => {
                             </div>
                         }
                         <div>
-                            <Talleres cursosElegido={cursosElegido} setCursosElegido={setCursosElegido} />
+                            <Talleres user={obProfesional} cursosElegido={cursosElegido} setCursosElegido={setCursosElegido} />
                         </div>
                         {selectedProfesional !== -1 && <div>
                             <button

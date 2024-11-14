@@ -201,6 +201,7 @@ model Hora {
 model Solicitud {
   id Int @id @default(autoincrement())
   leida Boolean @default(false)
+  enEspera Boolean @default(false)
   // Relaciones
   solicitudMayores SolicitudMayores? // Relación de uno a uno con SolicitudMayores
   solicitudMenores SolicitudMenores? // Relación de uno a uno con SolicitudMenores

@@ -10,6 +10,7 @@ const prisma = new PrismaClient();
 export type Solicitud = {
   id: number;
   leida: boolean;
+  enEspera:Boolean;
 };
 //crear solicitud
 export async function createSolicitud() {
@@ -61,6 +62,7 @@ export async function deleteSolicitud(solicitudId: number) {
 //modificar solicitud
 export async function updateSolicitud(solicitudId: number, data: {
   leida?: boolean;
+  enEspera?: boolean;
 }) {
   return await prisma.solicitud.update({
     where: {

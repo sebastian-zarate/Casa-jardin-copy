@@ -9,53 +9,144 @@ import menores from "../../../../public/Images/menores.jpg";
 import { deleteSolicitud, getAllSolicitudes, getSolicitudById, Solicitud, updateSolicitud } from "@/services/Solicitud/Solicitud";
 import { getAlumnoById } from "@/services/Alumno";
 import { getAllSolicitudesMenores } from "@/services/Solicitud/SolicitudMenor";
+import { Alumno } from "@prisma/client";
+import { getDireccionCompleta } from "@/services/ubicacion/direccion";
+import { getResponsableByAlumnoId } from "@/services/responsable";
+import { emailTest } from "@/helpers/email";
+import { emailRechazo } from "@/helpers/emailRechazoSoli";
+import withAuth from "@/components/Admin/adminAuth";
 
 
 const solicitudPage: React.FC = () => {
+    // Estado para almacenar las solicitudes de mayores
     const [solicitudesMayores, setSolicitudesMayores] = useState<SolicitudMayor[]>([]);
+    // Estado para almacenar las solicitud de menores
     const [solicitudMenores, setSolicitudesMenores] = useState<any[]>([]);
+    // Estado para almacenar las solicitudes todas
     const [solicitudes, setSolicitudes] = useState<Solicitud[]>([]);
+    // Estado para habilitar solicitudes de mayores
     const [habilitarMayores, setHabilitarMayores] = useState<boolean>(false);
+    // Estado para habilitar solicitudes de menores
     const [habilitarMenores, setHabilitarMenores] = useState<boolean>(false);
-    const [nombreCompleto, setNombreCompleto] = useState<string>("");
+    //estado para dejar en espera una solicitud
+    const [esperaSolicitud, setEsperaSolicitud] = useState<number>(0);
+
     const [firmaUsoImagenes, setFirmaUsoImagenes] = useState<string>("");
     const [observacionesUsoImagenes, setObservacionesUsoImagenes] = useState<string>("");
     const [firmaReglamento, setFirmaReglamento] = useState<string>("");
     const [solicitudSelected, setSolicitudSelected] = useState<number>(0);
 
+    const [alumnosMayores, setAlumnosMayores] = useState<any[]>()
+    const [direccionesMayores, setDireccionesMayores] = useState<any[]>()
+    const [alumnosMenores, setAlumnosMenores] = useState<any[]>()
+    const [responsables, setResponsables] = useState<any[]>()
+    const [direccionesMenores, setDireccionesMenores] = useState<any[]>()
+
+
+
     useEffect(() => {
-        if (solicitudesMayores.length === 0) fetchData();
-    }, [solicitudesMayores]);
+        const fetchDataIfNeeded = async () => {
+            if (solicitudes.length === 0) {
+                await fetchData();
+            }
+        };
+        fetchDataIfNeeded();
+    }, []);
+
     const fetchData = async () => {
-        const dataMa = await getAllSolicitudesMayores();
-        const dataMe = await getAllSolicitudesMenores();
-        const soli = await getAllSolicitudes();
+        const [dataMa, dataMe, soli] = await Promise.all([
+            getAllSolicitudesMayores(),
+            getAllSolicitudesMenores(),
+            getAllSolicitudes()
+        ]);
         setSolicitudes(soli);
         setSolicitudesMayores(dataMa);
         setSolicitudesMenores(dataMe);
+        const alumnosMayores = await Promise.all(
+            dataMa.map(async (solicitMay) => {
+            const alumno = await getAlumnoById(solicitMay.alumnoId);
+            return alumno;
+            })
+        );
+        const direccionesMayores = await Promise.all(
+            alumnosMayores.map(async (alum) => {
+            return  await getDireccionCompleta(Number(alum?.direccionId));
+            })
+        )
+        const alumnosMenores = await Promise.all(
+            dataMe.map(async (solicitMen) => {
+            const alumno = await getAlumnoById(solicitMen.alumnoId);
+            return alumno;
+            })
+        );
+        const responsablesMenores = await Promise.all(
+            dataMe.map(async (solicitMen) => {
+                const responsable = await getResponsableByAlumnoId(solicitMen.alumnoId);
+                return responsable;
+                })
+        )
+        const direccionesMenores = await Promise.all(
+            alumnosMenores.map(async (alum) => {
+            return  await getDireccionCompleta(Number(alum?.direccionId));
+            })
+        )
+
+/*         console.log("ALUMNOSMAYORES",alumnosMayores)
+        console.log("DIRECC",direccionesMayores) */
+        setAlumnosMayores(alumnosMayores);
+        setDireccionesMayores(direccionesMayores)
+        setAlumnosMenores(alumnosMenores)
+        setResponsables(responsablesMenores)
+        setDireccionesMenores(direccionesMenores)
+
     }
     const handleEliminarSolicitud = async (solicitudId: number) => {
-        console.log(solicitudMenores);
+        //console.log(solicitudMenores);
         const soliElim = await deleteSolicitud(solicitudId);
-        console.log(soliElim);
+        //console.log(soliElim);
+        fetchData()
+    }
+    const handleRechazar = async (solicitudId: number, correo: string) => {
+        await updateSolicitud(solicitudId, { enEspera: true })
+        await emailRechazo(correo);
+        fetchData()
     }
 
     const handleAceptarSolicitud = async (solicitudId: number) => {
         const soli = await updateSolicitud(solicitudId, { leida: true });
-        console.log(soli);
+       // console.log(soli);
+        fetchData()
     }
-    const handleDatos = async (alumnoId: number, firma: string, observFirma: string, reglam: string, id: number) => {
-        const alumno = await getAlumnoById(alumnoId);
-        setNombreCompleto(alumno?.nombre + " " + alumno?.apellido);
-        setFirmaUsoImagenes(firma);
-        setObservacionesUsoImagenes(observFirma);
-        setFirmaReglamento(reglam);
-        setSolicitudSelected(id);
+
+    const getSolicitud = (solicitudId: number) => {
+        const sol = solicitudes.find((solicitud) => solicitud.id === solicitudId);
+       // console.log(sol);
+        return sol;
     }
-    const heandleLeida = (solicitudId: number) => {
-        const leida = solicitudes.find((solicitud) => solicitud.id === solicitudId);
-        console.log(leida);
-        return leida;
+    const getAl = (id:number) => {
+        const alumnoMayor = alumnosMayores?.reduce((acc, alumno) => {
+            if (alumno.id === id) {
+                return alumno;
+            }
+            return acc;
+        }, null);
+        if(!alumnoMayor) {
+            return alumnosMenores?.reduce((acc, alumno) => {
+                if (alumno.id === id) {
+                    return alumno;
+                }
+                return acc;
+            }, null);
+        }
+        return alumnoMayor
+    }
+    const getResp = (id:number) => {
+        return responsables?.reduce((acc, resp) => {
+            if (resp.alumnoId === id) {
+                return resp;
+            }
+            return acc;
+        }, null);
     }
     /*
     SolicitudId
@@ -78,7 +169,7 @@ const solicitudPage: React.FC = () => {
                     <h1 className="p-3 ">Solicitudes Mayores</h1>
                 </div>
 
-                <div className="flex cursor-pointer p-5 border rounded hover:bg-slate-200" onClick={()=> setHabilitarMenores(!habilitarMenores)}>
+                <div className="flex cursor-pointer p-5 border rounded hover:bg-slate-200" onClick={() => setHabilitarMenores(!habilitarMenores)}>
                     <Image src={menores} alt="menores" width={180} height={100} />
                     <h1 className="p-3 ">Solicitudes Menores</h1>
                 </div>
@@ -88,22 +179,41 @@ const solicitudPage: React.FC = () => {
                     <h1 className="flex justify-center">Historial de solicitudes</h1>
                     <button className="absolute top-1 right-2 p-1" onClick={() => setHabilitarMayores(!habilitarMayores)}>X</button>
                     <div className="bg-green-300 p-4">
-                        {solicitudesMayores.map((solicitud, key) => (
+                        {solicitudesMayores.map((solicitudMay, key) => (
                             <div key={key} className="bg-red-400 cursor-pointer"
-                                onClick={() => { handleDatos(solicitud.alumnoId, solicitud.firmaUsoImagenes, solicitud.observacionesUsoImagenes, solicitud.firmaReglamento, solicitud.id); }}>
-                                <span>Solicitud: {solicitud.solicitudId}</span>
-                                { !heandleLeida(solicitud.solicitudId)?.leida && (
+                                onClick={() => {
+                                    setSolicitudSelected(solicitudMay.id)/* handleDatos(solicitudMay.alumnoId, String(solicitudMay.firmaUsoImagenes), String(solicitudMay.observacionesUsoImagenes),
+                                        String(solicitudMay.firmaReglamento), solicitudMay.id); */
+                                }}>
+                                <span>Solicitud: {solicitudMay.solicitudId}</span>
+                                {!getSolicitud(solicitudMay.solicitudId)?.leida && (
                                     <>
-                                        <button onClick={() => handleAceptarSolicitud(solicitud.solicitudId)}>Aceptar</button>
-                                        <button onClick={() => handleEliminarSolicitud(solicitud.solicitudId)}>Rechazar</button>
+                                        {!getSolicitud(solicitudMay.solicitudId)?.enEspera && (
+                                            <>
+                                                <button onClick={() => handleAceptarSolicitud(solicitudMay.solicitudId)}>Aceptar</button>
+                                                <button className=" p-2 rounded-sm" onClick={() => handleRechazar(solicitudMay.solicitudId, getAl(solicitudMay.alumnoId).correoElectronico)}>Rechazar</button>
+                                            </>
+                                        )}
+                                        {getSolicitud(solicitudMay.solicitudId)?.enEspera &&
+                                            <button className=" p-2 rounded-sm" onClick={() => handleEliminarSolicitud(solicitudMay.solicitudId)}>Solicitud corregida</button>
+                                        }
                                     </>
                                 )}
-                                {solicitudSelected === solicitud.id &&
+                                {solicitudSelected === solicitudMay.id &&
                                     <div>
-                                        <span>{nombreCompleto} </span>
-                                        <span>{firmaUsoImagenes}</span>
-                                        <span>{observacionesUsoImagenes}</span>
-                                        <span>{firmaReglamento}</span>
+                                        <div className="p-2">
+                                            <h2>Datos del alumno:</h2>
+                                            <span>Nombre: {getAl(solicitudMay.alumnoId).nombre} {getAl(solicitudMay.alumnoId)?.apellido}</span>
+                                            <span>Telefono: {getAl(solicitudMay.alumnoId)?.telefono}</span>
+                                            <span>Correo: {getAl(solicitudMay.alumnoId)?.correoElectronico}</span>
+                                            <span>DNI: {getAl(solicitudMay.alumnoId)?.dni}</span>
+
+                                            <span>Fecha de Nacimiento: {new Date(getAl(solicitudMay.alumnoId)?.fechaNacimiento).toISOString().split('T')[0]}</span>
+                                        </div>
+
+                                        <span>{firmaUsoImagenes.length > 0 ? "Accedió al uso de la imagenen" : "No estuvo de acuerdo con el uso de la imagen"}</span>
+                                        {observacionesUsoImagenes.length > 0 && <span>Tuvo las siguientes observaciones respecto al uso de Imagen: {observacionesUsoImagenes}</span>}
+                                        <span>Firmó el reglamento</span>
                                     </div>
                                 }
                             </div>
@@ -116,22 +226,42 @@ const solicitudPage: React.FC = () => {
                     <h1 className="flex justify-center">Historial de solicitudes</h1>
                     <button className="absolute top-1 right-2 p-1" onClick={() => setHabilitarMenores(!habilitarMenores)}>X</button>
                     <div className="bg-green-300 p-4">
-                        {solicitudMenores.map((solicitud, key) => (
+                        {solicitudMenores.map((solicitudMen, key) => (
                             <div key={key} className="bg-red-400 cursor-pointer"
-                                onClick={() => { handleDatos(solicitud.alumnoId, solicitud.firmaUsoImagenes, solicitud.observacionesUsoImagenes, solicitud.firmaReglamento, solicitud.id); }}>
-                                <span>Solicitud: {solicitud.solicitudId}</span>
-                                { !heandleLeida(solicitud.solicitudId)?.leida && (
+                                /* onClick={() => { handleDatos(solicitud.alumnoId, solicitud.firmaUsoImagenes, solicitud.observacionesUsoImagenes, solicitud.firmaReglamento, solicitud.id); }} */
+                                onClick={()=> setSolicitudSelected(solicitudMen.id)}>
+                                <span>Solicitud: {solicitudMen.solicitudId}</span>
+                                {!getSolicitud(solicitudMen.solicitudId)?.leida && (
                                     <>
-                                        <button onClick={() => handleAceptarSolicitud(solicitud.solicitudId)}>Aceptar</button>
-                                        <button onClick={() => handleEliminarSolicitud(solicitud.solicitudId)}>Rechazar</button>
+                                        <button onClick={() => handleAceptarSolicitud(solicitudMen.solicitudId)}>Aceptar</button>
+                                        <button onClick={() => handleEliminarSolicitud(solicitudMen.solicitudId)}>Rechazar</button>
                                     </>
                                 )}
-                                {solicitudSelected === solicitud.id &&
+                                {solicitudSelected === solicitudMen.id &&
                                     <div>
-                                        <span>{nombreCompleto}</span>
-                                        <span>{firmaUsoImagenes}</span>
-                                        <span>{observacionesUsoImagenes}</span>
-                                        <span>{firmaReglamento}</span>
+                                        <div className="p-2">
+                                            <h2>Datos del alumno:</h2>
+                                            <span>Nombre: {getAl(solicitudMen.alumnoId).nombre} {getAl(solicitudMen.alumnoId)?.apellido}</span>
+                                            <span>Telefono: {getAl(solicitudMen.alumnoId)?.telefono}</span>
+                                            <span>Correo: {getAl(solicitudMen.alumnoId)?.correoElectronico}</span>
+                                            <span>DNI: {getAl(solicitudMen.alumnoId)?.dni}</span>
+             {/*                                <span>Pais: {alumnoSelected?.pais}</span>
+                                            <span>Provincia: {alumnoSelected?.provincia}</span>
+                                            <span>Localidad: {alumnoSelected?.localidad}</span>
+                                            <span>Calle: {alumnoSelected?.calle}</span>
+                                            <span>Numero: {alumnoSelected?.numero}</span> */}
+                                            <span>Fecha de Nacimiento: {new Date(getAl(solicitudMen.alumnoId)?.fechaNacimiento).toISOString().split('T')[0]}</span>
+                                        </div>
+                                        <div className="p-2">
+                                            <h2>Datos del responsable:</h2>
+                                            <span>Nombre: {getResp(solicitudMen.alumnoId)?.nombre} {getResp(solicitudMen.alumnoId)?.apellido}</span>
+                                            <span>DNI: {getResp(solicitudMen.alumnoId)?.dni}</span>
+                                            <span>Telefono: {getResp(solicitudMen.alumnoId)?.telefono}</span>
+                                            <span>Correo: {getResp(solicitudMen.alumnoId)?.email}</span>
+                                        </div>
+                                        <span>{firmaUsoImagenes.length > 0 ? "Accedió al uso de la imagenen" : "No estuvo de acuerdo con el uso de la imagen"}</span>
+                                        {observacionesUsoImagenes.length > 0 && <span>Tuvo las siguientes observaciones respecto al uso de Imagen: {observacionesUsoImagenes}</span>}
+                                        <span>Firmó el reglamento</span>
                                     </div>
                                 }
                             </div>
@@ -142,4 +272,4 @@ const solicitudPage: React.FC = () => {
         </main>
     );
 }
-export default solicitudPage;
+export default withAuth(solicitudPage);

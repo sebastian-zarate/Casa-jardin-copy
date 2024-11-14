@@ -25,16 +25,23 @@ export async function getalumnos_cursoByIdAlumno(alumnoId: number) {
   });
 }
 
-export async function getcursosByIdAlumno( alumnoId: number) {
-  const alumno_cursos = await prisma.alumno_Curso.findMany({
+export async function getCursosByIdAlumno(id: number) {
+  const alum_cur=  await prisma.alumno_Curso.findMany({
     where: {
-      alumnoId: alumnoId,
+      alumnoId: id,
     },
   });
-
-  const cursos = alumno_cursos.map(x => x.cursoId);
-  console.log("2Se encontró algún curso??????", alumno_cursos);
-  return cursos;
+  let arrayCursos: any[] = [];
+  for (const pc of alum_cur) {
+    const curso = await prisma.curso.findFirst({
+      where: {
+        id: pc.cursoId,
+      },
+    });
+    arrayCursos.push(curso);
+    console.log("CURSO", curso);
+  }
+  return arrayCursos;
 }
 export async function deleteAlumno_Curso(id: number) {
   return await prisma.alumno_Curso.delete({

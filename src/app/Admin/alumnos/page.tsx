@@ -130,7 +130,7 @@ const Alumnos: React.FC = () => {
                 direccionId: selectedAlumno.direccionId,
                 email: selectedAlumno.email,
                 password: selectedAlumno.password,
-                fechaNacimiento: new Date(selectedAlumno.fechaNacimiento ).toISOString().split('T')[0] 
+                fechaNacimiento: selectedAlumno.fechaNacimiento && new Date(selectedAlumno.fechaNacimiento ).toISOString().split('T')[0] 
             });
             if(selectedAlumno.fechaNacimiento){
                 const edad = new Date().getFullYear() - new Date(selectedAlumno.fechaNacimiento).getFullYear();
@@ -455,6 +455,15 @@ const Alumnos: React.FC = () => {
         setNumero(null);
         setObAlumno(null);
         setCursosElegido([]);
+        setResponsableDetails({
+            nombre: "",
+            apellido: "",
+            dni: 0,
+            telefono: 0,
+            email: "",
+            alumnoId: 0,
+            direccionId: 0
+        })
     }
     // #endregion
     // Function to handle search input change
@@ -619,7 +628,7 @@ const Alumnos: React.FC = () => {
                                 type="date"
                                 name="fechaNacimiento"
                                 className="border rounded"
-                                value={alumnoDetails.fechaNacimiento }
+                                value={(alumnoDetails.fechaNacimiento)}
                                 onChange={handleChange}
                                 min={new Date(new Date().setFullYear(new Date().getFullYear() - 100)).toISOString().split('T')[0]} // Set min to 100 years ago
                                 max={new Date().toISOString().split('T')[0]} // Set max to today's date
@@ -757,7 +766,7 @@ const Alumnos: React.FC = () => {
                             </div>
                         }
                         <div>
-                            <Talleres cursosElegido={cursosElegido} setCursosElegido={setCursosElegido} />
+                            <Talleres user={obAlumno}  cursosElegido={cursosElegido} setCursosElegido={setCursosElegido} />
                         </div>
                         {selectedAlumno !== -1 && selectedAlumno !== -2 && <div>
                             <button
@@ -794,5 +803,5 @@ const Alumnos: React.FC = () => {
     )
     // #endregion
 }
-export default Alumnos;
-//export default withAuth(Alumnos);
+//export default Alumnos;
+export default withAuth(Alumnos);

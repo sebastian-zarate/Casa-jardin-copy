@@ -34,7 +34,7 @@ const Menores: React.FC = () => {
         nombre: "",
         apellido: "",
         edad: 0,
-        fechaNacimiento: "",
+        fechaNacimiento: new Date().toISOString().split('T')[0],
         dni: 0,
         pais: "",
         provincia: "",
@@ -109,7 +109,7 @@ const Menores: React.FC = () => {
                         ...datosMenor,
                         nombre: user.nombre,
                         apellido: user.apellido,
-                        fechaNacimiento: String(user.fechaNacimiento),
+                        fechaNacimiento: new Date(user.fechaNacimiento).toISOString().split('T')[0],
                         dni: Number(user.dni),
                         pais: pais?.nombre || '',
                         provincia: provincia?.nombre || '',
@@ -119,6 +119,7 @@ const Menores: React.FC = () => {
                         edad: user.edad,
                                                
                     });
+                    setDatosMayor({...datosMayor, pais: pais?.nombre || '', provincia: provincia?.nombre || '', localidad: localidad?.nombre || '', calle: direccion?.calle || '', numero: Number(direccion?.numero) });
                 }
             };
     
@@ -163,8 +164,7 @@ const Menores: React.FC = () => {
             }
             if (!datosMenor.numero) {
                 return ("El número debe tener al menos 1 número.");
-            }
-            if(!datosMenor.edad) return "La edad es obligatoria."
+            }           
             if (!/\d/.test(datosMenor.fechaNacimiento)) return ("La fecha de nacimiento es obligatoria");
         }
         if (selectedScreen === 2) {

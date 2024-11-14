@@ -8,20 +8,13 @@ const prisma = new PrismaClient()
 export type Curso ={
 
     id: number;
-
     nombre: string;
-
     descripcion: string;
-
-    imagen?: string | null;
-
-    fechaInicio?: Date;
-
-    fechaFin?: Date;
-
-    edadMinima?: number;
-
-    edadMaxima?: number;
+    imagen: string | null;
+    fechaInicio: Date | null;
+    fechaFin: Date | null;
+    edadMinima: number | null;
+    edadMaxima: number | null;
 
 }
 //Crear Crusos

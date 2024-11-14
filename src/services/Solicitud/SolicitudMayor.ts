@@ -8,9 +8,9 @@ export type SolicitudMayor = {
   id: number;
   alumnoId: number;
   solicitudId: number;
-  firmaUsoImagenes: string;
-  observacionesUsoImagenes: string;
-  firmaReglamento: string;
+  firmaUsoImagenes: string | null;
+  observacionesUsoImagenes: string | null;
+  firmaReglamento: string | null;
 };
 //crear solicitudMayor
 export async function createSolicitudMayor(data: {

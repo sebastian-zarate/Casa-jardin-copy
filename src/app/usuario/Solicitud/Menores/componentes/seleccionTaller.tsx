@@ -6,7 +6,7 @@ import But_aside from "../../../../../components/but_aside/page";
 import Image from "next/image";
 import Navigate from '../../../../../components/alumno/navigate/page';
 import { getImages_talleresAdmin } from '@/services/repoImage';
-import { getCursos } from '@/services/cursos';
+import { Curso, getCursos } from '@/services/cursos';
 
 interface Datos {
     setSelectedCursosId: React.Dispatch<React.SetStateAction<number[]>>;
@@ -15,7 +15,7 @@ interface Datos {
 
 const SeleccionTaller: React.FC<Datos> = ({setSelectedCursosId, selectedCursosId}) => {
     // Estado para almacenar la lista de cursos
-    const [cursos, setCursos] = useState<{ id: number; nombre: string; year: number; descripcion: string }[]>([]);
+    const [cursos, setCursos] = useState<Curso[]>([]);
 
        // Estado para almacenar mensajes de error
     const [errorMessage, setErrorMessage] = useState<string>("");
@@ -50,6 +50,7 @@ const SeleccionTaller: React.FC<Datos> = ({setSelectedCursosId, selectedCursosId
     async function fetchCursos() {
         try {
             let curs = await getCursos(); // Obtén la lista de cursos
+            if(typeof curs === 'string') return setErrorMessage(curs);
             setCursos(curs); // Actualiza el estado con la lista de cursos
         } catch (error) {
             console.error("Imposible obtener cursos", error); // Manejo de errores
