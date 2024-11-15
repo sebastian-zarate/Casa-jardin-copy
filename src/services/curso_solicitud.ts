@@ -19,11 +19,11 @@ export async function createCursoSolicitud(data: {
 }
 
 //eliminar curso_solicitud
-export async function deleteCursoSolicitud(cursoSolicitudId: number, idAlumno: number) {
+export async function deleteCursoSolicitud(soliId: number, idAlumno: number) {
   const cursoSolicitud = await prisma.cursoSolicitud.findMany({
     where: {
-      solicitudId: cursoSolicitudId,
-    },
+      solicitudId: soliId,
+      },
   });
   console.log("CURSO_SOLICITUD", cursoSolicitud);
   cursoSolicitud.map(async (cs) => {
@@ -41,7 +41,7 @@ export async function deleteCursoSolicitud(cursoSolicitudId: number, idAlumno: n
 
   return await prisma.cursoSolicitud.deleteMany({
     where: {
-      solicitudId: cursoSolicitudId,
+      solicitudId: soliId,
     },
   });
 }

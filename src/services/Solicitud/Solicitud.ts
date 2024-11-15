@@ -47,19 +47,20 @@ export async function deleteSolicitud(solicitudId: number) {
         id: solicitud?.id,
       },
     });
+    await deleteCursoSolicitud(Number(solicitudId), Number(solicitud?.alumnoId));
+    return await prisma.solicitud.delete({
+      where: {
+        id: solicitud?.id,
+      },
+    });
   }
   console.log("SOLICITUD", solicitud);
   // si es una solicitudMayor, eliminarla
-  if(solicitud) soliBorrada = await deleteSolicitudMayor(solicitud.id);
+   soliBorrada = await deleteSolicitudMayor(solicitud.id);
   console.log("SOLICITUD BORRADA", soliBorrada);
-/*   const idAlumno = solicitud?.alumnoId;
-  // Si no se encontró la solicitud
-  if(!idAlumno) {
-    console.log("No se encontró la solicitud");
-    return "No se encontró la solicitud";
-  } */
+
   //elimina la tabla intermedia entre solicitud y curso
-  const cur_soli = await deleteCursoSolicitud(Number(solicitud?.id), Number(solicitud?.alumnoId));
+  const cur_soli = await deleteCursoSolicitud(Number(solicitudId), Number(solicitud?.alumnoId));
   
   if(typeof cur_soli === "string") {
     console.log("No se encontró la tabla intermedia");
@@ -70,11 +71,13 @@ export async function deleteSolicitud(solicitudId: number) {
 
   // Eliminar la solicitud en cascada
 
-  return await prisma.solicitud.delete({
+  const x = await prisma.solicitud.delete({
     where: {
-      id: solicitud?.id,
+      id: Number(solicitudId),
     },
   });
+  console.log("SOLICITUD BORRADA", x);
+  return x;
 }
 
 
@@ -113,3 +116,35 @@ export async function getPersonasSoli(dataMa: SolicitudMayor[], dataMe: Solicitu
 
 ]);
 }
+
+export async function getPersonasSoli2(dataMa: SolicitudMayor[], dataMe: SolicitudMenores[]) {
+    
+    const mayores = await prisma.solicitudMayores.findFirst({
+      where: {
+      id: {
+        in: dataMa.map((soli) => soli.id),
+      },
+      },
+      include: {
+        alumno: true,
+      },
+
+    });
+    const menores = await prisma.responsable.findFirst({
+      where: {
+      id: {
+        in: dataMe.map((soli) => soli.id),
+      },
+      },
+      include: {
+        alumno: {
+          include: {
+            responsable: true,
+          },
+        }
+      },
+    });
+    return {mayores, menores};
+}
+
+

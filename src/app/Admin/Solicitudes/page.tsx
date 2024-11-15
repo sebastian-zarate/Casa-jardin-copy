@@ -6,7 +6,7 @@ import Background from "../../../../public/Images/Background.jpeg"
 import Navigate from "@/components/Admin/navigate/page";
 import adultos from "../../../../public/Images/adultos.jpg";
 import menores from "../../../../public/Images/menores.jpg";
-import { deleteSolicitud, getAllSolicitudes, getPersonasSoli, getSolicitudById, Solicitud, updateSolicitud } from "@/services/Solicitud/Solicitud";
+import { deleteSolicitud, getAllSolicitudes, getPersonasSoli, getPersonasSoli2, getSolicitudById, Solicitud, updateSolicitud } from "@/services/Solicitud/Solicitud";
 import { getAlumnoById } from "@/services/Alumno";
 import { getAllSolicitudesMenores, SolicitudMenores } from "@/services/Solicitud/SolicitudMenor";
 import { Alumno } from "@prisma/client";
@@ -61,16 +61,12 @@ const solicitudPage: React.FC = () => {
             getAllSolicitudesMenores(),
             getAllSolicitudes()
         ]);
+        //const [dataMa, dataMe] = await getPersonasSoli2(solicitudesMayores, solicitudMenores); 
         setSolicitudes(soli);
         setSolicitudesMayores(dataMa);
         setSolicitudesMenores(dataMe);
 
         const [alumnosMayores, alumnosMenores, responsablesMenores] = await getPersonasSoli(dataMa, dataMe);
-            /*         const direccionesMenores = await Promise.all(
-                        alumnosMenores.map(async (alum) => {
-                        return  await getDireccionCompleta(Number(alum?.direccionId));
-                        })
-                    ) */
 
             console.log("ALUMNOSMAYORES", alumnosMayores)
             console.log("ALUMNOSMENORES", alumnosMenores)
