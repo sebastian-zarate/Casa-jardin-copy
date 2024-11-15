@@ -1,4 +1,4 @@
-"use client"; // Esta línea indica que este archivo debe ejecutarse en el cliente
+"use client"; 
 
 import React, { useState, useEffect } from "react";
 
@@ -7,9 +7,9 @@ import {
   createCronograma,
   getCronogramasPorAula,
   deleteCronogramas,
-  deleteCronogramaDiaHora,
+  deleteCronogramaDiaHora,getCursosCronograma
 } from "../../../services/cronograma/cronograma";
-import { getCursos } from "../../../services/cursos";
+
 import { getDias, getHoras } from "../../../services/dia";
 import { getAulaById } from "@/services/aulas";
 import withAuth from "../../../components/Admin/adminAuth";
@@ -106,7 +106,7 @@ export function Horario({ idAula }: { idAula: number }) {
         setLoadingCursos(true); // Indicar que los cursos están cargando
         setError(null); // Resetear cualquier error previo
         try {
-          const cursosData = await getCursos(); // Obtener cursos desde la API
+          const cursosData = await getCursosCronograma(); // Obtener cursos desde la API
           setCursos(cursosData || []); // Actualizar el estado con los cursos obtenidos
         } catch (error) {
           console.error("Error al obtener los cursos", error);

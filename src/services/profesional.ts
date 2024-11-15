@@ -2,6 +2,8 @@
 import { hashPassword } from "@/helpers/hashPassword";
 import { Curso, PrismaClient, Profesional_Curso } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
+import { getUserFromCookie } from "@/helpers/jwt";
+import { emailExists } from "./Alumno";
 
 const prisma = new PrismaClient();
 
@@ -40,14 +42,10 @@ export async function createProfesional(data: {
 }) {
 
   // Verificar si el email ya existe
-  const existingProfesional = await prisma.profesional.findUnique({
-    where: {
-      email: data.email,
-    },
-  });
+  const existingProfesional =  emailExists(data.email);
 
-  if (existingProfesional) {
-    return('El email ya está en uso');
+  if (!existingProfesional) {
+    return  ( 'El email ya está en uso');
   }
 
   // Encriptar la contraseña
@@ -109,4 +107,22 @@ export async function getProfesionalByEmail(email: string) {
       email: email,
     },
   });
+}
+
+// 
+// obtener el profesor logeado
+export async function getProfesionalByCookie() {
+  const user = await getUserFromCookie();
+  if (user && user.email) {
+    const email: any = user.email;
+    const profesional = await prisma.profesional.findUnique({
+      where: {
+        email: email
+      }
+    });
+    return profesional;
+  } else{
+    return null;
+  }
+   
 }

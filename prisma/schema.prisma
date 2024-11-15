@@ -99,10 +99,12 @@ model Curso {
   nombre      String
   descripcion String
   imagen      String?
-  fechaInicio DateTime?
-  fechaFin    DateTime?
-  edadMinima  Int?
-  edadMaxima  Int?
+
+  edadMinima  Int
+  edadMaxima  Int
+  fechaInicio DateTime
+  fechaFin    DateTime
+
 
   // Relaciones
   prof_cur    Profesional_Curso[]
@@ -110,7 +112,6 @@ model Curso {
   alum_cur    Alumno_Curso[]
   cursoSolicitud CursoSolicitud[]
 }
-
 model Alumno {
   id       Int    @id @default(autoincrement())
   nombre   String

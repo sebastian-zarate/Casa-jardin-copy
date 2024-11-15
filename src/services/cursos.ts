@@ -4,47 +4,62 @@ import { getUserFromCookie } from "@/helpers/jwt"
 import { PrismaClient } from "@prisma/client"
 
 const prisma = new PrismaClient()
-
-export type Curso ={
-
+export type Curso = {
     id: number;
     nombre: string;
+    year: number;
     descripcion: string;
-    imagen: string | null;
-    fechaInicio: Date | null;
-    fechaFin: Date | null;
-    edadMinima: number | null;
-    edadMaxima: number | null;
-
-}
+  }
 //Crear Crusos
 export async function createCurso(data: {
     nombre: string
-    year: number
     descripcion: string
+    edadMinima: number
+    edadMaxima: number
+    fechaInicio: Date
+    fechaFin: Date
 }) {
     // antes de crear un curso se verifica si el curso ya existe en la base de datos con el nombre que se quiere crear y año
-    const curso = await getCursoByNombre(data.nombre)
+    const curso = await getCursoByNombre(data) 
     // si el curso ya existe se devuelve un error
     if (curso) {
-        return "El talller ya existe con ese nombre "
+        return "El talller ya existe con esos datos"
     }
     // Crear un nuevo curso con los datos que se pasan en el objeto data
     return prisma.curso.create({
-        data
+        data: {
+            nombre: data.nombre,
+            descripcion: data.descripcion,
+            edadMaxima: Number(data.edadMaxima),
+              edadMinima: Number(data.edadMinima),
+            fechaInicio: data.fechaInicio,
+            fechaFin: data.fechaFin 
+
+        }
     })
 }
 
 
 //
 // Obtener un curso por nombre 
-export async function getCursoByNombre(nombre: string) {
-    return prisma.curso.findFirst({
-        where: {
-            nombre
-        }
-    })
-}
+export async function getCursoByNombre(data: { 
+    nombre: string, 
+    fechaFin: Date, 
+    fechaInicio: Date, 
+    edadMaxima: number, 
+    edadMinima: number 
+  }) {
+      return prisma.curso.findFirst({
+          where: {
+              nombre: data.nombre,
+              fechaFin: data.fechaFin,
+              fechaInicio: data.fechaInicio,
+              edadMaxima: Number(data.edadMaxima),
+              edadMinima: Number(data.edadMinima)
+          }
+      });
+  }
+  
  
 //Listar Crusos
 export async function getCursos() {
@@ -115,13 +130,24 @@ export async function deleteCurso(id: number): Promise<{ success: boolean, messa
 // y modifico sus datos con los datos que se pasan en el objeto data
 export async function updateCurso(id: number, data: {
     nombre: string
-    year: number
     descripcion: string
+    fechaInicio: Date
+    fechaFin: Date
+    edadMinima: number
+    edadMaxima: number
+  
 }) {
     return prisma.curso.update({
         where: {
             id
         },
-        data
+        data: {
+            nombre: data.nombre,
+            descripcion: data.descripcion,
+            fechaInicio: data.fechaInicio,
+            fechaFin: data.fechaFin,
+            edadMaxima: Number(data.edadMaxima),
+            edadMinima: Number(data.edadMinima)
+        }
     })
 }

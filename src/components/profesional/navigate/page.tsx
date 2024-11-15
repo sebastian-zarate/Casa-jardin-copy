@@ -33,8 +33,9 @@ export default function Navigate() {
             </div>
             <div className="ml-auto flex space-x-4 py-2">
                 <a className="mx-2" href="/profesional/cronogramap/listar">Calendario</a>
-                <a className="mx-2" href="/profesional/principal">Principal</a>            
-                <a className="mx-2" onChangeCapture={ logout} href="">Salir</a>
+                <a className="mx-2" href="/profesional/principal">Principal</a>  
+                <button className="mx-2" onClick={logout}>Salir</button>          
+                
             </div>
         </nav>
     )
