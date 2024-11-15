@@ -2,37 +2,20 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { autorizarUser, fetchUserData } from "../../helpers/cookies";// Asegúrate de que la ruta de importación sea correcta
+import { autorizarUser} from "../../helpers/cookies";// Asegúrate de que la ruta de importación sea correcta
 
 const withAuthUser = (WrappedComponent: React.ComponentType) => {
   const AuthenticatedComponent: React.FC = (props) => {
     const router = useRouter();
     const [loading, setLoading] = useState(true); // Estado de carga
-    const [email, setEmail] = useState<string | null>(null); // Estado para almacenar el email
-    
-  
-      
+ 
     useEffect(() => {
-      const authorizeAndFetchData = async () => {
-
-        setLoading(true); // El usuario está autenticado y hemos cargado los datos
-        console.time("authorizeAndFetchData");
-        // Verificar si el usuario está autorizado
+      const authorize= async () => {
+        setLoading(true); 
         await autorizarUser(router);
-        // Una vez autorizado obtengo los datos del user y seteo el email
-        const user = await fetchUserData();
-        if (user && user.email) {
-            setEmail(user.email); // Solo establecer el email si existe
-            setLoading(false); // El usuario está autenticado y hemos cargado los datos
-          } else {
-            // Redirigir a la página de login si el usuario no está logeado
-            router.replace("/start/login");
-          }
-        
-        console.timeEnd("authorizeAndFetchData");
+        setLoading(false); // El usuario está autorizado, detener la carga
       };
-
-      authorizeAndFetchData();
+      authorize();
 
       // Configurar intervalo para verificar la autenticación cada 15 minutos
       const interval = setInterval(async () => {

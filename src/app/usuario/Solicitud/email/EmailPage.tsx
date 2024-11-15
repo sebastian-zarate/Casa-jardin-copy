@@ -8,34 +8,16 @@ import { useRouter } from "next/navigation";
 import withAuthUser from "../../../../components/alumno/userAuth";
 import { send } from "process";
 interface Datos {
+  email: string; //Email del usuario logeado
   setCorrecto: React.Dispatch<React.SetStateAction<boolean>>;
   correcto: boolean;
   setVerifi: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const EmailPage: React.FC<Datos> = ({ setCorrecto, correcto, setVerifi }) => {
+const EmailPage: React.FC<Datos> = ({email, setCorrecto, correcto, setVerifi }) => {
   //function EmailPage({ setCorrecto, correcto }: Datos) {
   // Estados para gestionar los datos del formulario y errores
-  const [email, setEmail] = useState("");
   const [codigo, setCodigo] = useState("");
-
-  //  const [correcto, setCorrecto] = useState(false);
-  /*   const router = useRouter();
-  
-    // Para cambiar al usuario de página si no está logeado
-    useEffect(() => {
-      const authorizeAndFetchData = async () => {
-        console.time("authorizeAndFetchData");
-        // Primero verifico que el user esté logeado
-        await autorizarUser(router);
-        // Una vez autorizado obtengo los datos del user y seteo el email
-        const user = await fetchUserData();
-        setEmail(user.email);
-        console.timeEnd("authorizeAndFetchData");
-      };
-  
-      authorizeAndFetchData();
-    }, [router]); */
 
   const handleEmail = async () => {
     console.log("enviando Email a: ", email);
@@ -43,7 +25,8 @@ const EmailPage: React.FC<Datos> = ({ setCorrecto, correcto, setVerifi }) => {
     await sendEmail(email);
     console.log("Email enviado");
   }
-
+  
+ 
   const handleVerificarCodigo = async () => {
     setVerifi(true)
     const codigoGuardado = await obtenerCodigoConfirmacion(email)
@@ -57,24 +40,17 @@ const EmailPage: React.FC<Datos> = ({ setCorrecto, correcto, setVerifi }) => {
   }
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', padding: '2rem' }}>
-      <h1>Escriba mail para recibir el código: </h1>
-      <input
-        type="text"
-        onChange={(e) => setEmail(e.target.value)}
-        className="p-2 border rounded"
-        placeholder="Ingrese su correo"
-      />
+      <h1>Se enviará un código de verificación a: </h1>
+      <h1 className="font-bold"> {email} </h1>
+      <h1>Una vez enviado, el código será válido por 5 minutos.</h1>
       <button className="bg-black text-white p-2 rounded" onClick={handleEmail}>Enviar Código</button>
-      <h1>Verificar código:</h1>
       <input
         type="text"
         onChange={(e) => setCodigo(e.target.value)}
         className="p-2 border rounded"
-        placeholder="Ingrese el código"
+        placeholder="Ingrese el código recibido"
       />
       <button className="bg-black text-white p-2 rounded" onClick={handleVerificarCodigo }>Verificar</button>
-
-
     </div>
   );
 }

@@ -1,12 +1,11 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 interface Datos {
   //lo que recibe de la cuenta logeada
   datosMenor: {
     nombre: string;
     apellido: string;
-    edad: number;
     fechaNacimiento: string;
     dni: number;
     pais: string;
@@ -20,7 +19,6 @@ interface Datos {
     React.SetStateAction<{
       nombre: string;
       apellido: string;
-      edad: number;
       fechaNacimiento: string;
       dni: number;
       pais: string;
