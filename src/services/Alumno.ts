@@ -36,11 +36,7 @@ export async function createAlumno(data: {
 
 }) {
   // Verificar si el email ya existe en la base de datos
-  const existingAlumno = await prisma.alumno.findUnique({
-    where: {
-      email: data.email,
-    },
-  });
+  const existingAlumno = await emailExists(data.email);
 
   if (existingAlumno) {
     // El email ya existe
@@ -87,7 +83,7 @@ export async function createAlumnoAdmin(data: {
     // si ya existe que me actualice al alumno
     const { email, password, ...updateData } = data;
     //acutalizar el alumno sin cambiar el email y la contraseña
-    console.log("ACTUALIZANDO ALUMNO EXISTENTE")
+
     return await prisma.alumno.update({
       where: { id: existingAlumno.id },
       data: updateData
@@ -122,7 +118,7 @@ export async function authenticateUser(email: string, password: string): Promise
     if (user && await verifyPassword(password, user.password)) {
       // Crear sesión y establecer la cookie
       // La sesión expira en 30 minutos
-      const expires = new Date(Date.now() + 15 * 60 * 1000);
+      const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
       const session = await encrypt({ email: user.email, rolId: user.rolId, expires });
       cookies().set("user", session, { expires, httpOnly: true });
 
@@ -233,4 +229,21 @@ export async function getAlumnoByEmail(email: string) {
       email: email,
     },
   });
+}
+
+
+// ferificar que el emial existe  en la base de datos en la tabla alumno, administrador o profesional
+export async function emailExists(email: string): Promise<boolean> {
+  const tables = ['alumno', 'administrador', 'profesional'] as const;
+  type Table = typeof tables[number];
+  // Realiza búsquedas en paralelo para cada tabla y espera el primer resultado exitoso
+  const userResults = await Promise.all(
+    tables.map((table) => (prisma[table as Table] as any).findUnique({ where: { email } }))
+  );
+  // Busca el primer usuario que no sea null
+  // si existe el email retorna true
+  return userResults.some((user) => user !== null);
+
+
+
 }

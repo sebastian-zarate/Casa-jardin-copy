@@ -29,3 +29,4 @@ export default async function userDataHandler(req: NextApiRequest, res: NextApiR
         return res.status(500).json({ error: 'Error retrieving user data' });
     }
 }
+

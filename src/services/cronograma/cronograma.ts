@@ -47,6 +47,7 @@ export async function createCronograma(data: {
     where: {
       aulaId: data.id_aula,
       cursoId: data.id_curso,
+      
     },
   });
 
@@ -94,79 +95,56 @@ export async function createCronograma(data: {
 
 // si el curso ya esta asignado a esa hora y dia
 export async function getCursosByAula(aula: number) {
-  const cursos = await prisma.cronograma.findMany({
-    where: { aulaId: aula },
-    include: {
-      curso: true, // Incluye los detalles del curso
-      diasHoras: {
-        include: {
-          dia: true,
-          hora: true,
-        },
-      },
-    },
-  });
-
-  return cursos;
-}
-
-export async function getCronogramaDiaHora(dias: number, horas: number) {
-
-  const cronogramaDiaHora = await prisma.cronogramaDiaHora.findFirst({
-    where: {
-      diaId: dias,
-      horaId: horas,
-    },
-  });
-
-  return cronogramaDiaHora?.id || null;
-}
-
-// obtener los cursos de la base de datos que ya estan asignados a un aula y dia y hora
-
-export async function getAllCronogramas(aula: number) { // Obtener todos los cronogramas segun el aula
-  const cronogramas = await prisma.cronograma.findMany({
-    where: {
-      aulaId: 2,
-    },
-    include: {
-      curso: true,
-      diasHoras: {
-        include: {
-          dia: true,
-          hora: true,
-        },
-      },
-    },
-  });
-}
-export const getCronogramas = async () => {
   try {
-    // hacer la consulta en la base de datos de cronogrmaDIahora
-    const cronogramas = await prisma.cronogramaDiaHora.findMany({
+    // Obtener la fecha actual
+    const fechaActual = new Date();
+   
+    const cursos = await prisma.cronograma.findMany({
+      where: {
+        aulaId: aula,
+        curso: {
+          fechaFin: {
+            gte: fechaActual, // Filtrar cursos cuya fecha de fin sea mayor o igual a la fecha actual
+          },
+        },
+      },
       include: {
-        cronograma: {
+        curso: true, // Incluye los detalles del curso
+        diasHoras: {
           include: {
-            curso: true,
+            dia: true,
+            hora: true,
           },
         },
       },
     });
-    return cronogramas;
+
+    return cursos;
   } catch (error) {
-    console.error("Error al obtener cronogramas:", error);
+    console.error("Error al obtener los cursos por aula:", error);
     throw error;
   }
-};
+}
+
+
+
 
 // obtener en base a el aula 
 export const getCronogramasPorAula = async (id_aula: number) => {
   try {
+    // Obtener la fecha actual
+    const fechaActual = new Date();
+
     // Hacer la consulta en la base de datos con el filtro por aula
     const cronogramas = await prisma.cronogramaDiaHora.findMany({
       where: {
         cronograma: {
           aulaId: id_aula, // Filtro por id del aula
+          curso: {
+            fechaFin: {
+              gte: fechaActual, // Filtra los cursos cuya fechaFin sea mayor o igual a la fecha actual
+            },
+          },
         },
       },
       include: {
@@ -177,12 +155,14 @@ export const getCronogramasPorAula = async (id_aula: number) => {
         },
       },
     });
+
     return cronogramas;
   } catch (error) {
     console.error("Error al obtener cronogramas:", error);
     throw error;
   }
 };
+
 
 
 // comparar si el curso ya esta asignado a esa hora y dia en otra aula 
@@ -299,4 +279,16 @@ export async function deleteCronogramaDiaHora(idAula: number, id_dia: number, id
   }
 }
 
+// creo otro getcursos para poder obtener los cursos de la base de datos en base a la fecha de fin  sea mayor a la fecha actual
+export async function getCursosCronograma() {
+  const fechaActual = new Date();
+  const cursos = await prisma.curso.findMany({
+    where: {
+      fechaFin: {
+        gte: fechaActual,
+      },
+    },
+  });
 
+  return cursos;
+}

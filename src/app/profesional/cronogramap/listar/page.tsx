@@ -4,13 +4,13 @@ import React, { useState, useEffect } from "react";
 import { getCursos } from "../../../../services/cursos";
 import { getCronogramaByIdProfesional } from "../../../../services/cronograma/profesional_cronograma";
 import { getDias, getHoras } from "../../../../services/dia";
+import { getProfesionalByCookie, getProfesionalById } from "../../../../services/profesional";
+import { get } from "http";
 
 interface Curso {
     id: number;
     nombre: string;
 }
-
-
 
 export default function Horario() {
     const [horas, setHoras] = useState<{ id: number; hora_inicio: string }[]>([]);
@@ -36,9 +36,15 @@ export default function Horario() {
               ? horasData.map(() => Array(diasData.length).fill([]))
               : [];
             setTabla(tablaInicial);
-    
-            //const profesional = await getAlumnoByCooki();
-            const cronogramas = await getCronogramaByIdProfesional(7) || [];
+            const idProfesional = await getProfesionalByCookie(); // Assuming you have a function to get the ID from a cookie
+            
+            if (!idProfesional) {
+                setError("No se pudo obtener el ID del profesional.");
+                setLoading(false);
+                return;
+            }
+           
+            const cronogramas = await getCronogramaByIdProfesional(Number(idProfesional.id)) || [];
     
             const aulaMap: { [cursoNombre: string]: string } = {};
     
@@ -98,7 +104,7 @@ export default function Horario() {
             obtenerCursos();
         }
     }, [isModalOpen]);
-
+    //  panatalla de carga
     if (loading) {
         return (
             <div className="flex items-center justify-center h-screen">
@@ -175,7 +181,7 @@ export default function Horario() {
 
             <div className="flex justify-center mt-4 space-x-4">
                 <a
-                    href="/profesional/cronogramap/modificar "
+                    href="/profesional/cronogramap/seleccionar "
                     className="bg-red-500 text-white px-4 py-2 rounded"
                     aria-label="Modificar"
                 >

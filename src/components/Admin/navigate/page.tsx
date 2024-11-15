@@ -34,7 +34,6 @@ export default function Navigate() {
       <div className="ml-auto flex space-x-4 py-2">
         <a className="mx-2" href="/Admin/cursos">Talleres</a>
         <a className="mx-2" href="/Admin/aulaSelector">Cronogramas</a>
-        <a className="mx-2" href="/Admin/aulas">Aulas</a>
         <a className="mx-2" href="/Admin/Solicitudes">Solicitudes</a>
         <label className="mx-2 cursor-pointer" onClick={() => setUserLink(userLink ? "" : "open")}>
           Usuario
@@ -45,7 +44,7 @@ export default function Navigate() {
             <a className="block px-4 py-2 text-gray-800 hover:bg-gray-200" href="/Admin/profesionales">Profesionales</a>
           </div>
         )}
-        <a className="mx-2" onClick={logout}  href="/start/login">Salir</a>
+        <button className="mx-2" onClick={logout}>Salir</button>
       </div>
     </nav>
   );

@@ -7,59 +7,59 @@ const prisma = new PrismaClient();
 // el id del cronograma buescar los horarios de ese cronogramadiaHora
 
 export async function getCronogramaByIdAlumno(alumnoId: number) {
-    try {
-      // busco el id del alumno y el id del curso
-      const alumno = await prisma.alumno_Curso.findMany({
-        where: {
-          alumnoId: alumnoId,
+  try {
+    // Obtener los IDs de los cursos asociados al alumno
+    const alumnoCursos = await prisma.alumno_Curso.findMany({
+      where: {
+        alumnoId,
+      },
+      select: {
+        cursoId: true,
+      },
+    });
+
+    if (alumnoCursos.length === 0) {
+      console.log("No se encontraron cursos para el alumno.");
+      return [];
+    }
+
+    const cursoIds = alumnoCursos.map((ac) => ac.cursoId);
+    const fechaActual = new Date();
+    //const fechaActual = new Date('2025-06-01'); // Fecha de prueba
+
+    // Buscar cursos vigentes
+    const cursosVigentes = await prisma.curso.findMany({
+      where: {
+        id: { in: cursoIds },
+         fechaFin: { gte: fechaActual }, // Vigentes según fecha de fin
+      },
+    });
+
+    if (cursosVigentes.length === 0) {
+      console.log("No se encontraron cursos vigentes.");
+      return [];
+    }
+
+    // Obtener los cronogramas y sus horarios
+    const cronogramasVigentes = await prisma.cronogramaDiaHora.findMany({
+      where: {
+        cronograma: {
+          cursoId: { in: cursosVigentes.map((c) => c.id) },
         },
-        select: {
-          cursoId: true,
-        },
-      });
-      // busco el cronograma del curso
-      
-        if (alumno) {
-          const cronogramas = [];
-          for (const a of alumno) {
-            const cronograma = await prisma.cronograma.findMany({
-              where: {
-                cursoId: a.cursoId,
-              },
-              select: {
-                id: true,
-              },
-            });
-            cronogramas.push(...cronograma);
-          }
-        } else {
-          console.log("No se encontró el alumno");
-        }
-        // busco los horarios de los cron
-   
-        const cronogramas = await prisma.cronogramaDiaHora.findMany({
-          where: {
-            cronograma: {
-             cursoId: { in: alumno.map(a => a.cursoId) }, // Filtro por id del aula
-            },
-          },
+      },
+      include: {
+        cronograma: {
           include: {
-            cronograma: {
-              include: {
-                curso: true,
-                aula: true,
-  
-              },
-            },
+            curso: true,
+            aula: true,
           },
-        });
-   
-        return cronogramas;
-      } catch (error) {
-        console.error("Error al obtener cronogramas:", error);
-        throw error;
-      }
-    
-    
-  
+        },
+      },
+    });
+
+    return cronogramasVigentes;
+  } catch (error) {
+    console.error("Error al obtener cronogramas:", error);
+    throw error;
   }
+}
