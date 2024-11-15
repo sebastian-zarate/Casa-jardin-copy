@@ -29,7 +29,7 @@ export async function createAlumno(data: {
   apellido: string;
   email: string;
   password: string;
-  telefono: number;
+  telefono?: number;
   direccionId?: number;
   fechaNacimiento?: Date;
   mayoriaEdad?: boolean
