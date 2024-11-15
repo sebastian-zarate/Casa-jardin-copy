@@ -6,7 +6,7 @@ import Background from "../../../../public/Images/Background.jpeg"
 import Navigate from "@/components/Admin/navigate/page";
 import adultos from "../../../../public/Images/adultos.jpg";
 import menores from "../../../../public/Images/menores.jpg";
-import { deleteSolicitud, getAllSolicitudes, getSolicitudById, Solicitud, updateSolicitud } from "@/services/Solicitud/Solicitud";
+import { deleteSolicitud, getAllSolicitudes, getPersonasSoli, getSolicitudById, Solicitud, updateSolicitud } from "@/services/Solicitud/Solicitud";
 import { getAlumnoById } from "@/services/Alumno";
 import { getAllSolicitudesMenores, SolicitudMenores } from "@/services/Solicitud/SolicitudMenor";
 import { Alumno } from "@prisma/client";
@@ -65,20 +65,7 @@ const solicitudPage: React.FC = () => {
         setSolicitudesMayores(dataMa);
         setSolicitudesMenores(dataMe);
 
-            const [alumnosMayores, alumnosMenores, responsablesMenores] = await Promise.all([
-                Promise.all(dataMa.map(async (solicitMay) => {
-                    const alumno = await getAlumnoById(solicitMay.alumnoId);
-                    return alumno;
-                })),
-                Promise.all(dataMe.map(async (solicitMen) => {
-                    const alumno = await getAlumnoById(solicitMen.alumnoId);
-                    return alumno;
-                })),
-                Promise.all(dataMe.map(async (solicitMen) => {
-                    const responsable = await getResponsableByAlumnoId(solicitMen.alumnoId);
-                    return responsable;
-                }))
-            ]);
+        const [alumnosMayores, alumnosMenores, responsablesMenores] = await getPersonasSoli(dataMa, dataMe);
             /*         const direccionesMenores = await Promise.all(
                         alumnosMenores.map(async (alum) => {
                         return  await getDireccionCompleta(Number(alum?.direccionId));
@@ -86,7 +73,7 @@ const solicitudPage: React.FC = () => {
                     ) */
 
             console.log("ALUMNOSMAYORES", alumnosMayores)
-            //        console.log("DIRECC",direccionesMayores)
+            console.log("ALUMNOSMENORES", alumnosMenores)
             setAlumnosMayores(alumnosMayores);
             //setDireccionesMayores(direccionesMayores)
             setAlumnosMenores(alumnosMenores)
@@ -101,6 +88,7 @@ const solicitudPage: React.FC = () => {
         fetchData()
     }
     const handleRechazar = async (solicitudId: number, correo: string) => {
+        console.log("Rechazo",correo);
         await updateSolicitud(solicitudId, { enEspera: true })
         await emailRechazo(correo);
         fetchData()
@@ -185,7 +173,7 @@ const solicitudPage: React.FC = () => {
                                         {!getSolicitud(solicitudMay.solicitudId)?.enEspera && (
                                             <>
                                                 <button onClick={() => handleAceptarSolicitud(solicitudMay.solicitudId)}>Aceptar</button>
-                                                <button className=" p-2 rounded-sm" onClick={() => handleRechazar(solicitudMay.solicitudId, getAl(solicitudMay.alumnoId).correoElectronico)}>Rechazar</button>
+                                                <button className=" p-2 rounded-sm" onClick={() => handleRechazar(solicitudMay.solicitudId, getAl(solicitudMay.alumnoId).email)}>Rechazar</button>
                                             </>
                                         )}
                                         {getSolicitud(solicitudMay.solicitudId)?.enEspera &&
@@ -199,7 +187,7 @@ const solicitudPage: React.FC = () => {
                                             <h2>Datos del alumno:</h2>
                                             <span>Nombre: {getAl(solicitudMay.alumnoId).nombre} {getAl(solicitudMay.alumnoId)?.apellido}</span>
                                             <span>Telefono: {getAl(solicitudMay.alumnoId)?.telefono}</span>
-                                            <span>Correo: {getAl(solicitudMay.alumnoId)?.correoElectronico}</span>
+                                            <span>Correo: {getAl(solicitudMay.alumnoId)?.email}</span>
                                             <span>DNI: {getAl(solicitudMay.alumnoId)?.dni}</span>
 
                                             <span>Fecha de Nacimiento: {new Date(getAl(solicitudMay.alumnoId)?.fechaNacimiento).toISOString().split('T')[0]}</span>
@@ -230,7 +218,7 @@ const solicitudPage: React.FC = () => {
                                         {!getSolicitud(solicitudMen.solicitudId)?.enEspera && (
                                             <>
                                                 <button onClick={() => handleAceptarSolicitud(solicitudMen.solicitudId)}>Aceptar</button>
-                                                <button className=" p-2 rounded-sm" onClick={() => handleRechazar(solicitudMen.solicitudId, getAl(solicitudMen.alumnoId).correoElectronico)}>Rechazar</button>
+                                                <button className=" p-2 rounded-sm" onClick={() => handleRechazar(solicitudMen.solicitudId, getAl(solicitudMen.alumnoId).email)}>Rechazar</button>
                                             </>
                                         )}
                                         {getSolicitud(solicitudMen.solicitudId)?.enEspera &&
@@ -244,7 +232,7 @@ const solicitudPage: React.FC = () => {
                                             <h2>Datos del alumno:</h2>
                                             <span>Nombre: {getAl(solicitudMen.alumnoId).nombre} {getAl(solicitudMen.alumnoId)?.apellido}</span>
                                             <span>Telefono: {getAl(solicitudMen.alumnoId)?.telefono}</span>
-                                            <span>Correo: {getAl(solicitudMen.alumnoId)?.correoElectronico}</span>
+                                            <span>Correo: {getAl(solicitudMen.alumnoId)?.email}</span>
                                             <span>DNI: {getAl(solicitudMen.alumnoId)?.dni}</span>
                                             {/*                                <span>Pais: {alumnoSelected?.pais}</span>
                                             <span>Provincia: {alumnoSelected?.provincia}</span>
@@ -281,4 +269,5 @@ const solicitudPage: React.FC = () => {
         </main>
     );
 }
-export default withAuth(solicitudPage);
+//export default withAuth(solicitudPage);
+export default (solicitudPage);

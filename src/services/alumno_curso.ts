@@ -57,8 +57,13 @@ export async function getCursosByIdAlumno(id: number) {
   return arrayCursos;
 }
 
-export async function deleteAlumno_Curso(id: number) {
+export async function deleteAlumno_Curso(idAlumno: number, idCurso: number) {
+  const al_cur = await getalumnos_cursoByIdAlumnoIdCur(idAlumno, idCurso);
+  if (!al_cur) {
+    console.log("El alumno no está inscripto en el curso");
+    return "El alumno no está inscripto en el curso";
+  }
   return await prisma.alumno_Curso.delete({
-    where: { id },
+    where: { id: al_cur.id },
   });
 }

@@ -46,10 +46,10 @@ export async function getAllSolicitudesMayores() {
 }
 
 //eliminar solicitudMayor
-export async function deleteSolicitudMayor(solicitudId: number) {
+export async function deleteSolicitudMayor(id: number) {
   return await prisma.solicitudMayores.delete({
     where: {
-      solicitudId: solicitudId,
+      id: id,
     },
   });
 }

@@ -78,6 +78,9 @@ const Cuenta: React.FC = () => {
     const [habilitarCambioContraseña, setHabilitarCambioContraseña] = useState<boolean>(false);
     const [correcto, setCorrecto] = useState<boolean>(false);
 
+    //listas de cursos
+    const [cursos, setCursos] = useState<Curso[]>()
+
     //endregion
 
     //region UseEffects
@@ -103,9 +106,14 @@ const Cuenta: React.FC = () => {
         await autorizarUser(router);
         // Una vez autorizado obtengo los datos del user y seteo el email
         const user = await fetchUserData();
-        console.log("user", user);
+        //console.log("user", user);
         setUser(user)
-        console.timeEnd("authorizeAndFetchData");
+        let talleres= await getCursosByIdAlumno(Number(user?.id));
+        setCursos([])
+        talleres.map((curso) => {
+            setCursos(prev => (prev ? [...prev, curso] : [curso]));
+        })
+        //console.timeEnd("authorizeAndFetchData");
     };
     useEffect(() => {
         if ((errorMessage.length > 0) && scrollRef.current) {
@@ -123,24 +131,6 @@ const Cuenta: React.FC = () => {
     //endregion
 
     //region Funciones
-    async function getAllCursos() {
-        //      console.log("USER", usuario);
-        //const direccion = await getDireccionByIdDef(Number(user?.direccionId));
-        //        console.log("DIRECCION", usuario?.direccionId);
-        //console.log("DIRECCION DEFINIT",direccion);
-        let talleres: Curso[] = [];
-        if (user) {
-            const result = await getCursosByIdAlumno(Number(user?.id));
-            for(let i = 0; i < result.length; i++){
-                const curso = await getCursoById(result[i]);
-                talleres.push(curso as Curso);
-            }
-        }
-        //  console.log(usuario?.nombre);
-        //setUserName(String(usuario?.nombre));
-        console.log("TALLERES", talleres);
-        setCursosElegido(talleres);
-    }
 
 
     async function createUbicacion() {
@@ -350,10 +340,8 @@ const Cuenta: React.FC = () => {
 
                         <div className="mb-4">
                             <label className="block text-gray-700 font-bold mb-2">Talleres:</label>
-                            {cursosElegido.length !== 0 ? (
-                                <p className="p-2 border rounded bg-gray-100">
-                                    {cursosElegido.map((curso) => curso.nombre).join(', ')}
-                                </p>
+                            {cursos?.length !== 0 ? (
+                                <p className="p-2 border rounded bg-gray-100" style={{ height: '10vh', overflow: "auto" }}> {cursos?.map((curso)=> curso.nombre).join(", ")}</p>
                             ) : <p className="p-2 border rounded bg-gray-100">Talleres no cargados</p>}
                         </div>
 
@@ -368,7 +356,7 @@ const Cuenta: React.FC = () => {
                         </div>
 
                         <div className="mb-4">
-                            <label className="block text-gray-700 font-bold mb-2">email:</label>
+                            <label className="block text-gray-700 font-bold mb-2">Email:</label>
                             <p className="p-2 border rounded bg-gray-100">{user?.email}</p>
                         </div>
                         <div className="mb-4">

@@ -52,10 +52,10 @@ const Mayores: React.FC = () => {
 
     const [error, setError] = useState<string>('');
     const [verificarEmail, setVerificarEmail] = useState<boolean>(false);
-    const [correcto, setCorrecto] = useState(true);
+    const [correcto, setCorrecto] = useState(false);
     const [user, setUser] = useState<any>();
 
-    const [codigoEnviado, setCodigoEnviado] = useState<boolean>(false);
+    const [verifi, setVerifi] = useState(false);
 
 
     const router = useRouter();
@@ -81,20 +81,13 @@ const Mayores: React.FC = () => {
 
     useEffect(() => {
         if (correcto) {
+            console.log("0.CARGANDO SOLICITUD")
             cargarSolicitud();
             setVerificarEmail(false);
+
         }
     }, [correcto])
 
-    useEffect(() => {
-        if (correcto) {
-            setTimeout(() => {
-                setCorrecto(false)
-                setCodigoEnviado(false)
-                window.location.href = "/usuario/principal"
-            }, 5000);
-        }
-    }, [user])
     useEffect(() => {
         if (user) {
             const cargarAlumno = async () => {
@@ -197,7 +190,7 @@ const Mayores: React.FC = () => {
         }
     */
     async function cargarSolicitud() {
-
+       // console.log("CARGANDO SOLICITUD")
         //crear solicitud
         const solicitud = await createSolicitud()
 
@@ -217,12 +210,13 @@ const Mayores: React.FC = () => {
             email: datosAlumno.correoElectronico,
             direccionId: direccion.id,
         }
+        //console.log("newAlumno:::::", newAlumno)
         const alumno = await updateAlumno(Number(newAlumno.Id), newAlumno)
         //si alumno es un string es un error
         if (typeof alumno === "string") return setError(alumno)
 
         //crear solicitud mayor
-        const x = await createSolicitudMayor({
+          await createSolicitudMayor({
             alumnoId: Number(user?.id),
             solicitudId: solicitud.id,
             firmaUsoImagenes: datosAutorizacionImage.firma.length > 0 ? `${user?.nombre} ${user?.apellido}` : "",
@@ -230,19 +224,23 @@ const Mayores: React.FC = () => {
             firmaReglamento: `${user?.nombre} ${user?.apellido}`,
         });
 
-        //console.log("X:::::", x)
+       // console.log("SoliciMayor:::::", x)
         //crear curso solicitud y alumno_curso
         for (let i = 0; i < selectedCursosId.length; i++) {
             await createCursoSolicitud({
                 "cursoId": selectedCursosId[i],
                 "solicitudId": solicitud.id,
             })
-            await createAlumno_Curso({
+             await createAlumno_Curso({
                 "alumnoId": Number(user?.id),
                 "cursoId": selectedCursosId[i],
             })
+/*             console.log("X:::::", x)
+            console.log("Y:::::", y) */
         }
-
+        setCorrecto(false)
+        setVerifi(false)
+        window.location.href = "/usuario/principal"
     }
     //region return
     return (
@@ -315,9 +313,9 @@ const Mayores: React.FC = () => {
                             onClick={() => {
 
                                 if (datosReglamentacion.firma.length < 1 && selectedScreen === 3) return setError("Debe firmar la reglamentación");
-                                setVerificarEmail(true); setCodigoEnviado(true)
+                                setVerificarEmail(true);
                             }}
-                        /*                             onClick={() => cargarSolicitud()} */
+                                                 /*    onClick={() => cargarSolicitud()} */
                         >
                             Enviar
                         </button>
@@ -326,8 +324,13 @@ const Mayores: React.FC = () => {
             )}
             {verificarEmail && <div className=' absolute bg-slate-100 rounded-md shadow-md px-2 left-1/2 top-1/2 tranform -translate-x-1/2 -translate-y-1/2'>
                 <button className='absolute top-2 right-2' onClick={() => setVerificarEmail(false)}>X</button>
-                <EmailPage setCorrecto={setCorrecto} correcto={correcto} />
+                <EmailPage setVerifi={setVerifi} setCorrecto={setCorrecto} correcto={correcto} />
             </div>}
+            {verifi && (correcto ?
+                (<h1 className=' absolute top-1/2 text-xl font-semibold' style={{ color: "green" }}>Se ha enviado la solicitud de inscripción correctamente!</h1>)
+                :
+                (<h1 className=' absolute top-1/2 text-xl font-semibold' style={{ color: "red" }}>No se pudo generar la solicitud de inscripción!</h1>)
+            )}
             {error != '' && <div className="absolute top-1/2 right-1/3 transform -translate-x-1/3 -translate-y-1/4 bg-white border p-4 rounded-md shadow-md w-96">
                 <h2 className="text-lg font-bold text-red-600 mb-2">Error</h2>
                 <p className="text-sm text-red-700 mb-4">{error}</p>
@@ -340,17 +343,7 @@ const Mayores: React.FC = () => {
                     </button>
                 </div>
             </div>}
-            {codigoEnviado && <div className='absolute p-6 bg-white rounded-md border left-1/2 top-1/2'>
 
-                {correcto &&
-                    <h1 className=' text-xl font-semibold' style={{ color: "green" }}>Se ha enviado la solicitud de inscripción correctamente!</h1>
-                }
-
-                {!correcto &&
-                    <h1 className=' text-xl font-semibold' style={{ color: "green" }}>No se pudo generar la solicitud de inscripción!</h1>
-                }
-            </div>
-            }
 
             <div className="py-5 border-t bg-white w-full" style={{ opacity: 0.66 }}>
                 <But_aside />

@@ -79,7 +79,7 @@ const Menores: React.FC = () => {
     const [verificarEmail, setVerificarEmail] = useState<boolean>(false);
     const [correcto, setCorrecto] = useState(true);
     const [user, setUser] = useState<any>();
-    const [codigoEnviado, setCodigoEnviado] = useState<boolean>(true)
+    const [verifi, setVerifi] = useState<boolean>(true)
 
     //datos menor: nombre, apellido, edad, fecha de nacimiento, dni,pais, localidad,calle
     //datos mayor: nombre, apellido, telefono, correo electronico, dni, pais, localidad, calle
@@ -128,15 +128,7 @@ const Menores: React.FC = () => {
         }
     }, [router]);
 
-    useEffect(() => {
-        if (correcto) {
-            setTimeout(() => {
-                setCorrecto(false)
-                setCodigoEnviado(false)
-                window.location.href = "/usuario/principal"
-            }, 5000);
-        }
-    }, [])
+
 
     function validateDatos() {
         // carrateres especiales en el nombre y la descripción
@@ -239,9 +231,9 @@ const Menores: React.FC = () => {
             direccionId: direccion.id,
         }
 
-        const alumno = await updateAlumno(Number(newAlumno.Id), newAlumno)
+         await updateAlumno(Number(newAlumno.Id), newAlumno)
 
-        console.log("ALUMNO::::", alumno)
+        //console.log("ALUMNO::::", alumno)
         //crear ubicaciones del mayor/responsable
         const paisMayor = await addPais({ "nombre": datosMayor.pais })
         const provinciaMayor = await addProvincias({ "nombre": datosMayor.provincia, "nacionalidadId": paisMayor.id })
@@ -249,7 +241,7 @@ const Menores: React.FC = () => {
         const direccionMayor = await addDireccion({ "calle": datosMayor.calle, "numero": datosMayor.numero, "localidadId": localidadMayor.id })
 
         //crear responsable del menor
-        const responsable = await createResponsable({
+        const alumno =  await createResponsable({
             alumnoId: Number(user?.id),
             nombre: datosMayor.nombre,
             apellido: datosMayor.apellido,
@@ -259,13 +251,13 @@ const Menores: React.FC = () => {
             direccionId: direccionMayor.id,
         })
 
-        console.log("RESPONSABLE::::", responsable)
+        //console.log("RESPONSABLE::::", responsable)
 
         //si alumno es un string es un error
         if (typeof alumno === "string") return setError(alumno)
 
         //crear solicitud menor
-        const soliMenor = await createSolicitudMenores({
+         await createSolicitudMenores({
             solicitudId: solicitud.id,
             alumnoId: Number(user?.id),
             enfermedad: datosSalud.enfermedad,
@@ -282,7 +274,7 @@ const Menores: React.FC = () => {
         })
 
 
-        console.log("SOLIMenor::::", soliMenor)
+        //console.log("SOLIMenor::::", soliMenor)
         //        console.log("X:::::",x)
         //crear curso solicitud y alumno_curso
         for (let i = 0; i < selectedCursosId.length; i++) {
@@ -295,6 +287,9 @@ const Menores: React.FC = () => {
                 "cursoId": selectedCursosId[i],
             })
         }
+        setCorrecto(false)
+        setVerifi(false)
+        window.location.href = "/usuario/principal"
 
     }
     return (
@@ -382,7 +377,7 @@ const Menores: React.FC = () => {
                             className='mx-2 py-2 text-white rounded bg-black px-5'
                             onClick={() => {
                                 if (datosReglamentacion.firma.length < 1 && selectedScreen === 6) return setError("Debe firmar la reglamentación");
-                                setVerificarEmail(true);setCodigoEnviado(true)
+                                setVerificarEmail(true)
                             }}
                         >
                             Enviar
@@ -392,19 +387,14 @@ const Menores: React.FC = () => {
             )}
             {verificarEmail && <div className=' absolute bg-slate-100 rounded-md shadow-md px-2 left-1/2 top-1/2 tranform -translate-x-1/2 -translate-y-1/2'>
                 <button className='absolute top-2 right-2' onClick={() => setVerificarEmail(false)}>X</button>
-                <EmailPage setCorrecto={setCorrecto} correcto={correcto} />
+                <EmailPage setVerifi={setVerifi} setCorrecto={setCorrecto} correcto={correcto} />
             </div>}
-            {codigoEnviado && <div className='absolute p-6 bg-white rounded-md border left-1/2 top-1/2'>
 
-               {correcto &&
-                 <h1 className=' text-xl font-semibold' style={{ color: "green" }}>Se ha enviado la solicitud de inscripción correctamente!</h1>
-                 }
-
-                { !correcto &&
-                    <h1 className=' text-xl font-semibold' style={{ color: "green" }}>No se pudo generar la solicitud de inscripción!</h1>
-                }
-            </div>
-            }
+            {verifi && (correcto ?
+                (<h1 className=' absolute top-1/2 text-xl font-semibold' style={{ color: "green" }}>Se ha enviado la solicitud de inscripción correctamente!</h1>)
+                :
+                (<h1 className=' absolute top-1/2 text-xl font-semibold' style={{ color: "red" }}>No se pudo generar la solicitud de inscripción!</h1>)
+            )}
             {error != '' && <div className="absolute top-1/2 right-1/3 transform -translate-x-1/3 -translate-y-1/4 bg-white border p-4 rounded-md shadow-md w-96">
                 <h2 className="text-lg font-bold text-red-600 mb-2">Error</h2>
                 <p className="text-sm text-red-700 mb-4">{error}</p>
