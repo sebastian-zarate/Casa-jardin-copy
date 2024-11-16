@@ -24,6 +24,7 @@ import { createCursoSolicitud } from '@/services/curso_solicitud';
 import { createAlumno_Curso } from '@/services/alumno_curso';
 import { createResponsable } from '@/services/responsable';
 import { addLocalidad } from '@/services/ubicacion/localidad';
+import { calcularEdad, dateTimeToString } from '@/helpers/fechas';
 
 const Menores: React.FC = () => {
     // Estado para almacenar la pantalla actual
@@ -33,7 +34,6 @@ const Menores: React.FC = () => {
     const [datosMenor, setDatosMenor] = useState({
         nombre: "",
         apellido: "",
-        edad: 0,
         fechaNacimiento: new Date().toISOString().split('T')[0],
         dni: 0,
         pais: "",
@@ -77,7 +77,7 @@ const Menores: React.FC = () => {
 
     const [error, setError] = useState<string>('');
     const [verificarEmail, setVerificarEmail] = useState<boolean>(false);
-    const [correcto, setCorrecto] = useState(true);
+    const [correcto, setCorrecto] = useState(false);
     const [user, setUser] = useState<any>();
     const [verifi, setVerifi] = useState<boolean>(true)
 
@@ -117,8 +117,6 @@ const Menores: React.FC = () => {
                         localidad: localidad?.nombre || '',
                         calle: direccion?.calle || '',
                         numero: Number(direccion?.numero),
-                        edad: user.edad,
-
                     });
                     setDatosMayor({ ...datosMayor, pais: pais?.nombre || '', provincia: provincia?.nombre || '', localidad: localidad?.nombre || '', calle: direccion?.calle || '', numero: Number(direccion?.numero) });
                 }
@@ -128,7 +126,14 @@ const Menores: React.FC = () => {
         }
     }, [router]);
 
+     useEffect(() => {
+        if (correcto) {
+            console.log("0.CARGANDO SOLICITUD")
+            cargarSolicitud();
+            setVerificarEmail(false);
 
+        }
+    }, [correcto]) 
 
     function validateDatos() {
         // carrateres especiales en el nombre y la descripción
@@ -301,11 +306,16 @@ const Menores: React.FC = () => {
 
             <div id='miDiv' style={{ height: (selectedScreen < 6 ? '70vh' : 'auto') }}>
                 {selectedScreen === 0 && (
-                    <SeleccionTaller
-                        setSelectedCursosId={setSelectedCursosId}
-                        selectedCursosId={selectedCursosId}
-                    />
-                )}
+                    user ? (
+                        <SeleccionTaller
+                            edad={calcularEdad(user.fechaNacimiento)}
+                            setSelectedCursosId={setSelectedCursosId}
+                            selectedCursosId={selectedCursosId}
+                        />
+                    ) : (
+                        <div>Cargando...</div>
+                    )
+                    )}
                 {selectedScreen === 1 && (
                     <DatosMenor
                         datosMenor={datosMenor}
@@ -387,7 +397,7 @@ const Menores: React.FC = () => {
             )}
             {verificarEmail && <div className=' absolute bg-slate-100 rounded-md shadow-md px-2 left-1/2 top-1/2 tranform -translate-x-1/2 -translate-y-1/2'>
                 <button className='absolute top-2 right-2' onClick={() => setVerificarEmail(false)}>X</button>
-                <EmailPage setVerifi={setVerifi} setCorrecto={setCorrecto} correcto={correcto} />
+                <EmailPage email={user.email} setVerifi={setVerifi} setCorrecto={setCorrecto} correcto={correcto} />
             </div>}
 
             {verifi && (correcto ?

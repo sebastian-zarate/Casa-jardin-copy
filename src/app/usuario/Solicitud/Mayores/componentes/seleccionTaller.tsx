@@ -6,14 +6,15 @@ import But_aside from "../../../../../components/but_aside/page";
 import Image from "next/image";
 import Navigate from '../../../../../components/alumno/navigate/page';
 import { getImages_talleresAdmin } from '@/services/repoImage';
-import { Curso, getCursos } from '@/services/cursos';
+import {getCursos, getCursosByEdad} from '@/services/cursos';
 
 interface Datos {
     setSelectedCursosId: React.Dispatch<React.SetStateAction<number[]>>;
     selectedCursosId: number[];
+    edad: number;
 }
 
-const SeleccionTaller: React.FC<Datos> = ({setSelectedCursosId, selectedCursosId}) => {
+const SeleccionTaller: React.FC<Datos> = ({setSelectedCursosId, selectedCursosId, edad}) => {
     // Estado para almacenar la lista de cursos
     const [cursos, setCursos] = useState<any[]>([]);
 
@@ -34,8 +35,8 @@ const SeleccionTaller: React.FC<Datos> = ({setSelectedCursosId, selectedCursosId
         //await getApiLocalidades(22);
         //await getApiDirecciones("Libertador San Martin");
         const result = await getImages_talleresAdmin();
-        console.log(result.images, "LAS IMAGENESSSSS")
-        console.log(result.downloadurls, "LOS DOWNLOADURLS")
+       /*  console.log(result.images, "LAS IMAGENESSSSS")
+        console.log(result.downloadurls, "LOS DOWNLOADURLS") */
         if (result.error) {
             setErrorMessage(result.error)
         } else {
@@ -49,7 +50,7 @@ const SeleccionTaller: React.FC<Datos> = ({setSelectedCursosId, selectedCursosId
     // Función para obtener la lista de cursos
     async function fetchCursos() {
         try {
-            let curs = await getCursos(); // Obtén la lista de cursos
+            let curs = await getCursosByEdad(edad); // Obtén la lista de cursos
             setCursos(curs); // Actualiza el estado con la lista de cursos
         } catch (error) {
             console.error("Imposible obtener cursos", error); // Manejo de errores

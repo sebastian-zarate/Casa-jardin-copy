@@ -139,7 +139,7 @@ function Signup() {
           <Image src={Logo} alt="Logo Casa Jardin" width={150} height={150} />
         </div>
         <div
-          className="flex flex-col items-center block text-lg font-medium"
+          className="flex flex-col items-center text-lg font-medium"
           style={{ marginBottom: '20px', marginTop: '10px' }}
         >
           <h2>Registrarte</h2>

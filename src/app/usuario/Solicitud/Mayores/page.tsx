@@ -20,6 +20,7 @@ import { addLocalidad, getLocalidadById } from '@/services/ubicacion/localidad';
 import { createAlumno_Curso } from '@/services/alumno_curso';
 import { createCursoSolicitud } from '@/services/curso_solicitud';
 import withAuthUser from "../../../../components/alumno/userAuth";
+import { calcularEdad, dateTimeToDate } from '@/helpers/fechas';
 
 const Mayores: React.FC = () => {
     //region UseState
@@ -64,7 +65,7 @@ const Mayores: React.FC = () => {
         if (!user) {
             const authorizeAndFetchData = async () => {
                 // Primero verifico que el user esté logeado
-                console.log("router", router);
+                //console.log("router", router);
                 await autorizarUser(router);
                 // Una vez autorizado obtengo los datos del user y seteo el email
                 const user = await fetchUserData();
@@ -251,10 +252,15 @@ const Mayores: React.FC = () => {
 
             <div id='miDiv' style={{ height: (selectedScreen < 3 ? '60vh' : 'auto') }}>
                 {selectedScreen === 0 && (
+                   user ? (
                     <SeleccionTaller
+                        edad={calcularEdad(user.fechaNacimiento)}
                         setSelectedCursosId={setSelectedCursosId}
                         selectedCursosId={selectedCursosId}
                     />
+                ) : (
+                    <div>Cargando...</div>
+                )
                 )}
 
                 {selectedScreen === 1 && (
@@ -324,7 +330,7 @@ const Mayores: React.FC = () => {
             )}
             {verificarEmail && <div className=' absolute bg-slate-100 rounded-md shadow-md px-2 left-1/2 top-1/2 tranform -translate-x-1/2 -translate-y-1/2'>
                 <button className='absolute top-2 right-2' onClick={() => setVerificarEmail(false)}>X</button>
-                <EmailPage setVerifi={setVerifi} setCorrecto={setCorrecto} correcto={correcto} />
+                <EmailPage email={user.email}  setVerifi={setVerifi} setCorrecto={setCorrecto} correcto={correcto} />
             </div>}
             {verifi && (correcto ?
                 (<h1 className=' absolute top-1/2 text-xl font-semibold' style={{ color: "green" }}>Se ha enviado la solicitud de inscripción correctamente!</h1>)
@@ -351,4 +357,4 @@ const Mayores: React.FC = () => {
         </main>
     )
 }
-export default withAuthUser(Mayores);
+export default Mayores;
