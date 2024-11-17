@@ -32,9 +32,9 @@ export default function Navigate() {
                 <h1 className="ml-2">Casa Jardín</h1>
             </div>
             <div className="ml-auto flex space-x-4 py-2">
-                <a className="mx-2" href="/profesional/cronogramap/listar">Calendario</a>
-                <a className="mx-2" href="/profesional/principal">Principal</a>  
-                <button className="mx-2" onClick={logout}>Salir</button>          
+                <a className="p-2" href="/profesional/cronogramap/listar">Calendario</a>
+                <a className="p-2" href="/profesional/principal">Principal</a>  
+                <button className="p-2" onClick={logout}>Salir</button>          
                 
             </div>
         </nav>

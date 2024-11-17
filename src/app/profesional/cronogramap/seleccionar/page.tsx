@@ -10,7 +10,7 @@ import Background from "../../../../../public/Images/Background.jpeg";
 
 import DeleteIcon from "../../../../../public/Images/DeleteIcon.png";
 import ButtonAdd from "../../../../public/Images/Button.png";
-import HorarioProfesional from "../modificar/HorarioProfesional";
+import HorarioProfesional from "../modificar/page";
 
 // Define the Aula interface para definir la estructura de los datos de aula
 interface Aula {

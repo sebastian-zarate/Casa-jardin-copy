@@ -5,10 +5,13 @@ import { PrismaClient } from "@prisma/client"
 
 const prisma = new PrismaClient()
 export type Curso = {
-    id: number;
-    nombre: string;
-    year: number;
-    descripcion: string;
+    id: number
+    nombre: string
+    descripcion: string
+    edadMinima: number
+    edadMaxima: number
+    fechaInicio: Date
+    fechaFin: Date
   }
 //Crear Crusos
 export async function createCurso(data: {

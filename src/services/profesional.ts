@@ -61,7 +61,7 @@ export async function createProfesional(data: {
   });
 }
 
-export async function updateProfesional(id: number, data: {
+export async function updateProfesional(id: number, Data: {
     nombre?: string;
     apellido?: string;
     especialidad?: string;
@@ -78,17 +78,14 @@ export async function updateProfesional(id: number, data: {
   if(!profesional) {
     return "Profesional no encontrado";
   }
-    // Encriptar la contraseña
-    const hashedPassword = await hashPassword(String(data.password));
-    const newProfesional = {
-      ...data,
-      password: hashedPassword,
-    }
+  if(Data.password) {
+    Data.password = await hashPassword(Data.password);
+  }
   return await prisma.profesional.update({
     where: {
       id,
     },
-    data: newProfesional,
+    data: Data,
   });
 }
 

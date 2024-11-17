@@ -17,7 +17,10 @@ export default async function userDataHandler(req: NextApiRequest, res: NextApiR
         }
 
         // Verificar y decodificar el JWT
-        const { payload } = await verifyJWT(token);
+        let { payload } = await verifyJWT(token);
+        payload = JSON.parse(JSON.stringify(payload, (key, value) =>
+            typeof value === 'bigint' ? value.toString() : value
+        ));
 
         //Verificar si el usuario es admin o profesional (osea que no es un alumno)
         if(payload.rolId === 2){
@@ -25,7 +28,7 @@ export default async function userDataHandler(req: NextApiRequest, res: NextApiR
         }
         return res.status(200).end();
     } catch (error) {
-        console.error("Error al verificar el JWT:", error);
+        console.error("2.Error al verificar el JWT:", error);
         return res.status(500).json({ error: 'Error retrieving user data' });
     }
 }

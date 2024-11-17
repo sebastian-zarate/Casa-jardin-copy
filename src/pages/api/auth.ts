@@ -15,7 +15,7 @@ export default async function authHandler(req: NextApiRequest, res: NextApiRespo
 
         return res.status(200).end();
     } catch (error) {
-        console.error("Error al verificar el JWT:", error);
+        console.error("1.Error al verificar el JWT:", error);
         return res.status(500).json({ error: 'Error de server' });
     }
 }

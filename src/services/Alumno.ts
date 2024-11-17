@@ -78,18 +78,14 @@ export async function createAlumnoAdmin(data: {
       email: data.email,
     },
   });
+    // Convertir fechaNacimiento a Date si está presente
   data.fechaNacimiento = new Date(data.fechaNacimiento);
   if (existingAlumno) {
-    // si ya existe que me actualice al alumno
-    const { email, password, ...updateData } = data;
-    //acutalizar el alumno sin cambiar el email y la contraseña
-
-    return await prisma.alumno.update({
-      where: { id: existingAlumno.id },
-      data: updateData
-    });
+    return "El email ya está registrado";
   }
-  // Convertir fechaNacimiento a Date si está presente
+  // Encriptar la contraseña
+  const hashedPassword = await hashPassword(data.password);
+  data.password = hashedPassword;
 
 //  console.log("fecha:", data.fechaNacimiento)
   console.log("CREANDO ALUMNO COMO ADMIN")
@@ -139,16 +135,20 @@ export async function updateAlumno(id: number, data: {
   email: string;
   direccionId?: number;
   fechaNacimiento?: Date;
-  mayoriaEdad?: Boolean
+  mayoriaEdad?: Boolean;
+  password?: string;
 
 }) {
   // Verificar si el alumno existe
   const alumno = await prisma.alumno.findUnique({ where: { id } });
   if (!alumno) {
-    throw new Error("El alumno no existe.");
+    return("El alumno no existe.");
   }
   if (data.fechaNacimiento) data.fechaNacimiento = new Date(data.fechaNacimiento);
-  
+  if (data.password) {
+    data.password = await hashPassword(data.password);
+  }
+  // Crear objeto de datos del alumno
   let alumnoData: any = {};
 
     // Actualizar el alumno
@@ -161,6 +161,7 @@ export async function updateAlumno(id: number, data: {
     direccionId: data.direccionId,
     email: data.email,
     fechaNacimiento: data.fechaNacimiento,
+    password: data.password,
   }
   
   return await prisma.alumno.update({

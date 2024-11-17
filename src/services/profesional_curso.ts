@@ -53,6 +53,7 @@ export async function getCursosByIdProfesional(profesionalId: number) {
       profesionalId: profesionalId,
     },
   });
+  console.log("PROF_CUR", prof_cur);
   let arrayCursos: any[] = [];
   for (const pc of prof_cur) {
     const curso = await prisma.curso.findFirst({
@@ -63,5 +64,6 @@ export async function getCursosByIdProfesional(profesionalId: number) {
     arrayCursos.push(curso);
     console.log("CURSO", curso);
   }
+  console.log("CURSOS", arrayCursos);
   return arrayCursos;
 }

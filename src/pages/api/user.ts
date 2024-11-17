@@ -18,7 +18,7 @@ export default async function userDataHandler(req: NextApiRequest, res: NextApiR
         }
 
         // Verificar y decodificar el JWT
-        const { payload } = await verifyJWT(token);
+        let { payload } = await verifyJWT(token);
 
         // Obtener el usuario desde la base de datos utilizando el email del payload
         let user: any;
@@ -42,11 +42,16 @@ export default async function userDataHandler(req: NextApiRequest, res: NextApiR
             return res.status(404).json({ error: 'User not found' });
         }
 
+        // Convertir BigInt a string si es necesario
+        const userData = JSON.parse(JSON.stringify(user, (key, value) =>
+            typeof value === 'bigint' ? value.toString() : value
+        ));
+
         // Retornar la información del usuario
-        console.log("User data:", user);
-        return res.status(200).json({ user });
+        console.log("User data:", userData);
+        return res.status(200).json({ user: userData });
     } catch (error) {
-        console.error("Error al verificar el JWT:", error);
+        console.error("3.Error al verificar el JWT:", error);
         return res.status(500).json({ error: 'Error retrieving user data' });
     }
 }

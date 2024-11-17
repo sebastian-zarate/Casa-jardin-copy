@@ -102,8 +102,8 @@ const Alumnos: React.FC = () => {
         handleCancel_init();
     }, []);
 
-    useEffect(()=> {
-        if(errorMessage !== ""){
+    useEffect(() => {
+        if (errorMessage !== "") {
             setInterval(() => {
                 setErrorMessage("")
             }, 5000);
@@ -137,7 +137,7 @@ const Alumnos: React.FC = () => {
                 telefono: selectedAlumno.telefono,
                 direccionId: selectedAlumno.direccionId,
                 email: selectedAlumno.email,
-                password: selectedAlumno.password,
+                password: "",
                 fechaNacimiento: selectedAlumno.fechaNacimiento && new Date(selectedAlumno.fechaNacimiento).toISOString().split('T')[0]
             });
             if (selectedAlumno.fechaNacimiento) {
@@ -229,7 +229,7 @@ const Alumnos: React.FC = () => {
 
 
     function validatealumnoDetails() {
-        const { nombre, apellido, email, especialidad, fechaNacimiento } = alumnoDetails;
+        const { nombre, apellido, email, especialidad, fechaNacimiento, password } = alumnoDetails;
 
         //validar que el nombre sea de al menos 2 caracteres
         if (nombre.length < 2) {
@@ -239,6 +239,16 @@ const Alumnos: React.FC = () => {
         if (apellido.length < 2) {
             return "El apellido debe tener al menos 2 caracteres";
         }
+        /*
+            Contenga al menos una letra mayúscula.
+            Solo use letras (tanto mayúsculas como minúsculas), números y ciertos caracteres especiales.
+            Tenga una longitud mínima de 8 caracteres. 
+        */
+        if (password.length > 0) {
+            const passwordRegex = /^(?=.*[A-Z])[A-Za-z\d@$!%*?&]{8,}$/;
+            if (!passwordRegex.test(password)) return "La contraseña debe tener al menos una letra mayúscula y 8 caracteres";
+        }
+
         // if (!/\d/.test(fechaNacimiento)) return ("La fecha de nacimiento es obligatoria");
     }
     // Función para manejar los cambios en los campos del formulario
@@ -284,14 +294,16 @@ const Alumnos: React.FC = () => {
             const dir = await createUbicacion();
             //si es menor
             if (mayor === false) {
-                console.log("fecha 1", new Date(alumnoDetails.fechaNacimiento));
-                console.log("fecha 2", (alumnoDetails.fechaNacimiento));
+                //console.log("fecha 1", new Date(alumnoDetails.fechaNacimiento));
+                // console.log("fecha 2", (alumnoDetails.fechaNacimiento));
 
                 const newAlumno = await updateAlumno(alumnoDetails?.id || 0, {
                     nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
                     dni: Number(alumnoDetails.dni), email: alumnoDetails.email,
-                    direccionId: Number(dir?.id), fechaNacimiento: new Date(alumnoDetails.fechaNacimiento)
+                    direccionId: Number(dir?.id), fechaNacimiento: new Date(alumnoDetails.fechaNacimiento),
+                    password: alumnoDetails.password
                 });
+                if (typeof newAlumno === "string") return setErrorMessage(newAlumno);
                 await updateResponsable(alumnoDetails?.id || 0, {
                     nombre: responsableDetails.nombre, apellido: responsableDetails.apellido,
                     dni: Number(responsableDetails.dni), email: responsableDetails.email, telefono: Number(responsableDetails.telefono),
@@ -299,9 +311,8 @@ const Alumnos: React.FC = () => {
                 });
                 if (typeof newAlumno === "string") return setErrorMessage(newAlumno);
                 for (const curso of cursosElegido) {                                  //recorre los cursos elegidos y los guarda en la tabla intermedia
-                     await createAlumno_Curso({ cursoId: curso.id, alumnoId: newAlumno.id });
+                    await createAlumno_Curso({ cursoId: curso.id, alumnoId: newAlumno.id });
                 }
-
 
                 setVariablesState();
                 return;
@@ -311,13 +322,14 @@ const Alumnos: React.FC = () => {
             const newAlumno = await updateAlumno(alumnoDetails?.id || 0, {
                 nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
                 dni: Number(alumnoDetails.dni), email: alumnoDetails.email, telefono: Number(alumnoDetails.telefono),
-                direccionId: Number(dir?.id), fechaNacimiento: new Date(alumnoDetails.fechaNacimiento)
+                direccionId: Number(dir?.id), fechaNacimiento: new Date(alumnoDetails.fechaNacimiento),
+                password: alumnoDetails.password
             });
             if (typeof newAlumno === "string") return setErrorMessage(newAlumno);
 
             for (const curso of cursosElegido) {                                  //recorre los cursos elegidos y los guarda en la tabla intermedia
                 await createAlumno_Curso({ cursoId: curso.id, alumnoId: newAlumno.id });
-           }
+            }
 
             setVariablesState();
             return;
@@ -345,13 +357,14 @@ const Alumnos: React.FC = () => {
             });
             //--------SI ES MENOR
             if (mayor === false) {
-                console.log("fecha 1", new Date(alumnoDetails.fechaNacimiento));
-                console.log("fecha 2", (alumnoDetails.fechaNacimiento));
+                // console.log("fecha 1", new Date(alumnoDetails.fechaNacimiento));
+                //console.log("fecha 2", (alumnoDetails.fechaNacimiento));
                 const newAlumno = await updateAlumno(alumnoDetails?.id || 0, {
                     nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
                     dni: Number(alumnoDetails.dni), email: alumnoDetails.email,
-                    direccionId: Number(direccion?.id), fechaNacimiento: new Date(alumnoDetails.fechaNacimiento)
+                    direccionId: Number(direccion?.id), fechaNacimiento: new Date(alumnoDetails.fechaNacimiento), password: alumnoDetails.password
                 });
+                if (typeof newAlumno === "string") return setErrorMessage(newAlumno);
                 await updateResponsable(alumnoDetails?.id || 0, {
                     nombre: responsableDetails.nombre, apellido: responsableDetails.apellido,
                     dni: Number(responsableDetails.dni), email: responsableDetails.email, telefono: Number(responsableDetails.telefono),
@@ -360,7 +373,7 @@ const Alumnos: React.FC = () => {
                 if (typeof newAlumno === "string") return setErrorMessage(newAlumno);
                 for (const curso of cursosElegido) {                                  //recorre los cursos elegidos y los guarda en la tabla intermedia
                     await createAlumno_Curso({ cursoId: curso.id, alumnoId: newAlumno.id });
-               }
+                }
                 setVariablesState();
                 return;
             }
@@ -370,12 +383,13 @@ const Alumnos: React.FC = () => {
             const newAlumno = await updateAlumno(alumnoDetails?.id || 0, {
                 nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
                 dni: Number(alumnoDetails.dni), telefono: Number(alumnoDetails.telefono),
-                direccionId: Number(newDireccion?.id), email: alumnoDetails.email, fechaNacimiento: new Date(alumnoDetails.fechaNacimiento)
+                direccionId: Number(newDireccion?.id), email: alumnoDetails.email, fechaNacimiento: new Date(alumnoDetails.fechaNacimiento),
+                password: alumnoDetails.password
             });
             if (typeof newAlumno === "string") return setErrorMessage(newAlumno);
             for (const curso of cursosElegido) {                                  //recorre los cursos elegidos y los guarda en la tabla intermedia
                 await createAlumno_Curso({ cursoId: curso.id, alumnoId: newAlumno.id });
-           }
+            }
 
             setVariablesState();
         } catch (error) {
@@ -390,11 +404,12 @@ const Alumnos: React.FC = () => {
             setErrorMessage(validationError);
             return;
         }
+
+
         try {
             //alumno Mayor
             if (selectedAlumno == -1) {
                 //region hashPassword
-                const hash = await hashPassword(alumnoDetails.password);
 
 
                 //console.log("ALUMNODETAILS", (alumnoDetails))
@@ -403,7 +418,7 @@ const Alumnos: React.FC = () => {
                 const newAlumno = await createAlumnoAdmin({
                     nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
                     dni: Number(alumnoDetails.dni), email: alumnoDetails.email, telefono: Number(alumnoDetails.telefono),
-                    direccionId: Number(dir?.id), password: hash, rolId: 2,     //rol 2 es alumno
+                    direccionId: Number(dir?.id), password: alumnoDetails.password, rolId: 2,     //rol 2 es alumno
                     fechaNacimiento: new Date(alumnoDetails.fechaNacimiento)
                 });
                 if (typeof newAlumno === "string") return setErrorMessage(newAlumno);
@@ -416,12 +431,11 @@ const Alumnos: React.FC = () => {
             }
             //alumno Menor
             if (selectedAlumno === -2) {
-                const hash = await hashPassword(alumnoDetails.password);
 
                 const newAlumno = await createAlumnoAdmin({
                     nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
                     dni: Number(alumnoDetails.dni), email: alumnoDetails.email,
-                    direccionId: Number(dir?.id), password: hash, rolId: 2,     //rol 2 es alumno
+                    direccionId: Number(dir?.id), password: alumnoDetails.password, rolId: 2,     //rol 2 es alumno
                     fechaNacimiento: new Date(alumnoDetails.fechaNacimiento)
                 });
 
@@ -490,6 +504,7 @@ const Alumnos: React.FC = () => {
         if (e.target.value.length > 0) setAlumnosBuscados(filteredAlumnos);
         setAlumnoAbuscar(e.target.value);
     };
+
 
 
     // #region Return
@@ -643,17 +658,18 @@ const Alumnos: React.FC = () => {
                                 max={new Date().toISOString().split('T')[0]} // Set max to today's date
                             />
                         </div>
-                        {(selectedAlumno === -1 || selectedAlumno === -2) && <div className="mb-4">
+                        <div className="mb-4">
                             <label htmlFor="password" className="block">Contraseña:</label>
                             <input
                                 type="password"
                                 id="password"
                                 name="password"
+                                placeholder="Si desea cambiar la contraseña, ingresela aquí"
                                 value={alumnoDetails.password}
                                 onChange={handleChange}
                                 className="p-2 w-full border rounded"
                             />
-                        </div>}
+                        </div>
                         {((!nacionalidadName && !provinciaName && !localidadName && !calle && !numero && selectedAlumno !== -1 && selectedAlumno !== -2) && obAlumno.direccionId) && <p className=" text-red-600">Cargando su ubicación...</p>}
                         {((selectedAlumno === -1 || selectedAlumno === -2) || (selectedAlumno !== -1 && selectedAlumno !== -2 && !obAlumno.direccionId) || (selectedAlumno !== -1 && selectedAlumno !== -2 && obAlumno.direccionId && nacionalidadName)) && <div className="mb-4">
                             <label htmlFor="pais" className="block">País:</label>
@@ -777,18 +793,6 @@ const Alumnos: React.FC = () => {
                         <div>
                             <Talleres crearEstado={selectedAlumno} user={obAlumno} cursosElegido={cursosElegido} setCursosElegido={setCursosElegido} />
                         </div>
-                        {selectedAlumno !== -1 && selectedAlumno !== -2 && <div>
-                            <button
-                                className="py-2  text-black font-bold rounded hover:underline"
-                                onClick={() => setHabilitarCambioContraseña(!habilitarCambioContraseña)}
-                            >
-                                Cambiar contraseña
-                            </button>
-                            {habilitarCambioContraseña && <div className=' absolute bg-slate-100 rounded-md shadow-md px-2 left-1/2 top-1/2 tranform -translate-x-1/2 -translate-y-1/2'>
-                                <button className='absolute top-2 right-2' onClick={() => setHabilitarCambioContraseña(false)}>X</button>
-                                <PasswordComponent setCorrecto={setCorrecto} correcto={correcto} />
-                            </div>}
-                        </div>}
                         <div className="flex justify-end space-x-4">
                             <button
                                 onClick={(((selectedAlumno === -1 || selectedAlumno === -2) ? handleCreateAlumno : handleSaveChanges))}

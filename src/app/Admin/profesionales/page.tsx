@@ -115,7 +115,7 @@ const Profesionales = () => {
                 nombre: selectedProfesional.nombre,
                 apellido: selectedProfesional.apellido,
                 email: selectedProfesional.email,
-                password: selectedProfesional.password,
+                password: "",
                 telefono: parseInt(selectedProfesional.telefono),
                 especialidad: (selectedProfesional.especialidad),
                 direccionId: selectedProfesional.direccionId,
@@ -232,7 +232,10 @@ const Profesionales = () => {
         if (apellido.length < 2) {
             return "El apellido debe tener al menos 2 caracteres";
         }
-
+        if (password.length > 0) {
+            const passwordRegex = /^(?=.*[A-Z])[A-Za-z\d@$!%*?&]{8,}$/;
+            if (!passwordRegex.test(password)) return "La contraseña debe tener al menos una letra mayúscula y 8 caracteres";
+        }
     }
 
 
@@ -321,9 +324,8 @@ const Profesionales = () => {
             return;
         }
         try {
-            //region hashPassword
-           // const hash = await hashPassword(profesionalDetails.password);
-            //acualizo los datos de la direccion del alumno
+
+            //acualizo los datos de la direccion del alumno, el hash de la contra se hace en el servicio
             const newProfesional = await createProfesional({
                 nombre: profesionalDetails.nombre, apellido: profesionalDetails.apellido,
                 especialidad: String(profesionalDetails.especialidad), email: String(profesionalDetails.email),
@@ -515,17 +517,18 @@ const Profesionales = () => {
                             />
                         </div>
 
-                        {selectedProfesional === -1 && <div className="mb-4">
+                        <div className="mb-4">
                             <label htmlFor="password" className="block">Contraseña:</label>
                             <input
                                 type="password"
                                 id="password"
                                 name="password"
+                                placeholder="Si desea cambiar la contraseña, escriba una aqui"
                                 value={profesionalDetails.password}
                                 onChange={handleChange}
                                 className="p-2 w-full border rounded"
                             />
-                        </div>}
+                        </div>
                         {((!nacionalidadName && !provinciaName && !localidadName && !calle && !numero && selectedProfesional !== -1 && obProfesional) && obProfesional.direccionId) && <p className=" text-red-600">Cargando su ubicación...</p>}
                         {(selectedProfesional === -1 || ((nacionalidadName && provinciaName && localidadName && calle && numero && selectedProfesional !== -1 ))) &&
                             <>
@@ -586,55 +589,10 @@ const Profesionales = () => {
                                 </div>
                             </>
                         }
-{/*                         {((selectedProfesional === -1) || (selectedProfesional !== -1 && !obProfesional.direccionId) || (selectedProfesional !== -1 && obProfesional.direccionId && provinciaName !== null)) && <div className="mb-4">
-                            <label htmlFor="provincia" className="block">Provincia:</label>
-                            <input
-                                type="text"
-                                id="provincia"
-                                name="provincia"
-                                value={String(provinciaName)}
-                                onChange={(e) => setProvinciaName(e.target.value)}
-                                className="p-2 w-full border rounded"
-                            />
-                        </div>}
-                        {(selectedProfesional === -1 || (selectedProfesional !== -1 && !obProfesional.direccionId) || (selectedProfesional !== -1 && obProfesional.direccionId && localidadName !== null)) && <div className="mb-4">
-                            <label htmlFor="localidad" className="block">Localidad:</label>
-                            <input
-                                type="text"
-                                id="localidad"
-                                name="localidad"
-                                value={String(localidadName)}
-                                onChange={(e) => setLocalidadName(e.target.value)}
-                                className="p-2 w-full border rounded"
-                            />
-                        </div>}
-                        {(selectedProfesional === -1 || (selectedProfesional !== -1 && !obProfesional.direccionId) || (selectedProfesional !== -1 && obProfesional.direccionId && calle !== null && numero !== null)) && <div className="mb-4">
-                            <label htmlFor="calle" className="block">Calle:</label>
-                            <input
-                                type="text"
-                                id="calle"
-                                name="calle"
-                                value={String(calle)}
-                                onChange={(e) => setcalle(e.target.value)}
-                                className="p-2 w-full border rounded"
-                            />
-                        </div> &&
-                            <div className="mb-4">
-                                <label htmlFor="numero" className="block">Número:</label>
-                                <input
-                                    type="text"
-                                    id="numero"
-                                    name="numero"
-                                    value={Number(numero)}
-                                    onChange={(e) => setNumero(Number(e.target.value))}
-                                    className="p-2 w-full border rounded"
-                                />
-                            </div>
-                        } */}
                         <div>
                             <Talleres crearEstado={selectedProfesional} user={obProfesional} cursosElegido={cursosElegido} setCursosElegido={setCursosElegido} />
                         </div>
-                        {selectedProfesional !== -1 && <div>
+{/*                         {selectedProfesional !== -1 && <div>
                             <button
                                 className="py-2  text-black font-bold rounded hover:underline"
                                 onClick={() => setHabilitarCambioContraseña(!habilitarCambioContraseña)}
@@ -645,7 +603,7 @@ const Profesionales = () => {
                                 <button className='absolute top-2 right-2' onClick={() => setHabilitarCambioContraseña(false)}>X</button>
                                 <PasswordComponent setCorrecto={setCorrecto} correcto={correcto} />
                             </div>}
-                        </div>}
+                        </div>} */}
 
 
                         <div className="flex justify-end space-x-4">
