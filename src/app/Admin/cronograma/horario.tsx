@@ -250,7 +250,7 @@ export function Horario({ idAula }: { idAula: number }) {
       </div>
     );
   }
-
+//region return
   return (
     <div className="overflow-x-auto w-full m-0 p-0 bg-transparent">
       {/* Tabla del cronograma */}

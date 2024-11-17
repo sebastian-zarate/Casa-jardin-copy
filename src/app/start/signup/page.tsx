@@ -2,6 +2,7 @@
 import Image from 'next/image';
 import BackgroundLibrary from '../../../../public/Images/BookShell.jpg';
 import Logo from '../../../../public/Images/LogoCasaJardin.png';
+import TituloCasaJardin from '../../../../public/Images/TituloCasaJardin.png';
 import { useState, useEffect } from "react";
 import { createAlumno} from "../../../services/Alumno";
 
@@ -13,8 +14,10 @@ function Signup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  
-
+  const [fechaNacimiento, setFechaNacimiento] = useState<Date>();
+  const Hoy = new Date();
+  const edadMinima = new Date(Hoy.getFullYear() - 3, Hoy.getMonth(), Hoy.getDate());
+  const edadMaxima = new Date(Hoy.getFullYear() - 100, Hoy.getMonth(), Hoy.getDate());
   
   const [error, setError] = useState("");
 // en para los errores de registro se muestra un mensaje de error por 5 segundos
@@ -27,9 +30,14 @@ function Signup() {
   }, [error]);
 
 
+
+
   // en esta funsion se valida el formulario de registro 
   // para que los datos sean correctos
   const validateForm = () => {
+
+    
+
     if (nombre.length < 2 || nombre.length > 50) {
       return "El nombre debe tener entre 2 y 50 caracteres.";
     }
@@ -41,6 +49,20 @@ function Signup() {
     if (password.length < 8) return "La contraseña debe tener al menos 8 caracteres";
     const passwordRegex = /^(?=.*[A-Z])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!passwordRegex.test(password)) return "La contraseña debe tener al menos una letra mayúscula y 8 caracteres";
+
+    if(!fechaNacimiento) return "La fecha de nacimiento es requerida";
+
+    if(fechaNacimiento >= Hoy) {
+      return "No puedes registrarte si no has nacido";
+    } else if(fechaNacimiento > edadMinima) {
+      return "Bajo supervision de un adulto responsable, debes tener al menos 3 años de edad para registrarte";
+
+    }else if(fechaNacimiento < edadMaxima) {
+      return "Debes tener menos de 100 años para registrarte";
+    }
+   
+  
+
     // no quiero que tenga caracteres especiales que las comas y acentos puntos sean permitidos
     const regex = /^[a-zA-ZÀ-ÿ\u00f1\u00d1\u00fc\u00dc\s]*$/; // caracteres permitidos
     if (!regex.test(nombre) && !regex.test(apellido)) {
@@ -54,6 +76,8 @@ function Signup() {
       return "El apellido no puede contener números ni caracteres especiales";
     }
     return "";
+
+
   };
   // en esta funsion se envian los datos del formulario de registro
   const handleSubmit = async (event: React.FormEvent) => {
@@ -72,10 +96,12 @@ function Signup() {
       apellido,
       email,
       password,
+      fechaNacimiento: fechaNacimiento ? new Date(fechaNacimiento) : undefined,
       
     };
     // se envian los datos al servidor para registrar el usuario
     try {
+      
       const response = await createAlumno(data);
       if (typeof response === "string") {
         setError(response);
@@ -139,7 +165,7 @@ function Signup() {
           <Image src={Logo} alt="Logo Casa Jardin" width={150} height={150} />
         </div>
         <div
-          className="flex flex-col items-center text-lg font-medium"
+          className="flex flex-col items-center block text-lg font-medium"
           style={{ marginBottom: '20px', marginTop: '10px' }}
         >
           <h2>Registrarte</h2>
@@ -231,6 +257,21 @@ function Signup() {
             }}
             required
           />
+
+          <label className="block text-lg font-medium">Fecha de Nacimiento</label>
+          <input
+          type="date"
+          id="fechaNacimiento"
+          value={fechaNacimiento?.toISOString().split('T')[0]}
+          onChange={(e) => setFechaNacimiento(new Date(e.target.value))}
+          style={{
+            padding: '3px',
+            borderRadius: '5px',
+            marginBottom: '20px',
+            width: '100%',
+          }}
+          required
+        />
 
 
         <button

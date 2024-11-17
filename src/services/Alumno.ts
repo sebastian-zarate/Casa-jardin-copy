@@ -73,11 +73,7 @@ export async function createAlumnoAdmin(data: {
 
 }) {
   // Verificar si el email ya existe en la base de datos
-  const existingAlumno = await prisma.alumno.findUnique({
-    where: {
-      email: data.email,
-    },
-  });
+  const existingAlumno = await emailExists(data.email);
     // Convertir fechaNacimiento a Date si está presente
   data.fechaNacimiento = new Date(data.fechaNacimiento);
   if (existingAlumno) {
@@ -215,12 +211,25 @@ export async function getAlumnos() {
 }
 
 export async function deleteAlumno(id: number) {
-  await prisma.alumno_Curso.deleteMany({
-    where: { alumnoId: id }
-  })
-  return await prisma.alumno.delete({
-    where: { id },
-  });
+  console.log("Eliminando alumno", id);
+  try{
+    const foundAlumno =await prisma.alumno_Curso.deleteMany({
+      where: { alumnoId: id }
+    })
+    if(!foundAlumno){
+      return 'No se encontró el alumno'
+    }
+    const x = await prisma.alumno.delete({
+      where: { id },
+    });
+    console.log("Alumno eliminado", x);
+    return x
+  }
+  catch(err){
+    console.log("Error al eliminar alumno", err);
+    return null;
+  }
+
 }
 
 //get by email

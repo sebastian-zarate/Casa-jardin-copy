@@ -1,4 +1,4 @@
-"use client"; 
+"use client";
 
 import React, { useEffect, useState } from "react";
 import Navigate from "../../../components/Admin/navigate/page";
@@ -112,9 +112,7 @@ const Aulas: React.FC = () => {
                 priority={true}
             />
 
-            <div className="fixed justify-between w-full p-4" style={{ background: "#1CABEB" }}>
-                <Navigate />
-            </div>
+            <Navigate />
 
             {/* Muestra el título de la página */}
             <h1 className="absolute top-40 left-60 mb-5 text-3xl">Aulas</h1>
@@ -158,9 +156,7 @@ const Aulas: React.FC = () => {
                 <button onClick={() => setSelectedAulaIdCrear(-1)} className="mt-6 mx-4">
                     <Image src={ButtonAdd} className="mx-3" alt="Añadir Aula" width={70} height={70} />
                 </button>
-                <div className="fixed bottom-0 mt-20 bg-white w-full" style={{ opacity: 0.66 }}>
-                    <But_aside /> {/* Corrige el nombre del componente */}
-                </div>
+                <But_aside />
             </div>
 
 

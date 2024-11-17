@@ -105,6 +105,7 @@ const Cuenta: React.FC = () => {
         const user = await fetchUserData();
         //console.log("user", user);
         setUser(user)
+        if (!user) return;
         let talleres= await getCursosByIdProfesional(Number(user?.id));
         console.log("talleres", talleres);
         setCursos([])

@@ -523,7 +523,7 @@ const Profesionales = () => {
                                 type="password"
                                 id="password"
                                 name="password"
-                                placeholder="Si desea cambiar la contraseña, escriba una aqui"
+                                placeholder={(selectedProfesional === -1 || selectedProfesional === -2) ? "" :"Si desea cambiar la contraseña, ingresela aquí"}
                                 value={profesionalDetails.password}
                                 onChange={handleChange}
                                 className="p-2 w-full border rounded"

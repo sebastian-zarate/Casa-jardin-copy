@@ -16,6 +16,18 @@ import { getAlumnoByEmail } from '@/services/Alumno';
 import withAuthUser from "../../../components/alumno/userAuth";
 import { getDireccionCompleta } from '@/services/ubicacion/direccion';
 
+type Usuario = {
+    id: number;
+    nombre: string;
+    apellido: string;
+    dni: number;
+    telefono: number;
+    email: string;
+    /*     password: string; */
+    direccionId: number;
+    fechaNacimiento: string;
+    rolId: number;
+};
 
 const principal: React.FC = () => {
 
@@ -23,7 +35,7 @@ const principal: React.FC = () => {
     const [userName, setUserName] = useState<string>('');
 
     const [email, setEmail] = useState<string>('');
-    const [usuario, setUsuario] = useState<any>(null);
+    const [usuario, setUsuario] = useState<Usuario>();
 
     const router = useRouter();
     // Para cambiar al usuario de página si no está logeado
@@ -39,7 +51,8 @@ const principal: React.FC = () => {
             //const direccion = await getDireccionByIdDef(Number(user?.direccionId));
             setUsuario(user);
             setUserName(user?.nombre + " " + user?.apellido);
-            let talleres= await getCursosByIdAlumno(Number(user?.id));
+            if (!user) return;
+            let talleres = await getCursosByIdAlumno(Number(user?.id));
             talleres.map((curso) => {
                 setCursos(prev => [...prev, curso]);
             })
@@ -53,23 +66,28 @@ const principal: React.FC = () => {
         authorizeAndFetchData();
     }, [router]);
 
+    const handleWhatsAppClick = () => {
+        const phoneNumber = '3435008302'; // Número de teléfono de Casa Jardín
+        const message = encodeURIComponent('¡Hola! Estoy interesado en tu producto.');
+        const url = `https://wa.me/${phoneNumber}?text=${message}`;
+        window.open(url, '_blank'); // Abre en una nueva pestaña
+    };
+
 
     return (
         <main className=''>
-            <div className="fixed bg-red-500  justify-between w-full p-4" >
-                <Navigate />
-            </div>
+            <Navigate />
             <div className='absolute top-20 '>
                 <h1 className='absolute top-20 left-10'>Bienvenido de regreso, {userName}</h1>
                 <div className=' flex   justify-center items-center mt-40 w-screen'>
-                    <button className='m-4 flex flex-col items-center'/*  onClick={() => window.location.href = '/usuario/Contacto'} */>
+                    <button className='m-4 flex flex-col items-center' onClick={handleWhatsAppClick}>
                         <Image src={phoneIcon} alt="telefono" width={80} height={80} />
                         <span>Contacto</span>
                     </button>
-                    <button className='m-4 flex flex-col items-center' /* onClick={() => window.location.href = '/usuario/Correo'} */>
+{/*                     <button className='m-4 flex flex-col items-center' onClick={handleEmailClick}>
                         <Image src={correoIcon} alt="correo" width={80} height={80} />
                         <span>Correo</span>
-                    </button>
+                    </button> */}
                     <button className='m-4 flex flex-col items-center'/*  onClick={() => window.location.href = '/usuario/Propuestas'} */>
                         <Image src={propuestasIcon} alt="propuestas" width={80} height={80} />
                         <span>Propuestas</span>
@@ -92,9 +110,9 @@ const principal: React.FC = () => {
                     </div>
                 </div>
             </div>
-            <div className="fixed bottom-0 py-5 border-t bg-white w-full" style={{ opacity: 0.66 }}>
+           
                 <But_aside />
-            </div>
+
         </main>
     )
 }

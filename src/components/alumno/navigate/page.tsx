@@ -16,7 +16,8 @@ export default function Navigate() {
       });
 
       if (response.ok) {
-        router.push("/start/login");
+       // router.push("/start/login");
+       window.location.href = "/start/login";
       } else {
         console.error('Error al cerrar sesión:', await response.json());
       }

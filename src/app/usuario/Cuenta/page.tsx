@@ -108,6 +108,7 @@ const Cuenta: React.FC = () => {
         const user = await fetchUserData();
         //console.log("user", user);
         setUser(user)
+        if (!user) return;
         let talleres= await getCursosByIdAlumno(Number(user?.id));
         setCursos([])
         talleres.map((curso) => {

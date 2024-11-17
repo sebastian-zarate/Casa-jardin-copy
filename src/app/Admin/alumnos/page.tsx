@@ -22,7 +22,7 @@ import { Curso } from "@/services/cursos";
 import withAuth from "../../../components/Admin/adminAuth";
 import PasswordComponent from "@/components/Password/page";
 import { hashPassword } from "@/helpers/hashPassword";
-import { createResponsable, deleteResponsable, getAllResponsables, updateResponsable } from "@/services/responsable";
+import { createResponsable, deleteResponsable, deleteResponsableByAlumnoId, getAllResponsables, updateResponsable } from "@/services/responsable";
 // #endregion
 
 const Alumnos: React.FC = () => {
@@ -458,17 +458,16 @@ const Alumnos: React.FC = () => {
         }
     }
     async function handleEliminarAlumno(alumno: any) {
-        try {
-            //elimino el responsable si el alumno es menor
-            if (mayor === false) {
-                const responsable = responsables.filter(responsable => responsable.alumnoId === alumno.id);
-                await deleteResponsable(responsable[0].id);
-            }
-            await deleteAlumno(alumno.id);
-            fetchAlumnos();
-        } catch (error) {
-            console.error("Error al eliminar el profesional", error);
+        console.log(alumno);
+        //elimino el responsable si el alumno es menor
+        if (mayor === false) {
+            //console.log("responsable", responsableDetails);
+            const responsable = await deleteResponsableByAlumnoId(alumno.id);
+            console.log("responsable borrado", responsable);
         }
+        const alumnoBorrado = await deleteAlumno(alumno.id);
+        console.log("alumno borrado", alumnoBorrado);
+        fetchAlumnos();
     }
     async function handleCancel_init() {
         setNacionalidadName("");
@@ -510,11 +509,13 @@ const Alumnos: React.FC = () => {
     // #region Return
     return (
         <main className="relative min-h-screen w-screen">
-            <Image src={Background} alt="Background" layout="fill" objectFit="cover" quality={80} priority={true} />
+            <Navigate />
 
-            <div className="fixed justify-between w-full p-4" style={{ background: "#1CABEB" }} >
-                <Navigate />
-            </div>
+            {/*             <div className="relative h-[80vh]">
+                <Image src={Background} className="h-[80hv]" alt="Background" layout="fill" objectFit="cover" quality={80} priority={true} />
+            </div> */}
+
+
             <h1 className="absolute bg-slate-100 top-40 left-60 mb-5 text-3xl" >Alumnos</h1>
             <div className="absolute top-40 right-20 mb-5">
                 <div className="relative">
@@ -576,9 +577,7 @@ const Alumnos: React.FC = () => {
                     agregar menor
                 </button>
             </div>
-            <div className="fixed bottom-0 py-5 bg-white w-full" style={{ opacity: 0.66 }}>
-                <But_aside />
-            </div>
+            <But_aside />
             {selectedAlumno !== null && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
                     <div ref={scrollRef} className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative" style={{ height: '70vh', overflow: "auto" }}>
@@ -664,70 +663,71 @@ const Alumnos: React.FC = () => {
                                 type="password"
                                 id="password"
                                 name="password"
-                                placeholder="Si desea cambiar la contraseña, ingresela aquí"
+                                placeholder={(selectedAlumno === -1 || selectedAlumno === -2) ? "" : "Si desea cambiar la contraseña, ingresela aquí"}
                                 value={alumnoDetails.password}
                                 onChange={handleChange}
                                 className="p-2 w-full border rounded"
                             />
                         </div>
-                        {((!nacionalidadName && !provinciaName && !localidadName && !calle && !numero && selectedAlumno !== -1 && selectedAlumno !== -2) && obAlumno.direccionId) && <p className=" text-red-600">Cargando su ubicación...</p>}
-                        {((selectedAlumno === -1 || selectedAlumno === -2) || (selectedAlumno !== -1 && selectedAlumno !== -2 && !obAlumno.direccionId) || (selectedAlumno !== -1 && selectedAlumno !== -2 && obAlumno.direccionId && nacionalidadName)) && <div className="mb-4">
-                            <label htmlFor="pais" className="block">País:</label>
-                            <input
-                                type="text"
-                                id="pais"
-                                name="pais"
-                                value={String(nacionalidadName)}
-                                onChange={(e) => setNacionalidadName(e.target.value)}
-                                className="p-2 w-full border rounded"
-                            />
-                        </div>}
-                        {((selectedAlumno === -1 || selectedAlumno === -2) || (selectedAlumno !== -1 && selectedAlumno !== -2 && !obAlumno.direccionId) || (selectedAlumno !== -1 && selectedAlumno !== -2 && obAlumno.direccionId && provinciaName)) && <div className="mb-4">
-                            <label htmlFor="provincia" className="block">Provincia:</label>
-                            <input
-                                type="text"
-                                id="provincia"
-                                name="provincia"
-                                value={String(provinciaName)}
-                                onChange={(e) => setProvinciaName(e.target.value)}
-                                className="p-2 w-full border rounded"
-                            />
-                        </div>}
-                        {((selectedAlumno === -1 || selectedAlumno === -2) || (selectedAlumno !== -1 && selectedAlumno !== -2 && !obAlumno.direccionId) || (selectedAlumno !== -1 && selectedAlumno !== -2 && obAlumno.direccionId && localidadName)) && <div className="mb-4">
-                            <label htmlFor="localidad" className="block">Localidad:</label>
-                            <input
-                                type="text"
-                                id="localidad"
-                                name="localidad"
-                                value={String(localidadName)}
-                                onChange={(e) => setLocalidadName(e.target.value)}
-                                className="p-2 w-full border rounded"
-                            />
-                        </div>}
-                        {((selectedAlumno === -1 || selectedAlumno === -2) || (selectedAlumno !== -1 && selectedAlumno !== -2 && !obAlumno.direccionId) || (selectedAlumno !== -1 && selectedAlumno !== -2 && obAlumno.direccionId && calle && numero)) && <div>
-                            <div className="mb-4">
-                                <label htmlFor="calle" className="block">Calle:</label>
-                                <input
-                                    type="text"
-                                    id="calle"
-                                    name="calle"
-                                    value={String(calle)}
-                                    onChange={(e) => setcalle(e.target.value)}
-                                    className="p-2 w-full border rounded"
-                                />
-                            </div>
-                            <div className="mb-4">
-                                <label htmlFor="numero" className="block">Número:</label>
-                                <input
-                                    type="number"
-                                    id="numero"
-                                    name="numero"
-                                    value={Number(numero)}
-                                    onChange={(e) => setNumero(Number(e.target.value))}
-                                    className="p-2 w-full border rounded"
-                                />
-                            </div>
-                        </div>
+                        {((!nacionalidadName && !provinciaName && !localidadName && !calle && !numero && (selectedAlumno !== -1 || selectedAlumno !== 2) && obAlumno) && obAlumno.direccionId) && <p className=" text-red-600">Cargando su ubicación...</p>}
+                        {(selectedAlumno === -1 ||selectedAlumno === -2 || ((nacionalidadName && provinciaName && localidadName && calle && numero && (selectedAlumno === -1 || selectedAlumno !== -2)))) &&
+                            <>
+                                <div className="mb-4">
+                                    <label htmlFor="pais" className="block">País:</label>
+                                    <input
+                                        type="text"
+                                        id="pais"
+                                        name="pais"
+                                        value={String(nacionalidadName)}
+                                        onChange={(e) => setNacionalidadName(e.target.value)}
+                                        className="p-2 w-full border rounded"
+                                    />
+                                </div>
+                                <div className="mb-4">
+                                    <label htmlFor="provincia" className="block">Provincia:</label>
+                                    <input
+                                        type="text"
+                                        id="provincia"
+                                        name="provincia"
+                                        value={String(provinciaName)}
+                                        onChange={(e) => setProvinciaName(e.target.value)}
+                                        className="p-2 w-full border rounded"
+                                    />
+                                </div>
+                                <div className="mb-4">
+                                    <label htmlFor="localidad" className="block">Localidad:</label>
+                                    <input
+                                        type="text"
+                                        id="localidad"
+                                        name="localidad"
+                                        value={String(localidadName)}
+                                        onChange={(e) => setLocalidadName(e.target.value)}
+                                        className="p-2 w-full border rounded"
+                                    />
+                                </div>
+                                <div className="mb-4">
+                                    <label htmlFor="calle" className="block">Calle:</label>
+                                    <input
+                                        type="text"
+                                        id="calle"
+                                        name="calle"
+                                        value={String(calle)}
+                                        onChange={(e) => setcalle(e.target.value)}
+                                        className="p-2 w-full border rounded"
+                                    />
+                                </div>
+                                <div className="mb-4">
+                                    <label htmlFor="numero" className="block">Número:</label>
+                                    <input
+                                        type="text"
+                                        id="numero"
+                                        name="numero"
+                                        value={Number(numero)}
+                                        onChange={(e) => setNumero(Number(e.target.value))}
+                                        className="p-2 w-full border rounded"
+                                    />
+                                </div>
+                            </>
                         }
                         {
                             mayor !== true && <div>

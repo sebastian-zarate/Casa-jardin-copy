@@ -254,11 +254,10 @@ const Cursos: React.FC = () => {
     //region return
     return (
         <main className="relative min-h-screen w-screen">
-            <Image src={Background} alt="Background" layout="fill" objectFit="cover" quality={80} priority={true} />
-            <div className="fixed justify-between w-full p-4" style={{ background: "#1CABEB" }}>
-                <Navigate />
+            <Navigate />
+            <div className="relative h-[80vh]">
+                <Image src={Background} className="h-[80hv]" alt="Background" layout="fill" objectFit="cover" quality={80} priority={true} />
             </div>
-
             <h1 className="absolute top-40 left-60 mb-5 text-3xl">Talleres</h1>
 
             <div className="top-60 border p-1 absolute left-40 h-90 max-h-90" style={{ background: "#D9D9D9" }}>
@@ -294,9 +293,7 @@ const Cursos: React.FC = () => {
                 </button>
             </div>
 
-            <div className="fixed bottom-0 mt-20 bg-white w-full" style={{ opacity: 0.66 }}>
-                <But_aside />
-            </div>
+            <But_aside />
 
             {selectedCursoId !== null && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">

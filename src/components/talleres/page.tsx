@@ -75,16 +75,20 @@ const Talleres: React.FC<cursosProps> = ({ cursosElegido, setCursosElegido, user
     } */
 
     return (
-        <div>
-           { (crearEstado !== -1 && crearEstado !== -2) && <h1>Talleres inscriptos:</h1>}
-            {(crearEstado !== -1 && crearEstado !== -2) && cursosIns.map((curso: { nombre: string, id: number }, index: number) => (
-                <React.Fragment key={index}>
-                    <div className='flex p-2 m-1 bg-slate-400 text-black  rounded' key={index}>
-                        <h1 className='text-black'>{curso.nombre}</h1>
-                        <button className='absolute right-10'>X</button>
-                    </div>
-                </React.Fragment>
-            ))}
+        <div >
+            {(crearEstado !== -1 && crearEstado !== -2) && <h1>Talleres inscriptos:</h1>}
+            <div className='border' style={{ height: '80px', overflow: 'auto' }}>
+
+                {(crearEstado !== -1 && crearEstado !== -2) && cursosIns.map((curso: { nombre: string, id: number }, index: number) => (
+                    <React.Fragment key={index}>
+                        <div className='flex py-2 px-5 m-1 bg-slate-400 text-black  rounded' key={index} >
+                            <h1  className='text-black'>{curso.nombre}</h1>
+                            <button className='absolute right-12 mr-5'>X</button>
+                        </div>
+                    </React.Fragment>
+                ))}
+            </div>
+
             <select onChange={(e) => { addCursosElegidos(Number(e.target.value)) }}>
                 <option value="">Seleccione un taller:</option>
                 {cursos.map((curso: { nombre: string, id: number }, index: number) => (

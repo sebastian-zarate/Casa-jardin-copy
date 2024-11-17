@@ -246,9 +246,7 @@ const Mayores: React.FC = () => {
     //region return
     return (
         <main>
-            <div className="relative bg-red-500 justify-between w-full p-4">
-                <Navigate />
-            </div>
+            <Navigate />
 
             <div id='miDiv' style={{ height: (selectedScreen < 3 ? '60vh' : 'auto') }}>
                 {selectedScreen === 0 && (
@@ -351,9 +349,7 @@ const Mayores: React.FC = () => {
             </div>}
 
 
-            <div className="py-5 border-t bg-white w-full" style={{ opacity: 0.66 }}>
-                <But_aside />
-            </div>
+            <But_aside />
         </main>
     )
 }

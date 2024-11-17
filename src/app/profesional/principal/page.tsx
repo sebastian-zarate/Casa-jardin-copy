@@ -23,7 +23,6 @@ type Usuario = {
     apellido: string;
     telefono: number;
     email: string;
-    /*     password: string; */
     direccionId: number;
     rolId: number;
 };
@@ -53,7 +52,7 @@ const principal: React.FC = () => {
         const user = await fetchUserData();
         //console.log("user", user);
         setUsuario(user)
-        //getCursosByIdProfesional
+        if (!user) return;
         let talleres= await getCursosByIdProfesional(Number(user?.id));
         console.log("talleres", talleres, usuario?.id);
         setCursos([])
@@ -64,21 +63,23 @@ const principal: React.FC = () => {
         //console.timeEnd("authorizeAndFetchData");
     };
 
-
+    const handleWhatsAppClick = () => {
+        const phoneNumber = '3435008302'; // Número de teléfono de Casa Jardín
+        const message = encodeURIComponent('¡Hola! Estoy interesado en tu producto.');
+        const url = `https://wa.me/${phoneNumber}?text=${message}`;
+        window.open(url, '_blank'); // Abre en una nueva pestaña
+    };
     return (
         <main className=''>
             <Navigate />
             <div className='absolute top-20 '>
                 <h1 className='absolute top-20 left-10'>Bienvenido de regreso, {usuario?.nombre} {usuario?.apellido}</h1>
                 <div className=' flex   justify-center items-center mt-40 w-screen'>
-                    <button className='m-4 flex flex-col items-center'/*  onClick={() => window.location.href = '/usuario/Contacto'} */>
+                    <button className='m-4 flex flex-col items-center'onClick={handleWhatsAppClick}>
                         <Image src={phoneIcon} alt="telefono" width={80} height={80} />
                         <span>Contacto</span>
                     </button>
-                    <button className='m-4 flex flex-col items-center' /* onClick={() => window.location.href = '/usuario/Correo'} */>
-                        <Image src={correoIcon} alt="correo" width={80} height={80} />
-                        <span>Correo</span>
-                    </button>
+
                     <button className='m-4 flex flex-col items-center'/*  onClick={() => window.location.href = '/usuario/Propuestas'} */>
                         <Image src={propuestasIcon} alt="propuestas" width={80} height={80} />
                         <span>Propuestas</span>

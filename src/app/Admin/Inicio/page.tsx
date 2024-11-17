@@ -14,17 +14,11 @@ const Inicio: React.FC = () => {
 
   return (
     <main className="relative min-h-screen w-screen">
-      <Image
-        src={Background}
-        alt="Background"
-        fill // Usando fill para que funcione correctamente con la clase min-h-screen
-        style={{ objectFit: "cover" }} // Cambiado a style para ajustarse a la nueva sintaxis de Next.js
-        quality={80}
-        priority={true}
-      />
-      <div className="fixed justify-between w-full p-4" style={{ background: "#1CABEB" }}>
-        <Navigate />
+      <Navigate />
+      <div className="relative h-[80vh]">
+                <Image src={Background} className="h-[80hv]" alt="Background" layout="fill" objectFit="cover" quality={80} priority={true} />
       </div>
+
     </main>
   );
 };

@@ -50,3 +50,10 @@ export async function deleteResponsable(id: number) {
     where: { id },
   });
 }
+
+// borrar responsable por id de alumno
+export async function deleteResponsableByAlumnoId(alumnoId: number) {
+  return await prisma.responsable.delete({
+    where: { alumnoId: alumnoId },
+  });
+}

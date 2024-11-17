@@ -85,9 +85,7 @@ const Aulas: React.FC = () => {
         <main className="relative min-h-screen w-screen">
             <Image src={Background} alt="Background" layout="fill" objectFit="cover" quality={80} priority={true} />
 
-            <div className="fixed justify-between w-full p-4" style={{ background: "#1CABEB" }}>
-                <Navigate />
-            </div>
+            <Navigate />
             {/* Muestra el título de la página */}
             <h1 className="absolute top-40 left-60 mb-5 text-3xl">Aulas</h1>
             {/* Muestra la lista de aulas */}
@@ -120,9 +118,7 @@ const Aulas: React.FC = () => {
                 </button>
             </div>
 
-            <div className="fixed bottom-0 mt-20 bg-white w-full" style={{ opacity: 0.66 }}>
-                <But_aside /> {/* Corrige el nombre del componente */}
-            </div>
+            <But_aside />
                     {/* Muestra el formulario para crear aula */}
             {selectedAulaId !== null && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">

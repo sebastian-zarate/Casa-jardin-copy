@@ -30,16 +30,14 @@ const Inscripcion: React.FC<{}> = () => {
     }, [router]);
     return (
         <main>
-            <div className="relative bg-red-500  justify-between w-full p-4" >
-                <Navigate />
-            </div>
+            <Navigate />
             <div className='p-4'>
                 <h3 className='p-2 shadow-md w-40'>Inscripción a talleres</h3>
             </div>
             <div className='flex justify-center mt-10'>
                 <h1 className='font-bold text-xg'>Elija el tipo de inscripción</h1>
             </div>
-            <div className='mt-4 border-b mx-auto px-8 py-6 grid grid-cols-2 gap-x-12 max-w-2xl'>
+            <div className='mt-4 flex justify-center border-b mx-auto px-8 py-6  max-w-2xl'>
                 {edad !== null && edad < 18 ? (
                     <button className="flex flex-col items-center" onClick={() => window.location.href = "/usuario/Solicitud/Menores"}>
                         <Image src={menores} alt="menores" width={300} height={180} />
@@ -51,7 +49,7 @@ const Inscripcion: React.FC<{}> = () => {
                         <span className='mt-2'>Inscripción para adultos</span>
                     </button>
                 )}
-                </div>
+            </div>
             <div className="flex justify-center items-center mt-5">
                 <div className="text-center">
                     <h2 className="  mb-4 max-w-lg px-3 font-bold text-sm">Si desea continuar con la inscripción de manera presencial, descargue los siguientes formularios</h2>
@@ -65,9 +63,7 @@ const Inscripcion: React.FC<{}> = () => {
                     </button>
                 </div>
             </div>
-            <div className="fixed bottom-0 py-5 border-t bg-white w-full" style={{ opacity: 0.66 }}>
-                <But_aside />
-            </div>
+            <But_aside />
         </main>
     )
 }
