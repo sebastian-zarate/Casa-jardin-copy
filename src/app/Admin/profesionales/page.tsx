@@ -322,12 +322,12 @@ const Profesionales = () => {
         }
         try {
             //region hashPassword
-            const hash = await hashPassword(profesionalDetails.password);
+           // const hash = await hashPassword(profesionalDetails.password);
             //acualizo los datos de la direccion del alumno
             const newProfesional = await createProfesional({
                 nombre: profesionalDetails.nombre, apellido: profesionalDetails.apellido,
                 especialidad: String(profesionalDetails.especialidad), email: String(profesionalDetails.email),
-                telefono: BigInt(profesionalDetails.telefono), password: hash,
+                telefono: BigInt(profesionalDetails.telefono), password: String(profesionalDetails.password),
                 direccionId: Number(direccion?.id)
             });
             if (typeof newProfesional === "string") return setErrorMessage(newProfesional);
