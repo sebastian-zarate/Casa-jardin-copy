@@ -79,7 +79,7 @@ const Menores: React.FC = () => {
     const [verificarEmail, setVerificarEmail] = useState<boolean>(false);
     const [correcto, setCorrecto] = useState(false);
     const [user, setUser] = useState<any>();
-    const [verifi, setVerifi] = useState<boolean>(true)
+    const [verifi, setVerifi] = useState<boolean>(false)
 
     //datos menor: nombre, apellido, edad, fecha de nacimiento, dni,pais, localidad,calle
     //datos mayor: nombre, apellido, telefono, correo electronico, dni, pais, localidad, calle
@@ -231,7 +231,6 @@ const Menores: React.FC = () => {
             nombre: datosMenor.nombre,
             apellido: datosMenor.apellido,
             dni: datosMenor.dni,
-            telefono: datosMayor.telefono, //??????????
             email: user.email,
             direccionId: direccion.id,
         }
@@ -252,7 +251,7 @@ const Menores: React.FC = () => {
             apellido: datosMayor.apellido,
             dni: datosMayor.dni,
             email: datosMayor.correoElectronico,
-            telefono: datosMayor.telefono,
+            telefono: String(datosMayor.telefono),
             direccionId: direccionMayor.id,
         })
 

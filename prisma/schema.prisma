@@ -43,10 +43,9 @@ model Direccion {
   localidadId   Int
 
   // Relaciones
-  alumnos       Alumno? // Relación de uno a muchos con Alumno
-  profesional   Profesional? // Relación de uno a muchos con Profesional
-  administrador Administrador? // Relación de uno a muchos con Administrado
-  responsable Responsable? // Relación de uno a uno con Responsable
+  alumnos       Alumno[] // Relación de uno a muchos con Alumno
+  profesional   Profesional[] // Relación de uno a muchos con Profesional
+  responsable Responsable[] // Relación de uno a muchos con Responsable
 }
 
 model Rol {
@@ -60,11 +59,8 @@ model Rol {
 model Administrador {
   id          Int       @id @default(autoincrement())
   nombre      String
-  apellido    String
   email       String    @unique
   password    String
-  direccion   Direccion @relation(fields: [direccionId], references: [id])
-  direccionId Int @unique
   rolId       Int
   rol         Rol       @relation(fields: [rolId], references: [id])
 }
@@ -76,9 +72,10 @@ model Profesional {
   especialidad String
   email        String    @unique
   password     String    @unique
-  telefono     BigInt    @unique
-  direccion    Direccion @relation(fields: [direccionId], references: [id])
-  direccionId  Int  @unique
+  telefono     String    @unique
+  imagen      String?
+  direccionId Int?  
+  direccion   Direccion? @relation(fields: [direccionId], references: [id]) // Relación de uno a muchos
 
   prof_cur Profesional_Curso[]
   rolId    Int
@@ -117,10 +114,10 @@ model Alumno {
   nombre   String
   apellido String
   dni      Int?   @unique
-  telefono Int?   @unique
+  telefono String?   @unique
 
-  direccionId Int?   
-  direccion   Direccion? @relation(fields: [direccionId], references: [id]) // Relación de muchos a uno
+  direccionId Int?  
+  direccion   Direccion? @relation(fields: [direccionId], references: [id]) // Relación de uno a muchos
   email       String     @unique
   password    String
   rolId       Int
@@ -257,8 +254,8 @@ model Responsable {
   nombre String
   apellido String
   dni Int @unique
-  telefono Int @unique
+  telefono String @unique
   email String @unique
-  direccion Direccion @relation(fields: [direccionId], references: [id])
-  direccionId Int @unique
+  direccionId Int?  
+  direccion   Direccion? @relation(fields: [direccionId], references: [id]) // Relación de uno a muchos
 }

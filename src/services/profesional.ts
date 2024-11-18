@@ -13,7 +13,7 @@ export type Profesional = {
     apellido: string;
     especialidad: string;
     email: string;
-    telefono: BigInt;
+    telefono: string;
     password: string;
     direccionId: number;
     rolId: number;
@@ -36,7 +36,7 @@ export async function createProfesional(data: {
   apellido: string;
   especialidad: string;
   email: string;
-  telefono: bigint;
+  telefono: string;
   password: string;
   direccionId: number;
 }) {
@@ -66,7 +66,7 @@ export async function updateProfesional(id: number, Data: {
     apellido?: string;
     especialidad?: string;
     email?: string;
-    telefono?: number;
+    telefono?: string;
     password?: string;
     direccionId?: number;
 }) {

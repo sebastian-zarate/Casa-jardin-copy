@@ -207,7 +207,7 @@ const Mayores: React.FC = () => {
             nombre: datosAlumno.nombre,
             apellido: datosAlumno.apellido,
             dni: datosAlumno.dni,
-            telefono: datosAlumno.telefono,
+            telefono: String(datosAlumno.telefono),
             email: datosAlumno.correoElectronico,
             direccionId: direccion.id,
         }

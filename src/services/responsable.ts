@@ -23,7 +23,7 @@ export async function createResponsable(data: {
   nombre: string;
   apellido: string;
   dni: number;
-  telefono: number;
+  telefono: string;
   email: string;
   direccionId: number;
 }) {

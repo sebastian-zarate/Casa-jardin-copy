@@ -81,9 +81,9 @@ const Talleres: React.FC<cursosProps> = ({ cursosElegido, setCursosElegido, user
 
                 {(crearEstado !== -1 && crearEstado !== -2) && cursosIns.map((curso: { nombre: string, id: number }, index: number) => (
                     <React.Fragment key={index}>
-                        <div className='flex py-2 px-5 m-1 bg-slate-400 text-black  rounded' key={index} >
+                        <div className='flex justify-between py-2 px-5 m-1 bg-slate-400 text-black  rounded' key={index} >
                             <h1  className='text-black'>{curso.nombre}</h1>
-                            <button className='absolute right-12 mr-5'>X</button>
+                            <button className=' '>X</button>
                         </div>
                     </React.Fragment>
                 ))}

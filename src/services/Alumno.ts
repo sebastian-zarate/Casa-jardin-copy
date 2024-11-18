@@ -13,7 +13,7 @@ export type Alumno = {
   nombre: string;
   apellido: string;
   dni: number;
-  telefono: number;
+  telefono: string;
   email: string;
   password: string;
   direccionId?: number;
@@ -29,7 +29,7 @@ export async function createAlumno(data: {
   apellido: string;
   email: string;
   password: string;
-  telefono?: number;
+  telefono?: string;
   direccionId?: number;
   fechaNacimiento?: Date;
   mayoriaEdad?: boolean
@@ -64,7 +64,7 @@ export async function createAlumnoAdmin(data: {
   apellido: string;
   email: string;
   password: string;
-  telefono?: number;
+  telefono?: string;
   direccionId?: number;
   dni: number;
   fechaNacimiento: Date;
@@ -127,7 +127,7 @@ export async function updateAlumno(id: number, data: {
   nombre: string;
   apellido: string;
   dni: number;
-  telefono?: number;
+  telefono?: string;
   email: string;
   direccionId?: number;
   fechaNacimiento?: Date;

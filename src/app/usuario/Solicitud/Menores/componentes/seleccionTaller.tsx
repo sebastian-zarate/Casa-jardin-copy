@@ -6,7 +6,7 @@ import But_aside from "../../../../../components/but_aside/page";
 import Image from "next/image";
 import Navigate from '../../../../../components/alumno/navigate/page';
 import { getImages_talleresAdmin } from '@/services/repoImage';
-import {getCursos, getCursosByEdad } from '@/services/cursos';
+import { getCursos, getCursosByEdad } from '@/services/cursos';
 
 interface Datos {
     setSelectedCursosId: React.Dispatch<React.SetStateAction<number[]>>;
@@ -14,11 +14,11 @@ interface Datos {
     edad: number;
 }
 
-const SeleccionTaller: React.FC<Datos> = ({setSelectedCursosId, selectedCursosId, edad}) => {
+const SeleccionTaller: React.FC<Datos> = ({ setSelectedCursosId, selectedCursosId, edad }) => {
     // Estado para almacenar la lista de cursos
     const [cursos, setCursos] = useState<any[]>([]);
 
-       // Estado para almacenar mensajes de error
+    // Estado para almacenar mensajes de error
     const [errorMessage, setErrorMessage] = useState<string>("");
     //Estado para almacenar las imagenes
     const [images, setImages] = useState<any[]>([]);
@@ -51,7 +51,7 @@ const SeleccionTaller: React.FC<Datos> = ({setSelectedCursosId, selectedCursosId
     async function fetchCursos() {
         try {
             let curs = await getCursosByEdad(edad); // Obtén la lista de cursos
-            if(typeof curs === 'string') return setErrorMessage(curs);
+            if (typeof curs === 'string') return setErrorMessage(curs);
             setCursos(curs); // Actualiza el estado con la lista de cursos
         } catch (error) {
             console.error("Imposible obtener cursos", error); // Manejo de errores
@@ -77,30 +77,33 @@ const SeleccionTaller: React.FC<Datos> = ({setSelectedCursosId, selectedCursosId
             <div className='flex justify-center mt-20'>
                 <h1 className='font-bold text-xg'>Elija los talleres de interés</h1>
             </div>
-            <div className='flex justify-center mt-5'>
-                <div className='flex justify-center max-w-fit py-5  bg-gray-300 shadow-md'>
+            <div className='flex justify-center mt-5 max-w-full overflow-x-auto '>
+                <button
+                    className='mx-2 py-2 text-white rounded bg-blue-400 px-5 text-xl hover:bg-blue-700'
+                    onClick={() => document.getElementById('scrollable-div')?.scrollBy({ left: -200, behavior: 'smooth' })}>{`<`}</button>
+                <div id='scrollable-div' className='flex overflow-x-auto max-w-3xl space-x-4 p-2 '>
                     {cursos.map((curso, index) => (
                         <button
                             key={curso.id}
-                            className={`p-4 mx-2 relative  justify-center items-center ${selectedCursosId?.includes(curso.id) ? 'bg-blue-500' : 'bg-gray-300'}`}
+                            className={`p-4 relative justify-center items-center rounded-lg shadow-md ${selectedCursosId?.includes(curso.id) ? 'bg-blue-500' : 'bg-gray-300'}`}
                             onClick={() => handleButtonClick(curso.id)}
                         >
-                            <div className="relative w-60 h-40 ">
-                                {<Image
-                                    /*         src={getUrlImage(curso.nombre)} */
+                            <div className="relative w-60 h-40 rounded-lg overflow-hidden ">
+                                <Image
                                     src={downloadurls[index]}
                                     alt="Background Image"
                                     objectFit="cover"
                                     className="w-full h-full"
                                     layout="fill"
-                                />}
-
+                                />
                             </div>
-                            <h3 className="flex  bottom-0 text-black z-1">{curso.nombre}</h3>
+                            <h3 className="mt-2 text-center text-black font-semibold">{curso.nombre}</h3>
                         </button>
                     ))}
                 </div>
-
+                <button
+                    className='mx-2 py-2 text-white rounded bg-blue-400 px-5 text-xl hover:bg-blue-700'
+                    onClick={() => document.getElementById('scrollable-div')?.scrollBy({ left: 200, behavior: 'smooth' })}>{`>`}</button>
             </div>
 
         </div>

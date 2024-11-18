@@ -135,11 +135,11 @@ const Profesionales = () => {
     async function fetchProfesionales() {
         try {
             const data = await getProfesionales();
-/*             data.map(async (profesional) => {
-                const cursos = await getCursosByIdProfesional(profesional.id);
-                setCursosElegido(prevCursosElegido => [...prevCursosElegido, { id: profesional.id, cursos: cursos }]);
-                console.log("Fetching cursos", cursos);
-            }); */
+            /*             data.map(async (profesional) => {
+                            const cursos = await getCursosByIdProfesional(profesional.id);
+                            setCursosElegido(prevCursosElegido => [...prevCursosElegido, { id: profesional.id, cursos: cursos }]);
+                            console.log("Fetching cursos", cursos);
+                        }); */
             //console.log(data);
             setProfesionales(data);
             setProfesionalesListaCompleta(data);
@@ -171,7 +171,7 @@ const Profesionales = () => {
         // Obtener la localidad asociada a la dirección
         console.log("Antes de crear la ubicacion", (localidadName), calle, numero, provinciaName, nacionalidadName);
         const nacionalidad = await addPais({ nombre: String(nacionalidadName) });
-        const prov = await addProvincias({ nombre: String(localidadName), nacionalidadId: Number(nacionalidad?.id) });
+        const prov = await addProvincias({ nombre: String(provinciaName), nacionalidadId: Number(nacionalidad?.id) });
 
         const localidad = await addLocalidad({ nombre: String(localidadName), provinciaId: Number(prov?.id) });
         console.log("LOCALIDAD", localidad);
@@ -259,7 +259,7 @@ const Profesionales = () => {
             if (typeof newProfesional === "string") return setErrorMessage(newProfesional);
 
             for (const curso of cursosElegido) {                                  //recorre los cursos elegidos y los guarda en la tabla intermedia
-                 await createProfesional_Curso({ cursoId: curso.id, profesionalId: newProfesional.id });
+                await createProfesional_Curso({ cursoId: curso.id, profesionalId: newProfesional.id });
                 //if (typeof prof_cur === "string") return setErrorMessage(prof_cur);
                 //console.log(prof_cur)
             }
@@ -288,14 +288,14 @@ const Profesionales = () => {
             const newProfesional = await updateProfesional(obProfesional?.id || 0, {
                 nombre: profesionalDetails.nombre, apellido: profesionalDetails.apellido,
                 especialidad: String(profesionalDetails.especialidad), email: String(profesionalDetails.email),
-                telefono: Number(profesionalDetails.telefono), password: String(profesionalDetails.password),
+                telefono: String(profesionalDetails.telefono), password: String(profesionalDetails.password),
                 direccionId: Number(direcciProf?.id)
             });
             // si el resultado es un string, entonces es un mensaje de error
             if (typeof newProfesional === "string") return setErrorMessage(newProfesional);
 
             for (const curso of cursosElegido) {                                  //recorre los cursos elegidos y los guarda en la tabla intermedia
-                 await createProfesional_Curso({ cursoId: curso.id, profesionalId: newProfesional.id });
+                await createProfesional_Curso({ cursoId: curso.id, profesionalId: newProfesional.id });
                 //if (typeof prof_cur === "string") return setErrorMessage(prof_cur);
                 //console.log(prof_cur)
             }
@@ -329,12 +329,12 @@ const Profesionales = () => {
             const newProfesional = await createProfesional({
                 nombre: profesionalDetails.nombre, apellido: profesionalDetails.apellido,
                 especialidad: String(profesionalDetails.especialidad), email: String(profesionalDetails.email),
-                telefono: BigInt(profesionalDetails.telefono), password: String(profesionalDetails.password),
+                telefono: String(profesionalDetails.telefono), password: String(profesionalDetails.password),
                 direccionId: Number(direccion?.id)
             });
             if (typeof newProfesional === "string") return setErrorMessage(newProfesional);
             for (const curso of cursosElegido) {                                  //recorre los cursos elegidos y los guarda en la tabla intermedia
-                 await createProfesional_Curso({ cursoId: curso.id, profesionalId: newProfesional.id });
+                await createProfesional_Curso({ cursoId: curso.id, profesionalId: newProfesional.id });
                 //if (typeof prof_cur === "string") return setErrorMessage(prof_cur);
                 //console.log(prof_cur)
             }
@@ -505,94 +505,98 @@ const Profesionales = () => {
                                 className="p-2 w-full border rounded"
                             />
                         </div>
-                        <div className="mb-4">
-                            <label htmlFor="telefono" className="block">Teléfono:</label>
+                    <div className="mb-4">
+                        <label htmlFor="telefono" className="block">Teléfono:</label>
+                        <div className="flex">
+                            <h3 className="p-2">+54</h3>
                             <input
                                 type="number"
                                 id="telefono"
                                 name="telefono"
-                                value={profesionalDetails.telefono}
+                                placeholder="Ingrese su código de área"
+                                value={profesionalDetails.telefono ? profesionalDetails.telefono : null}
                                 onChange={handleChange}
                                 className="p-2 w-full border rounded"
                             />
                         </div>
+                    </div>
 
-                        <div className="mb-4">
-                            <label htmlFor="password" className="block">Contraseña:</label>
-                            <input
-                                type="password"
-                                id="password"
-                                name="password"
-                                placeholder={(selectedProfesional === -1 || selectedProfesional === -2) ? "" :"Si desea cambiar la contraseña, ingresela aquí"}
-                                value={profesionalDetails.password}
-                                onChange={handleChange}
-                                className="p-2 w-full border rounded"
-                            />
-                        </div>
-                        {((!nacionalidadName && !provinciaName && !localidadName && !calle && !numero && selectedProfesional !== -1 && obProfesional) && obProfesional.direccionId) && <p className=" text-red-600">Cargando su ubicación...</p>}
-                        {(selectedProfesional === -1 || ((nacionalidadName && provinciaName && localidadName && calle && numero && selectedProfesional !== -1 ))) &&
-                            <>
-                                <div className="mb-4">
-                                    <label htmlFor="pais" className="block">País:</label>
-                                    <input
-                                        type="text"
-                                        id="pais"
-                                        name="pais"
-                                        value={String(nacionalidadName)}
-                                        onChange={(e) => setNacionalidadName(e.target.value)}
-                                        className="p-2 w-full border rounded"
-                                    />
-                                </div>
-                                <div className="mb-4">
-                                    <label htmlFor="provincia" className="block">Provincia:</label>
-                                    <input
-                                        type="text"
-                                        id="provincia"
-                                        name="provincia"
-                                        value={String(provinciaName)}
-                                        onChange={(e) => setProvinciaName(e.target.value)}
-                                        className="p-2 w-full border rounded"
-                                    />
-                                </div>
-                                <div className="mb-4">
-                                    <label htmlFor="localidad" className="block">Localidad:</label>
-                                    <input
-                                        type="text"
-                                        id="localidad"
-                                        name="localidad"
-                                        value={String(localidadName)}
-                                        onChange={(e) => setLocalidadName(e.target.value)}
-                                        className="p-2 w-full border rounded"
-                                    />
-                                </div>
-                                <div className="mb-4">
-                                    <label htmlFor="calle" className="block">Calle:</label>
-                                    <input
-                                        type="text"
-                                        id="calle"
-                                        name="calle"
-                                        value={String(calle)}
-                                        onChange={(e) => setcalle(e.target.value)}
-                                        className="p-2 w-full border rounded"
-                                    />
-                                </div>
-                                <div className="mb-4">
-                                    <label htmlFor="numero" className="block">Número:</label>
-                                    <input
-                                        type="text"
-                                        id="numero"
-                                        name="numero"
-                                        value={Number(numero)}
-                                        onChange={(e) => setNumero(Number(e.target.value))}
-                                        className="p-2 w-full border rounded"
-                                    />
-                                </div>
-                            </>
-                        }
-                        <div>
-                            <Talleres crearEstado={selectedProfesional} user={obProfesional} cursosElegido={cursosElegido} setCursosElegido={setCursosElegido} />
-                        </div>
-{/*                         {selectedProfesional !== -1 && <div>
+                    <div className="mb-4">
+                        <label htmlFor="password" className="block">Contraseña:</label>
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            placeholder={(selectedProfesional === -1 || selectedProfesional === -2) ? "" : "Si desea cambiar la contraseña, ingresela aquí"}
+                            value={profesionalDetails.password}
+                            onChange={handleChange}
+                            className="p-2 w-full border rounded"
+                        />
+                    </div>
+                    {((!nacionalidadName && !provinciaName && !localidadName && !calle && !numero && selectedProfesional !== -1 && obProfesional) && obProfesional.direccionId) && <p className=" text-red-600">Cargando su ubicación...</p>}
+                    {(selectedProfesional === -1 || ((nacionalidadName && provinciaName && localidadName && calle && numero && selectedProfesional !== -1))) &&
+                        <>
+                            <div className="mb-4">
+                                <label htmlFor="pais" className="block">País:</label>
+                                <input
+                                    type="text"
+                                    id="pais"
+                                    name="pais"
+                                    value={String(nacionalidadName)}
+                                    onChange={(e) => setNacionalidadName(e.target.value)}
+                                    className="p-2 w-full border rounded"
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label htmlFor="provincia" className="block">Provincia:</label>
+                                <input
+                                    type="text"
+                                    id="provincia"
+                                    name="provincia"
+                                    value={String(provinciaName)}
+                                    onChange={(e) => setProvinciaName(e.target.value)}
+                                    className="p-2 w-full border rounded"
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label htmlFor="localidad" className="block">Localidad:</label>
+                                <input
+                                    type="text"
+                                    id="localidad"
+                                    name="localidad"
+                                    value={String(localidadName)}
+                                    onChange={(e) => setLocalidadName(e.target.value)}
+                                    className="p-2 w-full border rounded"
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label htmlFor="calle" className="block">Calle:</label>
+                                <input
+                                    type="text"
+                                    id="calle"
+                                    name="calle"
+                                    value={String(calle)}
+                                    onChange={(e) => setcalle(e.target.value)}
+                                    className="p-2 w-full border rounded"
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label htmlFor="numero" className="block">Número:</label>
+                                <input
+                                    type="text"
+                                    id="numero"
+                                    name="numero"
+                                    value={Number(numero)}
+                                    onChange={(e) => setNumero(Number(e.target.value))}
+                                    className="p-2 w-full border rounded"
+                                />
+                            </div>
+                        </>
+                    }
+                    <div>
+                        <Talleres crearEstado={selectedProfesional} user={obProfesional} cursosElegido={cursosElegido} setCursosElegido={setCursosElegido} />
+                    </div>
+                    {/*                         {selectedProfesional !== -1 && <div>
                             <button
                                 className="py-2  text-black font-bold rounded hover:underline"
                                 onClick={() => setHabilitarCambioContraseña(!habilitarCambioContraseña)}
@@ -606,22 +610,23 @@ const Profesionales = () => {
                         </div>} */}
 
 
-                        <div className="flex justify-end space-x-4">
-                            <button
-                                onClick={((selectedProfesional === -1 ? handleCreateProfesional : handleSaveChanges))}
-                                className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800">
-                                Guardar
-                            </button>
-                            <button
-                                onClick={() => { setSelectedProfesional(null); handleCancel_init() }}
-                                className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800">
-                                Cancelar
-                            </button>
-                        </div>
+                    <div className="flex justify-end space-x-4">
+                        <button
+                            onClick={((selectedProfesional === -1 ? handleCreateProfesional : handleSaveChanges))}
+                            className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800">
+                            Guardar
+                        </button>
+                        <button
+                            onClick={() => { setSelectedProfesional(null); handleCancel_init() }}
+                            className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800">
+                            Cancelar
+                        </button>
                     </div>
                 </div>
-            )}
-        </main>
+                </div>
+    )
+}
+        </main >
     )
     // #endregion
 }

@@ -81,6 +81,8 @@ const Cuenta: React.FC = () => {
     //listas de cursos
     const [cursos, setCursos] = useState<Curso[]>()
 
+    const [mayoriaEdad, setMayoriaEdad] = useState<boolean>(false);
+
     //endregion
 
     //region UseEffects
@@ -88,7 +90,7 @@ const Cuenta: React.FC = () => {
 
     const router = useRouter();
     useEffect(() => {
-        if(!alumnoDetails.email){
+        if (!alumnoDetails.email) {
             getUser()
             console.log("holaaaaaaaaaaaaaaaaaaaaaa")
         }
@@ -109,7 +111,9 @@ const Cuenta: React.FC = () => {
         //console.log("user", user);
         setUser(user)
         if (!user) return;
-        let talleres= await getCursosByIdAlumno(Number(user?.id));
+        const edad = new Date().getFullYear() - new Date(user?.fechaNacimiento).getFullYear();
+        //if (edad >= 18) setMayoriaEdad(true);
+        let talleres = await getCursosByIdAlumno(Number(user?.id));
         setCursos([])
         talleres.map((curso) => {
             setCursos(prev => (prev ? [...prev, curso] : [curso]));
@@ -136,7 +140,7 @@ const Cuenta: React.FC = () => {
 
     async function createUbicacion() {
         const nacionalidad = await addPais({ nombre: String(nacionalidadName) });
-        const prov = await addProvincias({ nombre: String(localidadName), nacionalidadId: Number(nacionalidad?.id) });
+        const prov = await addProvincias({ nombre: String(provinciaName), nacionalidadId: Number(nacionalidad?.id) });
         const localidad = await addLocalidad({ nombre: String(localidadName), provinciaId: Number(prov?.id) });
 
         const direccion = await addDireccion({ calle: String(calle), numero: Number(numero), localidadId: Number(localidad?.id) });
@@ -145,20 +149,7 @@ const Cuenta: React.FC = () => {
     async function getUbicacion(userUpdate: any) {
         // Obtener la dirección del usuario por su ID
         //console.log("SI DIRECCIONID ES FALSE:", Number(userUpdate?.direccionId));
-        /*         const direccion = await getDireccionById(Number(userUpdate?.direccionId));
-                //console.log("DIRECCION", direccion);
-        
-                // Obtener la localidad asociada a la dirección
-                const localidad = await getLocalidadById(Number(direccion?.localidadId));
-                //console.log("LOCALIDAD", localidad);
-        
-                // Obtener la provincia asociada a la localidad
-                const prov = await getProvinciasById(Number(localidad?.provinciaId));
-                //console.log("PROVINCIA", prov);
-        
-                // Obtener el país asociado a la provincia
-                const nacionalidad = await getPaisById(Number(prov?.nacionalidadId)); */
-       const direccion = await getDireccionCompleta(userUpdate?.direccionId);
+        const direccion = await getDireccionCompleta(userUpdate?.direccionId);
         console.log("DIRECCION", direccion);
         console.log("LOCALIDAD", direccion?.localidad);
         console.log("PROVINCIA", direccion?.localidad?.provincia);
@@ -268,7 +259,7 @@ const Cuenta: React.FC = () => {
             console.log("ALUMNODETAILS", alumnoDetails);
             const newAlumno = await updateAlumno(Number(alumnoDetails?.id), {
                 nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
-                dni: Number(alumnoDetails.dni), email: alumnoDetails.email, telefono: Number(alumnoDetails.telefono),
+                dni: Number(alumnoDetails.dni), email: alumnoDetails.email, telefono: String(alumnoDetails.telefono),
                 direccionId: Number(direccion?.id), fechaNacimiento: new Date(alumnoDetails.fechaNacimiento)
             });
             if (typeof newAlumno === "string") return setErrorMessage(newAlumno);
@@ -302,7 +293,7 @@ const Cuenta: React.FC = () => {
             console.log("ALUMNODETAILS", alumnoDetails);
             const newAlumno = await updateAlumno(Number(alumnoDetails?.id), {
                 nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
-                dni: Number(alumnoDetails.dni), telefono: Number(alumnoDetails.telefono),
+                dni: Number(alumnoDetails.dni), telefono: String(alumnoDetails.telefono),
                 direccionId: Number(newDireccion?.id), fechaNacimiento: new Date(alumnoDetails.fechaNacimiento), email: alumnoDetails.email
             });
             console.log("newAlumno", newAlumno);
@@ -342,7 +333,7 @@ const Cuenta: React.FC = () => {
                         <div className="mb-4">
                             <label className="block text-gray-700 font-bold mb-2">Talleres:</label>
                             {cursos?.length !== 0 ? (
-                                <p className="p-2 border rounded bg-gray-100" style={{ height: '10vh', overflow: "auto" }}> {cursos?.map((curso)=> curso.nombre).join(", ")}</p>
+                                <p className="p-2 border rounded bg-gray-100" style={{ height: '10vh', overflow: "auto" }}> {cursos?.map((curso) => curso.nombre).join(", ")}</p>
                             ) : <p className="p-2 border rounded bg-gray-100">Talleres no cargados</p>}
                         </div>
 
@@ -351,10 +342,10 @@ const Cuenta: React.FC = () => {
                             <p className="p-2 border rounded bg-gray-100">{nacionalidadName ? nacionalidadName : "-"}, {provinciaName ? provinciaName : "-"}, {localidadName ? localidadName : "-"}, {calle ? calle : "-"} {numero ? numero : "-"}</p>
                         </div>
 
-                        <div className="mb-4">
+                        {mayoriaEdad && <div className="mb-4">
                             <label className="block text-gray-700 font-bold mb-2">Teléfono:</label>
                             <p className="p-2 border rounded bg-gray-100">{user?.telefono ? user?.telefono : "Teléfono no cargado"}</p>
-                        </div>
+                        </div>}
 
                         <div className="mb-4">
                             <label className="block text-gray-700 font-bold mb-2">Email:</label>
@@ -362,20 +353,9 @@ const Cuenta: React.FC = () => {
                         </div>
                         <div className="mb-4">
                             <label className="block text-gray-700 font-bold mb-2">Fecha de Nacimiento:</label>
-                            <p className="p-2 border rounded bg-gray-100">{user?.fechaNacimiento ? new Date(user.fechaNacimiento).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year:'2-digit' }) : ''}</p>
+                            <p className="p-2 border rounded bg-gray-100">{user?.fechaNacimiento ? new Date(user.fechaNacimiento).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: '2-digit' }) : ''}</p>
                         </div>
-                        {/* 
-                        <div className="mb-4">
-                            <label className="block text-gray-700 font-bold mb-2">password:</label>
-                            <p className="p-2 border rounded bg-gray-100">
-                                <input
-                                    type="password"
-                                    value={user?.password}
-                                    className="w-full bg-transparent border-none"
-                                    readOnly
-                                />
-                            </p>
-                        </div> */}
+
                     </div>
                 </div>
                 <div className="flex items-center justify-center mt-5">
@@ -453,17 +433,21 @@ const Cuenta: React.FC = () => {
                                 className="p-2 w-full border rounded"
                             />
                         </div>
-                        <div className="mb-4">
+                        {mayoriaEdad && <div className="mb-4">
                             <label htmlFor="telefono" className="block">Teléfono:</label>
-                            <input
-                                type="number"
-                                id="telefono"
-                                name="telefono"
-                                value={alumnoDetails.telefono}
-                                onChange={handleChange}
-                                className="p-2 w-full border rounded"
-                            />
-                        </div>
+                            <div className="flex">
+                                <h3 className="p-2">+54</h3>
+                                <input
+                                    type="number"
+                                    id="telefono"
+                                    name="telefono"
+                                    placeholder="Ingrese su código de área"
+                                    value={alumnoDetails.telefono}
+                                    onChange={handleChange}
+                                    className="p-2 w-full border rounded"
+                                />
+                            </div>
+                        </div>}
                         <div className="flex-col flex mb-4">
                             <label htmlFor="fechaNacimiento">Fecha de Nacimiento</label>
                             <input
@@ -511,7 +495,7 @@ const Cuenta: React.FC = () => {
                                 className="p-2 w-full border rounded"
                             />
                         </div>}
-                        {user?.direccionId  && <div className="mb-4">
+                        {user?.direccionId && <div className="mb-4">
                             <label htmlFor="calle" className="block">Calle:</label>
                             <input
                                 type="text"

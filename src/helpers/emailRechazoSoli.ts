@@ -11,7 +11,7 @@ const googleTransporter = nodemailer.createTransport({
   port: 587,
   secure: false,
   auth: {
-    user: "maldonado12net@gmail.com", // por ahora es mi correo, despues hay que cambiarlo
+    user: "cet.casajardin@gmail.com", // por ahora es mi correo, despues hay que cambiarlo
     pass: process.env.EMAIL_APP_PASSWORD,
   },
    tls: {
@@ -43,8 +43,8 @@ export async function emailRechazo(receptor: string){
                 <h1 style="color: #333;">Hubo un error en su solicitud de inscripción</h1>
                <img src="cid:logoimage" alt="logo"></img> 
                 <p>Por favor, pongase en contacto con nosotros lo antes posible.</p>
-                <p>Número de teléfono: 0000000</p>
-                <p>Correo electrónico: 00000000</p>
+                <p>Número de teléfono: +54 343 500-8302</p>
+
             </div>
         </div>
     </body>

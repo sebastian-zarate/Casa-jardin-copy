@@ -263,6 +263,8 @@ function Signup() {
           type="date"
           id="fechaNacimiento"
           value={fechaNacimiento?.toISOString().split('T')[0]}
+          min={new Date(new Date().setFullYear(new Date().getFullYear() - 100)).toISOString().split('T')[0]} // Set min to 100 years ago
+          max={new Date(new Date().setFullYear(new Date().getFullYear() - 3)).toISOString().split('T')[0]} // Set max to 3 years ago
           onChange={(e) => setFechaNacimiento(new Date(e.target.value))}
           style={{
             padding: '3px',
