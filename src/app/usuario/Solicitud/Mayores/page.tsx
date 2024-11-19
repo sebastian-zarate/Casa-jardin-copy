@@ -8,7 +8,7 @@ import Reglamentacion from './componentes/reglamentacion';
 import SeleccionTaller from './componentes/seleccionTaller';
 import DatosAlumno from './componentes/datosAlumno';
 import EmailPage from '../email/EmailPage';
-import { Alumno, createAlumno, getAlumnoByEmail, updateAlumno } from '@/services/Alumno';
+import { Alumno, createAlumno, dniExists, emailExists, getAlumnoByEmail, updateAlumno } from '@/services/Alumno';
 import { addDireccion, getDireccionById, getDireccionCompleta } from '@/services/ubicacion/direccion';
 import { addPais, getPaisById } from '@/services/ubicacion/pais';
 import { addProvincias, getProvinciasById } from '@/services/ubicacion/provincia';
@@ -17,10 +17,11 @@ import { createSolicitud } from '@/services/Solicitud/Solicitud';
 import { useRouter } from 'next/navigation';
 import { autorizarUser, fetchUserData } from '@/helpers/cookies';
 import { addLocalidad, getLocalidadById } from '@/services/ubicacion/localidad';
-import { createAlumno_Curso } from '@/services/alumno_curso';
+import { createAlumno_Curso, getCursosByIdAlumno } from '@/services/alumno_curso';
 import { createCursoSolicitud } from '@/services/curso_solicitud';
 import withAuthUser from "../../../../components/alumno/userAuth";
 import { calcularEdad, dateTimeToDate } from '@/helpers/fechas';
+import { validateApellido, validateDireccion, validateDni, validateEmail, validateNombre, validatePhoneNumber } from '@/helpers/validaciones';
 
 const Mayores: React.FC = () => {
     //region UseState
@@ -29,8 +30,23 @@ const Mayores: React.FC = () => {
     const [selectedScreen, setSelectedScreen] = useState<number>(0);
     // Estado para almacenar los cursos seleccionados
     const [selectedCursosId, setSelectedCursosId] = useState<number[]>([]);
+    const [cursosYaInscriptosId, setCursosYaInscriptosId] = useState<number[]>([]);
+    const [cursosYaInscriptosName, setCursosYaInscriptosName] = useState<number[]>([]);
 
     const [datosAlumno, setDatosAlumno] = useState({
+        nombre: "",
+        apellido: "",
+        telefono: 0,
+        fechaNacimiento: new Date().toISOString().split('T')[0],
+        correoElectronico: "",
+        dni: 0,
+        pais: "",
+        provincia: "",
+        localidad: "",
+        calle: "",
+        numero: 0,
+    });
+    const [datosAlumnoCopia, setDatosAlumnoCopia] = useState({
         nombre: "",
         apellido: "",
         telefono: 0,
@@ -69,6 +85,12 @@ const Mayores: React.FC = () => {
                 await autorizarUser(router);
                 // Una vez autorizado obtengo los datos del user y seteo el email
                 const user = await fetchUserData();
+                
+                const curYaInscriptos = await getCursosByIdAlumno(user.id);
+                const curYaInscriptosId = curYaInscriptos.map((curso) => curso.id);
+                const curYaInscriptosName = curYaInscriptos.map((curso) => curso.nombre);
+                setCursosYaInscriptosId(curYaInscriptosId);
+                setCursosYaInscriptosName(curYaInscriptosName);
 
                 console.log("user", user);
                 if (user) {
@@ -114,6 +136,19 @@ const Mayores: React.FC = () => {
                     calle: direccion?.calle || "",
                     numero: direccion?.numero || 0,
                 })
+                setDatosAlumnoCopia({
+                    nombre: user.nombre,
+                    apellido: user.apellido,
+                    telefono: user.telefono,
+                    correoElectronico: user.email,
+                    fechaNacimiento: new Date(user.fechaNacimiento).toISOString().split('T')[0],
+                    dni: user.dni,
+                    pais: pais?.nombre || "",
+                    provincia: provincia?.nombre || "",
+                    localidad: (localidad?.nombre) || "",
+                    calle: direccion?.calle || "",
+                    numero: direccion?.numero || 0,
+                })
             }
             cargarAlumno()
         }
@@ -124,7 +159,7 @@ const Mayores: React.FC = () => {
     //datos mayor: nombre, apellido, telefono, correo electronico, dni, pais, localidad, calle
     //datos autorizacionImage: firmo el mayor a cargo?, observaciones? puede ser nulo
     //datos reglamentacion: firmo?
-    function validateDatos() {
+/*     function validateDatos() {
         // carrateres especiales en el nombre y la descripción
         const regex = /^[a-zA-Z0-9_ ,.;áéíóúÁÉÍÓÚñÑüÜ@]*$/; // no quiero que tenga caracteres especiales que las comas y puntos afecten 
 
@@ -167,14 +202,56 @@ const Mayores: React.FC = () => {
 
 
         return ""
+    } */
+    //region validate 
+    async function validatealumnoDetails() {
+        console.log(cursosYaInscriptosName, selectedCursosId)
+        const { nombre, apellido, telefono, dni, correoElectronico,
+            pais, provincia, localidad, calle, numero } = datosAlumno || {};
+
+        //validar que el nombre sea de al menos 2 caracteres y no contenga números
+        let resultValidate;
+        if (selectedScreen === 0 && selectedCursosId.length === 0) return "Debe seleccionar al menos un taller";
+        if (selectedScreen === 0 && selectedCursosId.some(id => cursosYaInscriptosId.includes(id))) {
+            return "Ya se encuentra inscripto en uno de los talleres seleccionados (sus talleres: " + cursosYaInscriptosName.join(", ")+").";
+        }
+
+        if (selectedScreen === 1) {
+            resultValidate = validateNombre(nombre);
+            if (resultValidate) return resultValidate;
+
+            resultValidate = validateApellido(apellido);
+            if (resultValidate) return resultValidate;
+
+            resultValidate = validateEmail(correoElectronico);
+            if (resultValidate) return resultValidate;
+
+            resultValidate = validateDni(String(dni));
+            if (resultValidate) return resultValidate;
+
+            if (!telefono ) {
+                return "El teléfono no puede estar vacío";
+            }
+            resultValidate = validatePhoneNumber(String(telefono));
+            if (resultValidate) return resultValidate;
+
+            resultValidate = validateDireccion(pais, provincia, localidad, String(calle), Number(numero));
+            if (resultValidate) return resultValidate
+
+            if (JSON.stringify(datosAlumno) !== JSON.stringify(datosAlumnoCopia)) {
+                return "Los datos del alumno no son los mismos que los registrados en el sistema";
+            }
+        }
+        return "";
     }
 
-    function continuar() {
+    async function continuar() {
 
         if (selectedScreen === 0 && selectedCursosId.length === 0) return setError("Debe seleccionar al menos un taller");
-        const err = validateDatos();
+        const err =  await validatealumnoDetails();
         if (err != "") return setError(err);
         setSelectedScreen(selectedScreen + 1)
+        console.log("selectedScreen::::", selectedScreen)
     }
     /*
         model SolicitudMayores {
@@ -191,7 +268,7 @@ const Mayores: React.FC = () => {
         }
     */
     async function cargarSolicitud() {
-       // console.log("CARGANDO SOLICITUD")
+        // console.log("CARGANDO SOLICITUD")
         //crear solicitud
         const solicitud = await createSolicitud()
 
@@ -217,7 +294,7 @@ const Mayores: React.FC = () => {
         if (typeof alumno === "string") return setError(alumno)
 
         //crear solicitud mayor
-          await createSolicitudMayor({
+        await createSolicitudMayor({
             alumnoId: Number(user?.id),
             solicitudId: solicitud.id,
             firmaUsoImagenes: datosAutorizacionImage.firma.length > 0 ? `${user?.nombre} ${user?.apellido}` : "",
@@ -225,19 +302,19 @@ const Mayores: React.FC = () => {
             firmaReglamento: `${user?.nombre} ${user?.apellido}`,
         });
 
-       // console.log("SoliciMayor:::::", x)
+        // console.log("SoliciMayor:::::", x)
         //crear curso solicitud y alumno_curso
         for (let i = 0; i < selectedCursosId.length; i++) {
             await createCursoSolicitud({
                 "cursoId": selectedCursosId[i],
                 "solicitudId": solicitud.id,
             })
-             await createAlumno_Curso({
+            await createAlumno_Curso({
                 "alumnoId": Number(user?.id),
                 "cursoId": selectedCursosId[i],
             })
-/*             console.log("X:::::", x)
-            console.log("Y:::::", y) */
+            /*             console.log("X:::::", x)
+                        console.log("Y:::::", y) */
         }
         setCorrecto(false)
         setVerifi(false)
@@ -250,15 +327,15 @@ const Mayores: React.FC = () => {
 
             <div id='miDiv' style={{ height: (selectedScreen < 3 ? '60vh' : 'auto') }}>
                 {selectedScreen === 0 && (
-                   user ? (
-                    <SeleccionTaller
-                        edad={calcularEdad(user.fechaNacimiento)}
-                        setSelectedCursosId={setSelectedCursosId}
-                        selectedCursosId={selectedCursosId}
-                    />
-                ) : (
-                    <div>Cargando...</div>
-                )
+                    user ? (
+                        <SeleccionTaller
+                            edad={calcularEdad(user.fechaNacimiento)}
+                            setSelectedCursosId={setSelectedCursosId}
+                            selectedCursosId={selectedCursosId}
+                        />
+                    ) : (
+                        <div>Cargando...</div>
+                    )
                 )}
 
                 {selectedScreen === 1 && (
@@ -295,7 +372,7 @@ const Mayores: React.FC = () => {
                         </button>
                         <button
                             className='mx-2 py-2 text-white rounded bg-black px-4'
-                            onClick={() => continuar()}
+                            onClick={() => { continuar(); }}
                         >
                             Continuar
                         </button>
@@ -304,7 +381,7 @@ const Mayores: React.FC = () => {
             )}
 
             {selectedScreen === 3 && (
-                <div className='p-5 w-full'>
+                <div className=' w-full'>
                     <div className='flex mb-5 justify-center space-x-80'>
                         <button
                             className='mx-2 py-2 text-white rounded bg-black px-5'
@@ -313,13 +390,13 @@ const Mayores: React.FC = () => {
                             Volver
                         </button>
                         <button
-                            className='mx-2 py-2 text-white rounded bg-black px-5'
+                            className='mx-2  py-2 text-white rounded bg-black px-5'
                             onClick={() => {
 
                                 if (datosReglamentacion.firma.length < 1 && selectedScreen === 3) return setError("Debe firmar la reglamentación");
                                 setVerificarEmail(true);
                             }}
-                                                 /*    onClick={() => cargarSolicitud()} */
+                        /*    onClick={() => cargarSolicitud()} */
                         >
                             Enviar
                         </button>
@@ -328,7 +405,7 @@ const Mayores: React.FC = () => {
             )}
             {verificarEmail && <div className=' absolute bg-slate-100 rounded-md shadow-md px-2 left-1/2 top-1/2 tranform -translate-x-1/2 -translate-y-1/2'>
                 <button className='absolute top-2 right-2' onClick={() => setVerificarEmail(false)}>X</button>
-                <EmailPage email={user.email}  setVerifi={setVerifi} setCorrecto={setCorrecto} correcto={correcto} />
+                <EmailPage email={user.email} setVerifi={setVerifi} setCorrecto={setCorrecto} correcto={correcto} />
             </div>}
             {verifi && (correcto ?
                 (<h1 className=' absolute top-1/2 text-xl font-semibold' style={{ color: "green" }}>Se ha enviado la solicitud de inscripción correctamente!</h1>)
@@ -348,8 +425,10 @@ const Mayores: React.FC = () => {
                 </div>
             </div>}
 
+            <div className=" w-full mt-40" >
+                <But_aside />
+            </div>
 
-            <But_aside />
         </main>
     )
 }

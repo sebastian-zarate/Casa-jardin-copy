@@ -1,70 +1,112 @@
 "use client";
 // #region Imports
 import React, { useEffect, useState } from "react";
-import Navigate from "../../../components/start/navigate/page"
+import Navigate from "../../../components/start/navigate/page";
 import But_aside from "../../../components/but_aside/page";
 import Image from "next/image";
-import Background from "../../../../public/Images/Background.jpeg";
 import { getImages_talleresAdmin } from "@/services/repoImage";
+import Logo from "../../../../public/Images/LogoCasaJardin.png";
+import Background from "../../../../public/Images/BackgroundSolicitudes.jpg";
+
 
 const RotatingImages: React.FC = () => {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [images, setImages] = useState<any[]>([]);
+  const [downloadurls, setDownloadurls] = useState<any[]>([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const rotationInterval = 3000; // Tiempo en milisegundos para rotación automática (5 segundos)
 
   // Fetch images on component mount
   useEffect(() => {
-    getImages_talleresAdmin().then(response => {
-      if (response.images) {
-        setImages(response.images);
-      }
-    });
+    fetchImages();
   }, []);
 
-  //Cambiar imagenes cada 3 segundos
   useEffect(() => {
-    if (images.length > 0) {
-      const interval = setInterval(() => {
-        setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
-      }, 5000);
-      return () => clearInterval(interval);
-    }
+    // Configurar el temporizador para rotación automática
+    const intervalId = setInterval(() => {
+      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
+    }, rotationInterval);
+
+    // Limpiar el temporizador al desmontar el componente
+    return () => clearInterval(intervalId);
   }, [images]);
 
+  const fetchImages = async () => {
+    const result = await getImages_talleresAdmin();
+    if (result.images) {
+      setImages(result.images);
+      setDownloadurls(result.downloadurls);
+    }
+  };
+
+  /*const handleNextImage = () => {
+    setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
+  };*/
+
+  /*const handlePrevImage = () => {
+    setCurrentImageIndex((prevIndex) => (prevIndex - 1 + images.length) % images.length);
+  };*/
+
   return (
-    <div className="relative w-80 h-70 ml-20 mt-10">
-      {images.length > 0 && (
-        <img src={images[currentImageIndex]} alt="Rotating Image" className="w-full h-auto" />
+    <div className= "flex justify-end mr-20 ">
+      {downloadurls.length > 0 && (
+        <Image
+          src={downloadurls[currentImageIndex]}
+          alt="Background"
+          width={370}
+          height={200}
+          quality={80}
+          priority={true}
+          className="z-0 rounded-lg shadow-lg"
+        />
       )}
     </div>
   );
 };
 
-
-
-
-
-
-// Constante de inicio utlizando el Navigate y But_aside
+// Constante de inicio utilizando el Navigate y But_aside
 const Inicio = () => {
   return (
     <main className="relative min-h-screen w-screen overflow-hidden">
-      <Image src={Background} alt="Background" layout="fill" objectFit="cover" quality={80} priority={true} className="z-0" />
+      {/* Imagen de fondo */}
+      <div className="absolute inset-0 -z-10">
+        <Image
+          src={Background}
+          alt="Background"
+          layout="fill" // Esto asegura que ocupe todo el contenedor padre
+          objectFit="cover" // Ajusta la imagen para cubrir todo el espacio
+          quality={80}
+          priority={true}
+        />
+      </div>
+
+      {/* Contenido */}
       <div className="fixed top-0 w-full z-50">
-        <div className="fixed bg-blue-400  justify-between w-full p-4">
-          <Navigate />
-        </div>
-        <div className="fixed bottom-0 py-5 border-t bg-white w-full z-30" style={{ opacity: 0.66 }}>
+        <Navigate />
+        <div
+          className="fixed bottom-0 py-5 border-t w-full z-30"
+          style={{ opacity: 0.88, background: "#3f8df5" }}
+        >
           <But_aside />
         </div>
-        <div className="relative z-10 mt-40 ml-20">
-          <h1 className="text-xl text-black mt-40">Bienvenidos a Casa Jardin</h1>
+        <div className="flex flex-col items-left justify-center mt-10">
+          <h1
+            className="text-2xl text-black text-left ml-20"
+            style={{ color: "#000000", fontFamily: "Cursive" }}
+          >
+            Bienvenidos a Casa Jardin
+          </h1>
+          <h2 className="max-w-lg text-center text-ml mt-4" style={{ fontFamily: "Cursive" }}>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras purus mauris, congue in
+            elit eu, hendrerit interdum mi. Praesent lectus nibh, feugiat blandit justo fringilla,
+            luctus semper odio.
+          </h2>
         </div>
-        <div>
+        <div className="relative z-20">
           <RotatingImages />
         </div>
       </div>
     </main>
   );
-}
+};
 
 export default Inicio;

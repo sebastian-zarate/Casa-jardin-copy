@@ -89,7 +89,7 @@ const DatosAlumno: React.FC<Datos> = ({ setDatosAlumno, datosAlumno, setError })
                                     }))
                                 }
                                 min={new Date(new Date().setFullYear(new Date().getFullYear() - 100)).toISOString().split('T')[0]} // Set min to 100 years ago
-                                max={new Date().toISOString().split('T')[0]} // Set max to today's date
+                                max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0]} // Set max to today's date
                                 required
                             />
                         </div>

@@ -140,13 +140,28 @@ export async function updateAlumno(id: number, data: {
   if (!alumno) {
     return("El alumno no existe.");
   }
+  console.log("paso prueba de exist")
   if (data.fechaNacimiento) data.fechaNacimiento = new Date(data.fechaNacimiento);
-  if (data.password) {
-    data.password = await hashPassword(data.password);
-  }
+  console.log()
+
+  //console.log("Actualizando alumno password", data.password);
   // Crear objeto de datos del alumno
   let alumnoData: any = {};
-
+  if (data.password) {
+    data.password = await hashPassword(data.password);
+    alumnoData = {
+      id: id,
+      nombre: data.nombre,
+      apellido: data.apellido,
+      dni: (data.dni),
+      telefono: data.telefono,
+      direccionId: data.direccionId,
+      email: data.email,
+      fechaNacimiento: data.fechaNacimiento,
+      password: data.password,
+    }
+  }
+  if(!data.password){
     // Actualizar el alumno
     alumnoData = {
     id: id,
@@ -157,7 +172,7 @@ export async function updateAlumno(id: number, data: {
     direccionId: data.direccionId,
     email: data.email,
     fechaNacimiento: data.fechaNacimiento,
-    password: data.password,
+    }
   }
   
   return await prisma.alumno.update({
@@ -254,6 +269,26 @@ export async function emailExists(email: string): Promise<boolean> {
   // si existe el email retorna true
   return userResults.some((user) => user !== null);
 
+}
 
+//verificar si el dni existe en la base de datos
+export async function dniExists(dni: number): Promise<boolean> {
+  // Realiza búsquedas en paralelo para cada tabla y espera el primer resultado exitoso
+  try {
+    const userResults = await prisma.alumno.findUnique({ where: {dni} }
+    );
+    // Busca el primer usuario que no sea null
+    // si existe el dni retorna true
+    console.log("userResults", userResults)
+    if (userResults) {
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.error("Error checking dni existence:", error);
+    return false;
+  }
 
 }
+
+

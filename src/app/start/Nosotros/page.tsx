@@ -4,40 +4,59 @@ import React, { useEffect, useState } from "react";
 import Navigate from "../../../components/start/navigate/page"
 import But_aside from "../../../components/but_aside/page";
 import Image from "next/image";
-import Background from "../../../../public/Images/Background.jpeg";
-import { getImages_talleresAdmin } from "@/services/repoImage";
+import Background from "../../../../public/Images/CollageImage.jpg";
+import { getImagesUser } from "@/services/repoImage";
 
 const RotatingImages: React.FC = () => {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [images, setImages] = useState<any[]>([]);
+  const [downloadurls, setDownloadurls] = useState<any[]>([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const rotationInterval = 3000; // Tiempo en milisegundos para rotación automática (5 segundos)
 
   // Fetch images on component mount
   useEffect(() => {
-    getImages_talleresAdmin().then(response => {
-      if (response.images) {
-        setImages(response.images);
-      }
-    });
+    fetchImages();
   }, []);
 
-  //Cambiar imagenes cada 3 segundos
   useEffect(() => {
-    if (images.length > 0) {
-      const interval = setInterval(() => {
-        setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
-      }, 5000);
-      return () => clearInterval(interval);
-    }
+    // Configurar el temporizador para rotación automática
+    const intervalId = setInterval(() => {
+      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
+    }, rotationInterval);
+
+    // Limpiar el temporizador al desmontar el componente
+    return () => clearInterval(intervalId);
   }, [images]);
 
+  const fetchImages = async () => {
+    const result = await getImagesUser();
+    if (result.images) {
+      setImages(result.images);
+      setDownloadurls(result.downloadurls);
+    }
+  };
+
+
   return (
-    <div className="relative w-80 h-70 ml-20 mt-10">
-      {images.length > 0 && (
-        <img src={images[currentImageIndex]} alt="Rotating Image" className="w-full h-auto" />
+    <div className= "flex justify-end mr-20 mt-10">
+      {downloadurls.length > 0 && (
+        <Image
+          src={downloadurls[currentImageIndex]}
+          alt="Background"
+          width={320}
+          height={200}
+          quality={80}
+          priority={true}
+          className="z-0 rounded-lg shadow-lg"
+        />
       )}
     </div>
   );
 };
+
+
+
+
 
 
 const Nosotros = () => {
@@ -57,33 +76,46 @@ const Nosotros = () => {
       </div>
 
       {/* Encabezado fijo */}
-      <div className="fixed top-0 left-0 right-0 bg-blue-400 flex justify-between w-full p-1 z-50">
+      <div className="fixed top-0 left-0 right-0 flex justify-between w-full p-1 z-50" style={{backgroundColor: "#3f8df5"}}>
         <Navigate />
       </div>
 
       {/* Contenido principal, ocupando todo el centro de la pantalla */}
-      <div className="fixed top-20 bottom-20 left-0 right-0 z-10 flex flex-col justify-center items-start px-8 space-y-8">
-        <h1 className="text-xl text-black">Misión:</h1>
-        <h2 className="text-xl text-black max-w-lg">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-          Cras purus mauris, congue in elit eu, hendrerit interdum mi.
-          Praesent lectus nibh, feugiat blandit justo fringilla, luctus semper odio.
-        </h2>
+      <div
+  className="fixed top-20 bottom-20 left-0 right-0 z-10 flex flex-col justify-center items-start px-8 space-y-8"
+  style={{ fontFamily: "Cursive" }}
+>
+  {/* Misión */}
+  <div className="bg-white bg-opacity-90 p-4 rounded-lg shadow-md">
+    <h1 className="text-xl text-black">Misión:</h1>
+    <h2 className="text-xl text-black max-w-lg">
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras purus mauris,
+      congue in elit eu, hendrerit interdum mi. Praesent lectus nibh, feugiat
+      blandit justo fringilla, luctus semper odio.
+    </h2>
+  </div>
 
-        <h1 className="text-xl text-black">Visión:</h1>
-        <h2 className="text-xl text-black max-w-lg">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-          Cras purus mauris, congue in elit eu, hendrerit interdum mi.
-          Praesent lectus nibh, feugiat blandit justo fringilla, luctus semper odio.
-        </h2>
+  {/* Visión */}
+  <div className="bg-white bg-opacity-90 p-4 rounded-lg shadow-md">
+    <h1 className="text-xl text-black">Visión:</h1>
+    <h2 className="text-xl text-black max-w-lg">
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras purus mauris,
+      congue in elit eu, hendrerit interdum mi. Praesent lectus nibh, feugiat
+      blandit justo fringilla, luctus semper odio.
+    </h2>
+  </div>
 
-        <h1 className="text-xl text-black">Valores:</h1>
-        <h2 className="text-xl text-black max-w-lg">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-          Cras purus mauris, congue in elit eu, hendrerit interdum mi.
-          Praesent lectus nibh, feugiat blandit justo fringilla, luctus semper odio.
-        </h2>
-      </div>
+  {/* Valores */}
+  <div className="bg-white bg-opacity-90 p-4 rounded-lg shadow-md">
+    <h1 className="text-xl text-black">Valores:</h1>
+    <h2 className="text-xl text-black max-w-lg">
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras purus mauris,
+      congue in elit eu, hendrerit interdum mi. Praesent lectus nibh, feugiat
+      blandit justo fringilla, luctus semper odio.
+    </h2>
+  </div>
+</div>
+
 
       {/* Contenedor de imágenes en rotación */}
       <div className="fixed  top-20 bottom-40 right-8 z-10">
@@ -91,7 +123,7 @@ const Nosotros = () => {
       </div>
 
       {/* Pie de página fijo */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white p-1 z-40 opacity-75">
+      <div className="fixed bottom-0 left-0 right-0  p-1 z-40" style={{backgroundColor:"#3f8df5"}}>
         <But_aside />
       </div>
     </main>

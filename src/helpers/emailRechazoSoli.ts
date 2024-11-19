@@ -11,7 +11,7 @@ const googleTransporter = nodemailer.createTransport({
   port: 587,
   secure: false,
   auth: {
-    user: "cet.casajardin@gmail.com", // por ahora es mi correo, despues hay que cambiarlo
+    user: "maldonado12net@gmail.com", // por ahora es mi correo, despues hay que cambiarlo
     pass: process.env.EMAIL_APP_PASSWORD,
   },
    tls: {

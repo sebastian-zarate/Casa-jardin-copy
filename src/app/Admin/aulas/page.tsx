@@ -81,11 +81,14 @@ const Aulas: React.FC = () => {
         fetchAulas();
     }, []);
 
+    //region return
     return (
         <main className="relative min-h-screen w-screen">
-            <Image src={Background} alt="Background" layout="fill" objectFit="cover" quality={80} priority={true} />
-
             <Navigate />
+            <div className="fixed inset-0 z-[-1]">
+                <Image src={Background} alt="Background" layout="fill" objectFit="cover" quality={80} priority={true} />
+            </div>
+            
             {/* Muestra el título de la página */}
             <h1 className="absolute top-40 left-60 mb-5 text-3xl">Aulas</h1>
             {/* Muestra la lista de aulas */}

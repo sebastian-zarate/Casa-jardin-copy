@@ -26,26 +26,48 @@ export default function Navigate() {
     }
   };
 
+  const styles = {
+    inactiveTextColor: "text-white",
+    hoverTextColor: "hover:text-gray-800",
+    underline: "border-b-2 border-transparent hover:border-white",
+};
+
+function NavLink({ href, children, onClick }: { href?: string, children: React.ReactNode, onClick?: () => void }) {
+    return (
+        <a
+            className={`${styles.inactiveTextColor} cursor-pointer px-4 py-2 font-medium ${styles.hoverTextColor} ${styles.underline} duration-300`}
+            href={href}
+            onClick={onClick}
+        >
+            {children}
+        </a>
+    );
+}
+
+
+
+
   return (
-    <nav className="flex justify-between w-full p-3" style={{ background: "#1CABEB" }}>
+    <nav className="flex justify-between w-full p-3 bg-sky-600" style={{ fontFamily: "Cursive" }}>
       <div className="flex items-center">
         <Image src={Logo} alt="Logo Casa Jardin" width={50} height={50} />
-        <h1 className="ml-2">Casa Jardín</h1>
+        <h1 className="ml-2 text-white">Casa Jardín</h1>
       </div>
-      <div className="ml-auto flex space-x-4 py-2">
-        <a className="p-2" href="/Admin/cursos">Talleres</a>
-        <a className="p-2" href="/Admin/aulaSelector">Cronogramas</a>
-        <a className="p-2" href="/Admin/Solicitudes">Solicitudes</a>
-        <label className="p-2 cursor-pointer" onClick={() => setUserLink(userLink ? "" : "open")}>
+      <div className="ml-auto flex space-x-4 py-2 text-white">
+        <NavLink href="/Admin/cursos">Talleres</NavLink>
+        <NavLink href="/Admin/aulaSelector">Cronogramas</NavLink>
+        <NavLink  href="/Admin/Solicitudes">Solicitudes</NavLink>
+        <NavLink  onClick={() => setUserLink(userLink ? "" : "open")}>
           Usuario
-        </label>
+        </NavLink>
+        <NavLink  onClick={logout}>Salir</NavLink>
         {userLink && (
-          <div className="absolute mt-10 w-38 right-20 bg-white border rounded shadow-lg">
+          <div className="absolute mt-10 w-38 right-20 bg-white border rounded shadow-lg z-50">
             <a className="block px-4 py-2 text-gray-800 hover:bg-gray-200" href="/Admin/alumnos">Alumnos</a>
             <a className="block px-4 py-2 text-gray-800 hover:bg-gray-200" href="/Admin/profesionales">Profesionales</a>
           </div>
         )}
-        <button className="p-2" onClick={logout}>Salir</button>
+        
       </div>
     </nav>
   );

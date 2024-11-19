@@ -1,20 +1,37 @@
 "use client"
 import Image from "next/image"
 import Logo from "../../../../public/Images/LogoCasaJardin.png";
-export default function Navigate () {
+
+export default function Navigate() {
+    const styles = {
+        inactiveTextColor: "text-white",
+        hoverTextColor: "hover:text-blue-900",
+        underline: "border-b-2 border-transparent hover:border-white",
+    };
+    
+    function NavLink({ href, children }: { href: string, children: React.ReactNode }) {
+        return (
+            <a
+                className={`${styles.inactiveTextColor} px-4 py-2 font-medium ${styles.hoverTextColor} ${styles.underline} duration-300`}
+                href={href}
+            >
+                {children}
+            </a>
+        );
+    }
+
     return (
-        
-        <nav className="bg-blue-400 flex justify-between w-full p-5">
-        <div className="flex items-center">
-            <Image src={Logo} alt="Logo Casa Jardin" width={50} height={50}/>
-            <h1 className="ml-2">Casa Jardín</h1>
-        </div>
-        <div className="ml-auto flex space-x-4 py-2">
-        <a className="mx-2" href="/start/Inicio">Inicio</a>
-            <a className="mx-2" href="/start/Nosotros">Nosotros</a>
-            <a className="mx-2" href="/start/Contacto">Contacto</a>
-            <a className="mx-2" href="/start/signup">Ingresar</a>
-        </div>
+        <nav className="flex justify-between w-full p-4" style={{ backgroundColor: "#3f8df5" }}>
+            <div className="flex items-center">
+                <Image src={Logo} alt="Logo Casa Jardin" width={50} height={50} />
+                <h1 className="ml-2" style={{ color: "#FFFFFF", fontFamily: 'Cursive' }}>Casa Jardín</h1>
+            </div>
+            <div className="ml-auto flex space-x-4 py-2" style={{ color: "#FFFFFF", fontFamily: 'Cursive' }}>
+                <NavLink href="/start/Inicio">Inicio</NavLink>
+                <NavLink href="/start/Nosotros">Nosotros</NavLink>
+                <NavLink href="/start/Contacto">Contacto</NavLink>
+                <NavLink href="/start/signup">Ingresar</NavLink>
+            </div>
         </nav>
-    )
+    );
 }

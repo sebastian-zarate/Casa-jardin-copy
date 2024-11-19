@@ -16,6 +16,8 @@ import { autorizarUser, fetchUserData } from '@/helpers/cookies';
 import PasswordComponent from '@/components/Password/page';
 import { getCursosByIdProfesional } from '@/services/profesional_curso';
 import { updateProfesional } from '@/services/profesional';
+import { validateApellido, validateDireccion, validateDni, validateEmail, validateNombre, validatePhoneNumber } from '@/helpers/validaciones';
+import { emailExists } from '@/services/Alumno';
 type Usuario = {
     id: number;
     nombre: string;
@@ -54,7 +56,10 @@ const Cuenta: React.FC = () => {
         direccionId: user?.direccionId || 0,
         rolId: user?.rolId || 0
     });
-
+    const [profesionalDetailsCopia, setprofesionalDetailsCopia] = useState<{
+        id: number; nombre: string; apellido: string;
+        telefono: number; email: string;  direccionId?: number; rolId?: number;
+    }>();
     const [nacionalidadName, setNacionalidadName] = useState<string>();
     // Estado para almacenar el ID de la provincia, inicialmente nulo
     const [provinciaName, setProvinciaName] = useState<string>();
@@ -197,49 +202,55 @@ const Cuenta: React.FC = () => {
             telefono: (userUpdate.telefono),
             email: userUpdate.email, direccionId: userUpdate.direccionId, rolId: userUpdate.rolId
         });
+        setprofesionalDetailsCopia({
+            id: userUpdate.id,
+            nombre: userUpdate.nombre, apellido: userUpdate.apellido,
+            telefono: (userUpdate.telefono),
+            email: userUpdate.email, direccionId: userUpdate.direccionId, rolId: userUpdate.rolId
+        });
         setUser(userUpdate);
         //setOpenBox(!openBox)
 
         //CARGAR TODAS LAS DIRECCIONES
     }
-    function validateprofesionalDetails() {
-
-        const { nombre, apellido, telefono } = profesionalDetails;
-        if (nombre.length < 2) {
-            return "El nombre debe tener al menos 3 caracteres.";
+        //region validate
+        async function validateProfesionalDetails() {
+            const { nombre, apellido, email, telefono } = profesionalDetails || {};
+    /*         if (JSON.stringify(alumnoDetails) === JSON.stringify(alumnoDetailsCopia)) {
+                return;
+            } */
+            console.log("responsableDetails", profesionalDetails);
+    
+            //validar que el nombre sea de al menos 2 caracteres y no contenga números
+            let resultValidate;
+            if (profesionalDetails) {
+                resultValidate = validateNombre(nombre);
+                if (resultValidate) return resultValidate;
+    
+                resultValidate = validateApellido(apellido);
+                if (resultValidate) return resultValidate;
+    
+                resultValidate = validateEmail(email);
+                if (resultValidate) return resultValidate;
+                if (email !== profesionalDetailsCopia?.email) {
+                    const estado = await emailExists(email)
+                    if (estado) {
+                        return "El email ya está registrado.";
+                    }
+                    if (resultValidate) return resultValidate;
+                }
+    
+                if ( telefono && typeof (telefono) === "number") {
+                    resultValidate = validatePhoneNumber(String(telefono));
+                    if (resultValidate) return resultValidate;
+    
+                }
+    
+            }
+            resultValidate = validateDireccion(nacionalidadName, provinciaName, localidadName, String(calle), Number(numero));
+            if (resultValidate) return resultValidate
+          
         }
-        if (apellido.length === 1) {
-            return "El apellido debe tener más de 0 caracteres.";
-        }
-
-        if (telefono.toString().length !== 9) {
-            return "El teléfono debe ser un número válido de 9 dígitos.";
-        }
-        if (!nacionalidadName) {
-            return "El país no puede estar vacío.";
-        }
-        if (!provinciaName) {
-            return "La provincia no puede estar vacía.";
-        }
-        if (!localidadName) {
-            return "La localidad no puede estar vacía.";
-        }
-        if (!calle) {
-            return "La calle no puede estar vacía.";
-        }
-        if (!numero) {
-            return "El número no puede estar vacío.";
-        }
-        // no puede contener caracteres especiales solo letras y numeros y comas y puntos y acentos
-        const regex = /^[a-zA-Z0-9_ ,.;áéíóúÁÉÍÓÚñÑüÜ]*$/;
-        if (!regex.test(nombre) || !regex.test(apellido)) {
-            return "El nombre no puede contener caracteres especiales";
-        }
-        if (!regex.test(calle)) {
-            return "La calle no puede contener caracteres especiales";
-        }
-        return false;
-    }
 
     function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
         const { name, value } = e.target;
@@ -251,7 +262,7 @@ const Cuenta: React.FC = () => {
 
     async function handleSaveChanges() {
 
-        const validationError = validateprofesionalDetails();
+        const validationError = await validateProfesionalDetails();
         if (validationError) {
             setErrorMessage(validationError);
             return;
@@ -261,7 +272,7 @@ const Cuenta: React.FC = () => {
             console.log("profesionalDETAILS", profesionalDetails);
             const newprofesional = await updateProfesional(Number(profesionalDetails?.id), {
                 nombre: profesionalDetails.nombre, apellido: profesionalDetails.apellido,
-                email: profesionalDetails.email, telefono: Number(profesionalDetails.telefono),
+                email: profesionalDetails.email, telefono: String(profesionalDetails.telefono),
                 direccionId: Number(direccion?.id)
             });
             if (typeof newprofesional === "string") return setErrorMessage(newprofesional);
@@ -295,7 +306,7 @@ const Cuenta: React.FC = () => {
             console.log("profesionalDETAILS", profesionalDetails);
             const newprofesional = await updateProfesional(Number(profesionalDetails?.id), {
                 nombre: profesionalDetails.nombre, apellido: profesionalDetails.apellido,
-                 telefono: Number(profesionalDetails.telefono),
+                 telefono: String(profesionalDetails.telefono),
                 direccionId: Number(newDireccion?.id),  email: profesionalDetails.email
             });
             console.log("newprofesional", newprofesional);
@@ -313,9 +324,10 @@ const Cuenta: React.FC = () => {
 
     return (
         <main className=''>
-           
             <Navigate />
-
+ {/*            <div className="fixed inset-0 z-[-1]">
+                <Image src={Background} alt="Background" layout="fill" objectFit="cover" quality={80} priority={true} />
+            </div> */}
             <div className='absolute mt-20 top-5 '>
                 <h1 className='flex my-20 items-center justify-center  font-bold text-3xl'>Datos del Profesional</h1>
                 <div className='flex  justify-center w-screen'>
@@ -436,8 +448,8 @@ const Cuenta: React.FC = () => {
                                 className="p-2 w-full border rounded"
                             />
                         </div>
-                        {!nacionalidadName && !provinciaName && !localidadName && !calle && !numero && user?.direccionId && <p className=" text-red-600">Cargando su ubicación...</p>}
-                        {user?.direccionId && <div className="mb-4">
+                        {((!nacionalidadName && !provinciaName && !localidadName && !calle && !numero && openBox === 1) && user?.direccionId) && <p className=" text-red-600">Cargando su ubicación...</p>}
+                        {<div className="mb-4">
                             <label htmlFor="pais" className="block">País:</label>
                             <input
                                 type="text"
@@ -448,7 +460,7 @@ const Cuenta: React.FC = () => {
                                 className="p-2 w-full border rounded"
                             />
                         </div>}
-                        {user?.direccionId && <div className="mb-4">
+                        {<div className="mb-4">
                             <label htmlFor="provincia" className="block">Provincia:</label>
                             <input
                                 type="text"
@@ -459,7 +471,7 @@ const Cuenta: React.FC = () => {
                                 className="p-2 w-full border rounded"
                             />
                         </div>}
-                        {user?.direccionId && <div className="mb-4">
+                        { <div className="mb-4">
                             <label htmlFor="localidad" className="block">Localidad:</label>
                             <input
                                 type="text"
@@ -470,7 +482,7 @@ const Cuenta: React.FC = () => {
                                 className="p-2 w-full border rounded"
                             />
                         </div>}
-                        {user?.direccionId  && <div className="mb-4">
+                         <div className="mb-4">
                             <label htmlFor="calle" className="block">Calle:</label>
                             <input
                                 type="text"
@@ -480,7 +492,7 @@ const Cuenta: React.FC = () => {
                                 onChange={(e) => setcalle(e.target.value)}
                                 className="p-2 w-full border rounded"
                             />
-                        </div> &&
+                        </div> 
                             <div className="mb-4">
                                 <label htmlFor="numero" className="block">Número:</label>
                                 <input
@@ -492,7 +504,7 @@ const Cuenta: React.FC = () => {
                                     className="p-2 w-full border rounded"
                                 />
                             </div>
-                        }
+                        
                         <div>
                             <button
                                 className="py-2  text-black font-bold rounded hover:underline"

@@ -21,16 +21,20 @@ import { addDireccion, getDireccionCompleta } from '@/services/ubicacion/direcci
 import { updateAlumno } from '@/services/Alumno';
 import { createSolicitudMenores } from '@/services/Solicitud/SolicitudMenor';
 import { createCursoSolicitud } from '@/services/curso_solicitud';
-import { createAlumno_Curso } from '@/services/alumno_curso';
-import { createResponsable } from '@/services/responsable';
+import { createAlumno_Curso, getCursosByIdAlumno } from '@/services/alumno_curso';
+import { createResponsable, getResponsableByAlumnoId } from '@/services/responsable';
 import { addLocalidad } from '@/services/ubicacion/localidad';
 import { calcularEdad, dateTimeToString } from '@/helpers/fechas';
+import { validateApellido, validateDireccion, validateDni, validateEmail, validateNombre, validatePhoneNumber } from '@/helpers/validaciones';
 
 const Menores: React.FC = () => {
     // Estado para almacenar la pantalla actual
     const [selectedScreen, setSelectedScreen] = useState<number>(0);
     // Estado para almacenar los cursos seleccionados
     const [selectedCursosId, setSelectedCursosId] = useState<number[]>([]);
+    const [cursosYaInscriptosId, setCursosYaInscriptosId] = useState<number[]>([]);
+    const [cursosYaInscriptosName, setCursosYaInscriptosName] = useState<number[]>([]);
+
     const [datosMenor, setDatosMenor] = useState({
         nombre: "",
         apellido: "",
@@ -42,7 +46,30 @@ const Menores: React.FC = () => {
         calle: "",
         numero: 0,
     });
+    const [datosMenorCopia, setDatosMenorCopia] = useState({
+        nombre: "",
+        apellido: "",
+        fechaNacimiento: new Date().toISOString().split('T')[0],
+        dni: 0,
+        pais: "",
+        provincia: "",
+        localidad: "",
+        calle: "",
+        numero: 0,
+    });
     const [datosMayor, setDatosMayor] = useState({
+        nombre: "",
+        apellido: "",
+        telefono: 0,
+        correoElectronico: "",
+        dni: 0,
+        pais: "",
+        provincia: "",
+        localidad: "",
+        calle: "",
+        numero: 0,
+    });
+    const [datosMayorCopia, setDatosMayorCopia] = useState({
         nombre: "",
         apellido: "",
         telefono: 0,
@@ -98,7 +125,16 @@ const Menores: React.FC = () => {
                 // Primero verifico que el user esté logeado
                 await autorizarUser(router);
                 // Una vez autorizado obtengo los datos del user y seteo el email
+
                 const user = await fetchUserData();
+
+                const curYaInscriptos = await getCursosByIdAlumno(user.id);
+                const curYaInscriptosId = curYaInscriptos.map((curso) => curso.id);
+                const curYaInscriptosName = curYaInscriptos.map((curso) => curso.nombre);
+                setCursosYaInscriptosId(curYaInscriptosId);
+                setCursosYaInscriptosName(curYaInscriptosName);
+
+                const responsable = await getResponsableByAlumnoId(user?.id);
                 if (user) {
                     setUser(user);
                     const direccion = await getDireccionCompleta(user.direccionId);
@@ -118,7 +154,48 @@ const Menores: React.FC = () => {
                         calle: direccion?.calle || '',
                         numero: Number(direccion?.numero),
                     });
-                    setDatosMayor({ ...datosMayor, pais: pais?.nombre || '', provincia: provincia?.nombre || '', localidad: localidad?.nombre || '', calle: direccion?.calle || '', numero: Number(direccion?.numero) });
+                    setDatosMenorCopia({
+                        ...datosMenor,
+                        nombre: user.nombre,
+                        apellido: user.apellido,
+                        fechaNacimiento: new Date(user.fechaNacimiento).toISOString().split('T')[0],
+                        dni: Number(user.dni),
+                        pais: pais?.nombre || '',
+                        provincia: provincia?.nombre || '',
+                        localidad: localidad?.nombre || '',
+                        calle: direccion?.calle || '',
+                        numero: Number(direccion?.numero),
+                    });
+                    if (responsable) {
+                        //cargo los datos del menor obtenidos del usuario
+                        setDatosMayor({
+                            ...datosMayor,
+                            nombre: responsable.nombre,
+                            apellido: responsable.apellido,
+                            telefono: Number(responsable.telefono),
+                            correoElectronico: responsable.email,
+                            dni: Number(responsable.dni),
+                            pais: pais?.nombre || '',
+                            provincia: provincia?.nombre || '',
+                            localidad: localidad?.nombre || '',
+                            calle: direccion?.calle || '',
+                            numero: Number(direccion?.numero),
+                        });
+                        setDatosMayorCopia({
+                            ...datosMayor,
+                            nombre: responsable.nombre,
+                            apellido: responsable.apellido,
+                            telefono: Number(responsable.telefono),
+                            correoElectronico: responsable.email,
+                            dni: Number(responsable.dni),
+                            pais: pais?.nombre || '',
+                            provincia: provincia?.nombre || '',
+                            localidad: localidad?.nombre || '',
+                            calle: direccion?.calle || '',
+                            numero: Number(direccion?.numero),
+                        });
+                    }
+
                 }
             };
 
@@ -126,16 +203,16 @@ const Menores: React.FC = () => {
         }
     }, [router]);
 
-     useEffect(() => {
+    useEffect(() => {
         if (correcto) {
             console.log("0.CARGANDO SOLICITUD")
             cargarSolicitud();
             setVerificarEmail(false);
 
         }
-    }, [correcto]) 
+    }, [correcto])
 
-    function validateDatos() {
+/*     function validateDatos() {
         // carrateres especiales en el nombre y la descripción
         const regex = /^[a-zA-Z0-9_ ,.;áéíóúÁÉÍÓÚñÑüÜ@]*$/; // no quiero que tenga caracteres especiales que las comas y puntos afecten 
 
@@ -204,12 +281,70 @@ const Menores: React.FC = () => {
 
 
         return ""
+    } */
+    //region validate 
+    async function validatealumnoDetails() {
+        const { nombre, apellido, dni, pais, provincia, localidad, calle, numero } = datosMenor || {};
+        const { nombre: nombreM, apellido: apellidoM, telefono: telefonoM, correoElectronico: correoElelctronicoM, dni: dniM,
+            pais: paisM, provincia: provinciaM, localidad: localidadM, calle: calleM, numero: numeroM } = datosMayor || {};
+
+        //validar que el nombre sea de al menos 2 caracteres y no contenga números
+        let resultValidate;
+        if (selectedScreen === 0 && selectedCursosId.length === 0) return "Debe seleccionar al menos un taller";
+        if (selectedScreen === 0 && selectedCursosId.some(id => cursosYaInscriptosId.includes(id))) {
+            return "Ya se encuentra inscripto en uno de los talleres seleccionados (sus talleres: " + cursosYaInscriptosName.join(", ")+").";
+        }
+        if (selectedScreen === 1) {
+            resultValidate = validateNombre(nombre);
+            if (resultValidate) return resultValidate;
+
+            resultValidate = validateApellido(apellido);
+            if (resultValidate) return resultValidate;
+
+            resultValidate = validateDni(String(dni));
+            if (resultValidate) return resultValidate;
+
+            resultValidate = validateDireccion(pais, provincia, localidad, String(calle), Number(numero));
+            if (resultValidate) return resultValidate
+
+            if (JSON.stringify(datosMenor) !== JSON.stringify(datosMenorCopia)) {
+                return "Los datos del alumno no son los mismos que los registrados en el sistema";
+            }
+        }
+        if (selectedScreen === 2) {
+            resultValidate = validateNombre(nombreM);
+            if (resultValidate) return resultValidate;
+
+            resultValidate = validateApellido(apellidoM);
+            if (resultValidate) return resultValidate;
+
+            resultValidate = validateEmail(correoElelctronicoM);
+            if (resultValidate) return resultValidate;
+
+            resultValidate = validateDni(String(dni));
+            if (resultValidate) return resultValidate;
+
+            if (!telefonoM ) {
+                return "El teléfono no puede estar vacío";
+            }
+            resultValidate = validatePhoneNumber(String(telefonoM));
+            if (resultValidate) return resultValidate;
+            resultValidate = validateDireccion(paisM, provinciaM, localidadM, String(calleM), Number(numeroM));
+            if (resultValidate) return resultValidate
+
+            if(datosMayor){
+                if (JSON.stringify(datosMayor) !== JSON.stringify(datosMayorCopia)) {
+                    return "Los datos del responsable no son los mismos que los registrados en el sistema";
+                }
+            }
+        }
+        return "";
     }
 
-    function continuar() {
+    async function continuar() {
 
         if (selectedScreen === 0 && selectedCursosId.length === 0) return setError("Debe seleccionar al menos un taller");
-        const err = validateDatos();
+        const err = await validatealumnoDetails();
         if (err != "") return setError(err);
         setSelectedScreen(selectedScreen + 1)
     }
@@ -235,7 +370,7 @@ const Menores: React.FC = () => {
             direccionId: direccion.id,
         }
 
-         await updateAlumno(Number(newAlumno.Id), newAlumno)
+        await updateAlumno(Number(newAlumno.Id), newAlumno)
 
         //console.log("ALUMNO::::", alumno)
         //crear ubicaciones del mayor/responsable
@@ -245,7 +380,7 @@ const Menores: React.FC = () => {
         const direccionMayor = await addDireccion({ "calle": datosMayor.calle, "numero": datosMayor.numero, "localidadId": localidadMayor.id })
 
         //crear responsable del menor
-        const alumno =  await createResponsable({
+        const alumno = await createResponsable({
             alumnoId: Number(user?.id),
             nombre: datosMayor.nombre,
             apellido: datosMayor.apellido,
@@ -261,7 +396,7 @@ const Menores: React.FC = () => {
         if (typeof alumno === "string") return setError(alumno)
 
         //crear solicitud menor
-         await createSolicitudMenores({
+        await createSolicitudMenores({
             solicitudId: solicitud.id,
             alumnoId: Number(user?.id),
             enfermedad: datosSalud.enfermedad,
@@ -312,7 +447,7 @@ const Menores: React.FC = () => {
                     ) : (
                         <div>Cargando...</div>
                     )
-                    )}
+                )}
                 {selectedScreen === 1 && (
                     <DatosMenor
                         datosMenor={datosMenor}
@@ -414,7 +549,10 @@ const Menores: React.FC = () => {
                     </button>
                 </div>
             </div>}
-            <But_aside />
+
+            <div className=" w-full mt-40" >
+                <But_aside />
+            </div>
         </main>
     )
 }

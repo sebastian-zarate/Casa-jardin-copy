@@ -15,8 +15,8 @@ const Inicio: React.FC = () => {
   return (
     <main className="relative min-h-screen w-screen">
       <Navigate />
-      <div className="relative h-[80vh]">
-                <Image src={Background} className="h-[80hv]" alt="Background" layout="fill" objectFit="cover" quality={80} priority={true} />
+      <div className="fixed inset-0 z-[-1]">
+        <Image src={Background} alt="Background" layout="fill" objectFit="cover" quality={80} priority={true} />
       </div>
 
     </main>

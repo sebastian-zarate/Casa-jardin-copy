@@ -9,7 +9,10 @@ import DeleteIcon from "../../../../public/Images/DeleteIcon.png";
 import EditIcon from "../../../../public/Images/EditIcon.png";
 import Background from "../../../../public/Images/Background.jpeg"
 import ButtonAdd from "../../../../public/Images/Button.png";
+//imagen default si el curso no tiene imagen
+import NoImage from "../../../../public/Images/default-no-image.png";
 import { getImagesUser } from "@/services/repoImage";
+
 import { addDireccion, getDireccionById, getDireccionCompleta, updateDireccionById } from "@/services/ubicacion/direccion";
 import { addProvincias, getProvinciasById, getProvinciasByName, updateProvinciaById } from "@/services/ubicacion/provincia";
 import { addLocalidad, getLocalidadById, getLocalidadByName, Localidad, updateLocalidad } from "@/services/ubicacion/localidad";
@@ -20,6 +23,9 @@ import { addPais, getPaisById } from "@/services/ubicacion/pais";
 import withAuth from "../../../components/Admin/adminAuth";
 import PasswordComponent from "@/components/Password/page";
 import { hashPassword } from "@/helpers/hashPassword";
+//para subir imagenes:
+import { handleUploadProfesionalImage, handleDeleteProfesionalImage, } from "@/helpers/repoImages";
+import { mapearImagenes } from "@/helpers/repoImages";
 // #endregion
 
 const Profesionales = () => {
@@ -66,11 +72,12 @@ const Profesionales = () => {
     //estado para responder a la confirmación de cambio de contraseña
     const [correcto, setCorrecto] = useState(false);
 
-    /* 
-        const[direcciones, setDirecciones] = useState<Direccion[]>([]);
-        const[localidades, setLocalidades] = useState<Localidad[]>([]);
-        const[provincias, setProvincias] = useState<Provincia[]>([]);
-        const[paises, setPaises] = useState<Pais[]>([]); */
+    //para subir una imagen y asignarla al curso
+    const [uploadError, setUploadError] = useState<string | null>(null);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    //booleano para saber si las imagenes ya se cargaron
+    const [imagesLoaded, setImagesLoaded] = useState<boolean>(false);
+    const [imageUrls, setImageUrls] = useState<any>({});
     // #endregion
 
     // #region UseEffects
@@ -84,6 +91,14 @@ const Profesionales = () => {
         }
 
     }, []);
+
+    useEffect(() => {
+        // Llamar a fetchImages después de que los cursos se hayan cargado
+        if (profesionales.length > 0 && !imagesLoaded) {
+            fetchImages();
+        }
+    }, [profesionales]);
+
     useEffect(() => {
         if (errorMessage !== "") {
             setInterval(() => {
@@ -112,13 +127,14 @@ const Profesionales = () => {
     useEffect(() => {
         if (selectedProfesional !== null && selectedProfesional !== -1) {
             setProfesionalDetails({
-                nombre: selectedProfesional.nombre,
-                apellido: selectedProfesional.apellido,
-                email: selectedProfesional.email,
-                password: "",
-                telefono: parseInt(selectedProfesional.telefono),
-                especialidad: (selectedProfesional.especialidad),
-                direccionId: selectedProfesional.direccionId,
+                id: selectedProfesional.id,
+                nombre: selectedProfesional.nombre || '',
+                apellido: selectedProfesional.apellido || '',
+                email: selectedProfesional.email || '',
+                password: '',
+                telefono: selectedProfesional.telefono ? selectedProfesional.telefono : '',
+                especialidad: selectedProfesional.especialidad || '',
+                direccionId: selectedProfesional.direccionId || '',
             });
         } else if (selectedProfesional === -1) {
             setProfesionalDetails({
@@ -126,7 +142,7 @@ const Profesionales = () => {
                 apellido: '',
                 email: '',
                 password: '',
-                telefono: 0,
+                telefono: '',
                 especialidad: '',
             });
         }
@@ -200,24 +216,62 @@ const Profesionales = () => {
             [name]: /* name === 'password' ? (() => hashPassword(value)) :  */value
         }));
     }
-    /*     async function handlePassword(e: React.ChangeEvent<HTMLInputElement>){
-            const { value } = e.target;
-            //const hash = await hashPassword(value);
-            setProfesionalDetails((prevDetails: any) => ({
-                ...prevDetails,
-                password: value
-            }));
-            
-        } */
+    //Para manejar el cambio en el input de imagen
+    const onFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0] || null;
+        setSelectedFile(file);
+        // Agrego el nombre de la imagen a cursoDetails
+        if (file) {
+            const fileName = file.name;
+            const lastDotIndex = fileName.lastIndexOf(".");
+            const fileExtension =
+                lastDotIndex !== -1 ? fileName.substring(lastDotIndex + 1) : ""; // Obtener la extensión del archivo
+            // Concatenar id, nombre y apellido del profesional con la extensión // Concatenar nombre del profesional con la extensión
+            console.log("ProfesionalDetails inside onFileChange: ", profesionalDetails);
+            const fileNameWithExtension = `${profesionalDetails.id}_${profesionalDetails.nombre}_${profesionalDetails.apellido}.${fileExtension}`;
+            setProfesionalDetails({ ...profesionalDetails, imagen: fileNameWithExtension });
+            console.log("Imagen seleccionada:", fileNameWithExtension);
+        }
+    };
+
     // Método para obtener las imagenes
     const fetchImages = async () => {
         const result = await getImagesUser();
+        console.log(result.images, "LAS IMAGENESSSSS");
+        console.log(result.downloadurls, "LOS DOWNLOADURLS");
         if (result.error) {
-            setErrorMessage(result.error)
+            setErrorMessage(result.error);
         } else {
-            console.log(result)
+            console.log(result);
             setImages(result.images);
 
+            // Mapear las imágenes y crear un diccionario de imageUrls
+            const updatedProfesionales = mapearImagenes(profesionales, {
+                images: result.images,
+                downloadurls: result.downloadurls,
+            });
+            const newImageUrls: any = {};
+            updatedProfesionales.forEach((profesional) => {
+                if (profesional.imageUrl) {
+                    newImageUrls[profesional.id] = profesional.imageUrl;
+                }
+            });
+
+            // Actualiza el estado con el diccionario de imageUrls y los profesionales actualizados
+            setImageUrls(newImageUrls);
+            setProfesionales(updatedProfesionales);
+
+            // Marcar las imágenes como cargadas
+            setImagesLoaded(true);
+
+            // Hacer un console.log de las imageUrl después de actualizar el estado
+            updatedProfesionales.forEach((profesional) => {
+                if (profesional.imageUrl) {
+                    console.log(
+                        `Profesional: ${profesional.id}, Image URL: ${profesional.imageUrl}`
+                    );
+                }
+            });
         }
     };
     //region check validation!!
@@ -238,6 +292,19 @@ const Profesionales = () => {
         }
     }
 
+    //para ver las imagenes agregadas sin refresh de pagina
+    const handleUploadAndFetchImages = async (selectedFile: File | null) => {
+        const result = await handleUploadProfesionalImage(
+            selectedFile,
+            profesionalDetails.imagen || ""
+        );
+        if (result.error) {
+            setUploadError(result.error);
+        } else {
+            console.log("Image uploaded successfully:", result.result);
+            setImagesLoaded(false); // Establecer en falso para que se vuelvan a cargar las imágenes
+        }
+    };
 
     async function handleSaveChanges() {
 
@@ -289,11 +356,14 @@ const Profesionales = () => {
                 nombre: profesionalDetails.nombre, apellido: profesionalDetails.apellido,
                 especialidad: String(profesionalDetails.especialidad), email: String(profesionalDetails.email),
                 telefono: String(profesionalDetails.telefono), password: String(profesionalDetails.password),
-                direccionId: Number(direcciProf?.id)
+                direccionId: Number(direcciProf?.id), imagen: profesionalDetails.imagen
             });
             // si el resultado es un string, entonces es un mensaje de error
             if (typeof newProfesional === "string") return setErrorMessage(newProfesional);
 
+            if (selectedFile) {
+                await handleUploadAndFetchImages(selectedFile);
+            }
             for (const curso of cursosElegido) {                                  //recorre los cursos elegidos y los guarda en la tabla intermedia
                 await createProfesional_Curso({ cursoId: curso.id, profesionalId: newProfesional.id });
                 //if (typeof prof_cur === "string") return setErrorMessage(prof_cur);
@@ -307,13 +377,15 @@ const Profesionales = () => {
 
     async function handleEliminarProfesional(profesional: any) {
         try {
+            //borrar profesional del repo
             await deleteProfesional(profesional.id);
+            //borarr imagen del repo
+            if (profesional.imagen) await handleDeleteProfesionalImage(profesional.imagen);
             fetchProfesionales();
         } catch (error) {
             console.error("Error al eliminar el profesional", error);
         }
     }
-
 
     async function handleCreateProfesional() {
         const validationError = validateProfesionalDetails();
@@ -330,9 +402,17 @@ const Profesionales = () => {
                 nombre: profesionalDetails.nombre, apellido: profesionalDetails.apellido,
                 especialidad: String(profesionalDetails.especialidad), email: String(profesionalDetails.email),
                 telefono: String(profesionalDetails.telefono), password: String(profesionalDetails.password),
-                direccionId: Number(direccion?.id)
+                direccionId: Number(direccion?.id), imagen: profesionalDetails.imagen
             });
             if (typeof newProfesional === "string") return setErrorMessage(newProfesional);
+
+            // Subir la imagen al repositorio y actualizar las imágenes
+            if (selectedFile) {
+                await handleUploadAndFetchImages(selectedFile);
+            } else {
+                await fetchImages(); // Refresca la lista de imágenes si no hay imagen seleccionada
+            }
+
             for (const curso of cursosElegido) {                                  //recorre los cursos elegidos y los guarda en la tabla intermedia
                 await createProfesional_Curso({ cursoId: curso.id, profesionalId: newProfesional.id });
                 //if (typeof prof_cur === "string") return setErrorMessage(prof_cur);
@@ -384,11 +464,11 @@ const Profesionales = () => {
     // #region Return
     return (
         <main className="relative min-h-screen w-screen" >
-            <Image src={Background} alt="Background" layout="fill" objectFit="cover" priority={true} />
-
-            <div className="fixed  justify-between w-full p-4" style={{ background: "#1CABEB" }} >
-                <Navigate />
+            <Navigate />
+            <div className="fixed inset-0 z-[-1]">
+                <Image src={Background} alt="Background" layout="fill" objectFit="cover" quality={80} priority={true} />
             </div>
+
             <h1 className="absolute top-40 left-60 mb-5 text-3xl" onClick={() => console.log(cursosElegido)} >Profesionales</h1>
             <div className="absolute top-40 right-20 mb-5">
                 <div className="relative">
@@ -418,14 +498,14 @@ const Profesionales = () => {
                 <div className="flex flex-col space-y-4 my-4 w-full px-4">
                     {profesionales.map((profesional, index) => (
                         <div key={index} className="border p-4 mx-2 relative bg-white w-47 h-47 justify-center items-center" >
-                            <div className="relative w-30 h-70" >
-                                {<Image
-                                    src={images[0]}
-                                    alt="Background Image"
+                            <div className="relative w-full h-40"> {/* Set a fixed height for the container */}
+                                <Image
+                                    src={imageUrls[profesional.id] || NoImage}
+                                    alt={`${profesional.nombre} ${profesional.apellido} - ${profesional.imagenUrl}}`}
                                     objectFit="cover"
-                                    className="w-full h-full"
+                                    className="w-full h-full" /* Ensure the image fills the container */
                                     layout="fill"
-                                />}
+                                />
                                 <button onClick={() => handleEliminarProfesional(profesional)} className="absolute top-0 right-0 text-red-600 font-bold">
                                     <Image src={DeleteIcon} alt="Eliminar" width={27} height={27} />
                                 </button>
@@ -505,127 +585,128 @@ const Profesionales = () => {
                                 className="p-2 w-full border rounded"
                             />
                         </div>
-                    <div className="mb-4">
-                        <label htmlFor="telefono" className="block">Teléfono:</label>
-                        <div className="flex">
-                            <h3 className="p-2">+54</h3>
+                        <div className="mb-4">
+                            <label htmlFor="telefono" className="block">Teléfono:</label>
+                            <div className="flex">
+                                <h3 className="p-2">+54</h3>
+                                <input
+                                    type="number"
+                                    id="telefono"
+                                    name="telefono"
+                                    placeholder="Ingrese su código de área y los dígitos de su teléfono"
+                                    value={profesionalDetails.telefono ? profesionalDetails.telefono : null}
+                                    onChange={handleChange}
+                                    className="p-2 w-full border rounded"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="mb-4">
+                            <label htmlFor="password" className="block">Contraseña:</label>
                             <input
-                                type="number"
-                                id="telefono"
-                                name="telefono"
-                                placeholder="Ingrese su código de área"
-                                value={profesionalDetails.telefono ? profesionalDetails.telefono : null}
+                                type="password"
+                                id="password"
+                                name="password"
+                                placeholder={(selectedProfesional === -1 || selectedProfesional === -2) ? "" : "Si desea cambiar la contraseña, ingresela aquí"}
+                                value={profesionalDetails.password}
                                 onChange={handleChange}
                                 className="p-2 w-full border rounded"
                             />
                         </div>
-                    </div>
+                        {((!nacionalidadName && !provinciaName && !localidadName && !calle && !numero && selectedProfesional !== -1) && obProfesional.direccionID) && <p className=" text-red-600">Cargando su ubicación...</p>}
+                        {
+                            <>
+                                <div className="mb-4">
+                                    <label htmlFor="pais" className="block">País:</label>
+                                    <input
+                                        type="text"
+                                        id="pais"
+                                        name="pais"
+                                        value={String(nacionalidadName)}
+                                        onChange={(e) => setNacionalidadName(e.target.value)}
+                                        className="p-2 w-full border rounded"
+                                    />
+                                </div>
+                                <div className="mb-4">
+                                    <label htmlFor="provincia" className="block">Provincia:</label>
+                                    <input
+                                        type="text"
+                                        id="provincia"
+                                        name="provincia"
+                                        value={String(provinciaName)}
+                                        onChange={(e) => setProvinciaName(e.target.value)}
+                                        className="p-2 w-full border rounded"
+                                    />
+                                </div>
+                                <div className="mb-4">
+                                    <label htmlFor="localidad" className="block">Localidad:</label>
+                                    <input
+                                        type="text"
+                                        id="localidad"
+                                        name="localidad"
+                                        value={String(localidadName)}
+                                        onChange={(e) => setLocalidadName(e.target.value)}
+                                        className="p-2 w-full border rounded"
+                                    />
+                                </div>
+                                <div className="mb-4">
+                                    <label htmlFor="calle" className="block">Calle:</label>
+                                    <input
+                                        type="text"
+                                        id="calle"
+                                        name="calle"
+                                        value={String(calle)}
+                                        onChange={(e) => setcalle(e.target.value)}
+                                        className="p-2 w-full border rounded"
+                                    />
+                                </div>
+                                <div className="mb-4">
+                                    <label htmlFor="numero" className="block">Número:</label>
+                                    <input
+                                        type="text"
+                                        id="numero"
+                                        name="numero"
+                                        value={Number(numero)}
+                                        onChange={(e) => setNumero(Number(e.target.value))}
+                                        className="p-2 w-full border rounded"
+                                    />
+                                </div>
+                            </>
+                        }
+                        <div className="mb-4">
+                            <label htmlFor="imagen" className="block">
+                                Imagen:
+                            </label>
+                            <input
+                                type="file"
+                                id="imagen"
+                                name="imagen"
+                                accept=".png, .jpg, .jpeg .avif"
+                                onChange={onFileChange}
+                                className="p-2 w-full border rounded"
+                            />
+                            {uploadError && <div style={{ color: "red" }}>{uploadError}</div>}
+                        </div>
+                        <div>
+                            <Talleres crearEstado={selectedProfesional} user={obProfesional} cursosElegido={cursosElegido} setCursosElegido={setCursosElegido} />
+                        </div>
 
-                    <div className="mb-4">
-                        <label htmlFor="password" className="block">Contraseña:</label>
-                        <input
-                            type="password"
-                            id="password"
-                            name="password"
-                            placeholder={(selectedProfesional === -1 || selectedProfesional === -2) ? "" : "Si desea cambiar la contraseña, ingresela aquí"}
-                            value={profesionalDetails.password}
-                            onChange={handleChange}
-                            className="p-2 w-full border rounded"
-                        />
-                    </div>
-                    {((!nacionalidadName && !provinciaName && !localidadName && !calle && !numero && selectedProfesional !== -1 && obProfesional) && obProfesional.direccionId) && <p className=" text-red-600">Cargando su ubicación...</p>}
-                    {(selectedProfesional === -1 || ((nacionalidadName && provinciaName && localidadName && calle && numero && selectedProfesional !== -1))) &&
-                        <>
-                            <div className="mb-4">
-                                <label htmlFor="pais" className="block">País:</label>
-                                <input
-                                    type="text"
-                                    id="pais"
-                                    name="pais"
-                                    value={String(nacionalidadName)}
-                                    onChange={(e) => setNacionalidadName(e.target.value)}
-                                    className="p-2 w-full border rounded"
-                                />
-                            </div>
-                            <div className="mb-4">
-                                <label htmlFor="provincia" className="block">Provincia:</label>
-                                <input
-                                    type="text"
-                                    id="provincia"
-                                    name="provincia"
-                                    value={String(provinciaName)}
-                                    onChange={(e) => setProvinciaName(e.target.value)}
-                                    className="p-2 w-full border rounded"
-                                />
-                            </div>
-                            <div className="mb-4">
-                                <label htmlFor="localidad" className="block">Localidad:</label>
-                                <input
-                                    type="text"
-                                    id="localidad"
-                                    name="localidad"
-                                    value={String(localidadName)}
-                                    onChange={(e) => setLocalidadName(e.target.value)}
-                                    className="p-2 w-full border rounded"
-                                />
-                            </div>
-                            <div className="mb-4">
-                                <label htmlFor="calle" className="block">Calle:</label>
-                                <input
-                                    type="text"
-                                    id="calle"
-                                    name="calle"
-                                    value={String(calle)}
-                                    onChange={(e) => setcalle(e.target.value)}
-                                    className="p-2 w-full border rounded"
-                                />
-                            </div>
-                            <div className="mb-4">
-                                <label htmlFor="numero" className="block">Número:</label>
-                                <input
-                                    type="text"
-                                    id="numero"
-                                    name="numero"
-                                    value={Number(numero)}
-                                    onChange={(e) => setNumero(Number(e.target.value))}
-                                    className="p-2 w-full border rounded"
-                                />
-                            </div>
-                        </>
-                    }
-                    <div>
-                        <Talleres crearEstado={selectedProfesional} user={obProfesional} cursosElegido={cursosElegido} setCursosElegido={setCursosElegido} />
-                    </div>
-                    {/*                         {selectedProfesional !== -1 && <div>
+                        <div className="flex justify-end space-x-4">
                             <button
-                                className="py-2  text-black font-bold rounded hover:underline"
-                                onClick={() => setHabilitarCambioContraseña(!habilitarCambioContraseña)}
-                            >
-                                Cambiar contraseña
+                                onClick={((selectedProfesional === -1 ? handleCreateProfesional : handleSaveChanges))}
+                                className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800">
+                                Guardar
                             </button>
-                            {habilitarCambioContraseña && <div className=' absolute bg-slate-100 rounded-md shadow-md px-2 left-1/2 top-1/2 tranform -translate-x-1/2 -translate-y-1/2'>
-                                <button className='absolute top-2 right-2' onClick={() => setHabilitarCambioContraseña(false)}>X</button>
-                                <PasswordComponent setCorrecto={setCorrecto} correcto={correcto} />
-                            </div>}
-                        </div>} */}
-
-
-                    <div className="flex justify-end space-x-4">
-                        <button
-                            onClick={((selectedProfesional === -1 ? handleCreateProfesional : handleSaveChanges))}
-                            className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800">
-                            Guardar
-                        </button>
-                        <button
-                            onClick={() => { setSelectedProfesional(null); handleCancel_init() }}
-                            className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800">
-                            Cancelar
-                        </button>
+                            <button
+                                onClick={() => { setSelectedProfesional(null); handleCancel_init() }}
+                                className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800">
+                                Cancelar
+                            </button>
+                        </div>
                     </div>
                 </div>
-                </div>
-    )
-}
+            )
+            }
         </main >
     )
     // #endregion

@@ -103,22 +103,17 @@ const Aulas: React.FC = () => {
     };
     return (
         <main className="relative min-h-screen w-screen">
-            <Image
-                src={Background}
-                alt="Background"
-                layout="fill"
-                objectFit="cover"
-                quality={80}
-                priority={true}
-            />
-
             <Navigate />
+            <div className="fixed inset-0 z-[-1]">
+                <Image src={Background} alt="Background" layout="fill" objectFit="cover" quality={80} priority={true} />
+            </div>
 
             {/* Muestra el título de la página */}
-            <h1 className="absolute top-40 left-60 mb-5 text-3xl">Aulas</h1>
 
+            <h1 className="absolute top-35 left-60 mb-5 text-3xl">Aulas</h1>
             {/* Muestra la lista de aulas */}
-            <div className="top-60 border p-1 absolute left-40 h-90 max-h-90" style={{ background: "#D9D9D9" }}>
+            <div className="top-40 border p-1 absolute left-40 h-90 max-h-90" style={{ background: "#D9D9D9" }}>
+             
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 my-4">
                     {aulas.map((aula) => (
                         <button
@@ -156,7 +151,7 @@ const Aulas: React.FC = () => {
                 <button onClick={() => setSelectedAulaIdCrear(-1)} className="mt-6 mx-4">
                     <Image src={ButtonAdd} className="mx-3" alt="Añadir Aula" width={70} height={70} />
                 </button>
-                <But_aside />
+
             </div>
 
 
@@ -247,7 +242,7 @@ const Aulas: React.FC = () => {
                 </div>
             )}
 
-
+            <But_aside />
         </main>
     );
 

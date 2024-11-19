@@ -53,17 +53,9 @@ const AulasProfecional: React.FC = () => {
    
     return (
         <main className="relative min-h-screen w-screen">
-            <Image
-                src={Background}
-                alt="Background"
-                layout="fill"
-                objectFit="cover"
-                quality={80}
-                priority={true}
-            />
-
-            <div className="fixed justify-between w-full p-4" style={{ background: "#1CABEB" }}>
-                <Navigate />
+            <Navigate />
+            <div className="fixed inset-0 z-[-1]">
+                <Image src={Background} alt="Background" layout="fill" objectFit="cover" quality={80} priority={true} />
             </div>
 
             {/* Muestra el título de la página */}
@@ -104,9 +96,7 @@ const AulasProfecional: React.FC = () => {
 
                 </div>
                
-                <div className="fixed bottom-0 mt-20 bg-white w-full" style={{ opacity: 0.66 }}>
-                    <But_aside /> {/* Corrige el nombre del componente */}
-                </div>
+                <But_aside />
             </div>
 
 

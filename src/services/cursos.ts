@@ -12,6 +12,7 @@ export type Curso = {
     edadMaxima: number
     fechaInicio: Date
     fechaFin: Date
+    imagen: string | null
   }
 //Crear Crusos
 export async function createCurso(data: {
@@ -21,6 +22,7 @@ export async function createCurso(data: {
     edadMaxima: number
     fechaInicio: Date
     fechaFin: Date
+    imagen: string | null
 }) {
     // antes de crear un curso se verifica si el curso ya existe en la base de datos con el nombre que se quiere crear y año
     const curso = await getCursoByNombre(data) 
@@ -34,10 +36,10 @@ export async function createCurso(data: {
             nombre: data.nombre,
             descripcion: data.descripcion,
             edadMaxima: Number(data.edadMaxima),
-              edadMinima: Number(data.edadMinima),
+            edadMinima: Number(data.edadMinima),
             fechaInicio: data.fechaInicio,
-            fechaFin: data.fechaFin 
-
+            fechaFin: data.fechaFin,
+            imagen: data.imagen
         }
     })
 }
@@ -138,6 +140,7 @@ export async function updateCurso(id: number, data: {
     fechaFin: Date
     edadMinima: number
     edadMaxima: number
+    imagen: string | null
   
 }) {
     return prisma.curso.update({
@@ -150,7 +153,8 @@ export async function updateCurso(id: number, data: {
             fechaInicio: data.fechaInicio,
             fechaFin: data.fechaFin,
             edadMaxima: Number(data.edadMaxima),
-            edadMinima: Number(data.edadMinima)
+            edadMinima: Number(data.edadMinima),
+            imagen: data.imagen
         }
     })
 }

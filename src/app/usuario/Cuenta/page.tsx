@@ -4,7 +4,7 @@ import Background from "../../../../public/Images/Background.jpeg";
 import But_aside from "../../../components/but_aside/page";
 import Image from "next/image";
 import Navigate from "../../../components/alumno/navigate/page";
-import { getAlumnoByCookie, getAlumnoByEmail, updateAlumno } from '@/services/Alumno';
+import { dniExists, emailExists, getAlumnoByCookie, getAlumnoByEmail, updateAlumno } from '@/services/Alumno';
 import { addDireccion, getDireccionById, getDireccionCompleta, updateDireccionById } from '@/services/ubicacion/direccion';
 import { addProvincias, getProvinciasById, updateProvinciaById } from '@/services/ubicacion/provincia';
 import { addLocalidad, getLocalidadById, getLocalidadesByProvinciaId, updateLocalidad } from '@/services/ubicacion/localidad';
@@ -15,6 +15,7 @@ import withAuthUser from "../../../components/alumno/userAuth";
 import { useRouter } from 'next/navigation';
 import { autorizarUser, fetchUserData } from '@/helpers/cookies';
 import PasswordComponent from '@/components/Password/page';
+import { validateApellido, validateDireccion, validateDni, validateEmail, validateNombre, validatePhoneNumber } from '@/helpers/validaciones';
 type Usuario = {
     id: number;
     nombre: string;
@@ -57,7 +58,10 @@ const Cuenta: React.FC = () => {
         direccionId: user?.direccionId || 0,
         rolId: user?.rolId || 0
     });
-
+    const [alumnoDetailsCopia, setAlumnoDetailsCopia] = useState<{
+        id: number; nombre: string; apellido: string; dni: number;
+        telefono: number; email: string; fechaNacimiento: string; direccionId?: number; rolId?: number;
+    }>();
     const [nacionalidadName, setNacionalidadName] = useState<string>();
     // Estado para almacenar el ID de la provincia, inicialmente nulo
     const [provinciaName, setProvinciaName] = useState<string>();
@@ -112,7 +116,7 @@ const Cuenta: React.FC = () => {
         setUser(user)
         if (!user) return;
         const edad = new Date().getFullYear() - new Date(user?.fechaNacimiento).getFullYear();
-        //if (edad >= 18) setMayoriaEdad(true);
+        if (edad >= 18) setMayoriaEdad(true);
         let talleres = await getCursosByIdAlumno(Number(user?.id));
         setCursos([])
         talleres.map((curso) => {
@@ -193,50 +197,66 @@ const Cuenta: React.FC = () => {
             fechaNacimiento: (userUpdate.fechaNacimiento),
             email: userUpdate.email, direccionId: userUpdate.direccionId, rolId: userUpdate.rolId
         });
+        setAlumnoDetailsCopia({
+            id: userUpdate.id,
+            nombre: userUpdate.nombre, apellido: userUpdate.apellido,
+            dni: Number(userUpdate.dni), telefono: (userUpdate.telefono),
+            fechaNacimiento: (userUpdate.fechaNacimiento),
+            email: userUpdate.email, direccionId: userUpdate.direccionId, rolId: userUpdate.rolId
+        });
         setUser(userUpdate);
         //setOpenBox(!openBox)
 
         //CARGAR TODAS LAS DIRECCIONES
     }
-    function validateAlumnoDetails() {
+     //region validate
+     async function validatealumnoDetails() {
+        const { nombre, apellido, email, telefono, dni } = alumnoDetails || {};
+/*         if (JSON.stringify(alumnoDetails) === JSON.stringify(alumnoDetailsCopia)) {
+            return;
+        } */
+        console.log("responsableDetails", alumnoDetails);
 
-        const { nombre, apellido, dni, telefono } = alumnoDetails;
-        if (nombre.length < 2) {
-            return "El nombre debe tener al menos 3 caracteres.";
+        //validar que el nombre sea de al menos 2 caracteres y no contenga números
+        let resultValidate;
+        if (alumnoDetails) {
+            resultValidate = validateNombre(nombre);
+            if (resultValidate) return resultValidate;
+
+            resultValidate = validateApellido(apellido);
+            if (resultValidate) return resultValidate;
+
+            resultValidate = validateEmail(email);
+            if (resultValidate) return resultValidate;
+            if (email !== alumnoDetailsCopia?.email) {
+                const estado = await emailExists(email)
+                if (estado) {
+                    return "El email ya está registrado.";
+                }
+                if (resultValidate) return resultValidate;
+            }
+
+
+            if (dni && typeof (dni) === "number") {
+                resultValidate = validateDni(String(dni));
+                if (resultValidate) return resultValidate;
+                if (dni !== alumnoDetailsCopia?.dni) {
+                    const estado = await dniExists(dni)
+                    if (estado) {
+                        return "El dni ya está registrado.";
+                    }
+                }
+            }
+            if ( telefono && typeof (telefono) === "number") {
+                resultValidate = validatePhoneNumber(String(telefono));
+                if (resultValidate) return resultValidate;
+
+            }
+
         }
-        if (apellido.length === 1) {
-            return "El apellido debe tener más de 0 caracteres.";
-        }
-        if (dni.toString().length !== 8) {
-            return "El DNI debe tener 8 caracteres.";
-        }
-        if (telefono.toString().length !== 9) {
-            return "El teléfono debe ser un número válido de 9 dígitos.";
-        }
-        if (!nacionalidadName) {
-            return "El país no puede estar vacío.";
-        }
-        if (!provinciaName) {
-            return "La provincia no puede estar vacía.";
-        }
-        if (!localidadName) {
-            return "La localidad no puede estar vacía.";
-        }
-        if (!calle) {
-            return "La calle no puede estar vacía.";
-        }
-        if (!numero) {
-            return "El número no puede estar vacío.";
-        }
-        // no puede contener caracteres especiales solo letras y numeros y comas y puntos y acentos
-        const regex = /^[a-zA-Z0-9_ ,.;áéíóúÁÉÍÓÚñÑüÜ]*$/;
-        if (!regex.test(nombre) || !regex.test(apellido)) {
-            return "El nombre no puede contener caracteres especiales";
-        }
-        if (!regex.test(calle)) {
-            return "La calle no puede contener caracteres especiales";
-        }
-        return false;
+        resultValidate = validateDireccion(nacionalidadName, provinciaName, localidadName, String(calle), Number(numero));
+        if (resultValidate) return resultValidate
+      
     }
 
     function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -249,7 +269,7 @@ const Cuenta: React.FC = () => {
 
     async function handleSaveChanges() {
 
-        const validationError = validateAlumnoDetails();
+        const validationError = await validatealumnoDetails();
         if (validationError) {
             setErrorMessage(validationError);
             return;
@@ -441,7 +461,7 @@ const Cuenta: React.FC = () => {
                                     type="number"
                                     id="telefono"
                                     name="telefono"
-                                    placeholder="Ingrese su código de área"
+                                    placeholder="Ingrese su código de área y los dígitos de su teléfono"
                                     value={alumnoDetails.telefono}
                                     onChange={handleChange}
                                     className="p-2 w-full border rounded"
@@ -461,8 +481,8 @@ const Cuenta: React.FC = () => {
                                 max={new Date().toISOString().split('T')[0]} // Set max to today's date
                             />
                         </div>
-                        {!nacionalidadName && !provinciaName && !localidadName && !calle && !numero && user?.direccionId && <p className=" text-red-600">Cargando su ubicación...</p>}
-                        {user?.direccionId && <div className="mb-4">
+                        {((!nacionalidadName && !provinciaName && !localidadName && !calle && !numero && openBox === 1) && user?.direccionId) && <p className=" text-red-600">Cargando su ubicación...</p>}
+                        {<div className="mb-4">
                             <label htmlFor="pais" className="block">País:</label>
                             <input
                                 type="text"
@@ -473,7 +493,7 @@ const Cuenta: React.FC = () => {
                                 className="p-2 w-full border rounded"
                             />
                         </div>}
-                        {user?.direccionId && <div className="mb-4">
+                        { <div className="mb-4">
                             <label htmlFor="provincia" className="block">Provincia:</label>
                             <input
                                 type="text"
@@ -484,7 +504,7 @@ const Cuenta: React.FC = () => {
                                 className="p-2 w-full border rounded"
                             />
                         </div>}
-                        {user?.direccionId && <div className="mb-4">
+                        { <div className="mb-4">
                             <label htmlFor="localidad" className="block">Localidad:</label>
                             <input
                                 type="text"
@@ -495,7 +515,7 @@ const Cuenta: React.FC = () => {
                                 className="p-2 w-full border rounded"
                             />
                         </div>}
-                        {user?.direccionId && <div className="mb-4">
+                        <div className="mb-4">
                             <label htmlFor="calle" className="block">Calle:</label>
                             <input
                                 type="text"
@@ -505,7 +525,7 @@ const Cuenta: React.FC = () => {
                                 onChange={(e) => setcalle(e.target.value)}
                                 className="p-2 w-full border rounded"
                             />
-                        </div> &&
+                        </div> 
                             <div className="mb-4">
                                 <label htmlFor="numero" className="block">Número:</label>
                                 <input
@@ -517,7 +537,7 @@ const Cuenta: React.FC = () => {
                                     className="p-2 w-full border rounded"
                                 />
                             </div>
-                        }
+                        
                         <div>
                             <button
                                 className="py-2  text-black font-bold rounded hover:underline"

@@ -40,19 +40,20 @@ const Contacto = () => {
                 priority={true}
             />
             <div>
-            <div className="fixed bg-blue-400 justify-between w-full p-4 z-50">
+                <div className="fixed bg-blue-400 justify-between w-full p-4 z-50" style={{ backgroundColor: "#3f8df5" }}>
                     <Navigate />
                 </div>
-                <div className="fixed bottom-0 bg-white w-full z-40" style={{ opacity: 0.66 }}>
+                <div className="fixed bottom-0 bg-white w-full z-40" style={{ backgroundColor: "#3f8df5" }}>
                     <But_aside />
                 </div>
-                <div className="relative flex flex-col justify-center items-center space-y-4 h-full pt-40">
+
+                <div className="relative flex flex-col justify-center items-center space-y-4 h-full pt-40 z-20" style={{ fontFamily: "Cursive" }}>
                     <h1 className="text-3xl text-black">Comunícate con nosotros</h1>
                     <h2 className="text-xl text-black text-center px-4 md:px-0">
                         Le extendemos este formulario, a fin de que pueda comunicarse con nosotros, y saldar cualquier duda que tenga.
                     </h2>
 
-                    <form onSubmit={handleSubmit} className="w-full max-w-md p-6 rounded-lg  space-y-4 bg-white bg-opacity-80 shadow-md">
+                    <form onSubmit={handleSubmit} className="w-full max-w-md p-6 rounded-lg space-y-4">
                         <div className="flex flex-col">
                             <label htmlFor="name" className="text-black mb-2">Nombre</label>
                             <input
@@ -102,6 +103,8 @@ const Contacto = () => {
                         </button>
                     </form>
                 </div>
+
+                <div className="absolute inset-20 bg-white bg-opacity-90 z-10 rounded-lg shadow-md mt-20 pointer-events-none mb-10 ml-40 mr-40"></div>
             </div>
         </main>
     );
