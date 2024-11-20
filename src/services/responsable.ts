@@ -13,10 +13,12 @@ export async function getResponsableByAlumnoId(alumnoId: number) {
   });
 }
 
+
 //obtener todos los responsables
 export async function getAllResponsables() {
    return await prisma.responsable.findMany();
 }
+//crear responsable
 //crear responsable
 export async function createResponsable(data: {
   alumnoId: number;
@@ -27,8 +29,25 @@ export async function createResponsable(data: {
   email: string;
   direccionId: number;
 }) {
+  const responsable = await getResponsableByAlumnoId(data.alumnoId);
+  if(responsable) {
+    console.log("existe responsable", responsable)
+    return await prisma.responsable.update({
+      where: { alumnoId: data.alumnoId },
+      data: data,
+    });
+  }
+  console.log("no existe responsable", data)
   return await prisma.responsable.create({
-    data: data,
+    data: {
+      alumnoId: data.alumnoId,
+      nombre: data.nombre,
+      apellido: data.apellido,
+      dni: data.dni,
+      telefono: data.telefono,
+      email: data.email,
+      direccionId: data.direccionId,
+    },
   });
 }
 

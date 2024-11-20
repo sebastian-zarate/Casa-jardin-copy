@@ -108,6 +108,9 @@ const Menores: React.FC = () => {
     const [user, setUser] = useState<any>();
     const [verifi, setVerifi] = useState<boolean>(false)
 
+    const [direccionId, setDireccionId] = useState<number>(0);
+    const [direccionIdMayor, setDireccionIdMayor] = useState<number>(0);
+
     //datos menor: nombre, apellido, edad, fecha de nacimiento, dni,pais, localidad,calle
     //datos mayor: nombre, apellido, telefono, correo electronico, dni, pais, localidad, calle
     //datos salud: enfermedad ?, alergia?, tratamiento o medicacion?, terapia?, consultas a especialistas (neurologo, cardiologo, fisioterapeutas, etc.)
@@ -144,6 +147,8 @@ const Menores: React.FC = () => {
                         provincia = localidad?.provincia;
                         pais = provincia?.nacionalidad;
                     }
+                    if (direccion) setDireccionId((direccion.id));
+
                     //cargo los datos del menor obtenidos del usuario
                     setDatosMenor({
                         ...datosMenor,
@@ -170,6 +175,7 @@ const Menores: React.FC = () => {
                         numero: Number(direccion?.numero),
                     });
                     if (typeof(responsable) !== "string" && responsable) {
+                        setDireccionIdMayor(responsable.id)
                         //cargo los datos del menor obtenidos del usuario
                         setDatosMayor({
                             ...datosMayor,
@@ -364,31 +370,27 @@ const Menores: React.FC = () => {
         const solicitud = await createSolicitud()
 
         //crear ubicaciones del menor
-        const pais = await addPais({ "nombre": datosMenor.pais })
+/*          const pais = await addPais({ "nombre": datosMenor.pais })
         const provincia = await addProvincias({ "nombre": datosMenor.provincia, "nacionalidadId": pais.id })
         const localidad = await addLocalidad({ "nombre": datosMenor.localidad, "provinciaId": provincia.id })
         const direccion = await addDireccion({ "calle": datosMenor.calle, "numero": datosMenor.numero, "localidadId": localidad.id })
-
+  */
         //alumno que pudo ser actualizado
-        const newAlumno = {
+/*         const newAlumno = {
             Id: Number(user?.id),
             nombre: datosMenor.nombre,
             apellido: datosMenor.apellido,
             dni: datosMenor.dni,
             email: user.email,
-            direccionId: direccion.id,
-        }
+            direccionId: direccionId,
+        } */
 
-        await updateAlumno(Number(newAlumno.Id), newAlumno)
+        //await updateAlumno(Number(newAlumno.Id), newAlumno)
 
         //console.log("ALUMNO::::", alumno)
         //crear ubicaciones del mayor/responsable
-        const paisMayor = await addPais({ "nombre": datosMayor.pais })
-        const provinciaMayor = await addProvincias({ "nombre": datosMayor.provincia, "nacionalidadId": paisMayor.id })
-        const localidadMayor = await addLocalidad({ "nombre": datosMayor.localidad, "provinciaId": provinciaMayor.id })
-        const direccionMayor = await addDireccion({ "calle": datosMayor.calle, "numero": datosMayor.numero, "localidadId": localidadMayor.id })
-
         //crear responsable del menor
+        console.log("datosMayor", datosMayor)
         const alumno = await createResponsable({
             alumnoId: Number(user?.id),
             nombre: datosMayor.nombre,
@@ -396,7 +398,7 @@ const Menores: React.FC = () => {
             dni: datosMayor.dni,
             email: datosMayor.correoElectronico,
             telefono: String(datosMayor.telefono),
-            direccionId: direccionMayor.id,
+            direccionId: direccionIdMayor ? direccionIdMayor : direccionId
         })
 
         //console.log("RESPONSABLE::::", responsable)
@@ -527,6 +529,7 @@ const Menores: React.FC = () => {
                         <button
                             className='mx-2 py-2 text-white rounded bg-black px-5'
                             onClick={() => {
+                                console.log("datosMayor", datosMayor)
                                 if (datosReglamentacion.firma.length < 1 && selectedScreen === 6) return setError("Debe firmar la reglamentación");
                                 setVerificarEmail(true)
                             }}

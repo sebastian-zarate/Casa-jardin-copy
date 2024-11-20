@@ -33,6 +33,8 @@ const Mayores: React.FC = () => {
     const [cursosYaInscriptosId, setCursosYaInscriptosId] = useState<number[]>([]);
     const [cursosYaInscriptosName, setCursosYaInscriptosName] = useState<number[]>([]);
 
+    const [direccionId, setDireccionId] = useState<number>(0);
+
     const [datosAlumno, setDatosAlumno] = useState({
         nombre: "",
         apellido: "",
@@ -119,10 +121,14 @@ const Mayores: React.FC = () => {
                 const provincia = await getProvinciasById(Number(localidad?.provinciaId))
                 const pais = await getPaisById(Number(provincia?.nacionalidadId))
  */
-                const direccion = await getDireccionCompleta(Number(user.direccionId))
-                const localidad = direccion?.localidad
-                const provincia = localidad?.provincia
-                const pais = provincia?.nacionalidad
+                let direccion, localidad, provincia, pais;
+                if(user.direccionId) {
+                    direccion = await getDireccionCompleta(user.direccionId);
+                    localidad = direccion?.localidad;
+                    provincia = localidad?.provincia;
+                    pais = provincia?.nacionalidad;
+                }
+                if (direccion) setDireccionId((direccion.id));
                 setDatosAlumno({
                     nombre: user.nombre,
                     apellido: user.apellido,
@@ -273,25 +279,25 @@ const Mayores: React.FC = () => {
         const solicitud = await createSolicitud()
 
         //crear ubicaciones
-        const pais = await addPais({ "nombre": datosAlumno.pais })
+      /*   const pais = await addPais({ "nombre": datosAlumno.pais })
         const provincia = await addProvincias({ "nombre": datosAlumno.provincia, "nacionalidadId": pais.id })
         const localidad = await addLocalidad({ "nombre": datosAlumno.localidad, "provinciaId": provincia.id })
-        const direccion = await addDireccion({ "calle": datosAlumno.calle, "numero": datosAlumno.numero, "localidadId": localidad.id })
+        const direccion = await addDireccion({ "calle": datosAlumno.calle, "numero": datosAlumno.numero, "localidadId": localidad.id }) */
 
         //alumno que pudo ser actualizado
-        const newAlumno = {
+/*         const newAlumno = {
             Id: Number(user?.id),
             nombre: datosAlumno.nombre,
             apellido: datosAlumno.apellido,
             dni: datosAlumno.dni,
             telefono: String(datosAlumno.telefono),
             email: datosAlumno.correoElectronico,
-            direccionId: direccion.id,
+            direccionId: direccionId,
         }
-        //console.log("newAlumno:::::", newAlumno)
+        console.log("newAlumno:::::", newAlumno)
         const alumno = await updateAlumno(Number(newAlumno.Id), newAlumno)
-        //si alumno es un string es un error
-        if (typeof alumno === "string") return setError(alumno)
+        si alumno es un string es un error
+        if (typeof alumno === "string") return setError(alumno) */
 
         //crear solicitud mayor
         await createSolicitudMayor({
