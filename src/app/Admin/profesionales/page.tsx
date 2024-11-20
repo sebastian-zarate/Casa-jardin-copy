@@ -26,6 +26,8 @@ import { hashPassword } from "@/helpers/hashPassword";
 //para subir imagenes:
 import { handleUploadProfesionalImage, handleDeleteProfesionalImage, } from "@/helpers/repoImages";
 import { mapearImagenes } from "@/helpers/repoImages";
+import { validateApellido, validateDireccion, validateDni, validateEmail, validateNombre, validatePasswordComplexity, validatePhoneNumber } from "@/helpers/validaciones";
+import { dniExists, emailExists } from "@/services/Alumno";
 // #endregion
 
 const Profesionales = () => {
@@ -40,6 +42,7 @@ const Profesionales = () => {
     const [obProfesional, setObProfesional] = useState<any>(null);
 
     const [profesionalDetails, setProfesionalDetails] = useState<any>({});
+    const [profesionalDetailsCopia, setProfesionalDetailsCopia] = useState<any>({});
 
     // Estado para almacenar mensajes de error
     const [errorMessage, setErrorMessage] = useState<string>("");
@@ -136,8 +139,26 @@ const Profesionales = () => {
                 especialidad: selectedProfesional.especialidad || '',
                 direccionId: selectedProfesional.direccionId || '',
             });
+            setProfesionalDetailsCopia({
+                id: selectedProfesional.id,
+                nombre: selectedProfesional.nombre || '',
+                apellido: selectedProfesional.apellido || '',
+                email: selectedProfesional.email || '',
+                password: '',
+                telefono: selectedProfesional.telefono ? selectedProfesional.telefono : '',
+                especialidad: selectedProfesional.especialidad || '',
+                direccionId: selectedProfesional.direccionId || '',
+            });
         } else if (selectedProfesional === -1) {
             setProfesionalDetails({
+                nombre: '',
+                apellido: '',
+                email: '',
+                password: '',
+                telefono: '',
+                especialidad: '',
+            });
+            setProfesionalDetailsCopia({
                 nombre: '',
                 apellido: '',
                 email: '',
@@ -275,21 +296,51 @@ const Profesionales = () => {
         }
     };
     //region check validation!!
-    function validateProfesionalDetails() {
-        const { nombre, apellido, email, especialidad, password, telefono } = profesionalDetails;
+    async function validateProfesional() {
+        const { nombre, apellido, password, email, telefono, dni } = profesionalDetails || {};
 
-        //validar que el nombre sea de al menos 2 caracteres
-        if (nombre.length < 2) {
-            return "El nombre debe tener al menos 2 caracteres";
+        //validar que el nombre sea de al menos 2 caracteres y no contenga números
+        let resultValidate;
+        if (profesionalDetails) {
+            resultValidate = validateNombre(nombre);
+            if (resultValidate) return resultValidate;
+
+            resultValidate = validateApellido(apellido);
+            if (resultValidate) return resultValidate;
+
+            resultValidate = validateEmail(email);
+            if (resultValidate) return resultValidate;
+            if (email !== profesionalDetailsCopia.email) {
+                const estado = await emailExists(email)
+                if (estado) {
+                    return "El email ya está registrado.";
+                }
+                if (resultValidate) return resultValidate;
+            }
+
+
+            resultValidate = validateDni(String(dni));
+            if (resultValidate) return resultValidate;
+            if (dni !== profesionalDetailsCopia.dni) {
+                const estado = await dniExists(Number(dni))
+                if (estado) {
+                    return "El dni ya está registrado.";
+                }
+            }
+            if (telefono && typeof (telefono) === "number") {
+                resultValidate = validatePhoneNumber(String(telefono));
+                if (resultValidate) return resultValidate;
+            }
+            if (password && password.length > 0) {
+                resultValidate = validatePasswordComplexity(password);
+                if (resultValidate) return resultValidate;
+            }
+
         }
-        //validar que el apellido sea de al menos 2 caracteres
-        if (apellido.length < 2) {
-            return "El apellido debe tener al menos 2 caracteres";
-        }
-        if (password.length > 0) {
-            const passwordRegex = /^(?=.*[A-Z])[A-Za-z\d@$!%*?&]{8,}$/;
-            if (!passwordRegex.test(password)) return "La contraseña debe tener al menos una letra mayúscula y 8 caracteres";
-        }
+        resultValidate = validateDireccion(nacionalidadName, provinciaName, localidadName, String(calle), Number(numero));
+        if (resultValidate) return resultValidate
+
+        return null;
     }
 
     //para ver las imagenes agregadas sin refresh de pagina
@@ -308,7 +359,7 @@ const Profesionales = () => {
 
     async function handleSaveChanges() {
 
-        const validationError = validateProfesionalDetails();
+        const validationError = await validateProfesional();
         console.log(obProfesional)
 
         if (validationError) {
@@ -388,7 +439,7 @@ const Profesionales = () => {
     }
 
     async function handleCreateProfesional() {
-        const validationError = validateProfesionalDetails();
+        const validationError = await validateProfesional();
         const direccion = await createUbicacion();
         console.log("newDireccion", direccion);
         if (validationError) {
