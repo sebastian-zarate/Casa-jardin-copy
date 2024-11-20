@@ -57,7 +57,7 @@ const Alumnos: React.FC = () => {
         email: "",
         password: "",
         fechaNacimiento: new Date(),
-        direccionId: 0
+        direccionId: null
     });
     const [responsableDetails, setResponsableDetails] = useState<any>({
         id: 0,
@@ -67,7 +67,7 @@ const Alumnos: React.FC = () => {
         telefono: 0,
         email: "",
         alumnoId: 0,
-        direccionId: 0
+        direccionId: null
     });
     const [responsableDetailsCopia, setResponsableDetailsCopia] = useState<any>({
         id: 0,
@@ -77,7 +77,7 @@ const Alumnos: React.FC = () => {
         telefono: 0,
         email: "",
         alumnoId: 0,
-        direccionId: 0
+        direccionId: null
     });
     const [responsables, setResponsables] = useState<any[]>([]);
     // Estado para almacenar mensajes de error
@@ -271,13 +271,9 @@ const Alumnos: React.FC = () => {
     //region validate
     async function validatealumnoDetails() {
         const { nombre, apellido, password, email, telefono, dni } = alumnoDetails || {};
-        /*         if (JSON.stringify(alumnoDetails) === JSON.stringify(alumnoDetailsCopia)) {
-                    return;
-                } */
-        console.log("Password", calle, numero, localidadName, provinciaName, nacionalidadName);
-        console.log("responsableDetails", alumnoDetails);
         const { nombre: nombreR, apellido: apellidoR, email: EmailR,
             dni: dniR, telefono: telefonoR } = responsableDetails || {};
+            
         //validar que el nombre sea de al menos 2 caracteres y no contenga números
         let resultValidate;
         if (alumnoDetails) {

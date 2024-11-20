@@ -90,7 +90,7 @@ const Cuenta: React.FC = () => {
 
     const router = useRouter();
     useEffect(() => {
-        if(!profesionalDetails.email){
+        if (user && !profesionalDetails.email ) {
             getUser()
             console.log("holaaaaaaaaaaaaaaaaaaaaaa")
         }
@@ -321,7 +321,7 @@ const Cuenta: React.FC = () => {
 
     }
     //endregion
-
+//region return
     return (
         <main className=''>
             <Navigate />

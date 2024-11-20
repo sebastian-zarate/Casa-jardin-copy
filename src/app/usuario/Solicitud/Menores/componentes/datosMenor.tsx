@@ -182,7 +182,7 @@ const DatosMenor: React.FC<Datos> = ({ datosMenor, setDatosMenor }) => {
                 type="text"
                 placeholder="Ingrese el número"
                 className="border rounded"
-                value={datosMenor.numero ?? ''}
+                value={Number(datosMenor.numero) ?? ''}
                 onChange={(e) =>
                   setDatosMenor((prev) => ({
                     ...prev,

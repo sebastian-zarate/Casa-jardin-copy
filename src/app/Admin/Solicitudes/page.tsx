@@ -12,8 +12,8 @@ import { getAllSolicitudesMenores, SolicitudMenores } from "@/services/Solicitud
 import { Alumno } from "@prisma/client";
 import { getDireccionCompleta } from "@/services/ubicacion/direccion";
 import { getResponsableByAlumnoId } from "@/services/responsable";
-import { emailTest } from "@/helpers/email";
-import { emailRechazo } from "@/helpers/emailRechazoSoli";
+import { emailTest } from "@/helpers/email/email";
+import { emailRechazo } from "@/helpers/email/emailRechazoSoli";
 import withAuth from "@/components/Admin/adminAuth";
 import Background from "../../../../public/Images/BackgroundSolicitudes.jpg";
 

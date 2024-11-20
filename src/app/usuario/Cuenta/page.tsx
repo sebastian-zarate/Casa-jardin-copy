@@ -94,7 +94,7 @@ const Cuenta: React.FC = () => {
 
     const router = useRouter();
     useEffect(() => {
-        if (!alumnoDetails.email) {
+        if (user && !alumnoDetails.email ) {
             getUser()
             console.log("holaaaaaaaaaaaaaaaaaaaaaa")
         }
@@ -373,7 +373,7 @@ const Cuenta: React.FC = () => {
                         </div>
                         <div className="mb-4">
                             <label className="block text-gray-700 font-bold mb-2">Fecha de Nacimiento:</label>
-                            <p className="p-2 border rounded bg-gray-100">{user?.fechaNacimiento ? new Date(user.fechaNacimiento).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: '2-digit' }) : ''}</p>
+                            <p className="p-2 border rounded bg-gray-100">{user?.fechaNacimiento ? new Date(user.fechaNacimiento).toLocaleDateString('es-ES', { timeZone: 'UTC', day: '2-digit', month: '2-digit', year: '2-digit' }) : ''}</p>
                         </div>
 
                     </div>
@@ -444,7 +444,7 @@ const Cuenta: React.FC = () => {
                                 className="p-2 w-full border rounded"
                             />
                         </div>
-                        <div className="mb-4">
+  {/*                       <div className="mb-4">
                             <label htmlFor="imagen" className="block">Imagen:</label>
                             <input
                                 type="file"
@@ -452,7 +452,7 @@ const Cuenta: React.FC = () => {
                                 name="imagen"
                                 className="p-2 w-full border rounded"
                             />
-                        </div>
+                        </div> */}
                         {mayoriaEdad && <div className="mb-4">
                             <label htmlFor="telefono" className="block">Teléfono:</label>
                             <div className="flex">
@@ -529,7 +529,7 @@ const Cuenta: React.FC = () => {
                             <div className="mb-4">
                                 <label htmlFor="numero" className="block">Número:</label>
                                 <input
-                                    type="text"
+                                    type="Number"
                                     id="numero"
                                     name="numero"
                                     value={Number(numero)}

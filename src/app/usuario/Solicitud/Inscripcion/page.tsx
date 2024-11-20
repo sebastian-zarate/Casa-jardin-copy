@@ -12,6 +12,11 @@ const Inscripcion: React.FC<{}> = () => {
     
     const [edad, setEdad] = useState<number>(0);
     const router = useRouter();
+    const [error, setError] = useState<string>("");
+    const [alumnoDetails, setAlumnoDetails] = useState<{
+        id: number; nombre: string; apellido: string; dni: number;
+        telefono: number; email: string; fechaNacimiento: string; direccionId?: number; rolId?: number;
+    }>();
     // Para cambiar al usuario de página si no está logeado
     useEffect(() => {
             const authorizeAndFetchData = async () => {
@@ -20,6 +25,7 @@ const Inscripcion: React.FC<{}> = () => {
                 await autorizarUser(router);
                 // Una vez autorizado obtengo los datos del user y seteo el email
                 const user = await fetchUserData();
+                setAlumnoDetails(user);
                 //console.log("user", user);
                 if (user) {
                     setEdad(calcularEdad(user.fechaNacimiento));
@@ -28,6 +34,19 @@ const Inscripcion: React.FC<{}> = () => {
             authorizeAndFetchData();
 
     }, [router]);
+    const validateClick = () => {
+        if(edad && edad >= 18) {
+            if(!alumnoDetails?.dni  || !alumnoDetails?.telefono || !alumnoDetails?.direccionId) {
+                return ("Debe completar los datos personales antes de continuar");
+            }
+        } 
+        if(edad && edad < 18) {
+            if(!alumnoDetails?.dni  || !alumnoDetails?.direccionId) {
+                return ("Debe completar los datos personales antes de continuar");
+            }
+        }
+        return null;
+    }
     return (
         <main>
             <Navigate />
@@ -37,14 +56,42 @@ const Inscripcion: React.FC<{}> = () => {
             <div className='flex justify-center mt-10'>
                 <h1 className='font-bold text-xg'>Elija el tipo de inscripción</h1>
             </div>
+            {error != '' && <div className="absolute top-1/2 right-1/3 transform -translate-x-1/3 -translate-y-1/4 bg-white border p-4 rounded-md shadow-md w-96">
+                <h2 className="text-lg font-bold text-red-600 mb-2">Error</h2>
+                <p className="text-sm text-red-700 mb-4">{error}</p>
+                <div className="flex justify-end space-x-2">
+                    <button
+                        className="bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400"
+                        onClick={() => setError('')}
+                    >
+                        Cerrar
+                    </button>
+                </div>
+            </div>}
             <div className='mt-4 flex justify-center border-b mx-auto px-8 py-6  max-w-2xl'>
                 {edad !== null && edad < 18 ? (
-                    <button className="flex flex-col items-center" onClick={() => window.location.href = "/usuario/Solicitud/Menores"}>
+                    <button className="flex flex-col items-center" onClick={() => {
+                        const vali = validateClick();
+                        if(vali) {
+                            setError(vali);
+                        } else {
+                            window.location.href = "/usuario/Solicitud/Menores";
+                        }
+                        }
+                    }>
                         <Image src={menores} alt="menores" width={300} height={180} />
                         <span className='mt-2'>Inscripción para menores <br /> Uso de imagen y salidas cercanas</span>
                     </button>
                 ) : (
-                    <button className="flex flex-col items-center" onClick={() => window.location.href = "/usuario/Solicitud/Mayores"}>
+                    <button className="flex flex-col items-center" onClick={() => {
+                        const vali = validateClick();
+                        if(vali) {
+                            setError(vali);
+                        } else {
+                            window.location.href = "/usuario/Solicitud/Mayores";
+                        }
+                        }
+                    }>
                         <Image src={adultos} alt="adultos" width={280} height={100} />
                         <span className='mt-2'>Inscripción para adultos</span>
                     </button>

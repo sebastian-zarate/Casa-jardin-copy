@@ -137,10 +137,13 @@ const Menores: React.FC = () => {
                 const responsable = await getResponsableByAlumnoId(user?.id);
                 if (user) {
                     setUser(user);
-                    const direccion = await getDireccionCompleta(user.direccionId);
-                    const localidad = direccion?.localidad;
-                    const provincia = localidad?.provincia;
-                    const pais = provincia?.nacionalidad;
+                    let direccion, localidad, provincia, pais;
+                    if(user.direccionId) {
+                        direccion = await getDireccionCompleta(user.direccionId);
+                        localidad = direccion?.localidad;
+                        provincia = localidad?.provincia;
+                        pais = provincia?.nacionalidad;
+                    }
                     //cargo los datos del menor obtenidos del usuario
                     setDatosMenor({
                         ...datosMenor,
@@ -166,7 +169,7 @@ const Menores: React.FC = () => {
                         calle: direccion?.calle || '',
                         numero: Number(direccion?.numero),
                     });
-                    if (responsable) {
+                    if (typeof(responsable) !== "string" && responsable) {
                         //cargo los datos del menor obtenidos del usuario
                         setDatosMayor({
                             ...datosMayor,

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { emailTest } from "@/helpers/email";
+import { emailTest } from "@/helpers/email/email";
 import { obtenerCodigoConfirmacion } from "@/services/redis";
 import { autorizarUser, fetchUserData } from "@/helpers/cookies";
 import { useRouter } from "next/navigation";

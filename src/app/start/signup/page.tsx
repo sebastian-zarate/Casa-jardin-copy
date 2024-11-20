@@ -4,7 +4,8 @@ import BackgroundLibrary from '../../../../public/Images/BookShell.jpg';
 import Logo from '../../../../public/Images/LogoCasaJardin.png';
 import TituloCasaJardin from '../../../../public/Images/TituloCasaJardin.png';
 import { useState, useEffect } from "react";
-import { createAlumno} from "../../../services/Alumno";
+import { createAlumno, emailExists} from "../../../services/Alumno";
+import { validateApellido, validateEmail, validateNombre, validatePasswordComplexity } from '@/helpers/validaciones';
 
 function Signup() {
   // Se crean los estados para los campos del formulario de registro
@@ -34,47 +35,31 @@ function Signup() {
 
   // en esta funsion se valida el formulario de registro 
   // para que los datos sean correctos
-  const validateForm = () => {
-
+  //region validateForm
+  const validateForm = async () => {
+    const estado = await emailExists(email)
+    if (estado) {
+      return "El email ya está registrado.";
+    }
     
+    let validateInput;
+    validateInput = validateNombre(nombre);
+    if (typeof(validateInput) === "string") return validateInput;
 
-    if (nombre.length < 2 || nombre.length > 50) {
-      return "El nombre debe tener entre 2 y 50 caracteres.";
-    }
-    if (apellido.length < 2 || apellido.length > 50) {
-      return "El apellido debe tener entre 2 y 50 caracteres.";
-    }
-    if (!email.includes('@')) return "El email debe ser válido";
-    if (password !== confirmPassword) return "Las contraseñas no coinciden";
-    if (password.length < 8) return "La contraseña debe tener al menos 8 caracteres";
-    const passwordRegex = /^(?=.*[A-Z])[A-Za-z\d@$!%*?&]{8,}$/;
-    if (!passwordRegex.test(password)) return "La contraseña debe tener al menos una letra mayúscula y 8 caracteres";
+    validateInput = validateApellido(apellido);
+    if (validateInput) return validateInput;
 
-    if(!fechaNacimiento) return "La fecha de nacimiento es requerida";
+    validateInput = validateEmail(email);
+    if (validateInput) return validateInput;
+ 
 
-    if(fechaNacimiento >= Hoy) {
-      return "No puedes registrarte si no has nacido";
-    } else if(fechaNacimiento > edadMinima) {
-      return "Bajo supervision de un adulto responsable, debes tener al menos 3 años de edad para registrarte";
+    if (validateInput) return validateInput;
 
-    }else if(fechaNacimiento < edadMaxima) {
-      return "Debes tener menos de 100 años para registrarte";
-    }
-   
-  
+    validateInput = validatePasswordComplexity(password);
+    if (validateInput) return validateInput;
 
-    // no quiero que tenga caracteres especiales que las comas y acentos puntos sean permitidos
-    const regex = /^[a-zA-ZÀ-ÿ\u00f1\u00d1\u00fc\u00dc\s]*$/; // caracteres permitidos
-    if (!regex.test(nombre) && !regex.test(apellido)) {
-      
-      return "El nombre y en apellido no puede contener números ni caracteres especiales";
-    }
-    else if (!regex.test(nombre)) {
-      return "El nombre no puede contener números ni caracteres especiales";
-    }
-    else if (!regex.test(apellido)) {
-      return "El apellido no puede contener números ni caracteres especiales";
-    }
+    if(password !== confirmPassword) return "Las contraseñas no coinciden";
+
     return "";
 
 
@@ -83,7 +68,7 @@ function Signup() {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     // se llama a la funcion validateForm
-    const validationError = validateForm();
+    const validationError = await validateForm();
     // si hay un error en la validacion se muestra el mensaje de error
     if (validationError) {
       setError(validationError);
@@ -165,7 +150,7 @@ function Signup() {
           <Image src={Logo} alt="Logo Casa Jardin" width={150} height={150} />
         </div>
         <div
-          className="flex flex-col items-center block text-lg font-medium"
+          className="flex flex-col items-center text-lg font-medium"
           style={{ marginBottom: '20px', marginTop: '10px' }}
         >
           <h2>Registrarte</h2>

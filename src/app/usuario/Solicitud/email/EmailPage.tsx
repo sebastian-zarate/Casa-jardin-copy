@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { emailTest } from "@/helpers/email";
+import { emailTest } from "@/helpers/email/email";
 import { sendEmail } from "@/helpers/sendmail";
 import { obtenerCodigoConfirmacion } from "@/services/redis";
 import { autorizarUser, fetchUserData } from "@/helpers/cookies";
