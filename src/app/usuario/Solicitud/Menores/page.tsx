@@ -335,7 +335,10 @@ const Menores: React.FC = () => {
             resultValidate = validateDireccion(paisM, provinciaM, localidadM, String(calleM), Number(numeroM));
             if (resultValidate) return resultValidate
 
-            if(datosMayor){
+            if(datosMayor.nombre && datosMayor.apellido && datosMayor.correoElectronico &&
+                datosMayor.telefono && datosMayor.pais && datosMayor.provincia && 
+                datosMayor.localidad && datosMayor.calle && datosMayor.numero && datosMayor.dni
+            ){
                 if (JSON.stringify(datosMayor) !== JSON.stringify(datosMayorCopia)) {
                     return "Los datos del responsable no son los mismos que los registrados en el sistema";
                 }

@@ -274,16 +274,25 @@ const Cuenta: React.FC = () => {
             setErrorMessage(validationError);
             return;
         }
+        let newAlumno;
         if (!alumnoDetails.direccionId) {
             const { direccion } = await createUbicacion();
             console.log("ALUMNODETAILS", alumnoDetails);
-            const newAlumno = await updateAlumno(Number(alumnoDetails?.id), {
-                nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
-                dni: Number(alumnoDetails.dni), email: alumnoDetails.email, telefono: String(alumnoDetails.telefono),
-                direccionId: Number(direccion?.id), fechaNacimiento: new Date(alumnoDetails.fechaNacimiento)
-            });
+            if(mayoriaEdad){
+                newAlumno = await updateAlumno(Number(alumnoDetails?.id), {
+                    nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
+                    dni: Number(alumnoDetails.dni), email: alumnoDetails.email, telefono: String(alumnoDetails.telefono),
+                    direccionId: Number(direccion?.id), fechaNacimiento: new Date(alumnoDetails.fechaNacimiento)
+                });
+            }
+            if(!mayoriaEdad){
+                newAlumno = await updateAlumno(Number(alumnoDetails?.id), {
+                    nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
+                    dni: Number(alumnoDetails.dni), email: alumnoDetails.email,
+                    direccionId: Number(direccion?.id), fechaNacimiento: new Date(alumnoDetails.fechaNacimiento)
+                });
+            }
             if (typeof newAlumno === "string") return setErrorMessage(newAlumno);
-            newAlumno.direccionId = direccion?.id;
             console.log("newAlumno", newAlumno);
             setOpenBox(0);
             getUser();
@@ -311,11 +320,20 @@ const Cuenta: React.FC = () => {
             });
 
             console.log("ALUMNODETAILS", alumnoDetails);
-            const newAlumno = await updateAlumno(Number(alumnoDetails?.id), {
-                nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
-                dni: Number(alumnoDetails.dni), telefono: String(alumnoDetails.telefono),
-                direccionId: Number(newDireccion?.id), fechaNacimiento: new Date(alumnoDetails.fechaNacimiento), email: alumnoDetails.email
-            });
+            if(mayoriaEdad){
+                newAlumno = await updateAlumno(Number(alumnoDetails?.id), {
+                    nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
+                    dni: Number(alumnoDetails.dni), email: alumnoDetails.email, telefono: String(alumnoDetails.telefono),
+                    direccionId: Number(direccion?.id), fechaNacimiento: new Date(alumnoDetails.fechaNacimiento)
+                });
+            }
+            if(!mayoriaEdad){
+                newAlumno = await updateAlumno(Number(alumnoDetails?.id), {
+                    nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
+                    dni: Number(alumnoDetails.dni), email: alumnoDetails.email,
+                    direccionId: Number(direccion?.id), fechaNacimiento: new Date(alumnoDetails.fechaNacimiento)
+                });
+            }
             console.log("newAlumno", newAlumno);
         } catch (error) {
             setErrorMessage("Ha ocurrido un error al guardar los cambios.");

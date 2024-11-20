@@ -56,7 +56,7 @@ const DatosMayor: React.FC<Datos> = ({ setDatosMayor, datosMayor, setError}) => 
 
                         <div className='flex-col p-3 flex '>
                             <label htmlFor="telefono">Teléfono</label>
-                            <input id='telefono' type="text" placeholder="Ingrese el teléfono" value = {datosMayor.telefono} className="border rounded" onChange={(e) => setDatosMayor(prev => ({ ...prev, telefono: parseInt(e.target.value) }))} />
+                            <input id='telefono' type="Number" placeholder="Ingrese el teléfono" value = {datosMayor.telefono} className="border rounded" onChange={(e) => setDatosMayor(prev => ({ ...prev, telefono: parseInt(e.target.value) }))} />
                         </div>
 
                         <div className='flex-col p-3 flex '>
@@ -66,17 +66,17 @@ const DatosMayor: React.FC<Datos> = ({ setDatosMayor, datosMayor, setError}) => 
 
                         <div className='flex-col p-3 flex '>
                             <label htmlFor="dni">DNI</label>
-                            <input id='dni' type="text" placeholder="Ingrese el DNI" value = {datosMayor.dni} className="border rounded" onChange={(e) => setDatosMayor(prev => ({ ...prev, dni: parseInt(e.target.value) }))} />
+                            <input id='dni' type="Number" placeholder="Ingrese el DNI" value = {datosMayor.dni} className="border rounded" onChange={(e) => setDatosMayor(prev => ({ ...prev, dni: parseInt(e.target.value) }))} />
                         </div>
 
                         <div className='flex-col p-3 flex '>
                             <label htmlFor="pais">País</label>
-                            <input id='pais' type="text" placeholder="Ingrese el país" value = {datosMayor.pais} className="border rounded" onChange={(e) => setDatosMayor(prev => ({ ...prev, pais: e.target.value }))} />
+                            <input id='pais' type="Text" placeholder="Ingrese el país" value = {datosMayor.pais} className="border rounded" onChange={(e) => setDatosMayor(prev => ({ ...prev, pais: e.target.value }))} />
                         </div>
 
                         <div className='flex-col p-3 flex '>
                             <label htmlFor="provincia">Provincia</label>
-                            <input id='provincia' type="text" placeholder="Ingrese la provincia" value = {datosMayor.pais} className="border rounded" onChange={(e) => setDatosMayor(prev => ({ ...prev, provincia: e.target.value }))} />
+                            <input id='provincia' type="text" placeholder="Ingrese la provincia" value = {datosMayor.provincia} className="border rounded" onChange={(e) => setDatosMayor(prev => ({ ...prev, provincia: e.target.value }))} />
                         </div>
 
                         <div className='flex-col p-3 flex '>
@@ -91,7 +91,7 @@ const DatosMayor: React.FC<Datos> = ({ setDatosMayor, datosMayor, setError}) => 
                         
                         <div className='flex-col p-3 flex '>
                             <label htmlFor="numero">Número</label>
-                            <input id='numero' type="text" placeholder="Ingrese el número"  value = {datosMayor.numero} className="border rounded" onChange={(e) => setDatosMayor(prev => ({ ...prev, numero: parseInt(e.target.value) }))} />
+                            <input id='numero' type="Number" placeholder="Ingrese el número"  value = {datosMayor.numero} className="border rounded" onChange={(e) => setDatosMayor(prev => ({ ...prev, numero: parseInt(e.target.value) }))} />
                         </div>
 
                     </div>
