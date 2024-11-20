@@ -318,15 +318,6 @@ const Profesionales = () => {
                 if (resultValidate) return resultValidate;
             }
 
-
-            resultValidate = validateDni(String(dni));
-            if (resultValidate) return resultValidate;
-            if (dni !== profesionalDetailsCopia.dni) {
-                const estado = await dniExists(Number(dni))
-                if (estado) {
-                    return "El dni ya está registrado.";
-                }
-            }
             if (telefono && typeof (telefono) === "number") {
                 resultValidate = validatePhoneNumber(String(telefono));
                 if (resultValidate) return resultValidate;
