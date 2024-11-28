@@ -24,17 +24,39 @@ export default function Navigate() {
       console.error('Error en la solicitud de cierre de sesión:', error);
     }
   };
+
+  const styles = {
+    inactiveTextColor: "text-white",
+    hoverTextColor: "hover:text-gray-800",
+    underline: "border-b-2 border-transparent hover:border-white",
+};
+
+function NavLink({ href, children, onClick, className }: { href?: string, children: React.ReactNode, onClick?: () => void, className?: string }) {
+    return (
+        <a
+            className={`${styles.inactiveTextColor} px-4 py-2 font-medium ${styles.hoverTextColor} ${styles.underline} duration-300 ${className}`}
+            href={href}
+            onClick={onClick}
+        >
+            {children}
+        </a>
+    );
+}
+
+
+
+
     return (
 
         <nav className="bg-red-500 flex justify-between w-full p-5">
             <div className="flex items-center">
                 <Image src={Logo} alt="Logo Casa Jardin" width={50} height={50}/>
-                <h1 className="ml-2">Casa Jardín</h1>
+                <h1 className="ml-2 text-white">Casa Jardín</h1>
             </div>
-            <div className="ml-auto flex space-x-4 py-2">
-                <a className="p-2" href="/profesional/cronogramap/listar">Calendario</a>
-                <a className="p-2" href="/profesional/principal">Principal</a>  
-                <button className="p-2" onClick={logout}>Salir</button>          
+            <div className="ml-auto flex space-x-4 py-2 text-white hover:">
+                <NavLink href="/profesional/cronogramap/listar" className="p-2">Calendario</NavLink>
+                <NavLink className="p-2" href="/profesional/principal">Principal</NavLink>  
+                <NavLink className="p-2" onClick={logout}>Salir</NavLink>          
                 
             </div>
         </nav>

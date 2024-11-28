@@ -7,7 +7,7 @@ import { getProfesionales, deleteProfesional, createProfesional, updateProfesion
 import Image from "next/image";
 import DeleteIcon from "../../../../public/Images/DeleteIcon.png";
 import EditIcon from "../../../../public/Images/EditIcon.png";
-import Background from "../../../../public/Images/Background.jpeg"
+//import Background from "../../../../public/Images/Background.jpeg"
 import ButtonAdd from "../../../../public/Images/Button.png";
 //imagen default si el curso no tiene imagen
 import NoImage from "../../../../public/Images/default-no-image.png";
@@ -28,6 +28,7 @@ import { handleUploadProfesionalImage, handleDeleteProfesionalImage, } from "@/h
 import { mapearImagenes } from "@/helpers/repoImages";
 import { validateApellido, validateDireccion, validateDni, validateEmail, validateNombre, validatePasswordComplexity, validatePhoneNumber } from "@/helpers/validaciones";
 import { dniExists, emailExists } from "@/services/Alumno";
+import Background from "../../../../public/Images/BackProfesionales.jpg"
 // #endregion
 
 const Profesionales = () => {
@@ -505,13 +506,11 @@ const Profesionales = () => {
 
     // #region Return
     return (
-        <main className="relative min-h-screen w-screen" >
+        <main className="relative min-h-screen w-screen" style={{fontFamily:"Cursive"}}>
             <Navigate />
-            <div className="fixed inset-0 z-[-1]">
-                <Image src={Background} alt="Background" layout="fill" objectFit="cover" quality={80} priority={true} />
-            </div>
+            <Image src={Background} alt="Background" layout="fill" objectFit="cover" priority={true} style={{opacity: 0.88}} />
 
-            <h1 className="absolute top-40 left-60 mb-5 text-3xl" onClick={() => console.log(cursosElegido)} >Profesionales</h1>
+            <h1 className="absolute top-40 left-40 mb-5 text-3xl bg-white rounded-lg p-2" onClick={() => console.log(cursosElegido)} >PROFESIONALES</h1>
             <div className="absolute top-40 right-20 mb-5">
                 <div className="relative">
                     <input
@@ -527,7 +526,7 @@ const Profesionales = () => {
                         <Image src="/Images/SearchIcon.png" alt="Buscar" width={20} height={20} />
                     </div>
                 </div>
-                <button onClick={() => setProfesionales(profesionalesListaCompleta)}>Cargar Todos</button>
+                <button className="mt-5 bg-white rounded-full p-2 hover:bg-sky-600" onClick={() => setProfesionales(profesionalesListaCompleta)}>Cargar Todos</button>
                 {profesionalesBuscados.length > 0 && habilitarProfesionalesBuscados && <div className="absolute top-10 right-0 mt-2 w-full max-w-md bg-white border rounded shadow-lg">
                     {profesionalesBuscados.map((profesional, index) => (
                         <div key={index} onClick={() => { setProfesionalAbuscar(profesional.nombre + " " + profesional.apellido); setHabilitarProfesionalesBuscados(false) }} className="p-2 border-b hover:bg-gray-100 cursor-pointer">

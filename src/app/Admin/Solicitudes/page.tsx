@@ -12,8 +12,8 @@ import { getAllSolicitudesMenores, SolicitudMenores } from "@/services/Solicitud
 import { Alumno } from "@prisma/client";
 import { getDireccionCompleta } from "@/services/ubicacion/direccion";
 import { getResponsableByAlumnoId } from "@/services/responsable";
-import { emailTest } from "@/helpers/email/email";
-import { emailRechazo } from "@/helpers/email/emailRechazoSoli";
+import { emailTest } from "@/helpers/email";
+import { emailRechazo } from "@/helpers/emailRechazoSoli";
 import withAuth from "@/components/Admin/adminAuth";
 import Background from "../../../../public/Images/BackgroundSolicitudes.jpg";
 
@@ -173,32 +173,36 @@ const solicitudPage: React.FC = () => {
                                     setFirmaReglamento(String(solicitudMay.firmaReglamento));
                                 }}>
                                 <span className="block p-4 space-y-2">Solicitud: {solicitudMay.solicitudId}</span>
-                                {!getSolicitud(solicitudMay.solicitudId)?.leida && (
-                                    <div className="space-x-2">
-                                        {!getSolicitud(solicitudMay.solicitudId)?.enEspera ? (
-                                            <>
-                                                <button onClick={() => handleAceptarSolicitud(solicitudMay.solicitudId)}>Aceptar</button>
-                                                <button className="p-1 rounded-sm" onClick={() => handleRechazar(solicitudMay.solicitudId, getAl(solicitudMay.alumnoId).email)}>Rechazar</button>
-                                            </>
-                                        ) : (
-                                            <button className="p-2 rounded-sm" onClick={() => handleEliminarSolicitud(solicitudMay.solicitudId)}>Solicitud corregida</button>
-                                        )}
-                                    </div>
-                                )}
                                 {solicitudSelected === solicitudMay.id && (
-                                    <div className="space-y-2">
-                                        <div className="">
-                                            <h2 className="font-semibold">Datos del alumno:</h2>
-                                            <span className="block">Nombre: {getAl(solicitudMay.alumnoId).nombre} {getAl(solicitudMay.alumnoId)?.apellido}</span>
-                                            <span className="block">Teléfono: {getAl(solicitudMay.alumnoId)?.telefono}</span>
-                                            <span className="block">Correo: {getAl(solicitudMay.alumnoId)?.email}</span>
-                                            <span className="block">DNI: {getAl(solicitudMay.alumnoId)?.dni}</span>
-                                            <span className="block">Fecha de Nacimiento: {new Date(getAl(solicitudMay.alumnoId)?.fechaNacimiento).toISOString().split('T')[0]}</span>
+                                    <>
+                                        <div className="space-y-2">
+                                            <div className="">
+                                                <h2 className="font-semibold">Datos del alumno:</h2>
+                                                <span className="block">Nombre: {getAl(solicitudMay.alumnoId).nombre} {getAl(solicitudMay.alumnoId)?.apellido}</span>
+                                                <span className="block">Teléfono: {getAl(solicitudMay.alumnoId)?.telefono}</span>
+                                                <span className="block">Correo: {getAl(solicitudMay.alumnoId)?.email}</span>
+                                                <span className="block">DNI: {getAl(solicitudMay.alumnoId)?.dni}</span>
+                                                <span className="block">Fecha de Nacimiento: {new Date(getAl(solicitudMay.alumnoId)?.fechaNacimiento).toISOString().split('T')[0]}</span>
+                                            </div>
+                                            <span className="block">{firmaUsoImagenes.length > 0 ? "Accedió al uso de la imagen" : "No estuvo de acuerdo con el uso de la imagen"}</span>
+                                            {observacionesUsoImagenes.length > 0 && <span className="block">Observaciones sobre el uso de imagen: {observacionesUsoImagenes}</span>}
+                                            <span className="block">Firmó el reglamento</span>
                                         </div>
-                                        <span className="block">{firmaUsoImagenes.length > 0 ? "Accedió al uso de la imagen" : "No estuvo de acuerdo con el uso de la imagen"}</span>
-                                        {observacionesUsoImagenes.length > 0 && <span className="block">Observaciones sobre el uso de imagen: {observacionesUsoImagenes}</span>}
-                                        <span className="block">Firmó el reglamento</span>
-                                    </div>
+                                        <div className="space-x-2 mt-4">
+                                            {!getSolicitud(solicitudMay.solicitudId)?.leida && (
+                                                <>
+                                                    {!getSolicitud(solicitudMay.solicitudId)?.enEspera ? (
+                                                        <>
+                                                            <button className="p-2 rounded-full bg-gray-600 hover:bg-green-600" onClick={() => handleAceptarSolicitud(solicitudMay.solicitudId)}>Aceptar</button>
+                                                            <button className="p-2 rounded-full bg-gray-600 hover:bg-red-600" onClick={() => handleRechazar(solicitudMay.solicitudId, getAl(solicitudMay.alumnoId).email)}>Rechazar</button>
+                                                        </>
+                                                    ) : (
+                                                        <button className="p-2 rounded-sm" onClick={() => handleEliminarSolicitud(solicitudMay.solicitudId)}>Solicitud corregida</button>
+                                                    )}
+                                                </>
+                                            )}
+                                        </div>
+                                    </>
                                 )}
                             </div>
                         ))}
@@ -215,58 +219,62 @@ const solicitudPage: React.FC = () => {
                 <div key={key} className="bg-sky-600 p-4 rounded cursor-pointer space-y-2"
                     onClick={() => setSolicitudSelected(solicitudMen.id)}>
                     <span className="block text-white">Solicitud: {solicitudMen.solicitudId}</span>
-                    {!getSolicitud(solicitudMen.solicitudId)?.leida && (
-                        <div className="space-x-2">
-                            {!getSolicitud(solicitudMen.solicitudId)?.enEspera ? (
-                                <>
-                                    <button onClick={() => handleAceptarSolicitud(solicitudMen.solicitudId)}>Aceptar</button>
-                                    <button className="p-2 rounded-sm text-black" onClick={() => handleRechazar(solicitudMen.solicitudId, getAl(solicitudMen.alumnoId).email)}>Rechazar</button>
-                                </>
-                            ) : (
-                                <button className="p-2 rounded-sm" onClick={() => handleEliminarSolicitud(solicitudMen.solicitudId)}>Solicitud corregida</button>
-                            )}
-                        </div>
-                    )}
-                    
-                    {solicitudSelected === solicitudMen.id && (
-                        <div className="space-y-4 text-white">
-                            <div className="p-2 space-y-2">
-                                <h2 className="font-semibold">Datos del alumno:</h2>
-                                <span className="block">Nombre: {getAl(solicitudMen.alumnoId)?.nombre || ''} {getAl(solicitudMen.alumnoId)?.apellido || ''}</span>
-                                <span className="block">Teléfono: {getAl(solicitudMen.alumnoId)?.telefono}</span>
-                                <span className="block">Correo: {getAl(solicitudMen.alumnoId)?.email}</span>
-                                <span className="block">DNI: {getAl(solicitudMen.alumnoId)?.dni}</span>
-                                <span className="block">Fecha de Nacimiento: {new Date(getAl(solicitudMen.alumnoId)?.fechaNacimiento).toISOString().split('T')[0]}</span>
-                            </div>
-                            
-                            <div className="p-2 space-y-2">
-                                <h2 className="font-semibold">Datos del responsable:</h2>
-                                <span className="block">Nombre: {getResp(solicitudMen.alumnoId)?.nombre} {getResp(solicitudMen.alumnoId)?.apellido}</span>
-                                <span className="block">DNI: {getResp(solicitudMen.alumnoId)?.dni}</span>
-                                <span className="block">Teléfono: {getResp(solicitudMen.alumnoId)?.telefono}</span>
-                                <span className="block">Correo: {getResp(solicitudMen.alumnoId)?.email}</span>
-                            </div>
 
-                            <span className="block">{String(solicitudMen.firmaUsoImagenes).length > 0 ? "Accedió al uso de la imagen" : "No estuvo de acuerdo con el uso de la imagen"}</span>
-                            {String(solicitudMen.observacionesUsoImagenes).length > 0 && (
-                                <span className="block">Observaciones sobre el uso de imagen: {observacionesUsoImagenes}</span>
-                            )}
-                            <span className="block">{String(solicitudMen.firmaSalidas).length > 0 ? "Accedió a las salidas" : "No estuvo de acuerdo con las salidas fuera de Casa Jardín"}</span>
-                            
-                            <h2 className="font-semibold">Datos sobre la salud del menor:</h2>
-                            <span className="block">Enfermedad: {solicitudMen.enfermedad}</span>
-                            <span className="block">Especialista(s): {solicitudMen.especialista}</span>
-                            <span className="block">Medicación: {solicitudMen.medicacion}</span>
-                            <span className="block">Terapia: {solicitudMen.terapia}</span>
-                            <span className="block">Alergia: {solicitudMen.alergia}</span>
-                            <span className="block">Motivo de asistencia a Casa Jardín: {solicitudMen.motivoAsistencia}</span>
-                            <span className="block">Firmó el reglamento</span>
-                        </div>
+                    {solicitudSelected === solicitudMen.id && (
+                        <>
+                            <div className="space-y-4 text-white">
+                                <div className="p-2 space-y-2">
+                                    <h2 className="font-semibold">Datos del alumno:</h2>
+                                    <span className="block">Nombre: {getAl(solicitudMen.alumnoId)?.nombre || ''} {getAl(solicitudMen.alumnoId)?.apellido || ''}</span>
+                                    <span className="block">Teléfono: {getAl(solicitudMen.alumnoId)?.telefono}</span>
+                                    <span className="block">Correo: {getAl(solicitudMen.alumnoId)?.email}</span>
+                                    <span className="block">DNI: {getAl(solicitudMen.alumnoId)?.dni}</span>
+                                    <span className="block">Fecha de Nacimiento: {new Date(getAl(solicitudMen.alumnoId)?.fechaNacimiento).toISOString().split('T')[0]}</span>
+                                </div>
+                                
+                                <div className="p-2 space-y-2">
+                                    <h2 className="font-semibold">Datos del responsable:</h2>
+                                    <span className="block">Nombre: {getResp(solicitudMen.alumnoId)?.nombre} {getResp(solicitudMen.alumnoId)?.apellido}</span>
+                                    <span className="block">DNI: {getResp(solicitudMen.alumnoId)?.dni}</span>
+                                    <span className="block">Teléfono: {getResp(solicitudMen.alumnoId)?.telefono}</span>
+                                    <span className="block">Correo: {getResp(solicitudMen.alumnoId)?.email}</span>
+                                </div>
+
+                                <span className="block">{String(solicitudMen.firmaUsoImagenes).length > 0 ? "Accedió al uso de la imagen" : "No estuvo de acuerdo con el uso de la imagen"}</span>
+                                {String(solicitudMen.observacionesUsoImagenes).length > 0 && (
+                                    <span className="block">Observaciones sobre el uso de imagen: {observacionesUsoImagenes}</span>
+                                )}
+                                <span className="block">{String(solicitudMen.firmaSalidas).length > 0 ? "Accedió a las salidas" : "No estuvo de acuerdo con las salidas fuera de Casa Jardín"}</span>
+                                
+                                <h2 className="font-semibold">Datos sobre la salud del menor:</h2>
+                                <span className="block">Enfermedad: {solicitudMen.enfermedad}</span>
+                                <span className="block">Especialista(s): {solicitudMen.especialista}</span>
+                                <span className="block">Medicación: {solicitudMen.medicacion}</span>
+                                <span className="block">Terapia: {solicitudMen.terapia}</span>
+                                <span className="block">Alergia: {solicitudMen.alergia}</span>
+                                <span className="block">Motivo de asistencia a Casa Jardín: {solicitudMen.motivoAsistencia}</span>
+                                <span className="block">Firmó el reglamento</span>
+                            </div>
+                            <div className="space-x-2 mt-4">
+                                {!getSolicitud(solicitudMen.solicitudId)?.leida && (
+                                    <>
+                                        {!getSolicitud(solicitudMen.solicitudId)?.enEspera ? (
+                                            <>
+                                                <button className="p-2 rounded-full bg-gray-600 hover:bg-green-600" onClick={() => handleAceptarSolicitud(solicitudMen.solicitudId)}>Aceptar</button>
+                                                <button className="p-2 rounded-full bg-gray-600 hover:bg-red-600" onClick={() => handleRechazar(solicitudMen.solicitudId, getAl(solicitudMen.alumnoId).email)}>Rechazar</button>
+                                            </>
+                                        ) : (
+                                            <button className="p-2 rounded-full bg-gray-600 hover:bg-green-600" onClick={() => handleEliminarSolicitud(solicitudMen.solicitudId)}>Solicitud corregida</button>
+                                        )}
+                                    </>
+                                )}
+                            </div>
+                        </>
                     )}
                 </div>
             ))}
         </div>
-    </div>
+    </div>  
 )}
 
 </main>

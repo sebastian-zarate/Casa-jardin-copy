@@ -323,7 +323,7 @@ const Cuenta: React.FC = () => {
     //endregion
 //region return
     return (
-        <main className=''>
+        <main style={{fontFamily:"Cursive"}}>
             <Navigate />
  {/*            <div className="fixed inset-0 z-[-1]">
                 <Image src={Background} alt="Background" layout="fill" objectFit="cover" quality={80} priority={true} />
@@ -381,7 +381,7 @@ const Cuenta: React.FC = () => {
                     </button>
                 </div>
             </div>
-            <div className="fixed bottom-0 py-5 border-t bg-white w-full" style={{ opacity: 0.66 }}>
+            <div className="fixed bottom-0 py-1 border-t bg-white w-full" style={{ opacity: 0.66 }}>
                 <But_aside />
             </div>
             {openBox === 1 && (

@@ -102,7 +102,7 @@ const Aulas: React.FC = () => {
         }, 3000);  // 3 segundos
     };
     return (
-        <main className="relative min-h-screen w-screen">
+        <main className="relative min-h-screen w-screen"style={{fontFamily:"Cursive"}}>
             <Navigate />
             <div className="fixed inset-0 z-[-1]">
                 <Image src={Background} alt="Background" layout="fill" objectFit="cover" quality={80} priority={true} />
@@ -110,9 +110,9 @@ const Aulas: React.FC = () => {
 
             {/* Muestra el título de la página */}
 
-            <h1 className="absolute top-35 left-60 mb-5 text-3xl">Aulas</h1>
+            <h1 className="absolute top-40 left-40 mb-5 text-3xl bg-white rounded-lg p-2">Aulas</h1>
             {/* Muestra la lista de aulas */}
-            <div className="top-40 border p-1 absolute left-40 h-90 max-h-90" style={{ background: "#D9D9D9" }}>
+            <div className="top-40 border p-1 absolute left-60 h-90 max-h-90" style={{ background: "#D9D9D9" }}>
              
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 my-4">
                     {aulas.map((aula) => (
@@ -242,7 +242,7 @@ const Aulas: React.FC = () => {
                 </div>
             )}
 
-            <But_aside />
+          {/*   <But_aside /> */}
         </main>
     );
 

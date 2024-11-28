@@ -68,15 +68,8 @@ const Inicio = () => {
   return (
     <main className="relative min-h-screen w-screen overflow-hidden">
       {/* Imagen de fondo */}
-      <div className="absolute inset-0 -z-10">
-        <Image
-          src={Background}
-          alt="Background"
-          layout="fill" // Esto asegura que ocupe todo el contenedor padre
-          objectFit="cover" // Ajusta la imagen para cubrir todo el espacio
-          quality={80}
-          priority={true}
-        />
+      <div className="relative h-[80vh]">
+                <Image src={Background} className="h-[80hv]" alt="Background" layout="fill" objectFit="cover" quality={80} priority={true} />
       </div>
 
       {/* Contenido */}

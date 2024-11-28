@@ -607,15 +607,15 @@ const Alumnos: React.FC = () => {
 
     // #region Return
     return (
-        <main className="relative min-h-screen w-screen">
+        <main className="relative min-h-screen w-screen" style={{fontFamily: "Cursive"}}>
             <Navigate />
 
-            <div className="relative h-[80vh]">
+            <div className="relative h-[90vh]" style={{opacity:0.55}}>
                 <Image src={Background} className="h-[80hv]" alt="Background" layout="fill" objectFit="cover" quality={80} priority={true} />
             </div>
 
 
-            <h1 className="absolute bg-slate-100 top-40 left-60 mb-5 text-3xl" >Alumnos</h1>
+            <h1 className="absolute bg-white-100 top-40 left-40 mb-5 text-3xl rounded-lg bg-opacity-90 p-3" >ALUMNOS</h1>
             <div className="absolute top-40 right-20 mb-5">
                 <div className="relative">
                     <input
@@ -631,7 +631,9 @@ const Alumnos: React.FC = () => {
                         <Image src="/Images/SearchIcon.png" alt="Buscar" width={20} height={20} />
                     </div>
                 </div>
-                <button onClick={() => setAlumnos(alumnosMostrados)}>Cargar Todos</button>
+                <button
+                 className="bg-white rounded-full mt-5 p-2 hover:bg-sky-400"
+                 onClick={() => setAlumnos(alumnosMostrados)}>Cargar Todos</button>
                 {alumnosBuscados.length > 0 && habilitarAlumnosBuscados && <div className="absolute top-10 right-0 mt-2 w-full max-w-md bg-white border rounded shadow-lg">
                     {alumnosBuscados.map((alumno, index) => (
                         <div key={index} onClick={() => { setAlumnoAbuscar(alumno.nombre + " " + alumno.apellido); setHabilitarAlumnosBuscados(false) }} className="p-2 border-b hover:bg-gray-100 cursor-pointer">
@@ -640,7 +642,7 @@ const Alumnos: React.FC = () => {
                     ))}
                 </div>}
             </div>
-            <div className="top-60 border p-1 absolute left-40 h-90 max-h-90 w-1/2 bg-gray-400 bg-opacity-50" style={{ height: '50vh', overflow: "auto" }}>
+            <div className="top-60 border p-1 absolute left-40 h-90 max-h-90 w-1/2 bg-gray-800 bg-opacity-60" style={{ height: '50vh', overflow: "auto" }}>
                 <div className="flex flex-col space-y-4 my-4 w-full px-4">
                     {alumnos.map((alumno, index) => (
                         <div key={index} className="border py-4 px-6 mx-2 relative w-full flex flex-col items-start bg-white rounded shadow-md">
@@ -671,19 +673,19 @@ const Alumnos: React.FC = () => {
                         </div>
                     ))}
                 </div>
-                <button onClick={() => { setSelectedAlumno(-1); setObAlumno(null); setMayor(true) }} className="mt-6 mx-4">
+                <button onClick={() => { setSelectedAlumno(-1); setObAlumno(null); setMayor(true) }} className="mt-6 mx-4 bg-white rounded-full p-2 hover:bg-sky-400">
                     {/* <Image src={ButtonAdd}
                         className="mx-3"
                         alt="Image Alt Text"
                         width={70}
                         height={70} /> */}
-                    agregar mayor
+                    Agregar mayor
                 </button>
-                <button onClick={() => { setSelectedAlumno(-2); setObAlumno(null); setMayor(false) }} className="mt-6 mx-4">
-                    agregar menor
+                <button onClick={() => { setSelectedAlumno(-2); setObAlumno(null); setMayor(false) }} className="mt-6 mx-4 bg-white rounded-full p-2 hover:bg-sky-400">
+                    Agregar menor
                 </button>
             </div>
-            <But_aside />
+            {/* <But_aside /> */}
             {selectedAlumno !== null && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
                     <div ref={scrollRef} className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative" style={{ height: '70vh', overflow: "auto" }}>
