@@ -349,13 +349,13 @@ const Cuenta: React.FC = () => {
 
     return (
         <main className=''>
-            <Image src={Background} alt="Background" layout="fill" objectFit="cover" quality={20} priority={true} />
+            <Image src={Background} alt="Background" layout="fill" objectFit="cover" quality={20} priority={true} className='opacity-70'/>
             <div className="fixed bg-red-500  justify-between w-full p-4" >
                 <Navigate />
             </div>
 
-            <div className='absolute mt-20 top-5 '>
-                <h1 className='flex my-20 items-center justify-center  font-bold text-3xl'>Datos del Estudiante</h1>
+            <div className='absolute mt-20 top-1'>
+                <h1 className='flex my-20 items-center justify-center font-bold text-3xl'>Datos del Estudiante</h1>
                 <div className='flex  justify-center w-screen'>
                     <div className=" mx-auto bg-gray-100 rounded-lg shadow-md px-8 py-6 grid grid-cols-2 gap-x-12 w-8/12">
                         <div className="mb-4">
@@ -404,9 +404,9 @@ const Cuenta: React.FC = () => {
                     </button>
                 </div>
             </div>
-            <div className="fixed bottom-0 py-5 border-t bg-white w-full" style={{ opacity: 0.66 }}>
+            {/*<div className="fixed bottom-0 py-5 border-t bg-white w-full" style={{ opacity: 0.66 }}>
                 <But_aside />
-            </div>
+            </div>*/}
             {openBox === 1 && (
                 <div className="fixed inset-0 flex items-center w-600 justify-center bg-black bg-opacity-50">
                     <div ref={scrollRef} className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative" style={{ height: '70vh', overflow: "auto" }}>

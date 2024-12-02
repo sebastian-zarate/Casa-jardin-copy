@@ -38,7 +38,7 @@ const RotatingImages: React.FC = () => {
 
 
   return (
-    <div className= "flex justify-end mr-20 mt-10">
+    <div className="flex justify-end mr-20 mt-10">
       {downloadurls.length > 0 && (
         <Image
           src={downloadurls[currentImageIndex]}
@@ -76,54 +76,59 @@ const Nosotros = () => {
       </div>
 
       {/* Encabezado fijo */}
-      <div className="fixed top-0 left-0 right-0 flex justify-between w-full p-1 z-50" style={{backgroundColor: "#3f8df5"}}>
+      <div className="fixed top-0 left-0 right-0 flex justify-between w-full p-1 z-50" style={{ backgroundColor: "#3f8df5" }}>
         <Navigate />
       </div>
 
       {/* Contenido principal, ocupando todo el centro de la pantalla */}
-      <div
-  className="fixed top-20 bottom-20 left-0 right-0 z-10 flex flex-col justify-center items-start px-8 space-y-8"
-  style={{ fontFamily: "Cursive" }}
->
-  {/* Misión */}
-  <div className="bg-white bg-opacity-90 p-4 rounded-lg shadow-md">
-    <h1 className="text-xl text-black">Misión:</h1>
-    <h2 className="text-xl text-black max-w-lg">
-      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras purus mauris,
-      congue in elit eu, hendrerit interdum mi. Praesent lectus nibh, feugiat
-      blandit justo fringilla, luctus semper odio.
-    </h2>
-  </div>
+      <div className="flex justify-between sm:h-[97vh]">
+        <div
+          className="fixed top-20 bottom-20 left-0 right-0 z-10 flex flex-col justify-center items-start px-8 space-y-8"
+          style={{ fontFamily: "Cursive" }}
+        >
+          {/* Misión */}
+          <div className="bg-white bg-opacity-90 p-4 rounded-lg shadow-md">
+            <h1 className="text-xl text-black">Misión:</h1>
+            <h2 className="text-xl text-black max-w-lg">
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras purus mauris,
+              congue in elit eu, hendrerit interdum mi. Praesent lectus nibh, feugiat
+              blandit justo fringilla, luctus semper odio.
+            </h2>
+          </div>
 
-  {/* Visión */}
-  <div className="bg-white bg-opacity-90 p-4 rounded-lg shadow-md">
-    <h1 className="text-xl text-black">Visión:</h1>
-    <h2 className="text-xl text-black max-w-lg">
-      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras purus mauris,
-      congue in elit eu, hendrerit interdum mi. Praesent lectus nibh, feugiat
-      blandit justo fringilla, luctus semper odio.
-    </h2>
-  </div>
+          {/* Visión */}
+          <div className="bg-white bg-opacity-90 p-4 rounded-lg shadow-md">
+            <h1 className="text-xl text-black">Visión:</h1>
+            <h2 className="text-xl text-black max-w-lg">
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras purus mauris,
+              congue in elit eu, hendrerit interdum mi. Praesent lectus nibh, feugiat
+              blandit justo fringilla, luctus semper odio.
+            </h2>
+          </div>
 
-  {/* Valores */}
-  <div className="bg-white bg-opacity-90 p-4 rounded-lg shadow-md">
-    <h1 className="text-xl text-black">Valores:</h1>
-    <h2 className="text-xl text-black max-w-lg">
-      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras purus mauris,
-      congue in elit eu, hendrerit interdum mi. Praesent lectus nibh, feugiat
-      blandit justo fringilla, luctus semper odio.
-    </h2>
-  </div>
-</div>
+          {/* Valores */}
+          <div className="bg-white bg-opacity-90 p-4 rounded-lg shadow-md">
+            <h1 className="text-xl text-black">Valores:</h1>
+            <h2 className="text-xl text-black max-w-lg">
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras purus mauris,
+              congue in elit eu, hendrerit interdum mi. Praesent lectus nibh, feugiat
+              blandit justo fringilla, luctus semper odio.
+            </h2>
+          </div>
+        </div>
 
 
-      {/* Contenedor de imágenes en rotación */}
-      <div className="fixed  top-20 bottom-40 right-8 z-10">
-        <RotatingImages />
+        {/* Contenedor de imágenes en rotación */}
+        <div className="fixed  md:top-40 sm:bottom-0  right-8 z-10">
+          <RotatingImages />
+        </div>
       </div>
 
       {/* Pie de página fijo */}
-      <div className="fixed bottom-0 left-0 right-0  p-1 z-40" style={{backgroundColor:"#3f8df5"}}>
+      <div
+        className="fixed  bottom-0 py-0.1 border-t w-full z-30"
+        style={{ opacity: 0.89, background: "#3f8df5" }}
+      >
         <But_aside />
       </div>
     </main>

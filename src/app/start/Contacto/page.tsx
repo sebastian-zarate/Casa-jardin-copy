@@ -43,7 +43,10 @@ const Contacto = () => {
                 <div className="fixed bg-blue-400 justify-between w-full p-4 z-50" style={{ backgroundColor: "#3f8df5" }}>
                     <Navigate />
                 </div>
-                <div className="fixed bottom-0 bg-white w-full z-40" style={{ backgroundColor: "#3f8df5" }}>
+                <div
+                    className="fixed  bottom-0 py-0.1 border-t w-full z-30"
+                    style={{ opacity: 0.89, background: "#3f8df5" }}
+                >
                     <But_aside />
                 </div>
 
