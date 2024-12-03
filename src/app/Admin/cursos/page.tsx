@@ -141,7 +141,7 @@ const Cursos: React.FC = () => {
       curs.sort((a, b) => a.nombre.localeCompare(b.nombre)); // Ordena los cursos por nombre
       setCursos(curs); // Actualiza el estado con la lista de cursos
     } catch (error) {
-      console.error("Imposible obtener cursos", error); // Manejo de errores
+      
     } finally {
       setLoading(false); // Establece el estado de carga en falso
     }
@@ -168,7 +168,7 @@ const Cursos: React.FC = () => {
         lastDotIndex !== -1 ? fileName.substring(lastDotIndex + 1) : ""; // Obtener la extensión del archivo
       const fileNameWithExtension = `${cursoDetails.nombre}.${fileExtension}`; // Concatenar nombre del curso con la extensión
       setCursoDetails({ ...cursoDetails, imagen: fileNameWithExtension });
-      console.log("Imagen seleccionada:", fileNameWithExtension);
+   
     }
   };
   //para ver las imagenes agregadas sin refresh de pagina
@@ -180,7 +180,7 @@ const Cursos: React.FC = () => {
     if (result.error) {
       setUploadError(result.error);
     } else {
-      console.log("Image uploaded successfully:", result.result);
+     
       setImagesLoaded(false); // Establecer en falso para que se vuelvan a cargar las imágenes
     }
   };
@@ -188,8 +188,7 @@ const Cursos: React.FC = () => {
   // Método para obtener las imagenes
   const fetchImages = async () => {
     const result = await getImages_talleresAdmin();
-    console.log(result.images, "LAS IMAGENESSSSS");
-    console.log(result.downloadurls, "LOS DOWNLOADURLS");
+
     if (result.error) {
       setErrorMessage(result.error);
     } else {
@@ -219,7 +218,14 @@ const Cursos: React.FC = () => {
   };
 
   // Función para validar los detalles del curso
-  function validateCursoDetails() {
+  function validateCursoDetails(details: {
+    nombre: string;
+    descripcion: string;
+    fechaInicio: Date;
+    fechaFin: Date;
+    edadMinima: number;
+    edadMaxima: number;
+  }) {
     const {
       nombre,
       descripcion,
@@ -227,10 +233,10 @@ const Cursos: React.FC = () => {
       fechaFin,
       edadMinima,
       edadMaxima,
-    } = cursoDetails;
+    } = details;
 
-    // Validar que el nombre tenga entre 2 y 50 caracteres
-    if (nombre.length < 2 || nombre.length > 50) {
+     // Validar que el nombre tenga entre 2 y 50 caracteres
+     if (nombre.length < 2 || nombre.length > 50) {
       return "El nombre debe tener entre 2 y 50 caracteres.";
     }
 
@@ -256,28 +262,56 @@ const Cursos: React.FC = () => {
     if (new Date(fechaInicio) >= new Date(fechaFin)) {
       return "La fecha de inicio debe ser anterior a la fecha de fin.";
     }
+    // el rango de fechas no puede ser menor a 7 días
+    const diffTime = Math.abs(new Date(fechaFin).getTime() - new Date(fechaInicio).getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-    // Validar rango de edades si ambos están definidos
-    // Validar que la edad mínima sea un número entero positivo
-    // Validar que la edad mínima sea un número entero positivo
-    if (!Number.isInteger(edadMinima) && edadMinima < 0) {
-      return "La edad mínima debe ser un número entero positivo.";
+    if (diffDays < 7) {
+      return "El rango de fechas no puede ser menor a 7 días.";
     }
 
-    // Validar que la edad máxima no exceda los 110 años y sea un número entero
-
     // Validar rango de edades si ambos están definidos
-    if (edadMinima > edadMaxima) {
+    // Validar que la edad mínima sea un número entero positivo
+    // Validar que la edad mínima sea un número entero positivo
+    const minEdad = Number(edadMinima);
+    const maxEdad = Number(edadMaxima);
+
+    // Validar que los valores sean números válidos
+    if (isNaN(minEdad) || isNaN(maxEdad)) {
+      return "Las edades mínima y máxima deben ser números válidos.";
+    }
+
+    // Validar valores negativos
+    if (minEdad < 0 || maxEdad < 0) {
+      return "Las edades no pueden ser valores negativos.";
+    }
+    // edad minimia no puede puede menor a 2 años
+    if (minEdad < 2) {
+      return "La edad mínima no puede ser menor a 2 años.";
+    }
+
+    // Validar el rango de edades
+    if (minEdad > maxEdad) {
       return "La edad mínima no puede ser mayor que la edad máxima.";
-    } else if (edadMaxima > 110) {
-      return "La edad máxima no puede ser mayor que 110 años.";
     }
-    return null; // Retorna null si no hay errores
+
+    if (maxEdad > 100) {
+      return "La edad máxima no puede ser mayor que 99 años.";
+    }
+
+    return null; // No hay errores
   }
 
-  // Función para manejar el guardado de cambios en el curso
-  async function handleSaveChanges() {
-    const validationError = validateCursoDetails(); // Llama a la función de validación
+   // Función para manejar el guardado de cambios en el curso
+   async function handleSaveChanges() {
+    // Elimina los espacios en blanco antes de guardar los detalles
+    const trimmedCursoDetails = {
+      ...cursoDetails,
+      nombre: cursoDetails.nombre.trim(),
+      descripcion: cursoDetails.descripcion.trim(),
+    };
+
+    const validationError = validateCursoDetails(trimmedCursoDetails); // Llama a la función de validación con los detalles recortados
     if (validationError) {
       setErrorMessage(validationError); // Muestra el mensaje de error si hay un error
       return;
@@ -285,24 +319,42 @@ const Cursos: React.FC = () => {
 
     if (selectedCursoId !== null) {
       try {
-        const reponse = await updateCurso(selectedCursoId, cursoDetails); // Actualiza el curso
-        if (typeof reponse === "string") {
-          setErrorMessage(reponse); // Muestra el mensaje de error si no se puede actualizar
+        // Llama a la API para actualizar el curso con los detalles recortados
+        const response = await updateCurso(selectedCursoId, trimmedCursoDetails);
+        if (typeof response === "string") {
+          setErrorMessage(response); // Muestra el mensaje de error si no se puede actualizar
           return;
         }
-        //subir la imagen al repositorio (se guarda con nombre del curso . extension) )
-        if (selectedFile && cursoDetails.imagen) {
-            await handleUploadAndFetchImages(selectedFile);
+
+        // Si se sube una imagen, se maneja la subida de la imagen
+        if (selectedFile && trimmedCursoDetails.imagen) {
+          await handleUploadAndFetchImages(selectedFile);
         }
-        
-        setSelectedCursoId(null); // Resetea el curso seleccionado
-        fetchCursos(); // Refresca la lista de cursos
+
+        // Actualizar la lista de cursos después de actualizar uno
+        fetchCursos();
+        setSelectedCursoId(null); // Cierra el formulario y resetea el curso seleccionado
+
+        // Limpiar el formulario después de actualizar el curso
+        setCursoDetails({
+          nombre: "",
+          descripcion: "",
+          fechaInicio: new Date(),
+          fechaFin: new Date(),
+          edadMinima: 0,
+          edadMaxima: 0,
+          imagen: null,
+        });
+        setSelectedFile(null); // Limpiar archivo seleccionado
+        setImagesLoaded(false); // Recargar las imágenes
         setErrorMessage(""); // Limpiar mensaje de error si todo fue bien
+
       } catch (error) {
-        console.error("Imposible actualizar curso", error); // Manejo de errores
+        console.error("Imposible actualizar el curso", error); // Manejo de errores
       }
     }
   }
+
   async function handleEliminarCurso(id: number) {
     try {
       //Ventana de confirmación para eliminar el curso
@@ -331,44 +383,57 @@ const Cursos: React.FC = () => {
     }
   }
   async function handleCreateCurso() {
-    const validationError = validateCursoDetails(); // Valida los detalles del curso antes de crear
+    // Elimina los espacios en blanco antes de guardar los detalles
+    const trimmedCursoDetails = {
+      ...cursoDetails,
+      nombre: cursoDetails.nombre.trim(),
+      descripcion: cursoDetails.descripcion.trim(),
+    };
 
+    const validationError = validateCursoDetails(trimmedCursoDetails); // Llama a la función de validación con los detalles recortados
     if (validationError) {
-      setErrorMessage(validationError); // Muestra el mensaje de error si la validación falla
+      setErrorMessage(validationError); // Muestra el mensaje de error si hay un error
       return;
     }
 
+    // Validar que el nombre del curso no esté duplicado
     try {
-      const newCurso = await createCurso(cursoDetails);
-      // manejo del error si no se puede crear el curso
-
-      if (typeof newCurso === "string") {
-        setErrorMessage(newCurso);
-      } else {
-        setCursos([...cursos, newCurso]);
-        setSelectedCursoId(newCurso.id); // Cierra el formulario y resetea el curso seleccionado
-        setCursoDetails({
-          nombre: "",
-          descripcion: "",
-          fechaInicio: new Date(),
-          fechaFin: new Date(),
-          edadMinima: 0,
-          edadMaxima: 0,
-        imagen: null,
-        });
-        setErrorMessage(""); // Limpia el mensaje de error si todo sale bien
-        setSelectedCursoId(null);
-        // Subir la imagen al repositorio y actualizar las imágenes
-        if (selectedFile) {
-            await handleUploadAndFetchImages(selectedFile);
-          } else {
-            await fetchImages(); // Refresca la lista de imágenes si no hay imagen seleccionada
-          }
+      // Llama a la API para crear el curso con los detalles recortados
+      const response = await createCurso(trimmedCursoDetails); // Asegúrate de tener esta función para crear un curso
+      if (typeof response === "string") {
+        setErrorMessage(response); // Muestra el mensaje de error si no se puede crear
+        return;
       }
+
+      // Si se sube una imagen, se maneja la subida de la imagen
+      if (selectedFile && trimmedCursoDetails.imagen) {
+        await handleUploadAndFetchImages(selectedFile);
+      }
+
+      // Actualizar la lista de cursos después de crear uno nuevo
+      fetchCursos();
+      setSelectedCursoId(null); // Cierra el formulario y resetea el curso seleccionado
+
+      // Limpiar el formulario después de crear el curso
+      setCursoDetails({
+        nombre: "",
+        descripcion: "",
+        fechaInicio: new Date(),
+        fechaFin: new Date(),
+        edadMinima: 0,
+        edadMaxima: 0,
+        imagen: null,
+      });
+      setSelectedFile(null); // Limpiar archivo seleccionado
+      setImagesLoaded(false); // Recargar las imágenes
+      setErrorMessage(""); // Limpiar mensaje de error si todo fue bien
+
     } catch (error) {
-      console.error("Imposible crear", error);
+      console.error("Imposible crear el curso", error); // Manejo de errores
     }
   }
+
+
 
   //region return
   return (
@@ -398,6 +463,18 @@ const Cursos: React.FC = () => {
                 </div>
              ) : (
               <>
+              <div className="flex justify-start mb-4">
+          <button onClick={() => setSelectedCursoId(-1)} className="flex items-center mx-7 mt-6">
+            <Image
+              src={ButtonAdd}
+              alt="Agregar Curso"
+              width={70}
+              height={70}
+              className="mx-2"
+            />
+            <span className="text-black font-medium">Agregar nuevo taller</span>
+          </button>
+        </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 my-4">
                       {cursos.map((curso, index) => (
                           <div
@@ -435,148 +512,163 @@ const Cursos: React.FC = () => {
                           </div>
                       ))}
                   </div>
-                  <button onClick={() => setSelectedCursoId(-1)} className="mt-6 mx-4">
-                      <Image
-                          src={ButtonAdd}
-                          className="mx-3 pointer-events-none"
-                          alt="Image Alt Text"
-                          width={70}
-                          height={70}
-                      />
-                  </button>
+                 
               </>
           )}
         </div>
 
         {selectedCursoId !== null && (
-            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-                <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative">
-                    <h2 className="text-2xl font-bold mb-4">
-                        {selectedCursoId === -1 ? "Crear Talleres" : "Editar Talleres"}
-                    </h2>
-                    {errorMessage && (
-                        <div className="mb-4 text-red-600">{errorMessage}</div>
-                    )}
-                    <div className="mb-4">
-                        <label htmlFor="nombre" className="block">
-                            Nombre:
-                        </label>
-                        <input
-                            type="text"
-                            id="nombre"
-                            name="nombre"
-                            value={cursoDetails.nombre}
-                            onChange={handleChange}
-                            className="p-2 w-full border rounded"
-                        />
-                    </div>
-                    <div className="mb-4">
-                        <label htmlFor="descripcion" className="block">
-                            Descripción:
-                        </label>
-                        <input
-                            type="text"
-                            id="descripcion"
-                            name="descripcion"
-                            value={cursoDetails.descripcion}
-                            onChange={handleChange}
-                            className="p-2 w-full border rounded"
-                        />
-                    </div>
-                    <div className="mb-4">
-                        <label htmlFor="edadMinima" className="block">
-                            Edad mínima del taller:
-                        </label>
-                        <input
-                            type="number"
-                            id="edadMinima"
-                            name="edadMinima"
-                            value={cursoDetails.edadMinima}
-                            onChange={handleChange}
-                            className="p-2 w-full border rounded"
-                        />
-                    </div>
-                    <div className="mb-4">
-                        <label htmlFor="edadMaxima" className="block">
-                            Edad máxima del taller:
-                        </label>
-                        <input
-                            type="number"
-                            id="edadMaxima"
-                            name="edadMaxima"
-                            value={cursoDetails.edadMaxima}
-                            onChange={handleChange}
-                            className="p-2 w-full border rounded"
-                        />
-                    </div>
-                    <div className="mb-4">
-                        <label htmlFor="fechaInicio" className="block">
-                            Fecha de inicio del taller:
-                        </label>
-                        <input
-                            type="date"
-                            id="fechaInicio"
-                            name="fechaInicio"
-                            value={
-                                cursoDetails.fechaInicio
-                                    ? cursoDetails.fechaInicio.toISOString().split("T")[0]
-                                    : ""
-                            }
-                            onChange={handleChange}
-                            className="p-2 w-full border rounded"
-                        />
-                    </div>
-                    <div className="mb-4">
-                        <label htmlFor="fechaFin" className="block">
-                            Fecha de finalización del taller:
-                        </label>
-                        <input
-                            type="date"
-                            id="fechaFin"
-                            name="fechaFin"
-                            value={
-                                cursoDetails.fechaFin
-                                    ? cursoDetails.fechaFin.toISOString().split("T")[0]
-                                    : ""
-                            }
-                            onChange={handleChange}
-                            className="p-2 w-full border rounded"
-                        />
-                    </div>
-                    <div className="mb-4">
-                        <label htmlFor="imagen" className="block">
-                            Imagen:
-                        </label>
-                        <input
-                            type="file"
-                            id="imagen"
-                            name="imagen"
-                            accept=".png, .jpg, .jpeg .avif .webp"
-                            onChange={onFileChange}
-                            className="p-2 w-full border rounded"
-                        />
-                        {uploadError && <div style={{ color: "red" }}>{uploadError}</div>}
-                    </div>
-                    <div className="flex justify-end space-x-4">
-                        <button
-                            onClick={
-                                selectedCursoId === -1 ? handleCreateCurso : handleSaveChanges
-                            }
-                            className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800"
-                        >
-                            Guardar
-                        </button>
-                        <button
-                            onClick={() => setSelectedCursoId(null)}
-                            className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800"
-                        >
-                            Cancelar
-                        </button>
-                    </div>
-                </div>
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-4 rounded-lg shadow-lg w-full max-w-md relative max-h-full overflow-y-auto">
+            <h2 className="text-xl font-semibold mb-3">
+              {selectedCursoId === -1 ? "Crear Taller" : "Editar Taller"}
+            </h2>
+            {errorMessage && (
+              <div className="mb-3 text-red-600 text-sm">{errorMessage}</div>
+            )}
+            <div className="mb-3">
+              <label htmlFor="nombre" className="block text-sm font-medium">
+                Nombre:
+              </label>
+              <input
+                type="text"
+                id="nombre"
+                name="nombre"
+                placeholder="Nombre del taller"
+                maxLength={50}
+                value={cursoDetails.nombre}
+                onChange={handleChange}
+                className="p-1 w-full border rounded text-sm"
+              />
             </div>
-        )}
+            <div className="mb-3">
+              <label htmlFor="descripcion" className="block text-sm font-medium">
+                Descripción:
+              </label>
+              <input
+                type="text"
+                id="descripcion"
+                name="descripcion"
+                placeholder="Descripción del taller"
+                value={cursoDetails.descripcion}
+                onChange={handleChange}
+                className="p-1 w-full border rounded text-sm"
+              />
+            </div>
+            <div className="mb-3">
+              <label htmlFor="edadMinima" className="block text-sm font-medium">
+                Edad mínima:
+              </label>
+              <input
+                type="text"
+                id="edadMinima"
+                name="edadMinima"
+                pattern="[0-9]+"
+                placeholder="Ingrese la edad mínima"
+                maxLength={2} // Limita a dos dígitos (si es necesario)
+                value={cursoDetails.edadMinima}
+                onChange={(e) => {
+                  const regex = /^[0-9]*$/; // Permite solo números
+                  if (regex.test(e.target.value)) {
+                    handleChange(e); // Actualiza solo si es un número válido
+                  }
+                }}
+                className="p-2 w-full border rounded text-sm"
+              />
+            </div>
 
+            <div className="mb-3">
+              <label htmlFor="edadMaxima" className="block text-sm font-medium">
+                Edad máxima:
+              </label>
+              <input
+                type="text"
+                id="edadMaxima"
+                name="edadMaxima"
+                placeholder="Ingrese la edad máxima"
+                maxLength={2} // Limita la entrada a dos dígitos
+                value={cursoDetails.edadMaxima}
+                onChange={(e) => {
+                  const regex = /^[0-9]*$/; // Solo permite números
+                  if (regex.test(e.target.value)) {
+                    handleChange(e); // Actualiza solo si el valor es válido
+                  }
+                }}
+                className="p-1 w-full border rounded text-sm"
+              />
+            </div>
+
+            <div className="mb-4">
+              <label htmlFor="fechaInicio" className="block">
+                Fecha de inicio del taller:
+              </label>
+              <input
+                type="date"
+                id="fechaInicio"
+                name="fechaInicio"
+                value={
+                  cursoDetails.fechaInicio && cursoDetails.fechaInicio instanceof Date && !isNaN(cursoDetails.fechaInicio.getTime())
+                    ? cursoDetails.fechaInicio.toISOString().split('T')[0]
+                    : ""
+                }
+                onChange={handleChange}
+                className="p-2 w-full border rounded"
+              />
+            </div>
+            <div className="mb-4">
+              <label htmlFor="fechaFin" className="block">
+                Fecha de fin del taller:
+              </label>
+              <input
+                type="date"
+                id="fechaFin"
+                name="fechaFin"
+                value={
+                  cursoDetails.fechaFin && cursoDetails.fechaFin instanceof Date && !isNaN(cursoDetails.fechaFin.getTime())
+                    ? cursoDetails.fechaFin.toISOString().split('T')[0]
+                    : ""
+                }
+                onChange={handleChange}
+                className="p-2 w-full border rounded"
+              />
+            </div>
+
+
+            <div className="mb-3">
+              <label htmlFor="imagen" className="block text-sm font-medium">
+                Imagen:
+              </label>
+              <input
+                type="file"
+                id="imagen"
+                name="imagen"
+                accept=".png, .jpg, .jpeg, .avif"
+                onChange={onFileChange}
+                className="p-1 w-full border rounded text-sm"
+              />
+              {uploadError && (
+                <div className="text-red-600 text-xs">{uploadError}</div>
+              )}
+            </div>
+            <div className="flex justify-end space-x-2">
+              <button
+                onClick={
+                  selectedCursoId === -1 ? handleCreateCurso : handleSaveChanges
+                }
+                className="bg-red-600 py-1 px-3 text-white rounded text-sm hover:bg-red-700"
+              >
+                Guardar
+              </button>
+              <button
+                onClick={() => setSelectedCursoId(null)}
+                className="bg-gray-600 py-1 px-3 text-white rounded text-sm hover:bg-gray-700"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
         {cursoAEliminar && (
             <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
                 <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative">

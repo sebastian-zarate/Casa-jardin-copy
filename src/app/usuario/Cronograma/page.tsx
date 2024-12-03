@@ -1,10 +1,12 @@
-"use client"; 
+"use client";
 import React, { useState, useEffect } from "react";
 import { getCronogramaByIdAlumno } from "../../../services/cronograma/alumno_cronograma";
 import { getCursos } from "../../../services/cursos";
 import { getDias, getHoras } from "../../../services/dia";
-import {getAlumnoByCookie } from "../../../services/Alumno";
+import { getAlumnoByCookie } from "../../../services/Alumno";
 import withAuthUser from "../../../components/alumno/userAuth";
+import Navigate from "../../../components/alumno/navigate/page";
+import Background from "../../../../public/Images/Background.jpeg";
 interface Curso {
   id: number;
   nombre: string;
@@ -79,86 +81,121 @@ function Horario() {
   // Renderizado condicional
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-xl font-bold">Cargando datos...</div>
-      </div>
+      <main className=" flex-col items-center justify-center min-h-screen bg-gray-100">
+        <Navigate />
+        <div className="flex items-center justify-center h-screen">
+          <div className="text-xl font-bold">Cargando datos...</div>
+        </div>
+      </main>
     );
   }
 
   if (error) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-xl font-bold text-red-500">{error}</div>
-      </div>
+      <main className=" flex-col items-center justify-center min-h-screen bg-gray-100">
+        <Navigate />
+
+        <div className="flex items-center justify-center h-screen">
+          <div className="text-xl font-bold text-red-500">{error}</div>
+        </div>
+      </main>
     );
   }
-
   return (
-    <div className="overflow-x-auto w-full m-0 p-0 bg-transparent border-l-2 border-gray-500">
-      <table className="table-auto w-full border-collapse border border-gray-500 text-sm md:text-base  bg-white">
-        <caption className="text-lg font-bold mb-4">Mis horarios</caption>
-        <thead>
-          <tr>
-            <th className="border border-gray-500 p-1 sm:p-2 text-center">Hora</th>
-            {dias.length > 0 &&
-              dias.map((dia) => (
-                <th key={dia} className="border border-gray-500 p-1 sm:p-2 text-center">
-                  {dia}
+    <main className="flex-col items-center justify-center min-h-screen bg-gray-100" style={{ fontFamily: "Cursive" }}>
+      {/* Barra de Navegación */}
+      <Navigate />
+
+
+      {/* Contenido Principal */}
+      <div className="w-full max-w-5xl px-6 py-6 bg-white shadow-lg rounded-lg border border-gray-300 mx-auto">
+        <div className="overflow-x-auto ">
+          {/* Tabla de Horarios */}
+          <table className="table-auto w-full border-collapse border border-gray-500 text-sm md:text-base lg:text-lg">
+            {/* Título */}
+            <caption className="text-xl font-semibold mb-4 text-black  py-2">
+              Mis Horarios
+            </caption>
+            {/* Encabezados */}
+            <thead className="bg-[#3f8df5] text-white">
+              <tr>
+                <th className="border border-gray-500  p-3 text-center min-w-[100px] max-w-[150px]">
+                  Hora
                 </th>
-              ))}
-          </tr>
-        </thead>
-        <tbody>
-          {horas.length > 0 &&
-            horas.map((hora, rowIndex) => (
-              <tr key={hora.id}>
-                <td className="border border-gray-500 p-1 sm:p-2 text-center">
-                  {hora.hora_inicio}
-                </td>
-                {tabla[rowIndex]?.map((content, colIndex) => (
-                  <td
-                    key={`${rowIndex}-${colIndex}`}
-                    className="border border-gray-500  sm:p text-center"
+                {dias.map((dia) => (
+                  <th
+                    key={dia}
+                    className="border border-gray-500  p-3 text-center capitalize min-w-[100px] max-w-[150px]"
                   >
-                    {content ? (
-                      <>
-                        {Array.isArray(content) ? (
+                    {dia}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            {/* Cuerpo */}
+            <tbody>
+              {horas.map((hora, rowIndex) => (
+                <tr
+                  key={hora.id}
+                  className={rowIndex % 2 === 0 ? "bg-gray-100" : "bg-gray-50"}
+                >
+                  {/* Columna de Hora */}
+                  <td className="border border-blue-500 p-3 text-center text-[#3f8df5] font-medium min-w-[100px] max-w-[150px]">
+                    {hora.hora_inicio}
+                  </td>
+                  {/* Columnas de Contenido */}
+                  {tabla[rowIndex]?.map((content, colIndex) => (
+                    <td
+                      key={`${rowIndex}-${colIndex}`}
+                      className="border border-blue-500 p-3 text-center min-w-[100px] max-w-[200px] overflow-hidden text-ellipsis"
+                    >
+                      {content ? (
+                        Array.isArray(content) ? (
                           content.map((cursoCronograma, idx) => {
-                            const [curso, cronogramaId] = cursoCronograma.split("-");
+                            const [curso] = cursoCronograma.split("-");
                             return (
-                              <div key={idx}>
-                                {curso} (
-                                  {aulaNombres[cursoCronograma] || "Aula no disponible"})
+                              <div key={idx} className="text-sm text-gray-700">
+                                <span>{curso}</span>
+                                <div className="text-xs text-gray-500">
+                                  {aulaNombres[cursoCronograma] || "Aula no disponible"}
+                                </div>
                               </div>
                             );
                           })
                         ) : (
-                          <div>
-                            {content} ({aulaNombres[content] || "Aula no disponible"})
+                          <div className="text-sm text-gray-700">
+                            <span>{content}</span>
+                            <div className="text-xs text-gray-500">
+                              {aulaNombres[content] || "Aula no disponible"}
+                            </div>
                           </div>
-                        )}
-                      </>
-                    ) : (
-                      <div className="text-gray-500">No hay cursos programados</div>
-                    )}
-                  </td>
-                ))}
-              </tr>
-            ))}
-        </tbody>
-      </table>
+                        )
+                      ) : (
+                        <div className="text-gray-400 italic">Sin cursos</div>
+                      )}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
 
-      <div className="flex justify-center mt-4">
-        <a
-          href="/usuario/principal"
-          className="bg-gray-500 text-white px-4 py-2 rounded"
-          aria-label="Volver"
-        >
-          Volver
-        </a>
+          {/* Botón de Volver */}
+          <div className="flex justify-center mt-4 mb-4">
+            <a
+              href="/usuario/principal"
+              className="bg-blue-500 text-white px-6 py-2 rounded shadow hover:bg-blue-600 transition-all"
+              aria-label="Volver"
+            >
+              Volver
+            </a>
+          </div>
+        </div>
       </div>
-    </div>
+    </main>
+
   );
+
 }
 
 export default withAuthUser(Horario);
