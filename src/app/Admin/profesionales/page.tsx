@@ -434,7 +434,7 @@ const Profesionales = () => {
     async function handleCreateProfesional() {
         const validationError = await validateProfesional();
         const direccion = await createUbicacion();
-        console.log("newDireccion", direccion);
+      
         if (validationError) {
             setErrorMessage(validationError);
             return;
