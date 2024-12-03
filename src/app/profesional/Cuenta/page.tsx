@@ -46,7 +46,7 @@ const Cuenta: React.FC = () => {
     // Estado para almacenar los detalles del curso, inicialmente vacío
     const [profesionalDetails, setprofesionalDetails] = useState<{
         id: number; nombre: string; apellido: string;
-        telefono: number; email: string;  direccionId?: number; rolId?: number;
+        telefono: number; email: string; direccionId?: number; rolId?: number;
     }>({
         id: user?.id || 0,
         nombre: user?.nombre || '',
@@ -58,7 +58,7 @@ const Cuenta: React.FC = () => {
     });
     const [profesionalDetailsCopia, setprofesionalDetailsCopia] = useState<{
         id: number; nombre: string; apellido: string;
-        telefono: number; email: string;  direccionId?: number; rolId?: number;
+        telefono: number; email: string; direccionId?: number; rolId?: number;
     }>();
     const [nacionalidadName, setNacionalidadName] = useState<string>();
     // Estado para almacenar el ID de la provincia, inicialmente nulo
@@ -90,9 +90,9 @@ const Cuenta: React.FC = () => {
 
     const router = useRouter();
     useEffect(() => {
-        if (user && !profesionalDetails.email ) {
+        if (user && !profesionalDetails.email) {
             getUser()
-            console.log("holaaaaaaaaaaaaaaaaaaaaaa")
+
         }
 
     }, [user]);
@@ -102,7 +102,7 @@ const Cuenta: React.FC = () => {
     }, [router]);
 
     const authorizeAndFetchData = async () => {
-        console.time("authorizeAndFetchData");
+
         // Primero verifico que el user esté logeado
         //console.log("router", router);
         await autorizarUser(router);
@@ -111,7 +111,7 @@ const Cuenta: React.FC = () => {
         //console.log("user", user);
         setUser(user)
         if (!user) return;
-        let talleres= await getCursosByIdProfesional(Number(user?.id));
+        let talleres = await getCursosByIdProfesional(Number(user?.id));
         console.log("talleres", talleres);
         setCursos([])
         talleres.map((curso) => {
@@ -146,22 +146,8 @@ const Cuenta: React.FC = () => {
         return { direccion, nacionalidad };
     }
     async function getUbicacion(userUpdate: any) {
-        // Obtener la dirección del usuario por su ID
-        //console.log("SI DIRECCIONID ES FALSE:", Number(userUpdate?.direccionId));
-        /*         const direccion = await getDireccionById(Number(userUpdate?.direccionId));
-                //console.log("DIRECCION", direccion);
-        
-                // Obtener la localidad asociada a la dirección
-                const localidad = await getLocalidadById(Number(direccion?.localidadId));
-                //console.log("LOCALIDAD", localidad);
-        
-                // Obtener la provincia asociada a la localidad
-                const prov = await getProvinciasById(Number(localidad?.provinciaId));
-                //console.log("PROVINCIA", prov);
-        
-                // Obtener el país asociado a la provincia
-                const nacionalidad = await getPaisById(Number(prov?.nacionalidadId)); */
-       const direccion = await getDireccionCompleta(userUpdate?.direccionId);
+
+        const direccion = await getDireccionCompleta(userUpdate?.direccionId);
         console.log("DIRECCION", direccion);
         console.log("LOCALIDAD", direccion?.localidad);
         console.log("PROVINCIA", direccion?.localidad?.provincia);
@@ -213,44 +199,44 @@ const Cuenta: React.FC = () => {
 
         //CARGAR TODAS LAS DIRECCIONES
     }
-        //region validate
-        async function validateProfesionalDetails() {
-            const { nombre, apellido, email, telefono } = profesionalDetails || {};
-    /*         if (JSON.stringify(alumnoDetails) === JSON.stringify(alumnoDetailsCopia)) {
-                return;
-            } */
-            console.log("responsableDetails", profesionalDetails);
-    
-            //validar que el nombre sea de al menos 2 caracteres y no contenga números
-            let resultValidate;
-            if (profesionalDetails) {
-                resultValidate = validateNombre(nombre);
-                if (resultValidate) return resultValidate;
-    
-                resultValidate = validateApellido(apellido);
-                if (resultValidate) return resultValidate;
-    
-                resultValidate = validateEmail(email);
-                if (resultValidate) return resultValidate;
-                if (email !== profesionalDetailsCopia?.email) {
-                    const estado = await emailExists(email)
-                    if (estado) {
-                        return "El email ya está registrado.";
-                    }
-                    if (resultValidate) return resultValidate;
+    //region validate
+    async function validateProfesionalDetails() {
+        const { nombre, apellido, email, telefono } = profesionalDetails || {};
+        /*         if (JSON.stringify(alumnoDetails) === JSON.stringify(alumnoDetailsCopia)) {
+                    return;
+                } */
+        console.log("responsableDetails", profesionalDetails);
+
+        //validar que el nombre sea de al menos 2 caracteres y no contenga números
+        let resultValidate;
+        if (profesionalDetails) {
+            resultValidate = validateNombre(nombre);
+            if (resultValidate) return resultValidate;
+
+            resultValidate = validateApellido(apellido);
+            if (resultValidate) return resultValidate;
+
+            resultValidate = validateEmail(email);
+            if (resultValidate) return resultValidate;
+            if (email !== profesionalDetailsCopia?.email) {
+                const estado = await emailExists(email)
+                if (estado) {
+                    return "El email ya está registrado.";
                 }
-    
-                if ( telefono && typeof (telefono) === "number") {
-                    resultValidate = validatePhoneNumber(String(telefono));
-                    if (resultValidate) return resultValidate;
-    
-                }
-    
+                if (resultValidate) return resultValidate;
             }
-            resultValidate = validateDireccion(nacionalidadName, provinciaName, localidadName, String(calle), Number(numero));
-            if (resultValidate) return resultValidate
-          
+
+            if (telefono && typeof (telefono) === "number") {
+                resultValidate = validatePhoneNumber(String(telefono));
+                if (resultValidate) return resultValidate;
+
+            }
+
         }
+        resultValidate = validateDireccion(nacionalidadName, provinciaName, localidadName, String(calle), Number(numero));
+        if (resultValidate) return resultValidate
+
+    }
 
     function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
         const { name, value } = e.target;
@@ -306,8 +292,8 @@ const Cuenta: React.FC = () => {
             console.log("profesionalDETAILS", profesionalDetails);
             const newprofesional = await updateProfesional(Number(profesionalDetails?.id), {
                 nombre: profesionalDetails.nombre, apellido: profesionalDetails.apellido,
-                 telefono: String(profesionalDetails.telefono),
-                direccionId: Number(newDireccion?.id),  email: profesionalDetails.email
+                telefono: String(profesionalDetails.telefono),
+                direccionId: Number(newDireccion?.id), email: profesionalDetails.email
             });
             console.log("newprofesional", newprofesional);
         } catch (error) {
@@ -321,11 +307,11 @@ const Cuenta: React.FC = () => {
 
     }
     //endregion
-//region return
+    //region return
     return (
-        <main style={{fontFamily:"Cursive"}}>
+        <main style={{ fontFamily: "Cursive" }}>
             <Navigate />
- {/*            <div className="fixed inset-0 z-[-1]">
+            {/*            <div className="fixed inset-0 z-[-1]">
                 <Image src={Background} alt="Background" layout="fill" objectFit="cover" quality={80} priority={true} />
             </div> */}
             <div className='absolute mt-20 top-5 '>
@@ -340,7 +326,7 @@ const Cuenta: React.FC = () => {
                         <div className="mb-4">
                             <label className="block text-gray-700 font-bold mb-2">Talleres:</label>
                             {cursos?.length !== 0 ? (
-                                <p className="p-2 border rounded bg-gray-100" style={{ height: '10vh', overflow: "auto" }}> {cursos?.map((curso)=> curso.nombre).join(", ")}</p>
+                                <p className="p-2 border rounded bg-gray-100" style={{ height: '10vh', overflow: "auto" }}> {cursos?.map((curso) => curso.nombre).join(", ")}</p>
                             ) : <p className="p-2 border rounded bg-gray-100">Talleres no cargados</p>}
                         </div>
 
@@ -359,18 +345,7 @@ const Cuenta: React.FC = () => {
                             <p className="p-2 border rounded bg-gray-100">{user?.email}</p>
                         </div>
 
-                        {/* 
-                        <div className="mb-4">
-                            <label className="block text-gray-700 font-bold mb-2">password:</label>
-                            <p className="p-2 border rounded bg-gray-100">
-                                <input
-                                    type="password"
-                                    value={user?.password}
-                                    className="w-full bg-transparent border-none"
-                                    readOnly
-                                />
-                            </p>
-                        </div> */}
+
                     </div>
                 </div>
                 <div className="flex items-center justify-center mt-5">
@@ -381,7 +356,10 @@ const Cuenta: React.FC = () => {
                     </button>
                 </div>
             </div>
-            <div className="fixed bottom-0 py-1 border-t bg-white w-full" style={{ opacity: 0.66 }}>
+            <div
+                className="fixed bottom-0 py-2 border-t w-full z-30"
+                style={{ background: "#EF4444" }}
+            >
                 <But_aside />
             </div>
             {openBox === 1 && (
@@ -396,23 +374,29 @@ const Cuenta: React.FC = () => {
                             </div>
                         )}
                         <div className="mb-4">
-                            <label htmlFor="nombre" >Nombre:</label>
+                            <label htmlFor="nombre" className="block">Nombre:</label>
                             <input
                                 type="text"
                                 id="nombre"
                                 name="nombre"
+                                placeholder="Ej: Juan"
+                                pattern="^[a-zA-ZíÍáéóúÁÉÓÚ\u00f1\u00d1\s]{2,50}$" // Este patrón asegura que solo se acepten 25 caracteres
+                                title="El nombre debe tener entre 2 y 50 caracteres, solo letras, espacios y tildes."
+                                maxLength={35}  // Limitar a 25 caracteres
                                 value={profesionalDetails.nombre}
                                 onChange={handleChange}
                                 className="p-2 w-full border rounded"
                             />
-                        </div>
-                        <div className="mb-4">
                             <label htmlFor="apellido" className="block">Apellido:</label>
                             <input
                                 type="text"
                                 id="apellido"
                                 name="apellido"
-                                value={(profesionalDetails.apellido)}
+                                placeholder="Ej: Peréz"
+                                maxLength={35}  // Limitar a 25 caracteres
+                                pattern="^[a-zA-ZíÍáéóúÁÉÓÚ\u00f1\u00d1\s]{2,50}$" // Este patrón asegura que solo se acepten 25 caracteres
+                                title="El apellido debe tener entre 2 y 50 caracteres, solo letras, espacios y tildes."
+                                value={profesionalDetails.apellido}
                                 onChange={handleChange}
                                 className="p-2 w-full border rounded"
                             />
@@ -420,10 +404,14 @@ const Cuenta: React.FC = () => {
                         <div className="mb-4">
                             <label htmlFor="email" className="block">Email:</label>
                             <input
-                                type="text"
+                                type="email"
                                 id="email"
                                 name="email"
-                                value={(profesionalDetails.email)}
+
+                                placeholder="Ej: dominio@email.com"
+                                pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\$" // Este patrón asegura que solo se acepten correos válidos
+                                maxLength={75}  // Limitar a 25 caracteres
+                                value={profesionalDetails.email}
                                 onChange={handleChange}
                                 className="p-2 w-full border rounded"
                             />
@@ -439,14 +427,31 @@ const Cuenta: React.FC = () => {
                         </div>
                         <div className="mb-4">
                             <label htmlFor="telefono" className="block">Teléfono:</label>
-                            <input
-                                type="number"
-                                id="telefono"
-                                name="telefono"
-                                value={profesionalDetails.telefono}
-                                onChange={handleChange}
-                                className="p-2 w-full border rounded"
-                            />
+                            <div className="flex">
+                                <span className="p-2 bg-gray-200 rounded-l">+54</span>
+
+
+                                <input
+                                    type="text"
+                                    id="telefono"
+                                    name="telefono"
+                                    placeholder="Ej: 1234567890"
+                                    pattern="^\d{8,12}$" // Solo permite números, entre 8 y 15 dígitos
+                                    title="El teléfono debe tener entre 8 y 12 números."
+                                    maxLength={12} // Limitar la longitud a 15 caracteres
+                                    value={profesionalDetails.telefono}
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+
+                                        // Filtra solo los números
+                                        if (/^\d*$/.test(value)) {
+                                            handleChange(e); // Actualiza el estado solo si es válido
+                                        }
+                                    }}
+                                    className="p-2 w-full border rounded"
+                                />
+                            </div>
+
                         </div>
                         {((!nacionalidadName && !provinciaName && !localidadName && !calle && !numero && openBox === 1) && user?.direccionId) && <p className=" text-red-600">Cargando su ubicación...</p>}
                         {<div className="mb-4">
@@ -455,6 +460,9 @@ const Cuenta: React.FC = () => {
                                 type="text"
                                 id="pais"
                                 name="pais"
+                                pattern=" ^[a-zA-ZíÍáéóúÁÉÓÚ\u00f1\u00d1\s]{2,50}$" // Este patrón asegura que solo se acepten 25 caracteres
+                                placeholder='Ej: Argentina'
+                                maxLength={50}
                                 value={String(nacionalidadName)}
                                 onChange={(e) => setNacionalidadName(e.target.value)}
                                 className="p-2 w-full border rounded"
@@ -466,45 +474,62 @@ const Cuenta: React.FC = () => {
                                 type="text"
                                 id="provincia"
                                 name="provincia"
+                                pattern=" ^[a-zA-ZíÍáéóúÁÉÓÚ\u00f1\u00d1\s]{2,50}$" // Este patrón asegura que solo se acepten 25 caracteres
+                                placeholder='Ej: Entre Ríos'
+                                maxLength={50}
+
                                 value={String(provinciaName)}
                                 onChange={(e) => setProvinciaName(e.target.value)}
                                 className="p-2 w-full border rounded"
                             />
                         </div>}
-                        { <div className="mb-4">
+                        {<div className="mb-4">
                             <label htmlFor="localidad" className="block">Localidad:</label>
                             <input
                                 type="text"
                                 id="localidad"
                                 name="localidad"
+                                pattern='^[a-zA-ZíÍáéóúÁÉÓÚ\u00f1\u00d1\s]{2,99}$' // Este patrón asegura que solo se acepten 25 caracteres
+                                placeholder='Ej: Crespo'
+                                maxLength={100}
                                 value={String(localidadName)}
                                 onChange={(e) => setLocalidadName(e.target.value)}
                                 className="p-2 w-full border rounded"
                             />
                         </div>}
-                         <div className="mb-4">
+                        <div className="mb-4">
                             <label htmlFor="calle" className="block">Calle:</label>
                             <input
                                 type="text"
                                 id="calle"
                                 name="calle"
+                                pattern='^[a-zA-ZíÍáéóúÁÉÓÚ\u00f1\u00d1\s]{2,99}$' // Este patrón asegura que solo se acepten 25 caracteres
+                                maxLength={99}
+                                placeholder='Ej: Av San Martín'
                                 value={String(calle)}
                                 onChange={(e) => setcalle(e.target.value)}
                                 className="p-2 w-full border rounded"
                             />
-                        </div> 
-                            <div className="mb-4">
-                                <label htmlFor="numero" className="block">Número:</label>
-                                <input
-                                    type="text"
-                                    id="numero"
-                                    name="numero"
-                                    value={Number(numero)}
-                                    onChange={(e) => setNumero(Number(e.target.value))}
-                                    className="p-2 w-full border rounded"
-                                />
-                            </div>
-                        
+                        </div>
+                        <div className="mb-4">
+                            <label htmlFor="numero" className="block">Número:</label>
+                            <input
+                                type="text"
+                                id="numero"
+                                name="numero"
+                                pattern='^\d{1,5}$' // Solo permite números, entre 1 y 5 dígitos
+                                maxLength={5} // Limitar la longitud a 5 caracteres
+
+                                value={numero || ''} // Aseguramos que el valor sea un string vacío si 'numero' es null o undefined
+                                onChange={(e) => {
+                                    const value = e.target.value.replace(/\D/g, ''); // Reemplazamos cualquier caracter no numérico
+                                    setNumero(Number(value)); // Establecemos el valor filtrado en el estado
+                                }}
+                                className="p-2 w-full border rounded"
+                            />
+                        </div>
+
+
                         <div>
                             <button
                                 className="py-2  text-black font-bold rounded hover:underline"

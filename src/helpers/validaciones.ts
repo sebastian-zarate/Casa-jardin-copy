@@ -1,5 +1,8 @@
 import { emailExists } from "@/services/Alumno";
 
+
+
+export  const caracEspeciales = /^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/; // Expresión regular correcta para validar nombres y apellidos
 export function validateDni(dni: string) {
     //console.log("dni",dni);
 
@@ -136,7 +139,6 @@ export function validateDireccion(pais?: string, provincia?: string, localidad?:
 }
 
 export function validateNombre(nombre: string) {
-    const caracEspeciales = /^[a-zA-ZÀ-ÿ\u00f1\u00d1\u00fc\u00dc\s]+$/; // Expresión regular correcta para validar nombres
 
     if (!nombre) {
         return "El nombre no puede estar vacío"; // Prioridad: Verificar que no esté vacío primero
@@ -159,7 +161,7 @@ export function validateNombre(nombre: string) {
 }
 
 export function validateApellido(apellido: string) {
-    const caracEspeciales = /^[a-zA-ZÀ-ÿ\u00f1\u00d1\u00fc\u00dc\s]+$/; // Expresión regular correcta para apellidos
+    
 
     if (!apellido) {
         return "El apellido no puede estar vacío"; // Prioridad: Verificar que no esté vacío primero
@@ -251,3 +253,90 @@ export function validateFechaNacimiento(fechaNacimiento: Date | undefined) {
     }
     return null;
 }
+
+
+// validaciones.ts
+
+export function validateCursoDetails(details: {
+    nombre: string;
+    descripcion: string;
+    fechaInicio: Date;
+    fechaFin: Date;
+    edadMinima: number;
+    edadMaxima: number;
+  }) {
+    const {
+      nombre,
+      descripcion,
+      fechaInicio,
+      fechaFin,
+      edadMinima,
+      edadMaxima,
+    } = details;
+  
+    // Validar que el nombre tenga entre 2 y 50 caracteres
+    if (nombre.length < 2 || nombre.length > 50) {
+      return "El nombre debe tener entre 2 y 50 caracteres.";
+    }
+  
+    // Validar que la descripción tenga entre 5 y 300 palabras
+    const descripcionWords = descripcion.trim().split(/\s+/).length;
+    if (descripcionWords < 5) {
+      return "La descripción debe tener al menos 5 palabras.";
+    }
+    if (descripcionWords > 300) {
+      return "La descripción no puede exceder las 300 palabras.";
+    }
+  
+    // Validar que el nombre y la descripción no contengan caracteres no permitidos
+    const regex = /^[a-zA-Z0-9À-ÿ\u00f1\u00d1\u00fc\u00dc\s.,:-]*$/;
+    if (!regex.test(nombre)) {
+      return "El nombre del curso solo puede contener letras, números, espacios, puntos, comas y guiones.";
+    }
+    if (!regex.test(descripcion)) {
+      return "La descripción solo puede contener letras, números, espacios, puntos, comas y guiones.";
+    }
+  
+    // Validar que la fecha de inicio sea anterior a la fecha de fin
+    if (new Date(fechaInicio) >= new Date(fechaFin)) {
+      return "La fecha de inicio debe ser anterior a la fecha de fin.";
+    }
+  
+    // El rango de fechas no puede ser menor a 7 días
+    const diffTime = Math.abs(new Date(fechaFin).getTime() - new Date(fechaInicio).getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    if (diffDays < 7) {
+      return "El rango de fechas no puede ser menor a 7 días.";
+    }
+    // la fecha del inicio no puede ser menor a la fecha actual
+    if (new Date(fechaInicio) < new Date()) {
+      return "La fecha de inicio no puede ser menor a la fecha actual.";
+    }
+  
+    // Validar que la edad mínima sea un número entero positivo
+    const minEdad = Number(edadMinima);
+    const maxEdad = Number(edadMaxima);
+  
+    if (isNaN(minEdad) || isNaN(maxEdad)) {
+      return "Las edades mínima y máxima deben ser números válidos.";
+    }
+  
+    if (minEdad < 0 || maxEdad < 0) {
+      return "Las edades no pueden ser valores negativos.";
+    }
+  
+    if (minEdad < 2) {
+      return "La edad mínima no puede ser menor a 2 años.";
+    }
+  
+    if (minEdad > maxEdad) {
+      return "La edad mínima no puede ser mayor que la edad máxima.";
+    }
+  
+    if (maxEdad > 100) {
+      return "La edad máxima no puede ser mayor que 99 años.";
+    }
+  
+    return null; // No hay errores
+  }
+  

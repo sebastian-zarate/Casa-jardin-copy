@@ -273,7 +273,7 @@ const Alumnos: React.FC = () => {
         const { nombre, apellido, password, email, telefono, dni } = alumnoDetails || {};
         const { nombre: nombreR, apellido: apellidoR, email: EmailR,
             dni: dniR, telefono: telefonoR } = responsableDetails || {};
-            
+
         //validar que el nombre sea de al menos 2 caracteres y no contenga números
         let resultValidate;
         if (alumnoDetails) {
@@ -626,12 +626,12 @@ const Alumnos: React.FC = () => {
                         style={{ opacity: 0.88 }}
                     />
                 </div>
-    
+
                 {/* Encabezado */}
                 <div className="relative mt-16 sm:mt-20 flex flex-col items-center z-10">
                     <h1 className="text-2xl sm:text-3xl bg-white rounded-lg p-2 shadow-lg">ALUMNOS</h1>
                 </div>
-    
+
                 {/* Barra de búsqueda */}
                 <div className="relative mt-4 flex justify-center z-10">
                     <div className="relative w-11/12 sm:w-1/4">
@@ -644,7 +644,7 @@ const Alumnos: React.FC = () => {
                         />
                     </div>
                 </div>
-    
+
                 {/* Contenedor Principal */}
                 <div className="relative mt-8 flex justify-center z-10">
                     <div className="border p-4 w-11/12 sm:w-2/3 md:w-1/2 lg:w-1/3 h-[60vh] bg-gray-800 bg-opacity-60 overflow-y-auto rounded-lg">
@@ -686,7 +686,7 @@ const Alumnos: React.FC = () => {
                         </button>
                     </div>
                 </div>
-    
+
                 {/* Modal */}
                 {selectedAlumno !== null && (
                     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-20">
@@ -706,6 +706,9 @@ const Alumnos: React.FC = () => {
                                     type="text"
                                     id="nombre"
                                     name="nombre"
+                                    placeholder="Ej: Juan"
+                                    pattern="\d{35}" // Este patrón asegura que solo se acepten 25 caracteres
+                                    maxLength={35}  // Limitar a 25 caracteres
                                     value={alumnoDetails.nombre}
                                     onChange={handleChange}
                                     className="p-2 w-full border rounded"
@@ -715,6 +718,9 @@ const Alumnos: React.FC = () => {
                                     type="text"
                                     id="apellido"
                                     name="apellido"
+                                    placeholder="Ej: Perez"
+                                    pattern="\d{35}" // Este patrón asegura que solo se acepten 25 caracteres
+                                    maxLength={35}  // Limitar a 25 caracteres
                                     value={alumnoDetails.apellido}
                                     onChange={handleChange}
                                     className="p-2 w-full border rounded"
@@ -726,7 +732,10 @@ const Alumnos: React.FC = () => {
                                     type="email"
                                     id="email"
                                     name="email"
-                                    placeholder={selectedAlumno === -2 ? "Si no tiene email, el mismo debe ser del responsable" : ""}
+
+                                    placeholder={selectedAlumno === -2 ? "Si no tiene email, el mismo debe ser del responsable" : "Ej: dominio@email.com"}
+                                    pattern="\d{75}" // Este patrón asegura que solo se acepten 45 caracteres
+                                    maxLength={75}  // Limitar a 25 caracteres
                                     value={alumnoDetails.email}
                                     onChange={handleChange}
                                     className="p-2 w-full border rounded"
@@ -735,31 +744,48 @@ const Alumnos: React.FC = () => {
                             <div className="mb-4">
                                 <label htmlFor="dni" className="block">DNI:</label>
                                 <input
-                                    type="number"
+                                    type="text" // Cambiado a "text" para mayor control
                                     id="dni"
                                     name="dni"
                                     placeholder="Ingrese su DNI"
-                                    value={alumnoDetails.dni ? alumnoDetails.dni : null}
-                                    onChange={handleChange}
+                                    value={alumnoDetails.dni || ''} // Asegurar un valor por defecto como cadena vacía
+                                    maxLength={8} // Limitar a 8 caracteres
+                                    onChange={(e) => {
+                                        const value = e.target.value.replace(/\D/g, ""); // Eliminar cualquier caracter no numérico
+                                        const formattedValue = value
+
+                                        setAlumnoDetails({ ...alumnoDetails, dni: formattedValue }); // Actualizar el estado
+                                    }}
                                     className="p-2 w-full border rounded"
                                 />
                             </div>
+
                             {selectedAlumno !== -2 && mayor === true && (
                                 <div className="mb-4">
                                     <label htmlFor="telefono" className="block">Teléfono:</label>
-                                    <div className="flex">
-                                        <h3 className="p-2">+54</h3>
+                                    <div className="flex items-center">
+                                        <span className="p-2 bg-gray-200 rounded-l">+54</span>
                                         <input
-                                            type="number"
+                                            type="text"
                                             id="telefono"
                                             name="telefono"
-                                            placeholder="Ingrese su código de área y los dígitos de su teléfono"
-                                            value={alumnoDetails.telefono ? alumnoDetails.telefono : null}
-                                            onChange={handleChange}
-                                            className="p-2 w-full border rounded"
+                                            placeholder="Ej: 3411234567"
+                                            maxLength={10} // Limitar a 10 dígitos
+                                            value={alumnoDetails.telefono || ''} // Asegurar un valor inicial válido
+                                            onChange={(e) => {
+                                                const value = e.target.value.replace(/\D/g, ""); // Eliminar caracteres no numéricos
+                                                setAlumnoDetails({ ...alumnoDetails, telefono: value }); // Actualizar el estado
+                                            }}
+                                            className="p-2 w-full border rounded-r"
                                         />
                                     </div>
+                                    {alumnoDetails.telefono && alumnoDetails.telefono.length !== 10 && (
+                                        <p className="text-red-500 text-sm mt-1">
+                                            El número de teléfono debe tener exactamente 10 dígitos.
+                                        </p>
+                                    )}
                                 </div>
+
                             )}
                             <div className="flex-col flex mb-4">
                                 <label htmlFor="fechaNacimiento">Fecha de Nacimiento</label>
@@ -786,7 +812,7 @@ const Alumnos: React.FC = () => {
                                     type="password"
                                     id="password"
                                     name="password"
-                                    placeholder={(selectedAlumno === -1 || selectedAlumno === -2) ? "" : "Si desea cambiar la contraseña, ingresela aquí"}
+                                    placeholder={(selectedAlumno === -1 || selectedAlumno === -2) ? "Ingrese una contraseña" : "Si desea cambiar la contraseña, ingresela aquí"}
                                     value={alumnoDetails.password}
                                     onChange={handleChange}
                                     className="p-2 w-full border rounded"
@@ -800,9 +826,11 @@ const Alumnos: React.FC = () => {
                                         type="text"
                                         id="pais"
                                         name="pais"
+                                        placeholder="Ej: Argentina"
                                         value={String(nacionalidadName)}
-                                        placeholder="Ingrese el país donde vive"
                                         onChange={(e) => setNacionalidadName(e.target.value)}
+                                        pattern="\d{35}" // Este patrón asegura que solo se acepten 25 caracteres
+                                        maxLength={35}  // Limitar a 25 caracteres
                                         className="p-2 w-full border rounded"
                                     />
                                 </div>
@@ -812,8 +840,10 @@ const Alumnos: React.FC = () => {
                                         type="text"
                                         id="provincia"
                                         name="provincia"
+                                        placeholder="Ej: Entre Rios"
+                                        pattern="\d{35}" // Este patrón asegura que solo se acepten 25 caracteres
+                                        maxLength={35}  // Limitar a 25 caracteres
                                         value={String(provinciaName)}
-                                        placeholder="Ingrese la provincia donde vive"
                                         onChange={(e) => setProvinciaName(e.target.value)}
                                         className="p-2 w-full border rounded"
                                     />
@@ -824,36 +854,49 @@ const Alumnos: React.FC = () => {
                                         type="text"
                                         id="localidad"
                                         name="localidad"
+                                        placeholder="Ej: Crespo"
+                                        pattern="\d{35}" // Este patrón asegura que solo se acepten 25 caracteres
+                                        maxLength={35}  // Limitar a 25 caracteress
                                         value={String(localidadName)}
-                                        placeholder="Ingrese la localidad donde vive"
                                         onChange={(e) => setLocalidadName(e.target.value)}
                                         className="p-2 w-full border rounded"
                                     />
                                 </div>
                                 <div className="mb-4">
                                     <label htmlFor="calle" className="block">Calle:</label>
+
                                     <input
                                         type="text"
                                         id="calle"
                                         name="calle"
+                                        placeholder="Ej: Av. San Martín"
+                                        pattern="\d{35}" // Este patrón asegura que solo se acepten 25 caracteres
+                                        maxLength={35}  // Limitar a 25 caracteres
                                         value={String(calle)}
-                                        placeholder="Ingrese el nombre de su calle"
                                         onChange={(e) => setcalle(e.target.value)}
                                         className="p-2 w-full border rounded"
                                     />
                                 </div>
                                 <div className="mb-4">
-                                    <label htmlFor="numero" className="block">Número:</label>
+                                    <label htmlFor="numero" className="block mb-1 font-medium">Número:</label>
                                     <input
-                                        type="number"
+                                        type="text"
                                         id="numero"
                                         name="numero"
-                                        placeholder="Ingrese el número de su calle"
-                                        value={numero ? Number(numero) : ""}
-                                        onChange={(e) => setNumero(Number(e.target.value))}
+                                        placeholder="Ej: 1234"
+                                        value={Number(numero)}
+                                        maxLength={6} // Limitar a 5 caracteres
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            // Permitir solo números y limitar a 6 caracteres
+                                            if (/^\d{0,6}$/.test(value)) {
+                                                setNumero(Number(value));
+                                            }
+                                        }}
                                         className="p-2 w-full border rounded"
                                     />
                                 </div>
+
                             </>
                             {mayor !== true && (
                                 <div>
@@ -864,6 +907,10 @@ const Alumnos: React.FC = () => {
                                             type="text"
                                             id="ResponsableNombre"
                                             name="nombre"
+
+                                            placeholder="Ej: Juan"
+                                            pattern="\d{35}" // Este patrón asegura que solo se acepten 25 caracteres
+                                            maxLength={35}  // Limitar a 25 caracteres
                                             value={responsableDetails.nombre}
                                             onChange={handleChangeResponsable}
                                             className="p-2 w-full border rounded"
@@ -875,6 +922,9 @@ const Alumnos: React.FC = () => {
                                             type="text"
                                             id="ResponsableApellido"
                                             name="apellido"
+                                            placeholder="Ej: Perez"
+                                            pattern="\d{35}" // Este patrón asegura que solo se acepten 25 caracteres
+                                            maxLength={35}  // Limitar a 25 caracteres
                                             value={responsableDetails.apellido}
                                             onChange={handleChangeResponsable}
                                             className="p-2 w-full border rounded"
@@ -883,26 +933,41 @@ const Alumnos: React.FC = () => {
                                     <div className="mb-4">
                                         <label htmlFor="dniR" className="block">DNI:</label>
                                         <input
-                                            type="number"
+                                            type="text"
                                             id="dniR"
                                             name="dni"
                                             placeholder="Ingrese el DNI del responsable"
-                                            value={responsableDetails.dni ? responsableDetails.dni : null}
-                                            onChange={handleChangeResponsable}
+                                            maxLength={8} // Limitar a 8 caracteres
+                                            value={responsableDetails.dni || ''} // Asegurar que el valor esté vacío si no existe
+                                            onChange={(e) => {
+                                               
+                                                const value = e.target.value.replace(/\D/g, ""); // Eliminar cualquier caracter no numérico
+                                                const formattedValue = value
+        
+                                                handleChangeResponsable({ target: { name: 'dni', value: formattedValue } } as React.ChangeEvent<HTMLInputElement>); // Actualizar el estado
+                                            }}
                                             className="p-2 w-full border rounded"
                                         />
                                     </div>
+                               
+
                                     <div className="mb-4">
                                         <label htmlFor="telefonoR" className="block">Teléfono:</label>
                                         <div className="flex">
-                                            <h3 className="p-2">+54</h3>
+                                            <span className="p-2 bg-gray-200 rounded-l">+54</span>
                                             <input
-                                                type="number"
+                                                type="text"
                                                 id="telefonoR"
                                                 name="telefono"
-                                                placeholder="Ingrese su código de área y los dígitos de su teléfono"
-                                                value={responsableDetails.telefono ? responsableDetails.telefono : null}
-                                                onChange={handleChangeResponsable}
+                                                placeholder="Ej: 3411234567"
+                                                maxLength={12} // Limitar a 12 dígitos
+                                                value={responsableDetails.telefono || ''} // Asegurar un valor inicial válido
+                                                onChange={(e) => {
+                                                    const value = e.target.value.replace(/\D/g, ""); // Eliminar cualquier caracter no numérico
+                                                    const formattedValue = value
+            
+                                                    handleChangeResponsable({ target: { name: 'telefono', value: formattedValue } } as React.ChangeEvent<HTMLInputElement>); // Actualizar el estado
+                                                }}
                                                 className="p-2 w-full border rounded"
                                             />
                                         </div>
@@ -913,6 +978,8 @@ const Alumnos: React.FC = () => {
                                             type="text"
                                             id="emailR"
                                             name="email"
+                                            maxLength={75}  // Limitar a 25 caracteres
+                                            pattern="\d{75}" // Este patrón asegura que solo se acepten 25 caracteres
                                             placeholder="Ingrese el email del responsable"
                                             value={responsableDetails.email}
                                             onChange={handleChangeResponsable}
@@ -942,8 +1009,8 @@ const Alumnos: React.FC = () => {
                 )}
             </div>
         </main>
-        );
-    }
-    // #endregion
+    );
+}
+// #endregion
 //export default Alumnos;
 export default withAuth(Alumnos);

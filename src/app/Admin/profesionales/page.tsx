@@ -24,7 +24,7 @@ import withAuth from "../../../components/Admin/adminAuth";
 import PasswordComponent from "@/components/Password/page";
 import { hashPassword } from "@/helpers/hashPassword";
 //para subir imagenes:
-import { handleUploadProfesionalImage, handleDeleteProfesionalImage, mapearImagenes} from "@/helpers/repoImages";
+import { handleUploadProfesionalImage, handleDeleteProfesionalImage, mapearImagenes } from "@/helpers/repoImages";
 
 import { validateApellido, validateDireccion, validateDni, validateEmail, validateNombre, validatePasswordComplexity, validatePhoneNumber } from "@/helpers/validaciones";
 import { dniExists, emailExists } from "@/services/Alumno";
@@ -496,7 +496,7 @@ const Profesionales = () => {
             prof.nombre.toLowerCase().includes(searchTerm) ||
             prof.apellido.toLowerCase().includes(searchTerm)
         );
-    
+
         setProfesionalesBuscados(filteredProf);
         setProfesionalAbuscar(e.target.value);
         setProfesionales(filteredProf);
@@ -506,7 +506,7 @@ const Profesionales = () => {
 
     // #region Return
     return (
-            <main className="relative min-h-screen bg-cover bg-center"
+        <main className="relative min-h-screen bg-cover bg-center"
             style={{
                 backgroundImage: `url(${Background})`,
                 backgroundSize: "cover",
@@ -533,7 +533,7 @@ const Profesionales = () => {
                 <div className="relative mt-4 pt-8 flex flex-col items-center z-10">
                     <h1 className="text-2xl sm:text-3xl bg-white rounded-lg p-2 shadow-lg">PROFESIONALES</h1>
                 </div>
-    
+
                 {/* Barra de búsqueda */}
                 <div className="relative mt-4 flex justify-center z-10">
                     <div className="relative w-11/12 sm:w-1/4">
@@ -546,10 +546,10 @@ const Profesionales = () => {
                         />
                     </div>
                 </div>
-    
+
                 {/* Contenedor Principal */}
                 <div className="relative mt-8 flex justify-center z-10">
-                <div className="border p-4 w-11/12 sm:w-2/3 md:w-1/2 lg:w-1/3 h-[60vh] bg-gray-400 bg-opacity-50 overflow-y-auto rounded-lg">
+                    <div className="border p-4 w-11/12 sm:w-2/3 md:w-1/2 lg:w-1/3 h-[60vh] bg-gray-400 bg-opacity-50 overflow-y-auto rounded-lg">
                         <div className="flex flex-col space-y-4">
                             {profesionales.map((profesional, index) => (
                                 <div
@@ -585,196 +585,246 @@ const Profesionales = () => {
                                 </div>
                             ))}
                             <button onClick={() => { setSelectedProfesional(-1); setObProfesional(null) }} className="mt-6 mx-4">
-                            <Image
-                                src={ButtonAdd}
-                                className="mx-3"
-                                alt="Image Alt Text"
-                                width={70}
-                                height={70}
-                            />
-                        </button>
+                                <Image
+                                    src={ButtonAdd}
+                                    className="mx-3"
+                                    alt="Image Alt Text"
+                                    width={70}
+                                    height={70}
+                                />
+                            </button>
                         </div>
                     </div>
                 </div>
-    
+
                 {/* Modal */}
-        </div>
-        {selectedProfesional !== null && (
-            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-30">
-                <div ref={scrollRef} className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative" style={{ height: '70vh', overflow: "auto" }}>
-                    <h2 className="text-2xl font-bold mb-4">
-                        {selectedProfesional === -1 ? "Nuevo Profesional" : "Editar Profesional"}
-                    </h2>
-                    {errorMessage && (
-                        <div className="mb-4 text-red-600">
-                            {errorMessage}
-                        </div>
-                    )}
-                    <div className="mb-4">
-                        <label htmlFor="nombre" className="block">Nombre:</label>
-                        <input
-                            type="text"
-                            id="nombre"
-                            name="nombre"
-                            value={profesionalDetails.nombre}
-                            onChange={handleChange}
-                            className="p-2 w-full border rounded"
-                        />
-                        <label htmlFor="apellido" className="block">Apellido:</label>
-                        <input
-                            type="text"
-                            id="apellido"
-                            name="apellido"
-                            value={profesionalDetails.apellido}
-                            onChange={handleChange}
-                            className="p-2 w-full border rounded"
-                        />
-                    </div>
-                    <div className="mb-4">
-                        <label htmlFor="email" className="block">Email:</label>
-                        <input
-                            type="email"
-                            id="email"
-                            name="email"
-                            value={profesionalDetails.email}
-                            onChange={handleChange}
-                            className="p-2 w-full border rounded"
-                        />
-                    </div>
-                    <div className="mb-4">
-                        <label htmlFor="especialidad" className="block">Especialidad:</label>
-                        <input
-                            type="text"
-                            id="especialidad"
-                            name="especialidad"
-                            value={profesionalDetails.especialidad}
-                            onChange={handleChange}
-                            className="p-2 w-full border rounded"
-                        />
-                    </div>
-                    <div className="mb-4">
-                        <label htmlFor="telefono" className="block">Teléfono:</label>
-                        <div className="flex">
-                            <h3 className="p-2">+54</h3>
+            </div>
+            {selectedProfesional !== null && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-30">
+                    <div ref={scrollRef} className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative" style={{ height: '70vh', overflow: "auto" }}>
+                        <h2 className="text-2xl font-bold mb-4">
+                            {selectedProfesional === -1 ? "Nuevo Profesional" : "Editar Profesional"}
+                        </h2>
+                        {errorMessage && (
+                            <div className="mb-4 text-red-600">
+                                {errorMessage}
+                            </div>
+                        )}
+                        <div className="mb-4">
+                            <label htmlFor="nombre" className="block">Nombre:</label>
                             <input
-                                type="number"
-                                id="telefono"
-                                name="telefono"
-                                placeholder="Ingrese su código de área y los dígitos de su teléfono"
-                                value={profesionalDetails.telefono ? profesionalDetails.telefono : null}
+                                type="text"
+                                id="nombre"
+                                name="nombre"
+                                placeholder="Ej: Juan"
+                                pattern="^[a-zA-ZíÍáéóúÁÉÓÚ\u00f1\u00d1\s]{2,50}$" // Este patrón asegura que solo se acepten 25 caracteres
+                                title="El nombre debe tener entre 2 y 50 caracteres, solo letras, espacios y tildes."
+                                maxLength={35}  // Limitar a 25 caracteres
+                                value={profesionalDetails.nombre}
+                                onChange={handleChange}
+                                className="p-2 w-full border rounded"
+                            />
+                            <label htmlFor="apellido" className="block">Apellido:</label>
+                            <input
+                                type="text"
+                                id="apellido"
+                                name="apellido"
+                                placeholder="Ej: Peréz"
+                                maxLength={35}  // Limitar a 25 caracteres
+                                pattern="^[a-zA-ZíÍáéóúÁÉÓÚ\u00f1\u00d1\s]{2,50}$" // Este patrón asegura que solo se acepten 25 caracteres
+                                title="El apellido debe tener entre 2 y 50 caracteres, solo letras, espacios y tildes."
+                                value={profesionalDetails.apellido}
                                 onChange={handleChange}
                                 className="p-2 w-full border rounded"
                             />
                         </div>
-                    </div>
-                    <div className="mb-4">
-                        <label htmlFor="password" className="block">Contraseña:</label>
-                        <input
-                            type="password"
-                            id="password"
-                            name="password"
-                            placeholder={(selectedProfesional === -1 || selectedProfesional === -2) ? "" : "Si desea cambiar la contraseña, ingresela aquí"}
-                            value={profesionalDetails.password}
-                            onChange={handleChange}
-                            className="p-2 w-full border rounded"
-                        />
-                    </div>
-                    {((!nacionalidadName && !provinciaName && !localidadName && !calle && !numero && selectedProfesional !== -1) && obProfesional.direccionID) && <p className=" text-red-600">Cargando su ubicación...</p>}
-                    <>
                         <div className="mb-4">
-                            <label htmlFor="pais" className="block">País:</label>
+                            <label htmlFor="email" className="block">Email:</label>
                             <input
-                                type="text"
-                                id="pais"
-                                name="pais"
-                                value={String(nacionalidadName)}
-                                onChange={(e) => setNacionalidadName(e.target.value)}
+                                type="email"
+                                id="email"
+                                name="email"
+
+                                placeholder="Ej: dominio@email.com"
+                                pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\$" // Este patrón asegura que solo se acepten correos válidos
+                                maxLength={75}  // Limitar a 25 caracteres
+                                value={profesionalDetails.email}
+                                onChange={handleChange}
                                 className="p-2 w-full border rounded"
                             />
                         </div>
                         <div className="mb-4">
-                            <label htmlFor="provincia" className="block">Provincia:</label>
+                            <label htmlFor="especialidad" className="block">Especialidad:</label>
                             <input
                                 type="text"
-                                id="provincia"
-                                name="provincia"
-                                value={String(provinciaName)}
-                                onChange={(e) => setProvinciaName(e.target.value)}
+                                id="especialidad"
+                                name="especialidad"
+                                placeholder="Ej: Psicólogo"
+                                pattern="\d{75}" // Este patrón asegura que solo se acepten 25 caracteres
+                                maxLength={75}  // Limitar a 25 caracteres
+                                value={profesionalDetails.especialidad}
+                                onChange={handleChange}
                                 className="p-2 w-full border rounded"
                             />
                         </div>
+                        <label htmlFor="telefono" className="block">Teléfono:</label>
+                        <div className="flex">
+                            <span className="p-2 bg-gray-200 rounded-l">+54</span>
+
+
+                            <input
+                                type="text"
+                                id="telefono"
+                                name="telefono"
+                                placeholder="Ej: 1234567890"
+                                pattern="^\d{8,12}$" // Solo permite números, entre 8 y 15 dígitos
+                                title="El teléfono debe tener entre 8 y 12 números."
+                                maxLength={12} // Limitar la longitud a 15 caracteres
+                                value={profesionalDetails.telefono}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+
+                                    // Filtra solo los números
+                                    if (/^\d*$/.test(value)) {
+                                        handleChange(e); // Actualiza el estado solo si es válido
+                                    }
+                                }}
+                                className="p-2 w-full border rounded"
+                            />
+                        </div>
+
                         <div className="mb-4">
-                            <label htmlFor="localidad" className="block">Localidad:</label>
+                            <label htmlFor="password" className="block">Contraseña:</label>
                             <input
-                                type="text"
-                                id="localidad"
-                                name="localidad"
-                                value={String(localidadName)}
-                                onChange={(e) => setLocalidadName(e.target.value)}
+                                type="password"
+                                id="password"
+                                name="password"
+                                maxLength={75}  // Limitar a 25 caracteres
+                                placeholder={(selectedProfesional === -1 || selectedProfesional === -2) ? "" : "Si desea cambiar la contraseña, ingresela aquí"}
+                                value={profesionalDetails.password}
+                                onChange={handleChange}
                                 className="p-2 w-full border rounded"
                             />
                         </div>
+                        {((!nacionalidadName && !provinciaName && !localidadName && !calle && !numero && selectedProfesional !== -1) && obProfesional.direccionID) && <p className=" text-red-600">Cargando su ubicación...</p>}
+                        <>
+                            <div className="mb-4">
+                                <label htmlFor="pais" className="block">País:</label>
+                                <input
+                                    type="text"
+                                    id="pais"
+                                    name="pais"
+                                    placeholder="Ej: Argentina"
+                                    value={String(nacionalidadName)}
+                                    onChange={(e) => setNacionalidadName(e.target.value)}
+                                    pattern="\d{35}" // Este patrón asegura que solo se acepten 25 caracteres
+                                    maxLength={35}  // Limitar a 25 caracteres
+                                    className="p-2 w-full border rounded"
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label htmlFor="provincia" className="block">Provincia:</label>
+                                <input
+                                    type="text"
+                                    id="provincia"
+                                    name="provincia"
+                                    placeholder="Ej: Entre Rios"
+                                    pattern="\d{35}" // Este patrón asegura que solo se acepten 25 caracteres
+                                    maxLength={35}  // Limitar a 25 caracteres
+                                    value={String(provinciaName)}
+                                    onChange={(e) => setProvinciaName(e.target.value)}
+                                    className="p-2 w-full border rounded"
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label htmlFor="localidad" className="block">Localidad:</label>
+                                <input
+                                    type="text"
+                                    id="localidad"
+                                    name="localidad"
+                                    placeholder="Ej: Crespo"
+                                    pattern="\d{35}" // Este patrón asegura que solo se acepten 25 caracteres
+                                    maxLength={35}  // Limitar a 25 caracteress
+                                    value={String(localidadName)}
+                                    onChange={(e) => setLocalidadName(e.target.value)}
+                                    className="p-2 w-full border rounded"
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label htmlFor="calle" className="block">Calle:</label>
+
+                                <input
+                                    type="text"
+                                    id="calle"
+                                    name="calle"
+                                    placeholder="Ej: Av. San Martín"
+                                    pattern="\d{35}" // Este patrón asegura que solo se acepten 25 caracteres
+                                    maxLength={35}  // Limitar a 25 caracteres
+                                    value={String(calle)}
+                                    onChange={(e) => setcalle(e.target.value)}
+                                    className="p-2 w-full border rounded"
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label htmlFor="numero" className="block mb-1 font-medium">Número:</label>
+                                <input
+                                    type="text"
+                                    id="numero"
+                                    name="numero"
+                                    placeholder="Ej: 1234"
+                                    value={Number(numero)} // Asegúrate de que `numero` sea un estado inicializado como cadena.
+                                    maxLength={6} // Limitar a 6 caracteres
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+
+                                        // Permitir solo números
+                                        if (/^\d*$/.test(value)) {
+                                            setNumero(Number(value)); // Actualiza el estado con la entrada válida
+                                        }
+                                    }}
+                                    className="p-2 w-full border rounded"
+                                />
+                            </div>
+
+                        </>
                         <div className="mb-4">
-                            <label htmlFor="calle" className="block">Calle:</label>
+                            <label htmlFor="imagen" className="block">
+                                Imagen:
+                            </label>
                             <input
-                                type="text"
-                                id="calle"
-                                name="calle"
-                                value={String(calle)}
-                                onChange={(e) => setcalle(e.target.value)}
+                                type="file"
+                                id="imagen"
+                                name="imagen"
+                                accept=".png, .jpg, .jpeg .avif"
+                                onChange={onFileChange}
                                 className="p-2 w-full border rounded"
                             />
+                            {uploadError && <div style={{ color: "red" }}>{uploadError}</div>}
                         </div>
-                        <div className="mb-4">
-                            <label htmlFor="numero" className="block">Número:</label>
-                            <input
-                                type="text"
-                                id="numero"
-                                name="numero"
-                                value={Number(numero)}
-                                onChange={(e) => setNumero(Number(e.target.value))}
-                                className="p-2 w-full border rounded"
-                            />
+                        <div>
+                            <Talleres crearEstado={selectedProfesional} user={obProfesional} cursosElegido={cursosElegido} setCursosElegido={setCursosElegido} />
                         </div>
-                    </>
-                    <div className="mb-4">
-                        <label htmlFor="imagen" className="block">
-                            Imagen:
-                        </label>
-                        <input
-                            type="file"
-                            id="imagen"
-                            name="imagen"
-                            accept=".png, .jpg, .jpeg .avif"
-                            onChange={onFileChange}
-                            className="p-2 w-full border rounded"
-                        />
-                        {uploadError && <div style={{ color: "red" }}>{uploadError}</div>}
-                    </div>
-                    <div>
-                        <Talleres crearEstado={selectedProfesional} user={obProfesional} cursosElegido={cursosElegido} setCursosElegido={setCursosElegido} />
-                    </div>
-                    <div className="flex justify-end space-x-4">
-                        <button
-                            onClick={selectedProfesional === -1 ? handleCreateProfesional : handleSaveChanges}
-                            className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800"
-                        >
-                            Guardar
-                        </button>
-                        <button
-                            onClick={() => { setSelectedProfesional(null); handleCancel_init() }}
-                            className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800"
-                        >
-                            Cancelar
-                        </button>
+                        <div className="flex justify-end space-x-4">
+                            <button
+                                onClick={selectedProfesional === -1 ? handleCreateProfesional : handleSaveChanges}
+                                className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800"
+                            >
+                                Guardar
+                            </button>
+                            <button
+                                onClick={() => { setSelectedProfesional(null); handleCancel_init() }}
+                                className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800"
+                            >
+                                Cancelar
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
-        )}
-    </main>
-);
-    
-    
+            )}
+        </main>
+    );
+
+
     // #endregion
 }
 export default withAuth(Profesionales);

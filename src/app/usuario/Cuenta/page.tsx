@@ -345,7 +345,7 @@ const Cuenta: React.FC = () => {
     //endregion
 
     return (
-        <main className=''>
+        <main >
             <Image src={Background} alt="Background" layout="fill" objectFit="cover" quality={20} priority={true} />
             <div className="fixed bg-red-500  justify-between w-full p-4" >
                 <Navigate />
@@ -353,7 +353,7 @@ const Cuenta: React.FC = () => {
 
             <div className='absolute mt-20 top-5 '>
             
-                <h1 className='flex my-20 mt-15 items-center justify-center  font-bold text-3xl'>Datos del Estudiante</h1>
+                <h1 className='flex  mt-20 items-center justify-center  font-bold text-3xl'>Datos del Estudiante</h1>
                 <div className='flex  justify-center w-screen'>
                     <div className=" mx-auto bg-gray-100 rounded-lg shadow-md px-8 py-6 grid grid-cols-2 gap-x-12 w-8/12">
                         <div className="mb-4">
@@ -402,6 +402,12 @@ const Cuenta: React.FC = () => {
                     </button>
                 </div>
             </div>
+            <div
+      className="fixed bottom-0 py-2 border-t w-full z-30"
+      style={{ background: "#EF4444" }}
+    >
+      <But_aside />
+    </div>
    
             
             {openBox === 1 && (
@@ -486,7 +492,8 @@ const Cuenta: React.FC = () => {
                         {mayoriaEdad && <div className="mb-4">
                             <label htmlFor="telefono" className="block">Teléfono:</label>
                             <div className="flex">
-                                <h3 className="p-2">+54</h3>
+                                <span className="p-2 bg-gray-200 rounded-l">+54</span>
+
                                 <input
                                     type="text" // Cambiado de "number" a "text" para mejor control
                                     id="telefono"
