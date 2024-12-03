@@ -4,7 +4,7 @@ import Navigate from "../../../components/profesional//navigate/page";
 import But_aside from "../../../components/but_aside/page";
 import { getCursosByIdAlumno } from '@/services/alumno_curso';
 import Background from "../../../../public/Images/BackProfesionales.jpg"
-import { Curso, getCursoById } from '@/services/cursos';
+import { getCursoById } from '@/services/cursos';
 import Image from "next/image";
 import correoIcon from "../../../../public/Images/correoIcon.png";
 import phoneIcon from "../../../../public/Images/phoneIcon.png";
