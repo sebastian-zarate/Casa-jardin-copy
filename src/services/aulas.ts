@@ -26,23 +26,60 @@ export async function getAulaById(id: number) {
     })
 }
 
-export async function getAulaByNombre(nombre1: string) { // comprobar si el nombre del aula ya existe
-    const nombreAulas = await getAulas()
-    for (let i = 0; i < nombreAulas.length; i++) {
-        if (nombreAulas[i].nombre === nombre1) {
-            return true
-        }else{
-            return false
+// funcion para obtener un aula por su nombre
+
+export async function getAulaByNombre(nombre1: string) {
+    try {
+        const nombreAulas = await getAulas();
+
+        // Normalizamos ambos nombres para que la comparación ignore tildes, caracteres especiales y mayúsculas/minúsculas
+        const normalizeString = (str: string) => {
+            return str
+                .normalize("NFD") // Normaliza para separar caracteres especiales
+                .replace(/[\u0300-\u036f]/g, "") // Elimina las marcas diacríticas (tildes y otros)
+                .toLowerCase(); // Convierte a minúsculas para ignorar mayúsculas
+        };
+
+        // Usamos some() para detenerse en el primer match
+        const aulaExistente = nombreAulas.some(aula => normalizeString(aula.nombre) === normalizeString(nombre1));
+
+        if (aulaExistente) {
+            return true;
         }
+        return false;
+    } catch (error) {
+        return false; // Retorna false si ocurre un error
     }
 }
+
+
+
+
 
 // funcion para eliminar un aula por su id
 
 export async function deleteAulas(id: number) {
+    // busco el cronograma por el id del aula y lo elimino
+    await prisma.cronograma.deleteMany({
+        where: {
+            aulaId: id
+        }
+    })
     return prisma.aula.delete({
         where: {
             id
         }
+    })
+}
+// funcion para actualizar un aula por su id
+// cambiarle el nombre del aula
+export async function updateAula(id: number, data: {    
+    nombre: string,
+}) {
+    return prisma.aula.update({
+        where: {
+            id
+        },
+        data
     })
 }

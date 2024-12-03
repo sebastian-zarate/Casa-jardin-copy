@@ -9,7 +9,7 @@ import {
   deleteCronogramas,
   deleteCronogramaDiaHora,getCursosCronograma
 } from "../../../services/cronograma/cronograma";
-
+import Navigate from "../../../components/Admin/navigate/page";
 import { getDias, getHoras } from "../../../services/dia";
 import { getAulaById } from "@/services/aulas";
 import withAuth from "../../../components/Admin/adminAuth";
@@ -236,35 +236,44 @@ export function Horario({ idAula }: { idAula: number }) {
   // Renderizado condicional para mostrar una pantalla de carga mientras los datos se cargan
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-xl font-bold">Cargando datos...</div> {/* Mensaje de carga */}
-      </div>
+        <main className=" flex-col items-center justify-center min-h-screen bg-gray-100">
+    <Navigate />
+        <div className="flex items-center justify-center h-screen">
+            <div className="text-xl font-bold">Cargando datos...</div>
+        </div>
+    </main>
     );
-  }
+}
 
-  // Renderizado condicional para mostrar un mensaje de error si ocurrió alguno
-  if (error) {
+if (error) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-xl font-bold text-red-500">{error}</div> {/* Mensaje de error */}
-      </div>
+        <main className=" flex-col items-center justify-center min-h-screen bg-gray-100">
+    <Navigate />
+       
+        <div className="flex items-center justify-center h-screen">
+            <div className="text-xl font-bold text-red-500">{error}</div>
+        </div>
+    </main>
     );
-  }
+}
 //region return
   return (
-    <div className="overflow-x-auto w-full m-0 p-0 bg-transparent">
+    <main className="flex flex-col   items-center  min-h-screen bg-gray-100 border-none  m-100 p-0">
+      <Navigate />
+  
+    <div className="w-full max-w-8xl px-12 py-8 bg-white shadow-lg rounded-lg border border-gray-300 mx-auto">
       {/* Tabla del cronograma */}
-      <table className="table-auto w-full border-collapse border border-gray-500 text-sm md:text-base lg:text-lg bg-white">
+      <table className="table-auto w-full border-collapse border border-gray-500 text-sm md:text-base lg:text-lg">
         {/* Título de la tabla con el nombre del aula */}
         <caption className="text-lg font-bold mb-4">
-          Horarios del aula: {aulaNombre}
+          Horarios del {aulaNombre}
         </caption>
         <thead>
           <tr>
-            <th className="border border-gray-500 p-1 sm:p-2 text-center">Hora</th>
+            <th className="border border-gray-500 p-2 sm:p-3 text-center min-w-[100px]">Hora</th>
             {dias.length > 0 &&
               dias.map((dia) => (
-                <th key={dia} className="border border-gray-500 p-1 sm:p-2 text-center">
+                <th key={dia} className="border border-gray-500 p-2 sm:p-3 text-center min-w-[100px]">
                   {dia}
                 </th>
               ))}
@@ -274,13 +283,13 @@ export function Horario({ idAula }: { idAula: number }) {
           {horas.length > 0 &&
             horas.map((hora, rowIndex) => (
               <tr key={hora.id}>
-                <td className="border border-gray-500 p-1 sm:p-2 text-center">
+                <td className="border border-gray-500 p-2 sm:p-3 text-center min-w-[100px]">
                   {hora.hora_inicio}
                 </td>
                 {tabla[rowIndex]?.map((content, colIndex) => (
                   <td
                     key={`${rowIndex}-${colIndex}`}
-                    className="border border-gray-500 p-1 sm:p-2 text-center relative"
+                    className="border border-gray-500 p-2 sm:p-3 text-center relative min-w-[100px]"
                   >
                     {content ? (
                       <>
@@ -321,7 +330,7 @@ export function Horario({ idAula }: { idAula: number }) {
           className="bg-red-500 text-white px-4 py-2 rounded"
           aria-label="Limpiar todo"
         >
-          Limpiar Todo
+          Limpiar todo el cronograma
         </button>
         <a
           href="/Admin/aulaSelector"
@@ -435,5 +444,6 @@ export function Horario({ idAula }: { idAula: number }) {
       )}
 
     </div>
+    </main>
   );
 }

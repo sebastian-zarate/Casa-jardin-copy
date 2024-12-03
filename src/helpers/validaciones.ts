@@ -19,7 +19,7 @@ export function validateDni(dni: string) {
     }
 
     // Validar valores no válidos
-    const invalidDnis = ["00000000", "11111111", "12345678"];
+    const invalidDnis = ["00000000", "000000000", "11111111", "12345678", "99999999"];
     if (invalidDnis.includes(dni)) {
         return "El DNI ingresado no es válido.";
     }
@@ -40,12 +40,12 @@ export function validateEmail(email: string) {
     email = email.trim(); // Eliminar espacios en blanco
 
     // Validar formato
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[a-zA-Z0-9_À-ÿ.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
     if (!emailRegex.test(email)) {
-        return "El email no es válido (estructura mínima valida: A@B.C)";
+        return "El email no es válido (estructura mínima valida: dominio@email.com)";
     }
-    if (email.length > 255) {
-        return "El email no puede tener más de 255 caracteres.";
+    if (email.length > 99) {
+        return "El email no puede tener más de 99 caracteres.";
     }
 
     
@@ -136,58 +136,118 @@ export function validateDireccion(pais?: string, provincia?: string, localidad?:
 }
 
 export function validateNombre(nombre: string) {
-    const caracEspeciales = /[!@#$%^&*(),.?":{}|<>]/;
-    if (/\d/.test(nombre)) {
-        return "El nombre no debe contener números";
-    }
-    if (nombre && caracEspeciales.test(nombre)) {
-        return "El nombre no puede contener caracteres especiales";
-    }
-    if (nombre && nombre.length < 2) {
-        return "El nombre debe tener al menos 2 caracteres";
-    }
+    const caracEspeciales = /^[a-zA-ZÀ-ÿ\u00f1\u00d1\u00fc\u00dc\s]+$/; // Expresión regular correcta para validar nombres
+
     if (!nombre) {
-        return "El nombre no puede estar vacío";
+        return "El nombre no puede estar vacío"; // Prioridad: Verificar que no esté vacío primero
     }
-    return null;
+    if (/\d/.test(nombre)) {
+        return "El nombre no debe contener números"; // Detectar números
+    }
+    if (!caracEspeciales.test(nombre)) {
+        return "El nombre no puede contener caracteres especiales"; // Verificar caracteres válidos
+    }
+    if (nombre.length < 2) {
+        return "El nombre debe tener al menos 2 caracteres"; // Validar longitud mínima
+    }
+    // Validar longitud máxima
+    if (nombre.length > 50) {
+        return "El nombre no puede tener más de 50 caracteres.";
+    }
+
+    return null; // Sin errores
 }
 
 export function validateApellido(apellido: string) {
-    const caracEspeciales = /[!@#$%^&*(),.?":{}|<>]/;
-    if (/\d/.test(apellido)) {
-        return "El apellido no debe contener números";
-    }
-    if (apellido && caracEspeciales.test(apellido)) {
-        return "El apellido no puede contener caracteres especiales";
-    }
-    if (apellido && apellido.length < 2) {
-        return "El apellido debe tener al menos 2 caracteres";
-    }
+    const caracEspeciales = /^[a-zA-ZÀ-ÿ\u00f1\u00d1\u00fc\u00dc\s]+$/; // Expresión regular correcta para apellidos
+
     if (!apellido) {
-        return "El apellido no puede estar vacío";
+        return "El apellido no puede estar vacío"; // Prioridad: Verificar que no esté vacío primero
     }
-    return null;
+    if (/\d/.test(apellido)) {
+        return "El apellido no debe contener números"; // Detectar números
+    }
+    if (!caracEspeciales.test(apellido)) {
+        return "El apellido no puede contener caracteres especiales"; // Verificar caracteres válidos
+    }
+    if (apellido.length < 2) {
+        return "El apellido debe tener al menos 2 caracteres"; // Validar longitud mínima
+    }
+    // Validar longitud máxima
+    if (apellido.length > 50) {
+        return "El apellido no puede tener más de 50 caracteres.";
+    }
+
+    return null; // Sin errores
 }
 
 export function validatePhoneNumber(phone: string) {
-    // Expresión regular para validar teléfono en Argentina con formato internacional y nacional
-    const phoneRegex = /^(?:\d{1,4})\d{4}\d{4}$/;
+    // Expresión regular para validar teléfono en Argentina (sin considerar el prefijo +54)
+    const phoneRegex = /^(0\d{1,4})\d{5,9}$/; // Permite números como: 03434529149, 3434529149
     const numberRegex = /^\d+$/;
+    // Lista de números inválidos comunes
+    const invalidNumbers = [
+        "00000000000", "99999999999", "11111111111", "22222222222", "33333333333", "44444444444", // Números repetidos
+        "55555555555", "66666666666", "77777777777", "88888888888", "1234567890", "0987654321", // Secuencias
+    ];
+
     console.log("phone", phone);
-    //si el teléfono es 0, no se valida, porque es nulo
-    if (phone.length < 9 || phone.length > 12) {
-        return ("El número de teléfono debe tener entre 9 y 12 dígitos.");
+
+    // Si el teléfono es nulo o vacío
+    if (!phone) {
+        return "El número de teléfono no puede estar vacío.";
     }
 
-    if (!phoneRegex.test(phone)) {
-        return ("El número de teléfono no es válido.");
+    // Eliminar caracteres no numéricos
+    const cleanedPhone = phone.replace(/[^\d]/g, '');
+
+    // El número debe tener entre 9 y 12 dígitos
+    if (cleanedPhone.length < 9 || cleanedPhone.length > 12) {
+        return "El número de teléfono debe tener entre 9 y 12 dígitos.";
     }
-    if (!numberRegex.test(phone)) {
-        return ("El número de teléfono debe contener solo números.");
+
+    // Validar que el teléfono solo contenga números
+    if (!numberRegex.test(cleanedPhone)) {
+        return "El número de teléfono debe contener solo números.";
     }
-    if(Number(phone) < 0){
-        return ("El número de teléfono no puede ser negativo.");
+
+    // Validar si el número es uno de los números inválidos
+    if (invalidNumbers.includes(cleanedPhone)) {
+        return "El número de teléfono ingresado no es válido.";
     }
+
+    // Validación adicional: Números con dígitos repetidos o secuenciales
+    if (/^(\d)\1+$/.test(cleanedPhone)) {
+        return "El número de teléfono no puede contener dígitos repetidos.";
+    }
+
+    // Verificar formato con la expresión regular (solo números nacionales)
+   
+
     return null;
 }
 
+
+
+// validacion de fecha de nacimiento
+export function validateFechaNacimiento(fechaNacimiento: Date | undefined) {
+    if (!fechaNacimiento) {
+        return "La fecha de nacimiento no puede estar vacía.";
+    }
+    if (fechaNacimiento > new Date()) {
+        return "La fecha de nacimiento no puede ser mayor a la fecha actual.";
+    }
+    // Validar que la fecha de nacimiento sea mayor a 2 años
+    const minDate = new Date();
+    minDate.setFullYear(minDate.getFullYear() - 2);
+    if (fechaNacimiento > minDate) {
+        return "La fecha de nacimiento debe ser mayor a 2 años.";
+    }
+    // Validar que la fecha de nacimiento sea menor a 100 años
+    const maxDate = new Date();
+    maxDate.setFullYear(maxDate.getFullYear() - 100);
+    if (fechaNacimiento < maxDate) {
+        return "La fecha de nacimiento no puede ser mayor a 100 años.";
+    }
+    return null;
+}

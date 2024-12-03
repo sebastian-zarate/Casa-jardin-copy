@@ -37,69 +37,70 @@ function Signup() {
     // en esta funsion se valida el formulario de registro 
     // para que los datos sean correctos
     //region validateForm
-    const validateForm = async () => {
+    const validateForm = async (trimmedData: { nombre: string; apellido: string; email: string; password: string; fechaNacimiento: Date | undefined; }) => {
         const estado = await emailExists(email)
         if (estado) {
-            return "El email ya está registrado.";
+          return "El email ya está registrado.";
         }
-
+        
         let validateInput;
         validateInput = validateNombre(nombre);
-        if (typeof (validateInput) === "string") return validateInput;
-
+        if (typeof(validateInput) === "string") return validateInput;
+    
         validateInput = validateApellido(apellido);
         if (validateInput) return validateInput;
-
+    
         validateInput = validateEmail(email);
         if (validateInput) return validateInput;
-
-
+     
+    
         if (validateInput) return validateInput;
-
+    
         validateInput = validatePasswordComplexity(password);
         if (validateInput) return validateInput;
-
-        if (password !== confirmPassword) return "Las contraseñas no coinciden";
-        if (fechaNacimiento === undefined) return "La fecha de nacimiento no puede estar vacía";
+        // fecha de nacimiento
+       
+       
+        if(password !== confirmPassword) return "Las contraseñas no coinciden";
+    
         return "";
-
-
-    };
+    
+    
+      };
     // en esta funsion se envian los datos del formulario de registro
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
-        // se llama a la funcion validateForm
-        const validationError = await validateForm();
-        // si hay un error en la validacion se muestra el mensaje de error
-        if (validationError) {
-            setError(validationError);
-            return;
-        }
-
-        // se crea un objeto con los datos del formulario para luego enviarlos al servidor
-        const data = {
-            nombre,
-            apellido,
-            email,
-            password,
-            fechaNacimiento: fechaNacimiento ? new Date(fechaNacimiento) : undefined,
-
+        // Recortar espacios en blanco de cada campo antes de validar o enviar los datos
+        const trimmedData = {
+          nombre: nombre.trim(),
+          apellido: apellido.trim(),
+          email: email.trim(),
+          password: password.trim(),
+          fechaNacimiento: fechaNacimiento ? new Date(fechaNacimiento) : undefined,
         };
-        // se envian los datos al servidor para registrar el usuario
-        try {
-
-            const response = await createAlumno(data);
-            if (typeof response === "string") {
-                setError(response);
-            } else {
-                // si el usuario se registro correctamente se redirige a la pagina de login
-                window.location.href = "/start/login";
-            }
-        } catch (err) {
-            // en caso de error se muestra un mensaje de error
-            setError("Error al registrar el usuario");
+      
+        // Llamar a la función validateForm
+        const validationError = await validateForm(trimmedData);
+        // Si hay un error en la validación se muestra el mensaje de error
+        if (validationError) {
+          setError(validationError);
+          return;
         }
-    };
+      
+        // Enviar los datos recortados al servidor
+        try {
+          const response = await createAlumno(trimmedData);
+          if (typeof response === "string") {
+            setError(response);
+          } else {
+            // Si el usuario se registró correctamente se redirige a la página de login
+            window.location.href = "/start/login";
+          }
+        } catch (err) {
+          // En caso de error se muestra un mensaje de error
+          setError("Error al registrar el usuario");
+        }
+      };
 
 
     // se muestra el formulario de registro
@@ -163,7 +164,10 @@ function Signup() {
                                     className="border rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
                                     type="text"
                                     id="nombre"
-                                    placeholder='Ingrese su nombre'
+                                    pattern = '[A-Za-zÀ-ÿ ]+'
+
+                                    placeholder='Ej: Juan'
+                                     maxLength={40 }
                                     value={nombre}
                                     onChange={(e) => setNombre(e.target.value)}
                                     required
@@ -180,7 +184,11 @@ function Signup() {
                                     className="border rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
                                     type="text"
                                     id="apellido"
-                                    placeholder='Ingrese su apellido'
+                                    
+                                    pattern='[A-Za-zÀ-ÿ ]+'
+                                    placeholder='Ej: Pérez'
+                                    maxLength={40}
+
                                     value={apellido}
                                     onChange={(e) => setApellido(e.target.value)}
                                     required
@@ -197,7 +205,8 @@ function Signup() {
                                     className="border rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
                                     type="email"
                                     id="email"
-                                    placeholder='Ingrese su correo electrónico'
+                                    placeholder='Ej: dominio@email.com'
+                                    maxLength={70}
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     required
@@ -248,7 +257,7 @@ function Signup() {
                                     className="border rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
                                     type="date"
                                     id="fechaNac"
-                                    value={fechaNacimiento?.toISOString().split('T')[0]}
+                                    value={!fechaNacimiento ? "" : !isNaN(fechaNacimiento.getTime()) ? fechaNacimiento.toISOString().split('T')[0] : ""}
                                     min={new Date(new Date().setFullYear(new Date().getFullYear() - 100)).toISOString().split('T')[0]} // Set min to 100 years ago
                                     max={new Date(new Date().setFullYear(new Date().getFullYear() - 3)).toISOString().split('T')[0]} // Set max to 3 years ago
                                     onChange={(e) => setFechaNacimiento(new Date(e.target.value))}

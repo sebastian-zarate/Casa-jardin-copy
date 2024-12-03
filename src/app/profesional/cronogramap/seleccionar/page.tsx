@@ -52,18 +52,20 @@ const AulasProfecional: React.FC = () => {
     };
    
     return (
-        <main className="relative min-h-screen w-screen">
+        <main className="relative min-h-screen w-screen  " style={{ fontFamily: "Cursive" }}>
             <Navigate />
             <div className="fixed inset-0 z-[-1]">
                 <Image src={Background} alt="Background" layout="fill" objectFit="cover" quality={80} priority={true} />
             </div>
 
             {/* Muestra el título de la página */}
-            <h1 className="absolute top-40 left-60 mb-5 text-3xl">Selecciona un aula</h1>
+            <h1 className="absolute top-40 left-60 mb-5 sm:left-40 mb-5 text-2xl sm:text-3xl bg-white rounded-lg p-2">Selecciona un salón</h1>
 
             {/* Muestra la lista de aulas */}
-            <div className="top-60 border p-1 absolute left-40 h-90 max-h-90" style={{ background: "#D9D9D9" }}>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 my-4">
+            <div
+        className="top-60 border p-1 absolute left-40 h-[calc(80vh-15rem)] overflow-y-auto"
+        style={{ background: "#D9D9D9" }}
+      >                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 my-4">
                     {aulas.map((aula) => (
                         <button
                             key={aula.id}
@@ -96,13 +98,13 @@ const AulasProfecional: React.FC = () => {
 
                 </div>
                
-                <But_aside />
+                
             </div>
-
+  
 
             {/* Componente Horario con el ID del aula seleccionada */}
             {selectedAulaId && selectedProfesionalId !== null && (
-                <div className="fixed top-0 left-0 right-0 bottom-0 bg-white border p-4 shadow-lg overflow-auto">
+                <div className="fixed top-0 left-0 right-0 bottom-0 bg-white  shadow-lg overflow-auto">
                     <HorarioProfesional idAula={selectedAulaId} idProfesional={selectedProfesionalId} />
                 </div>
             )}
