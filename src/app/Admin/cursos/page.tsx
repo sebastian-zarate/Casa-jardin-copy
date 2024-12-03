@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import Navigate from "../../../components/Admin/navigate/page";
 import Loader from "@/components/loader/loader";
 
-import {updateCurso, getCursos, deleteCurso, createCurso,} from "../../../services/cursos";
+import { updateCurso, getCursos, deleteCurso, createCurso, } from "../../../services/cursos";
 import Image from "next/image";
 import DeleteIcon from "../../../../public/Images/DeleteIcon.png";
 import EditIcon from "../../../../public/Images/EditIcon.png";
@@ -12,12 +12,12 @@ import Background from "../../../../public/Images/Background.jpeg";
 import ButtonAdd from "../../../../public/Images/Button.png";
 //imagen default si el curso no tiene imagen
 import NoImage from "../../../../public/Images/default-no-image.png";
-import {getImages_talleresAdmin} from "@/services/repoImage";
+import { getImages_talleresAdmin } from "@/services/repoImage";
 import withAuth from "../../../components/Admin/adminAuth";
 import { autorizarAdmin } from "@/helpers/cookies";
 import { useRouter } from "next/navigation";
 //para subir imagenes:
-import {handleUploadCursoImage, handleDeleteCursoImage, mapearImagenes} from "@/helpers/repoImages";
+import { handleUploadCursoImage, handleDeleteCursoImage, mapearImagenes } from "@/helpers/repoImages";
 const Cursos: React.FC = () => {
   // Estado para almacenar la lista de cursos
   const [cursos, setCursos] = useState<
@@ -141,7 +141,7 @@ const Cursos: React.FC = () => {
       curs.sort((a, b) => a.nombre.localeCompare(b.nombre)); // Ordena los cursos por nombre
       setCursos(curs); // Actualiza el estado con la lista de cursos
     } catch (error) {
-      
+
     } finally {
       setLoading(false); // Establece el estado de carga en falso
     }
@@ -168,7 +168,7 @@ const Cursos: React.FC = () => {
         lastDotIndex !== -1 ? fileName.substring(lastDotIndex + 1) : ""; // Obtener la extensión del archivo
       const fileNameWithExtension = `${cursoDetails.nombre}.${fileExtension}`; // Concatenar nombre del curso con la extensión
       setCursoDetails({ ...cursoDetails, imagen: fileNameWithExtension });
-   
+
     }
   };
   //para ver las imagenes agregadas sin refresh de pagina
@@ -180,7 +180,7 @@ const Cursos: React.FC = () => {
     if (result.error) {
       setUploadError(result.error);
     } else {
-     
+
       setImagesLoaded(false); // Establecer en falso para que se vuelvan a cargar las imágenes
     }
   };
@@ -195,19 +195,19 @@ const Cursos: React.FC = () => {
       console.log(result);
       setImages(result.images);
       setDownloadurls(result.downloadurls);
-  
+
       // Mapear las imágenes con los cursos
-      const updatedCursos = mapearImagenes(cursos, {images: result.images, downloadurls: result.downloadurls});
-  
+      const updatedCursos = mapearImagenes(cursos, { images: result.images, downloadurls: result.downloadurls });
+
       // Ordenar los cursos alfabéticamente por nombre
       updatedCursos.sort((a, b) => a.nombre.localeCompare(b.nombre));
-  
+
       // Actualiza el estado de los cursos
       setCursos(updatedCursos);
-  
+
       // Marcar las imágenes como cargadas
       setImagesLoaded(true);
-  
+
       // Hacer un console.log de las imageUrl después de actualizar el estado
       updatedCursos.forEach((curso) => {
         if (curso.imageUrl) {
@@ -235,8 +235,8 @@ const Cursos: React.FC = () => {
       edadMaxima,
     } = details;
 
-     // Validar que el nombre tenga entre 2 y 50 caracteres
-     if (nombre.length < 2 || nombre.length > 50) {
+    // Validar que el nombre tenga entre 2 y 50 caracteres
+    if (nombre.length < 2 || nombre.length > 50) {
       return "El nombre debe tener entre 2 y 50 caracteres.";
     }
 
@@ -302,8 +302,8 @@ const Cursos: React.FC = () => {
     return null; // No hay errores
   }
 
-   // Función para manejar el guardado de cambios en el curso
-   async function handleSaveChanges() {
+  // Función para manejar el guardado de cambios en el curso
+  async function handleSaveChanges() {
     // Elimina los espacios en blanco antes de guardar los detalles
     const trimmedCursoDetails = {
       ...cursoDetails,
@@ -366,8 +366,8 @@ const Cursos: React.FC = () => {
       if (result.success === true) {
         console.log(result.message); // "Curso eliminado con éxito"
         setErrorMessage(null); // Limpiar mensaje de error en caso de éxito
-        if(cursoDetails.imagen){
-            handleDeleteCursoImage(cursoDetails.imagen || ""); // Eliminar la imagen del repositorio
+        if (cursoDetails.imagen) {
+          handleDeleteCursoImage(cursoDetails.imagen || ""); // Eliminar la imagen del repositorio
         }
         // Actualizar la lista de cursos, excluyendo el curso eliminado
         setCursos(cursos.filter((curso) => curso.id !== id));
@@ -438,86 +438,77 @@ const Cursos: React.FC = () => {
   //region return
   return (
     <main className="relative min-h-screen w-screen" style={{ fontFamily: "Cursive" }}>
-        <Navigate />
-        <div className="relative h-[80vh] w-full">
-            <Image
-                src={Background}
-                alt="Background"
-                layout="fill"
-                objectFit="cover"
-                quality={80}
-                priority={true}
-                className="absolute inset-0 w-full h-full pointer-events-none"
-                style={{ opacity: 0.88 }}
-            />
-        </div>
-        <h1 className="absolute top-20 left-4 sm:top-40 sm:left-40 mb-5 text-2xl sm:text-3xl bg-white rounded-lg p-2">Talleres</h1>
-        <div
-            className="top-40 sm:top-60 border p-1 absolute left-1/2 transform -translate-x-1/2 h-[60vh] max-h-[60vh] w-11/12 sm:w-auto overflow-y-auto"
-            style={{ background: "#D9D9D9" }}
-        >
-            {loading ? (
-                <div className="w-full h-auto flex flex-col items-center justify-center">
-                    <Loader />
-                    <h1>Cargando Talleres</h1>
-                </div>
-             ) : (
-              <>
-              <div className="flex justify-start mb-4">
-          <button onClick={() => setSelectedCursoId(-1)} className="flex items-center mx-7 mt-6">
-            <Image
-              src={ButtonAdd}
-              alt="Agregar Curso"
-              width={70}
-              height={70}
-              className="mx-2"
-            />
-            <span className="text-black font-medium">Agregar nuevo taller</span>
-          </button>
-        </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 my-4">
-                      {cursos.map((curso, index) => (
-                          <div
-                              key={curso.id}
-                              className="border p-4 mx-2 relative w-full sm:w-47 h-47 flex flex-col justify-center items-center bg-white"
-                          >
-                              <div className="relative w-full h-20">
-                                  <Image
-                                      src={curso.imageUrl || NoImage}
-                                      alt="Background Image"
-                                      objectFit="cover"
-                                      className="w-full h-full pointer-events-none"
-                                      layout="fill"
-                                  />
-                                  <button
-                                      onClick={() => setCursoAEliminar(curso)}
-                                      className="absolute top-0 right-0 text-red-600 font-bold"
-                                  >
-                                      <Image
-                                          src={DeleteIcon}
-                                          alt="Eliminar"
-                                          width={27}
-                                          height={27}
-                                          className="pointer-events-none"
-                                      />
-                                  </button>
-                                  <button
-                                      onClick={() => setSelectedCursoId(curso.id)}
-                                      className="absolute top-0 right-8 text-red-600 font-bold"
-                                  >
-                                      <Image src={EditIcon} alt="Editar" width={27} height={27} className="pointer-events-none"/>
-                                  </button>
-                              </div>
-                              <h3 className="flex bottom-0 text-black z-1">{curso.nombre}</h3>
-                          </div>
-                      ))}
+      <Navigate />
+      <div className="fixed inset-0 z-[-1]">
+        <Image src={Background} alt="Background" layout="fill" objectFit="cover" quality={80} priority={true} />
+      </div>
+      <h1 className="absolute top-20 left-4 sm:top-40 sm:left-40 mb-5 text-2xl sm:text-3xl bg-white rounded-lg p-2">Talleres</h1>
+      <div
+        className="top-40 sm:top-60 border p-1 absolute left-1/2 transform -translate-x-1/2 h-[60vh] max-h-[60vh] w-11/12 sm:w-auto overflow-y-auto"
+        style={{ background: "#D9D9D9" }}
+      >
+        {loading ? (
+          <div className="w-full h-auto flex flex-col items-center justify-center">
+            <Loader />
+            <h1>Cargando Talleres</h1>
+          </div>
+        ) : (
+          <>
+            <div className="flex justify-start mb-4">
+              <button onClick={() => setSelectedCursoId(-1)} className="flex items-center mx-7 mt-6">
+                <Image
+                  src={ButtonAdd}
+                  alt="Agregar Curso"
+                  width={70}
+                  height={70}
+                  className="mx-2"
+                />
+                <span className="text-black font-medium">Agregar nuevo taller</span>
+              </button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 my-4">
+              {cursos.map((curso, index) => (
+                <div
+                  key={curso.id}
+                  className="border p-4 mx-2 relative w-full sm:w-47 h-47 flex flex-col justify-center items-center bg-white"
+                >
+                  <div className="relative w-full h-20">
+                    <Image
+                      src={curso.imageUrl || NoImage}
+                      alt="Background Image"
+                      objectFit="cover"
+                      className="w-full h-full pointer-events-none"
+                      layout="fill"
+                    />
+                    <button
+                      onClick={() => setCursoAEliminar(curso)}
+                      className="absolute top-0 right-0 text-red-600 font-bold"
+                    >
+                      <Image
+                        src={DeleteIcon}
+                        alt="Eliminar"
+                        width={27}
+                        height={27}
+                        className="pointer-events-none"
+                      />
+                    </button>
+                    <button
+                      onClick={() => setSelectedCursoId(curso.id)}
+                      className="absolute top-0 right-8 text-red-600 font-bold"
+                    >
+                      <Image src={EditIcon} alt="Editar" width={27} height={27} className="pointer-events-none" />
+                    </button>
                   </div>
-                 
-              </>
-          )}
-        </div>
+                  <h3 className="flex bottom-0 text-black z-1">{curso.nombre}</h3>
+                </div>
+              ))}
+            </div>
 
-        {selectedCursoId !== null && (
+          </>
+        )}
+      </div>
+
+      {selectedCursoId !== null && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white p-4 rounded-lg shadow-lg w-full max-w-md relative max-h-full overflow-y-auto">
             <h2 className="text-xl font-semibold mb-3">
@@ -669,37 +660,37 @@ const Cursos: React.FC = () => {
           </div>
         </div>
       )}
-        {cursoAEliminar && (
-            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-                <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative">
-                    {errorMessage && <div style={{ color: "red" }}>{errorMessage}</div>}
+      {cursoAEliminar && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative">
+            {errorMessage && <div style={{ color: "red" }}>{errorMessage}</div>}
 
-                    <h2 className="text-lg mb-4">Confirmar Eliminación</h2>
-                    <p>
-                        ¿Estás seguro de que deseas eliminar el taller:{" "}
-                        <strong>{cursoAEliminar.nombre}</strong>?
-                    </p>
-                    <div className="flex justify-end space-x-4 mt-4">
-                        <button
-                            onClick={() => {
-                                handleEliminarCurso(cursoAEliminar.id);
-                            }}
-                            disabled={isDeleting}
-                            className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800"
-                        >
-                            {isDeleting ? "Eliminando..." : "Confirmar Eliminación"}
-                        </button>
-                        <button
-                            onClick={() => setCursoAEliminar(null)}
-                            className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800"
-                        >
-                            Cancelar
-                        </button>
-                    </div>
-                </div>
+            <h2 className="text-lg mb-4">Confirmar Eliminación</h2>
+            <p>
+              ¿Estás seguro de que deseas eliminar el taller:{" "}
+              <strong>{cursoAEliminar.nombre}</strong>?
+            </p>
+            <div className="flex justify-end space-x-4 mt-4">
+              <button
+                onClick={() => {
+                  handleEliminarCurso(cursoAEliminar.id);
+                }}
+                disabled={isDeleting}
+                className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800"
+              >
+                {isDeleting ? "Eliminando..." : "Confirmar Eliminación"}
+              </button>
+              <button
+                onClick={() => setCursoAEliminar(null)}
+                className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800"
+              >
+                Cancelar
+              </button>
             </div>
-        )}
+          </div>
+        </div>
+      )}
     </main>
-);
+  );
 };
 export default withAuth(Cursos);

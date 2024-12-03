@@ -24,11 +24,11 @@ import withAuth from "../../../components/Admin/adminAuth";
 import PasswordComponent from "@/components/Password/page";
 import { hashPassword } from "@/helpers/hashPassword";
 //para subir imagenes:
-import { handleUploadProfesionalImage, handleDeleteProfesionalImage, mapearImagenes} from "@/helpers/repoImages";
+import { handleUploadProfesionalImage, handleDeleteProfesionalImage, mapearImagenes } from "@/helpers/repoImages";
 
 import { validateApellido, validateDireccion, validateDni, validateEmail, validateNombre, validatePasswordComplexity, validatePhoneNumber } from "@/helpers/validaciones";
 import { dniExists, emailExists } from "@/services/Alumno";
-import Background from "../../../../public/Images/BackProfesionales.jpg"
+import Background from "../../../../public/Images/Background.jpeg"
 // #endregion
 
 const Profesionales = () => {
@@ -496,7 +496,7 @@ const Profesionales = () => {
             prof.nombre.toLowerCase().includes(searchTerm) ||
             prof.apellido.toLowerCase().includes(searchTerm)
         );
-    
+
         setProfesionalesBuscados(filteredProf);
         setProfesionalAbuscar(e.target.value);
         setProfesionales(filteredProf);
@@ -506,7 +506,7 @@ const Profesionales = () => {
 
     // #region Return
     return (
-            <main className="relative min-h-screen bg-cover bg-center"
+        <main className="relative min-h-screen bg-cover bg-center"
             style={{
                 backgroundImage: `url(${Background})`,
                 backgroundSize: "cover",
@@ -516,24 +516,15 @@ const Profesionales = () => {
             <Navigate />
             <div className="relative min-h-screen w-full">
                 {/* Background */}
-                {/* <div className="absolute inset-0 w-full min-h-screen z-0">
-                    <Image
-                        src={Background}
-                        alt="Background"
-                        layout="fill"
-                        objectFit="cover"
-                        quality={80}
-                        priority={true}
-                        className="w-full h-full pointer-events-none"
-                        style={{ opacity: 0.88 }}
-                    />
-                </div> */}
+                <div className="fixed inset-0 z-[-1]">
+                    <Image src={Background} alt="Background" layout="fill" objectFit="cover" quality={80} priority={true} />
+                </div>
 
                 {/* Encabezado */}
                 <div className="relative mt-4 pt-8 flex flex-col items-center z-10">
                     <h1 className="text-2xl sm:text-3xl bg-white rounded-lg p-2 shadow-lg">PROFESIONALES</h1>
                 </div>
-    
+
                 {/* Barra de búsqueda */}
                 <div className="relative mt-4 flex justify-center z-10">
                     <div className="relative w-11/12 sm:w-1/4">
@@ -546,10 +537,10 @@ const Profesionales = () => {
                         />
                     </div>
                 </div>
-    
+
                 {/* Contenedor Principal */}
                 <div className="relative mt-8 flex justify-center z-10">
-                <div className="border p-4 w-11/12 sm:w-2/3 md:w-1/2 lg:w-1/3 h-[60vh] bg-gray-400 bg-opacity-50 overflow-y-auto rounded-lg">
+                    <div className="border p-4 w-11/12 sm:w-2/3 md:w-1/2 lg:w-1/3 h-[60vh] bg-gray-400 bg-opacity-50 overflow-y-auto rounded-lg">
                         <div className="flex flex-col space-y-4">
                             {profesionales.map((profesional, index) => (
                                 <div
@@ -585,196 +576,196 @@ const Profesionales = () => {
                                 </div>
                             ))}
                             <button onClick={() => { setSelectedProfesional(-1); setObProfesional(null) }} className="mt-6 mx-4">
-                            <Image
-                                src={ButtonAdd}
-                                className="mx-3"
-                                alt="Image Alt Text"
-                                width={70}
-                                height={70}
-                            />
-                        </button>
+                                <Image
+                                    src={ButtonAdd}
+                                    className="mx-3"
+                                    alt="Image Alt Text"
+                                    width={70}
+                                    height={70}
+                                />
+                            </button>
                         </div>
                     </div>
                 </div>
-    
+
                 {/* Modal */}
-        </div>
-        {selectedProfesional !== null && (
-            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-30">
-                <div ref={scrollRef} className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative" style={{ height: '70vh', overflow: "auto" }}>
-                    <h2 className="text-2xl font-bold mb-4">
-                        {selectedProfesional === -1 ? "Nuevo Profesional" : "Editar Profesional"}
-                    </h2>
-                    {errorMessage && (
-                        <div className="mb-4 text-red-600">
-                            {errorMessage}
-                        </div>
-                    )}
-                    <div className="mb-4">
-                        <label htmlFor="nombre" className="block">Nombre:</label>
-                        <input
-                            type="text"
-                            id="nombre"
-                            name="nombre"
-                            value={profesionalDetails.nombre}
-                            onChange={handleChange}
-                            className="p-2 w-full border rounded"
-                        />
-                        <label htmlFor="apellido" className="block">Apellido:</label>
-                        <input
-                            type="text"
-                            id="apellido"
-                            name="apellido"
-                            value={profesionalDetails.apellido}
-                            onChange={handleChange}
-                            className="p-2 w-full border rounded"
-                        />
-                    </div>
-                    <div className="mb-4">
-                        <label htmlFor="email" className="block">Email:</label>
-                        <input
-                            type="email"
-                            id="email"
-                            name="email"
-                            value={profesionalDetails.email}
-                            onChange={handleChange}
-                            className="p-2 w-full border rounded"
-                        />
-                    </div>
-                    <div className="mb-4">
-                        <label htmlFor="especialidad" className="block">Especialidad:</label>
-                        <input
-                            type="text"
-                            id="especialidad"
-                            name="especialidad"
-                            value={profesionalDetails.especialidad}
-                            onChange={handleChange}
-                            className="p-2 w-full border rounded"
-                        />
-                    </div>
-                    <div className="mb-4">
-                        <label htmlFor="telefono" className="block">Teléfono:</label>
-                        <div className="flex">
-                            <h3 className="p-2">+54</h3>
+            </div>
+            {selectedProfesional !== null && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-30">
+                    <div ref={scrollRef} className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative" style={{ height: '70vh', overflow: "auto" }}>
+                        <h2 className="text-2xl font-bold mb-4">
+                            {selectedProfesional === -1 ? "Nuevo Profesional" : "Editar Profesional"}
+                        </h2>
+                        {errorMessage && (
+                            <div className="mb-4 text-red-600">
+                                {errorMessage}
+                            </div>
+                        )}
+                        <div className="mb-4">
+                            <label htmlFor="nombre" className="block">Nombre:</label>
                             <input
-                                type="number"
-                                id="telefono"
-                                name="telefono"
-                                placeholder="Ingrese su código de área y los dígitos de su teléfono"
-                                value={profesionalDetails.telefono ? profesionalDetails.telefono : null}
+                                type="text"
+                                id="nombre"
+                                name="nombre"
+                                value={profesionalDetails.nombre}
+                                onChange={handleChange}
+                                className="p-2 w-full border rounded"
+                            />
+                            <label htmlFor="apellido" className="block">Apellido:</label>
+                            <input
+                                type="text"
+                                id="apellido"
+                                name="apellido"
+                                value={profesionalDetails.apellido}
                                 onChange={handleChange}
                                 className="p-2 w-full border rounded"
                             />
                         </div>
-                    </div>
-                    <div className="mb-4">
-                        <label htmlFor="password" className="block">Contraseña:</label>
-                        <input
-                            type="password"
-                            id="password"
-                            name="password"
-                            placeholder={(selectedProfesional === -1 || selectedProfesional === -2) ? "" : "Si desea cambiar la contraseña, ingresela aquí"}
-                            value={profesionalDetails.password}
-                            onChange={handleChange}
-                            className="p-2 w-full border rounded"
-                        />
-                    </div>
-                    {((!nacionalidadName && !provinciaName && !localidadName && !calle && !numero && selectedProfesional !== -1) && obProfesional.direccionID) && <p className=" text-red-600">Cargando su ubicación...</p>}
-                    <>
                         <div className="mb-4">
-                            <label htmlFor="pais" className="block">País:</label>
+                            <label htmlFor="email" className="block">Email:</label>
                             <input
-                                type="text"
-                                id="pais"
-                                name="pais"
-                                value={String(nacionalidadName)}
-                                onChange={(e) => setNacionalidadName(e.target.value)}
+                                type="email"
+                                id="email"
+                                name="email"
+                                value={profesionalDetails.email}
+                                onChange={handleChange}
                                 className="p-2 w-full border rounded"
                             />
                         </div>
                         <div className="mb-4">
-                            <label htmlFor="provincia" className="block">Provincia:</label>
+                            <label htmlFor="especialidad" className="block">Especialidad:</label>
                             <input
                                 type="text"
-                                id="provincia"
-                                name="provincia"
-                                value={String(provinciaName)}
-                                onChange={(e) => setProvinciaName(e.target.value)}
+                                id="especialidad"
+                                name="especialidad"
+                                value={profesionalDetails.especialidad}
+                                onChange={handleChange}
                                 className="p-2 w-full border rounded"
                             />
                         </div>
                         <div className="mb-4">
-                            <label htmlFor="localidad" className="block">Localidad:</label>
-                            <input
-                                type="text"
-                                id="localidad"
-                                name="localidad"
-                                value={String(localidadName)}
-                                onChange={(e) => setLocalidadName(e.target.value)}
-                                className="p-2 w-full border rounded"
-                            />
+                            <label htmlFor="telefono" className="block">Teléfono:</label>
+                            <div className="flex">
+                                <h3 className="p-2">+54</h3>
+                                <input
+                                    type="number"
+                                    id="telefono"
+                                    name="telefono"
+                                    placeholder="Ingrese su código de área y los dígitos de su teléfono"
+                                    value={profesionalDetails.telefono ? profesionalDetails.telefono : null}
+                                    onChange={handleChange}
+                                    className="p-2 w-full border rounded"
+                                />
+                            </div>
                         </div>
                         <div className="mb-4">
-                            <label htmlFor="calle" className="block">Calle:</label>
+                            <label htmlFor="password" className="block">Contraseña:</label>
                             <input
-                                type="text"
-                                id="calle"
-                                name="calle"
-                                value={String(calle)}
-                                onChange={(e) => setcalle(e.target.value)}
+                                type="password"
+                                id="password"
+                                name="password"
+                                placeholder={(selectedProfesional === -1 || selectedProfesional === -2) ? "" : "Si desea cambiar la contraseña, ingresela aquí"}
+                                value={profesionalDetails.password}
+                                onChange={handleChange}
                                 className="p-2 w-full border rounded"
                             />
                         </div>
+                        {((!nacionalidadName && !provinciaName && !localidadName && !calle && !numero && selectedProfesional !== -1) && obProfesional.direccionID) && <p className=" text-red-600">Cargando su ubicación...</p>}
+                        <>
+                            <div className="mb-4">
+                                <label htmlFor="pais" className="block">País:</label>
+                                <input
+                                    type="text"
+                                    id="pais"
+                                    name="pais"
+                                    value={String(nacionalidadName)}
+                                    onChange={(e) => setNacionalidadName(e.target.value)}
+                                    className="p-2 w-full border rounded"
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label htmlFor="provincia" className="block">Provincia:</label>
+                                <input
+                                    type="text"
+                                    id="provincia"
+                                    name="provincia"
+                                    value={String(provinciaName)}
+                                    onChange={(e) => setProvinciaName(e.target.value)}
+                                    className="p-2 w-full border rounded"
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label htmlFor="localidad" className="block">Localidad:</label>
+                                <input
+                                    type="text"
+                                    id="localidad"
+                                    name="localidad"
+                                    value={String(localidadName)}
+                                    onChange={(e) => setLocalidadName(e.target.value)}
+                                    className="p-2 w-full border rounded"
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label htmlFor="calle" className="block">Calle:</label>
+                                <input
+                                    type="text"
+                                    id="calle"
+                                    name="calle"
+                                    value={String(calle)}
+                                    onChange={(e) => setcalle(e.target.value)}
+                                    className="p-2 w-full border rounded"
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label htmlFor="numero" className="block">Número:</label>
+                                <input
+                                    type="text"
+                                    id="numero"
+                                    name="numero"
+                                    value={Number(numero)}
+                                    onChange={(e) => setNumero(Number(e.target.value))}
+                                    className="p-2 w-full border rounded"
+                                />
+                            </div>
+                        </>
                         <div className="mb-4">
-                            <label htmlFor="numero" className="block">Número:</label>
+                            <label htmlFor="imagen" className="block">
+                                Imagen:
+                            </label>
                             <input
-                                type="text"
-                                id="numero"
-                                name="numero"
-                                value={Number(numero)}
-                                onChange={(e) => setNumero(Number(e.target.value))}
+                                type="file"
+                                id="imagen"
+                                name="imagen"
+                                accept=".png, .jpg, .jpeg .avif"
+                                onChange={onFileChange}
                                 className="p-2 w-full border rounded"
                             />
+                            {uploadError && <div style={{ color: "red" }}>{uploadError}</div>}
                         </div>
-                    </>
-                    <div className="mb-4">
-                        <label htmlFor="imagen" className="block">
-                            Imagen:
-                        </label>
-                        <input
-                            type="file"
-                            id="imagen"
-                            name="imagen"
-                            accept=".png, .jpg, .jpeg .avif"
-                            onChange={onFileChange}
-                            className="p-2 w-full border rounded"
-                        />
-                        {uploadError && <div style={{ color: "red" }}>{uploadError}</div>}
-                    </div>
-                    <div>
-                        <Talleres crearEstado={selectedProfesional} user={obProfesional} cursosElegido={cursosElegido} setCursosElegido={setCursosElegido} />
-                    </div>
-                    <div className="flex justify-end space-x-4">
-                        <button
-                            onClick={selectedProfesional === -1 ? handleCreateProfesional : handleSaveChanges}
-                            className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800"
-                        >
-                            Guardar
-                        </button>
-                        <button
-                            onClick={() => { setSelectedProfesional(null); handleCancel_init() }}
-                            className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800"
-                        >
-                            Cancelar
-                        </button>
+                        <div>
+                            <Talleres crearEstado={selectedProfesional} user={obProfesional} cursosElegido={cursosElegido} setCursosElegido={setCursosElegido} />
+                        </div>
+                        <div className="flex justify-end space-x-4">
+                            <button
+                                onClick={selectedProfesional === -1 ? handleCreateProfesional : handleSaveChanges}
+                                className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800"
+                            >
+                                Guardar
+                            </button>
+                            <button
+                                onClick={() => { setSelectedProfesional(null); handleCancel_init() }}
+                                className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800"
+                            >
+                                Cancelar
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
-        )}
-    </main>
-);
-    
-    
+            )}
+        </main>
+    );
+
+
     // #endregion
 }
 export default withAuth(Profesionales);

@@ -166,7 +166,9 @@ const solicitudPage: React.FC = () => {
             <div className="fixed top-0 left-0 right-0 flex justify-between w-full px-4 pt-2 bg-sky-600 z-50">
                 <Navigate />
             </div>
-    
+            <div className="fixed inset-0 z-[-1]">
+                <Image src={Background} alt="Background" layout="fill" objectFit="cover" quality={80} priority={true} />
+            </div>
             {/* Contenido principal */}
             {!habilitarMayores && !habilitarMenores && (
                 <div className="flex flex-col items-center justify-center min-h-screen relative z-10 mt-16">

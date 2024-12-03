@@ -273,7 +273,7 @@ const Alumnos: React.FC = () => {
         const { nombre, apellido, password, email, telefono, dni } = alumnoDetails || {};
         const { nombre: nombreR, apellido: apellidoR, email: EmailR,
             dni: dniR, telefono: telefonoR } = responsableDetails || {};
-            
+
         //validar que el nombre sea de al menos 2 caracteres y no contenga números
         let resultValidate;
         if (alumnoDetails) {
@@ -614,24 +614,15 @@ const Alumnos: React.FC = () => {
             </div>
             <div className="relative min-h-screen w-full pt-16">
                 {/* Background */}
-                <div className="absolute inset-0 w-full h-full z-0">
-                    <Image
-                        src={Background}
-                        alt="Background"
-                        layout="fill"
-                        objectFit="cover"
-                        quality={80}
-                        priority={true}
-                        className="w-full h-full pointer-events-none"
-                        style={{ opacity: 0.88 }}
-                    />
+                <div className="fixed inset-0 z-[-1]">
+                    <Image src={Background} alt="Background" layout="fill" objectFit="cover" quality={80} priority={true} />
                 </div>
-    
+
                 {/* Encabezado */}
                 <div className="relative mt-16 sm:mt-20 flex flex-col items-center z-10">
                     <h1 className="text-2xl sm:text-3xl bg-white rounded-lg p-2 shadow-lg">ALUMNOS</h1>
                 </div>
-    
+
                 {/* Barra de búsqueda */}
                 <div className="relative mt-4 flex justify-center z-10">
                     <div className="relative w-11/12 sm:w-1/4">
@@ -644,7 +635,7 @@ const Alumnos: React.FC = () => {
                         />
                     </div>
                 </div>
-    
+
                 {/* Contenedor Principal */}
                 <div className="relative mt-8 flex justify-center z-10">
                     <div className="border p-4 w-11/12 sm:w-2/3 md:w-1/2 lg:w-1/3 h-[60vh] bg-gray-800 bg-opacity-60 overflow-y-auto rounded-lg">
@@ -686,7 +677,7 @@ const Alumnos: React.FC = () => {
                         </button>
                     </div>
                 </div>
-    
+
                 {/* Modal */}
                 {selectedAlumno !== null && (
                     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-20">
@@ -942,8 +933,8 @@ const Alumnos: React.FC = () => {
                 )}
             </div>
         </main>
-        );
-    }
-    // #endregion
+    );
+}
+// #endregion
 //export default Alumnos;
 export default withAuth(Alumnos);
