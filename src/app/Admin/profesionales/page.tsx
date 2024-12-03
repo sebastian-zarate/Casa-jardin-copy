@@ -508,8 +508,10 @@ const Profesionales = () => {
     return (
         <main className="relative min-h-screen w-screen" style={{fontFamily:"Cursive"}}>
             <Navigate />
-            <Image src={Background} alt="Background" layout="fill" objectFit="cover" priority={true} style={{opacity: 0.88}} />
 
+            <div className="relative h-[90vh]" style={{opacity:0.55}}>
+            <Image src={Background} alt="Background" layout="fill" objectFit="cover" priority={true} style={{opacity: 0.88}} />
+            </div>
             <h1 className="absolute top-40 left-40 mb-5 text-3xl bg-white rounded-lg p-2" onClick={() => console.log(cursosElegido)} >PROFESIONALES</h1>
             <div className="absolute top-40 right-20 mb-5">
                 <div className="relative">
@@ -569,9 +571,6 @@ const Profesionales = () => {
                         width={70}
                         height={70} />
                 </button>
-            </div>
-            <div className="fixed bottom-0 py-5 bg-white w-full" style={{ opacity: 0.66 }}>
-                <But_aside />
             </div>
             {selectedProfesional !== null && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">

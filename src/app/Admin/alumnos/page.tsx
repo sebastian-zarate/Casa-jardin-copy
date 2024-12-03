@@ -121,6 +121,7 @@ const Alumnos: React.FC = () => {
         fetchAlumnos();
         fetchImages();
         handleCancel_init();
+        console.log("useEffect1");
     }, []);
 
     useEffect(() => {
@@ -134,12 +135,14 @@ const Alumnos: React.FC = () => {
     useEffect(() => {
         if (obAlumno && obAlumno.direccionId) {
             getUbicacion(obAlumno);
+            console.log("useEffect2");
         } else if (obAlumno && obAlumno.direccionId === null) {
             setNacionalidadName("");
             setProvinciaName("");
             setLocalidadName("");
             setcalle("");
             setNumero(null);
+            console.log("useEffect2");
         }
     }, [obAlumno]);
     useEffect(() => {
@@ -788,7 +791,7 @@ const Alumnos: React.FC = () => {
                                 className="p-2 w-full border rounded"
                             />
                         </div>
-                        {((!nacionalidadName && !provinciaName && !localidadName && !calle && !numero && (selectedAlumno !== -1 || selectedAlumno !== -2) && obAlumno.direccionId) ) && <p className=" text-red-600">Cargando su ubicación...</p>}
+                        {((!nacionalidadName && !provinciaName && !localidadName && !calle && !numero && (selectedAlumno !== -1 || selectedAlumno !== -2) && obAlumno?.direccionId) ) && <p className=" text-red-600">Cargando su ubicación...</p>}
                         {
                             <>
                                 <div className="mb-4">

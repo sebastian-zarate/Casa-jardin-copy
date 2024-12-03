@@ -187,34 +187,29 @@ const Inicio = () => {
         </section>
         <section className="w-full sm:w-2/3 mx-auto md:w-2/3">
           <div className="mx-auto bg-blue-200 shadow-lg rounded-lg max-w-screen-xl px-4 py-8 sm:px-6 lg:px-8 ">
-            <div className="ml-5 grid  grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4 md:items-center md:gap-8">
-              <div className="md:col-span-1">
-                <div className="max-w-lg md:max-w-none">
-                  <h2 className="text-xl font-semibold text-gray-900 sm:text-2xl md:text-3xl">
-                    Compartiendo una misma meta
-                  </h2>
-                  <p className="mt-4 text-gray-600 lg:text-lg">
-                    Nuestro objetivo es ofrecer un entorno inclusivo y acogedor donde cada estudiante
-                    se sienta inspirado para alcanzar su máximo potencial. Ya sea que busques explorar un
-                    nuevo pasatiempo, mejorar tus habilidades o disfrutar de un espacio creativo, aquí
-                    encontrarás una comunidad apasionada y comprometida contigo.
-                  </p>
-                </div>
+            <div className="ml-5 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4 md:items-center md:gap-8">
+              <div className="md:col-span-1 mb-8 md:mb-0">
+              <div className="max-w-lg md:max-w-none">
+                <h2 className="text-xl font-semibold text-gray-900 sm:text-2xl md:text-3xl">
+                Compartiendo una misma meta
+                </h2>
+                <p className="mt-4 text-gray-600 lg:text-lg">
+                Nuestro objetivo es ofrecer un entorno inclusivo y acogedor donde cada estudiante
+                se sienta inspirado para alcanzar su máximo potencial. Ya sea que busques explorar un
+                nuevo pasatiempo, mejorar tus habilidades o disfrutar de un espacio creativo, aquí
+                encontrarás una comunidad apasionada y comprometida contigo.
+                </p>
               </div>
-              <div className="md:col-span-1 lg:col-span-3">
-                {/*                 <img
-                  src="https://images.unsplash.com/photo-1731690415686-e68f78e2b5bd?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-                  className="rounded w-full object-cover"
-                  alt="Imagen representativa"
-                /> */}
-                <Image className=" max-h-96 lg:ml-5 xl:ml-15 md:ml-0 sm:ml-0 rounded-md object-cover" src={goalSectionStartImage} alt="goalChild" width={500} height={400} />
+              </div>
+              <div className="md:col-span-1 lg:ml-40 lg:col-span-3 mt-8 md:mt-0">
+              <Image className="max-h-96 lg:ml-5 xl:ml-15 md:ml-0 sm:ml-0 rounded-md object-cover" src={goalSectionStartImage} alt="goalChild" width={500} height={400} />
               </div>
             </div>
           </div>
         </section>
 
 
-        <div className="flex items-center justify-around p-2  bg-slate-100 rounded-lg shadow-lg w-2/3 h-full mt-10">
+        <div className="lg:flex md:flex sm:flex-col justify-center items-center lg:justify-around p-2  bg-slate-100 rounded-lg shadow-lg w-2/3 h-full mt-10">
           <div className=" flex flex-col p-4">
             <h1 className="text-2xl font-semibold text-gray-900 sm:text-3xl">Pasos a seguir para registrarse:</h1>
             <h2 className="mb-8 max-w-xl text-zinc-600 lg:text-xl">¡Únete a nosotros y forma parte de esta experiencia única!</h2>

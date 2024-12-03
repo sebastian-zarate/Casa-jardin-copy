@@ -49,6 +49,7 @@ const solicitudPage: React.FC = () => {
         const fetchDataIfNeeded = async () => {
             if (solicitudes.length === 0) {
                 await fetchData();
+                console.log("useEffect1")
                 
             }
         };
