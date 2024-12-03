@@ -1,32 +1,48 @@
 "use client";
+import Logo from "../../../public/Images/LogoCasaJardin.png";
+import Image from "next/image";
+import Maps from "./Maps";
+import Whatsapp from "./Whatsapp";
 
 export default function But_aside() {
   return (
     <aside
       style={{
         display: "flex",
-        justifyContent: "space-around",
-        fontFamily: "Cursive",
+        alignItems: "center",
+        justifyContent: "space-between",
         color: "#FFFFFF",
+        padding: "5px",
+        borderRadius: "5px",
       }}
     >
-      <div>
-        <h1 className="text-lg">Casa Jardín</h1>
+      {/* Bloque del Logo y el Texto */}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          textAlign: "center",
+        }}
+      >
+        <Image src={Logo} alt="Logo Casa Jardín" width={50} height={50} />
+        <h2 style={{ marginTop: "10px", fontSize: "14px", fontFamily: "Cursive" }}>
+          Centro Educativo y Terapéutico "Casa Jardín"
+        </h2>
       </div>
-      <div>
-        <h2>Centro Educativo y Terapéutico "Casa Jardín"</h2>
-        {/* Dirección como hipervínculo */}
-        <h5>
-          <a
-            href="https://www.google.com/maps?q=Padre+Becher+991,+Crespo"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ color: "#FFFFFF", textDecoration: "underline" }}
-          >
-            Padre Becher 991, Crespo
-          </a>
-        </h5>
-        <h5>Tel: 343-500 8302</h5>
+
+      {/* Bloque de los Botones */}
+      <div
+        style={{
+          display: "flex",
+          gap: "15px",
+        }}
+      >
+        {/* Botón de WhatsApp */}
+        <Whatsapp />
+
+        {/* Botón de Google Maps */}
+        <Maps />
       </div>
     </aside>
   );
