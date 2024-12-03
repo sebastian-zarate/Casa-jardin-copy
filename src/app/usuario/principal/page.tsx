@@ -3,7 +3,6 @@ import React, { useEffect, useState } from "react";
 import Navigate from "../../../components/alumno/navigate/page";
 import But_aside from "../../../components/but_aside/page";
 import { getCursosByIdAlumno } from "@/services/alumno_curso";
-
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { autorizarUser, fetchUserData } from "@/helpers/cookies";
