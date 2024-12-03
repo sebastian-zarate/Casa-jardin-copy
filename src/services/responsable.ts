@@ -31,13 +31,13 @@ export async function createResponsable(data: {
 }) {
   const responsable = await getResponsableByAlumnoId(data.alumnoId);
   if(responsable) {
-    console.log("existe responsable", responsable)
+
     return await prisma.responsable.update({
       where: { alumnoId: data.alumnoId },
       data: data,
     });
   }
-  console.log("no existe responsable", data)
+
   return await prisma.responsable.create({
     data: {
       alumnoId: data.alumnoId,
@@ -53,10 +53,7 @@ export async function createResponsable(data: {
 
 //actualizar responsable
 export async function updateResponsable(idAlumno: number, data: any) {
-/*   const alumno = await getAlumnoById(idAlumno);
-  const responsable = await getResponsableByAlumnoId(idAlumno); */
-  //console.log("alumno", alumno)
-  //console.log("responsable", responsable)
+
   return await prisma.responsable.update({
     where: { alumnoId: idAlumno },
     data: data,

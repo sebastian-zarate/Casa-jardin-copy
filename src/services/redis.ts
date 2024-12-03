@@ -29,11 +29,7 @@ async function initializeRedis() {
     }
   }
 
-  /* async function finalizeRedis() {
-    if (client.isOpen) {
-      await client.disconnect();
-    }
-  } */
+  
 
 export async function guardarCodigoConfirmacion(email: string, codigo: string) {
     await initializeRedis();
@@ -53,7 +49,7 @@ export async function obtenerCodigoConfirmacion(email: string): Promise<string |
     const codigo = await client.get(key);
     return codigo;
   } catch (err) {
-    console.error('Error al obtener el código de confirmación en Redis:', err);
+    
     return null;
   }
 
