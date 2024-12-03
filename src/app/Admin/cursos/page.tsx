@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import Navigate from "../../../components/Admin/navigate/page";
-import But_aside from "../../../components/but_aside/page";
+import Loader from "@/components/loader/loader";
+
 import {updateCurso, getCursos, deleteCurso, createCurso,} from "../../../services/cursos";
 import Image from "next/image";
 import DeleteIcon from "../../../../public/Images/DeleteIcon.png";
@@ -70,6 +71,9 @@ const Cursos: React.FC = () => {
   //booleano para saber si las imagenes ya se cargaron
   const [imagesLoaded, setImagesLoaded] = useState<boolean>(false);
 
+  //boolean para saber si estan cargando los cursos
+  const [loading, setLoading] = useState<boolean>(true);
+
   //region useEffect
   const router = useRouter();
   useEffect(() => {
@@ -80,7 +84,7 @@ const Cursos: React.FC = () => {
   }, [router]);
 
   useEffect(() => {
-    fetchCursos(); // Llama a la función para obtener cursos
+    fetchCursos();
   }, []);
 
   useEffect(() => {
@@ -138,6 +142,8 @@ const Cursos: React.FC = () => {
       setCursos(curs); // Actualiza el estado con la lista de cursos
     } catch (error) {
       console.error("Imposible obtener cursos", error); // Manejo de errores
+    } finally {
+      setLoading(false); // Establece el estado de carga en falso
     }
   }
 
@@ -366,225 +372,242 @@ const Cursos: React.FC = () => {
 
   //region return
   return (
-    <main className="relative min-h-screen w-screen" style={{fontFamily:"Cursive"}}>
-      <Navigate />
-      <div className="relative h-[80vh]">
-      <Image src={Background} className="h-[80hv]" alt="Background" layout="fill" objectFit="cover" quality={80} priority={true} style={{opacity:0.88}} />
-      </div>
-      <h1 className="absolute top-40 left-40 mb-5 text-3xl bg-white rounded-lg p-2">Talleres</h1>
-      <div
-        className="top-60 border p-1 absolute left-40 h-90 max-h-90"
-        style={{ background: "#D9D9D9" }}
-      >
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 my-4">
-          {cursos.map((curso, index) => (
-            <div
-              key={curso.id}
-              className="border p-4 mx-2 relative w-47 h-47 justify-center items-center"
-            >
-              <div className="relative w-30 h-20">
-                <Image
-                   src={curso.imageUrl || NoImage}
-                  alt="Background Image"
-                  objectFit="cover"
-                  className="w-full h-full"
-                  layout="fill"
-                />
-                <button
-                  onClick={() => setCursoAEliminar(curso)}
-                  className="absolute top-0 right-0 text-red-600 font-bold"
-                >
-                  <Image
-                    src={DeleteIcon}
-                    alt="Eliminar"
-                    width={27}
-                    height={27}
-                  />
-                </button>
-                <button
-                  onClick={() => setSelectedCursoId(curso.id)}
-                  className="absolute top-0 right-8 text-red-600 font-bold"
-                >
-                  <Image src={EditIcon} alt="Editar" width={27} height={27} />
-                </button>
-              </div>
-              <h3 className="flex bottom-0 text-black z-1">{curso.nombre}</h3>
-            </div>
-          ))}
+    <main className="relative min-h-screen w-screen" style={{ fontFamily: "Cursive" }}>
+        <Navigate />
+        <div className="relative h-[80vh] w-full">
+            <Image
+                src={Background}
+                alt="Background"
+                layout="fill"
+                objectFit="cover"
+                quality={80}
+                priority={true}
+                className="absolute inset-0 w-full h-full pointer-events-none"
+                style={{ opacity: 0.88 }}
+            />
         </div>
-        <button onClick={() => setSelectedCursoId(-1)} className="mt-6 mx-4">
-          <Image
-            src={ButtonAdd}
-            className="mx-3"
-            alt="Image Alt Text"
-            width={70}
-            height={70}
-          />
-        </button>
-      </div>
-
-      {/* <But_aside /> */}
-
-      {selectedCursoId !== null && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative">
-            <h2 className="text-2xl font-bold mb-4">
-              {selectedCursoId === -1 ? "Crear Talleres" : "Editar Talleres"}
-            </h2>
-            {errorMessage && (
-              <div className="mb-4 text-red-600">{errorMessage}</div>
-            )}
-            <div className="mb-4">
-              <label htmlFor="nombre" className="block">
-                Nombre:
-              </label>
-              <input
-                type="text"
-                id="nombre"
-                name="nombre"
-                value={cursoDetails.nombre}
-                onChange={handleChange}
-                className="p-2 w-full border rounded"
-              />
-            </div>
-            <div className="mb-4">
-              <label htmlFor="descripcion" className="block">
-                Descripción:
-              </label>
-              <input
-                type="text"
-                id="descripcion"
-                name="descripcion"
-                value={cursoDetails.descripcion}
-                onChange={handleChange}
-                className="p-2 w-full border rounded"
-              />
-            </div>
-            <div className="mb-4">
-              <label htmlFor="edadMinima" className="block">
-                Edad mínima del taller:
-              </label>
-              <input
-                type="number"
-                id="edadMinima"
-                name="edadMinima"
-                value={cursoDetails.edadMinima}
-                onChange={handleChange}
-                className="p-2 w-full border rounded"
-              />
-            </div>
-            <div className="mb-4">
-              <label htmlFor="edadMaxima" className="block">
-                Edad máxima del taller:
-              </label>
-              <input
-                type="number"
-                id="edadMaxima"
-                name="edadMaxima"
-                value={cursoDetails.edadMaxima}
-                onChange={handleChange}
-                className="p-2 w-full border rounded"
-              />
-            </div>
-            <div className="mb-4">
-              <label htmlFor="fechaInicio" className="block">
-                Fecha de inicio del taller:
-              </label>
-              <input
-                type="date"
-                id="fechaInicio"
-                name="fechaInicio"
-                value={
-                  cursoDetails.fechaInicio
-                    ? cursoDetails.fechaInicio.toISOString().split("T")[0]
-                    : ""
-                } // Verifica que no sea null o undefined
-                onChange={handleChange}
-                className="p-2 w-full border rounded"
-              />
-            </div>
-            <div className="mb-4">
-              <label htmlFor="fechaInicio" className="block">
-                Fecha de finalización del taller:
-              </label>
-              <input
-                type="date"
-                id="fechaFin"
-                name="fechaFin"
-                value={
-                  cursoDetails.fechaFin
-                    ? cursoDetails.fechaFin.toISOString().split("T")[0]
-                    : ""
-                } // Igual que arriba
-                onChange={handleChange}
-                className="p-2 w-full border rounded"
-              />
-            </div>
-            <div className="mb-4">
-              <label htmlFor="imagen" className="block">
-                Imagen:
-              </label>
-              <input
-                type="file"
-                id="imagen"
-                name="imagen"
-                accept=".png, .jpg, .jpeg .avif"
-                onChange={onFileChange}
-                className="p-2 w-full border rounded"
-              />
-              {uploadError && <div style={{ color: "red" }}>{uploadError}</div>}
-            </div>
-            <div className="flex justify-end space-x-4">
-              <button
-                onClick={
-                  selectedCursoId === -1 ? handleCreateCurso : handleSaveChanges
-                }
-                className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800"
-              >
-                Guardar
-              </button>
-              <button
-                onClick={() => setSelectedCursoId(null)}
-                className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800"
-              >
-                Cancelar
-              </button>
-            </div>
-          </div>
+        <h1 className="absolute top-20 left-4 sm:top-40 sm:left-40 mb-5 text-2xl sm:text-3xl bg-white rounded-lg p-2">Talleres</h1>
+        <div
+            className="top-40 sm:top-60 border p-1 absolute left-1/2 transform -translate-x-1/2 h-[60vh] max-h-[60vh] w-11/12 sm:w-auto overflow-y-auto"
+            style={{ background: "#D9D9D9" }}
+        >
+            {loading ? (
+                <div className="w-full h-auto flex flex-col items-center justify-center">
+                    <Loader />
+                    <h1>Cargando Talleres</h1>
+                </div>
+             ) : (
+              <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 my-4">
+                      {cursos.map((curso, index) => (
+                          <div
+                              key={curso.id}
+                              className="border p-4 mx-2 relative w-full sm:w-47 h-47 flex flex-col justify-center items-center bg-white"
+                          >
+                              <div className="relative w-full h-20">
+                                  <Image
+                                      src={curso.imageUrl || NoImage}
+                                      alt="Background Image"
+                                      objectFit="cover"
+                                      className="w-full h-full pointer-events-none"
+                                      layout="fill"
+                                  />
+                                  <button
+                                      onClick={() => setCursoAEliminar(curso)}
+                                      className="absolute top-0 right-0 text-red-600 font-bold"
+                                  >
+                                      <Image
+                                          src={DeleteIcon}
+                                          alt="Eliminar"
+                                          width={27}
+                                          height={27}
+                                          className="pointer-events-none"
+                                      />
+                                  </button>
+                                  <button
+                                      onClick={() => setSelectedCursoId(curso.id)}
+                                      className="absolute top-0 right-8 text-red-600 font-bold"
+                                  >
+                                      <Image src={EditIcon} alt="Editar" width={27} height={27} className="pointer-events-none"/>
+                                  </button>
+                              </div>
+                              <h3 className="flex bottom-0 text-black z-1">{curso.nombre}</h3>
+                          </div>
+                      ))}
+                  </div>
+                  <button onClick={() => setSelectedCursoId(-1)} className="mt-6 mx-4">
+                      <Image
+                          src={ButtonAdd}
+                          className="mx-3 pointer-events-none"
+                          alt="Image Alt Text"
+                          width={70}
+                          height={70}
+                      />
+                  </button>
+              </>
+          )}
         </div>
-      )}
 
-      {cursoAEliminar && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative">
-            {errorMessage && <div style={{ color: "red" }}>{errorMessage}</div>}
-
-            <h2 className="text-lg mb-4">Confirmar Eliminación</h2>
-            <p>
-              ¿Estás seguro de que deseas eliminar el taller:{" "}
-              <strong>{cursoAEliminar.nombre}</strong>?
-            </p>
-            <div className="flex justify-end space-x-4 mt-4">
-              <button
-                onClick={() => {
-                  handleEliminarCurso(cursoAEliminar.id);
-                }}
-                disabled={isDeleting}
-                className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800"
-              >
-                {isDeleting ? "Eliminando..." : "Confirmar Eliminación"}
-              </button>
-              <button
-                onClick={() => setCursoAEliminar(null)}
-                className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800"
-              >
-                Cancelar
-              </button>
+        {selectedCursoId !== null && (
+            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative">
+                    <h2 className="text-2xl font-bold mb-4">
+                        {selectedCursoId === -1 ? "Crear Talleres" : "Editar Talleres"}
+                    </h2>
+                    {errorMessage && (
+                        <div className="mb-4 text-red-600">{errorMessage}</div>
+                    )}
+                    <div className="mb-4">
+                        <label htmlFor="nombre" className="block">
+                            Nombre:
+                        </label>
+                        <input
+                            type="text"
+                            id="nombre"
+                            name="nombre"
+                            value={cursoDetails.nombre}
+                            onChange={handleChange}
+                            className="p-2 w-full border rounded"
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label htmlFor="descripcion" className="block">
+                            Descripción:
+                        </label>
+                        <input
+                            type="text"
+                            id="descripcion"
+                            name="descripcion"
+                            value={cursoDetails.descripcion}
+                            onChange={handleChange}
+                            className="p-2 w-full border rounded"
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label htmlFor="edadMinima" className="block">
+                            Edad mínima del taller:
+                        </label>
+                        <input
+                            type="number"
+                            id="edadMinima"
+                            name="edadMinima"
+                            value={cursoDetails.edadMinima}
+                            onChange={handleChange}
+                            className="p-2 w-full border rounded"
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label htmlFor="edadMaxima" className="block">
+                            Edad máxima del taller:
+                        </label>
+                        <input
+                            type="number"
+                            id="edadMaxima"
+                            name="edadMaxima"
+                            value={cursoDetails.edadMaxima}
+                            onChange={handleChange}
+                            className="p-2 w-full border rounded"
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label htmlFor="fechaInicio" className="block">
+                            Fecha de inicio del taller:
+                        </label>
+                        <input
+                            type="date"
+                            id="fechaInicio"
+                            name="fechaInicio"
+                            value={
+                                cursoDetails.fechaInicio
+                                    ? cursoDetails.fechaInicio.toISOString().split("T")[0]
+                                    : ""
+                            }
+                            onChange={handleChange}
+                            className="p-2 w-full border rounded"
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label htmlFor="fechaFin" className="block">
+                            Fecha de finalización del taller:
+                        </label>
+                        <input
+                            type="date"
+                            id="fechaFin"
+                            name="fechaFin"
+                            value={
+                                cursoDetails.fechaFin
+                                    ? cursoDetails.fechaFin.toISOString().split("T")[0]
+                                    : ""
+                            }
+                            onChange={handleChange}
+                            className="p-2 w-full border rounded"
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label htmlFor="imagen" className="block">
+                            Imagen:
+                        </label>
+                        <input
+                            type="file"
+                            id="imagen"
+                            name="imagen"
+                            accept=".png, .jpg, .jpeg .avif .webp"
+                            onChange={onFileChange}
+                            className="p-2 w-full border rounded"
+                        />
+                        {uploadError && <div style={{ color: "red" }}>{uploadError}</div>}
+                    </div>
+                    <div className="flex justify-end space-x-4">
+                        <button
+                            onClick={
+                                selectedCursoId === -1 ? handleCreateCurso : handleSaveChanges
+                            }
+                            className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800"
+                        >
+                            Guardar
+                        </button>
+                        <button
+                            onClick={() => setSelectedCursoId(null)}
+                            className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800"
+                        >
+                            Cancelar
+                        </button>
+                    </div>
+                </div>
             </div>
-          </div>
-        </div>
-      )}
+        )}
+
+        {cursoAEliminar && (
+            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative">
+                    {errorMessage && <div style={{ color: "red" }}>{errorMessage}</div>}
+
+                    <h2 className="text-lg mb-4">Confirmar Eliminación</h2>
+                    <p>
+                        ¿Estás seguro de que deseas eliminar el taller:{" "}
+                        <strong>{cursoAEliminar.nombre}</strong>?
+                    </p>
+                    <div className="flex justify-end space-x-4 mt-4">
+                        <button
+                            onClick={() => {
+                                handleEliminarCurso(cursoAEliminar.id);
+                            }}
+                            disabled={isDeleting}
+                            className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800"
+                        >
+                            {isDeleting ? "Eliminando..." : "Confirmar Eliminación"}
+                        </button>
+                        <button
+                            onClick={() => setCursoAEliminar(null)}
+                            className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800"
+                        >
+                            Cancelar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        )}
     </main>
-  );
+);
 };
 export default withAuth(Cursos);
