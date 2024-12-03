@@ -121,7 +121,6 @@ const Alumnos: React.FC = () => {
         fetchAlumnos();
         fetchImages();
         handleCancel_init();
-        console.log("useEffect1");
     }, []);
 
     useEffect(() => {
@@ -135,14 +134,12 @@ const Alumnos: React.FC = () => {
     useEffect(() => {
         if (obAlumno && obAlumno.direccionId) {
             getUbicacion(obAlumno);
-            console.log("useEffect2");
         } else if (obAlumno && obAlumno.direccionId === null) {
             setNacionalidadName("");
             setProvinciaName("");
             setLocalidadName("");
             setcalle("");
             setNumero(null);
-            console.log("useEffect2");
         }
     }, [obAlumno]);
     useEffect(() => {
@@ -602,197 +599,200 @@ const Alumnos: React.FC = () => {
 
         setAlumnosBuscados([]);
         console.log(e.target.value);
-        if (e.target.value.length > 0) setAlumnosBuscados(filteredAlumnos);
+        setAlumnosBuscados(filteredAlumnos);
         setAlumnoAbuscar(e.target.value);
+        setAlumnos(filteredAlumnos);
     };
 
 
 
     // #region Return
     return (
-        <main className="relative min-h-screen w-screen" style={{fontFamily: "Cursive"}}>
-            <Navigate />
-
-            <div className="relative h-[90vh]" style={{opacity:0.55}}>
-                <Image src={Background} className="h-[80hv]" alt="Background" layout="fill" objectFit="cover" quality={80} priority={true} />
+        <main className="relative min-h-screen w-screen" style={{ fontFamily: "Cursive" }}>
+            <div className="fixed top-0 left-0 right-0 flex justify-between w-full px-4 pt-2 bg-sky-600 z-20">
+                <Navigate />
             </div>
-
-
-            <h1 className="absolute bg-white-100 top-40 left-40 mb-5 text-3xl rounded-lg bg-opacity-90 p-3" >ALUMNOS</h1>
-            <div className="absolute top-40 right-20 mb-5">
-                <div className="relative">
-                    <input
-                        type="text"
-                        placeholder="Buscar..."
-                        className="p-2 border rounded"
-                        value={alumnoAbuscar}
-                        onChange={handleSearchChange}
+            <div className="relative min-h-screen w-full pt-16">
+                {/* Background */}
+                <div className="absolute inset-0 w-full h-full z-0">
+                    <Image
+                        src={Background}
+                        alt="Background"
+                        layout="fill"
+                        objectFit="cover"
+                        quality={80}
+                        priority={true}
+                        className="w-full h-full pointer-events-none"
+                        style={{ opacity: 0.88 }}
                     />
-                    <div
-                        onClick={() => { alumnosBuscados.length > 0 && setAlumnos(alumnosBuscados) }}
-                        className="absolute cursor-pointer p-3 bg-slate-500 inset-y-0 right-0 flex items-center pr-3">
-                        <Image src="/Images/SearchIcon.png" alt="Buscar" width={20} height={20} />
+                </div>
+    
+                {/* Encabezado */}
+                <div className="relative mt-16 sm:mt-20 flex flex-col items-center z-10">
+                    <h1 className="text-2xl sm:text-3xl bg-white rounded-lg p-2 shadow-lg">ALUMNOS</h1>
+                </div>
+    
+                {/* Barra de búsqueda */}
+                <div className="relative mt-4 flex justify-center z-10">
+                    <div className="relative w-11/12 sm:w-1/4">
+                        <input
+                            type="text"
+                            placeholder="Buscar..."
+                            className="p-2 border rounded w-full"
+                            value={alumnoAbuscar}
+                            onChange={handleSearchChange}
+                        />
                     </div>
                 </div>
-                <button
-                 className="bg-white rounded-full mt-5 p-2 hover:bg-sky-400"
-                 onClick={() => setAlumnos(alumnosMostrados)}>Cargar Todos</button>
-                {alumnosBuscados.length > 0 && habilitarAlumnosBuscados && <div className="absolute top-10 right-0 mt-2 w-full max-w-md bg-white border rounded shadow-lg">
-                    {alumnosBuscados.map((alumno, index) => (
-                        <div key={index} onClick={() => { setAlumnoAbuscar(alumno.nombre + " " + alumno.apellido); setHabilitarAlumnosBuscados(false) }} className="p-2 border-b hover:bg-gray-100 cursor-pointer">
-                            <p className="text-black">{alumno.nombre} {alumno.apellido}</p>
-                        </div>
-                    ))}
-                </div>}
-            </div>
-            <div className="top-60 border p-1 absolute left-40 h-90 max-h-90 w-1/2 bg-gray-800 bg-opacity-60" style={{ height: '50vh', overflow: "auto" }}>
-                <div className="flex flex-col space-y-4 my-4 w-full px-4">
-                    {alumnos.map((alumno, index) => (
-                        <div key={index} className="border py-4 px-6 mx-2 relative w-full flex flex-col items-start bg-white rounded shadow-md">
-                            <div className="flex justify-between w-full mb-2">
-                                <h3 className="text-lg font-semibold text-black">{alumno.nombre} {alumno.apellido}</h3>
-                                <div className="flex space-x-2">
-                                    <button onClick={() => handleEliminarAlumno(alumno)} className="text-red-600 font-bold">
-                                        <Image src={DeleteIcon} alt="Eliminar" width={27} height={27} />
-                                    </button>
-                                    <button onClick={() => {
-                                        setSelectedAlumno(alumno); setObAlumno(alumno); console.log("mayor??", mayor);
-                                    }} className="text-blue-600 font-bold">
-                                        <Image src={EditIcon} alt="Editar" width={27} height={27} />
-                                    </button>
+    
+                {/* Contenedor Principal */}
+                <div className="relative mt-8 flex justify-center z-10">
+                    <div className="border p-4 w-11/12 sm:w-2/3 md:w-1/2 lg:w-1/3 h-[60vh] bg-gray-800 bg-opacity-60 overflow-y-auto rounded-lg">
+                        <div className="flex flex-col space-y-4">
+                            {alumnos.map((alumno, index) => (
+                                <div
+                                    key={index}
+                                    className="border p-4 relative bg-white w-full flex flex-col justify-center items-center rounded shadow-md"
+                                >
+                                    <div className="flex justify-between w-full mb-2">
+                                        <h3 className="text-lg font-semibold text-black">{alumno.nombre} {alumno.apellido}</h3>
+                                        <div className="flex space-x-2">
+                                            <button onClick={() => handleEliminarAlumno(alumno)} className="text-red-600 font-bold">
+                                                <Image src={DeleteIcon} alt="Eliminar" width={27} height={27} />
+                                            </button>
+                                            <button onClick={() => {
+                                                setSelectedAlumno(alumno); setObAlumno(alumno); console.log("mayor??", mayor);
+                                            }} className="text-blue-600 font-bold">
+                                                <Image src={EditIcon} alt="Editar" width={27} height={27} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div className="text-sm text-gray-600">
+                                        <p>Email: {alumno.email}</p>
+                                        {alumno.fechaNacimiento && (
+                                            <p>
+                                                {new Date().getFullYear() - new Date(alumno.fechaNacimiento).getFullYear() < 18 ? "Menor de edad" : "Mayor de edad"}
+                                            </p>
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="text-sm text-gray-600">
-                                <p>Email: {alumno.email}</p>
-                                {/*  <p>Edad: {alumno.fechaNacimiento ? (new Date(alumno.fechaNacimiento).toISOString().split('T')[0]) : ""}</p> */}
-                                {alumno.fechaNacimiento && (
-                                    <p>
-                                        {new Date().getFullYear() - new Date(alumno.fechaNacimiento).getFullYear() < 18 ? "Menor de edad" : "Mayor de edad"}
-                                    </p>
-                                )}
-
-
-                            </div>
+                            ))}
                         </div>
-                    ))}
+                        <button onClick={() => { setSelectedAlumno(-1); setObAlumno(null); setMayor(true) }} className="mt-6 mx-4 bg-white rounded-full p-2 hover:bg-sky-400">
+                            Agregar mayor
+                        </button>
+                        <button onClick={() => { setSelectedAlumno(-2); setObAlumno(null); setMayor(false) }} className="mt-6 mx-4 bg-white rounded-full p-2 hover:bg-sky-400">
+                            Agregar menor
+                        </button>
+                    </div>
                 </div>
-                <button onClick={() => { setSelectedAlumno(-1); setObAlumno(null); setMayor(true) }} className="mt-6 mx-4 bg-white rounded-full p-2 hover:bg-sky-400">
-                    {/* <Image src={ButtonAdd}
-                        className="mx-3"
-                        alt="Image Alt Text"
-                        width={70}
-                        height={70} /> */}
-                    Agregar mayor
-                </button>
-                <button onClick={() => { setSelectedAlumno(-2); setObAlumno(null); setMayor(false) }} className="mt-6 mx-4 bg-white rounded-full p-2 hover:bg-sky-400">
-                    Agregar menor
-                </button>
-            </div>
-            {/* <But_aside /> */}
-            {selectedAlumno !== null && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-                    <div ref={scrollRef} className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative" style={{ height: '70vh', overflow: "auto" }}>
-                        <h2 className="text-2xl font-bold mb-4">
-                            {selectedAlumno === -1 ? "Nuevo Alumno" : "Editar Alumno"}
-                        </h2>
-                        {errorMessage && (
-                            <div className="mb-4 text-red-600">
-                                {errorMessage} {/* Muestra el mensaje de error */}
-                            </div>
-                        )}
-                        <h1 className=" w-full mt-8 mb-3 font-semibold underline">Datos del alumno</h1>
-                        <div className="mb-4">
-                            <label htmlFor="nombre" className="block">Nombre:</label>
-                            <input
-                                type="text"
-                                id="nombre"
-                                name="nombre"
-                                value={alumnoDetails.nombre}
-                                onChange={handleChange}
-                                className="p-2 w-full border rounded"
-                            />
-                            <label htmlFor="apellido" className="block">Apellido:</label>
-                            <input
-                                type="text"
-                                id="apellido"
-                                name="apellido"
-                                value={alumnoDetails.apellido}
-                                onChange={handleChange}
-                                className="p-2 w-full border rounded"
-                            />
-                        </div>
-                        <div className="mb-4">
-                            <label htmlFor="email" className="block">Email:</label>
-                            <input
-                                type="email"
-                                id="email"
-                                name="email"
-                                placeholder={selectedAlumno === -2 ? "Si no tiene email, el mismo debe ser del responsable" : ""}
-                                value={alumnoDetails.email}
-                                onChange={handleChange}
-                                className="p-2 w-full border rounded"
-                            />
-                        </div>
-                        <div className="mb-4">
-                            <label htmlFor="dni" className="block">dni:</label>
-                            <input
-                                type="number"
-                                id="dni"
-                                name="dni"
-                                placeholder="Ingrese su DNI"
-                                value={alumnoDetails.dni ? alumnoDetails.dni : null}
-                                onChange={handleChange}
-                                className="p-2 w-full border rounded"
-                            />
-                        </div>
-                        {selectedAlumno !== -2 && mayor === true && <div className="mb-4">
-                            <label htmlFor="telefono" className="block">Teléfono:</label>
-                            <div className=" flex">
-                                <h3 className="p-2">+54</h3>
+    
+                {/* Modal */}
+                {selectedAlumno !== null && (
+                    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-20">
+                        <div ref={scrollRef} className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative" style={{ height: '70vh', overflow: "auto" }}>
+                            <h2 className="text-2xl font-bold mb-4">
+                                {selectedAlumno === -1 ? "Nuevo Alumno" : "Editar Alumno"}
+                            </h2>
+                            {errorMessage && (
+                                <div className="mb-4 text-red-600">
+                                    {errorMessage}
+                                </div>
+                            )}
+                            <h1 className=" w-full mt-8 mb-3 font-semibold underline">Datos del alumno</h1>
+                            <div className="mb-4">
+                                <label htmlFor="nombre" className="block">Nombre:</label>
                                 <input
-                                    type="number"
-                                    id="telefono"
-                                    name="telefono"
-                                    placeholder="Ingrese su código de área y los dígitos de su teléfono"
-                                    value={alumnoDetails.telefono ? alumnoDetails.telefono : null}
+                                    type="text"
+                                    id="nombre"
+                                    name="nombre"
+                                    value={alumnoDetails.nombre}
+                                    onChange={handleChange}
+                                    className="p-2 w-full border rounded"
+                                />
+                                <label htmlFor="apellido" className="block">Apellido:</label>
+                                <input
+                                    type="text"
+                                    id="apellido"
+                                    name="apellido"
+                                    value={alumnoDetails.apellido}
                                     onChange={handleChange}
                                     className="p-2 w-full border rounded"
                                 />
                             </div>
-                        </div>}
-                        <div className="flex-col flex mb-4">
-                            <label htmlFor="fechaNacimiento">Fecha de Nacimiento</label>
-                            <input
-                                id="fechaNacimiento"
-                                type="date"
-                                name="fechaNacimiento"
-                                className="border rounded"
-                                value={(alumnoDetails.fechaNacimiento)}
-                                onChange={handleChange}
-                                min={mayor === false ?
-                                    new Date(new Date().setFullYear(new Date().getFullYear() - 17)).toISOString().split('T')[0] :
-                                    new Date(new Date().setFullYear(new Date().getFullYear() - 100)).toISOString().split('T')[0]
-                                } // Set min to 100 years ago
-                                max={mayor === true ?
-                                    new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0] :
-                                    new Date(new Date().setFullYear(new Date().getFullYear() - 3)).toISOString().split('T')[0]
-                                }
-                            />
-                        </div>
-                        <div className="mb-4">
-                            <label htmlFor="password" className="block">Contraseña:</label>
-                            <input
-                                type="password"
-                                id="password"
-                                name="password"
-                                placeholder={(selectedAlumno === -1 || selectedAlumno === -2) ? "" : "Si desea cambiar la contraseña, ingresela aquí"}
-                                value={alumnoDetails.password}
-                                onChange={handleChange}
-                                className="p-2 w-full border rounded"
-                            />
-                        </div>
-                        {((!nacionalidadName && !provinciaName && !localidadName && !calle && !numero && (selectedAlumno !== -1 || selectedAlumno !== -2) && obAlumno?.direccionId) ) && <p className=" text-red-600">Cargando su ubicación...</p>}
-                        {
+                            <div className="mb-4">
+                                <label htmlFor="email" className="block">Email:</label>
+                                <input
+                                    type="email"
+                                    id="email"
+                                    name="email"
+                                    placeholder={selectedAlumno === -2 ? "Si no tiene email, el mismo debe ser del responsable" : ""}
+                                    value={alumnoDetails.email}
+                                    onChange={handleChange}
+                                    className="p-2 w-full border rounded"
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label htmlFor="dni" className="block">DNI:</label>
+                                <input
+                                    type="number"
+                                    id="dni"
+                                    name="dni"
+                                    placeholder="Ingrese su DNI"
+                                    value={alumnoDetails.dni ? alumnoDetails.dni : null}
+                                    onChange={handleChange}
+                                    className="p-2 w-full border rounded"
+                                />
+                            </div>
+                            {selectedAlumno !== -2 && mayor === true && (
+                                <div className="mb-4">
+                                    <label htmlFor="telefono" className="block">Teléfono:</label>
+                                    <div className="flex">
+                                        <h3 className="p-2">+54</h3>
+                                        <input
+                                            type="number"
+                                            id="telefono"
+                                            name="telefono"
+                                            placeholder="Ingrese su código de área y los dígitos de su teléfono"
+                                            value={alumnoDetails.telefono ? alumnoDetails.telefono : null}
+                                            onChange={handleChange}
+                                            className="p-2 w-full border rounded"
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                            <div className="flex-col flex mb-4">
+                                <label htmlFor="fechaNacimiento">Fecha de Nacimiento</label>
+                                <input
+                                    id="fechaNacimiento"
+                                    type="date"
+                                    name="fechaNacimiento"
+                                    className="border rounded"
+                                    value={alumnoDetails.fechaNacimiento}
+                                    onChange={handleChange}
+                                    min={mayor === false ?
+                                        new Date(new Date().setFullYear(new Date().getFullYear() - 17)).toISOString().split('T')[0] :
+                                        new Date(new Date().setFullYear(new Date().getFullYear() - 100)).toISOString().split('T')[0]
+                                    }
+                                    max={mayor === true ?
+                                        new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0] :
+                                        new Date(new Date().setFullYear(new Date().getFullYear() - 3)).toISOString().split('T')[0]
+                                    }
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label htmlFor="password" className="block">Contraseña:</label>
+                                <input
+                                    type="password"
+                                    id="password"
+                                    name="password"
+                                    placeholder={(selectedAlumno === -1 || selectedAlumno === -2) ? "" : "Si desea cambiar la contraseña, ingresela aquí"}
+                                    value={alumnoDetails.password}
+                                    onChange={handleChange}
+                                    className="p-2 w-full border rounded"
+                                />
+                            </div>
+                            {((!nacionalidadName && !provinciaName && !localidadName && !calle && !numero && (selectedAlumno !== -1 || selectedAlumno !== -2) && obAlumno?.direccionId)) && <p className=" text-red-600">Cargando su ubicación...</p>}
                             <>
                                 <div className="mb-4">
                                     <label htmlFor="pais" className="block">País:</label>
@@ -855,100 +855,95 @@ const Alumnos: React.FC = () => {
                                     />
                                 </div>
                             </>
-                        }
-                        {
-                            mayor !== true && <div>
-                                <h1 className=" w-full mt-8 mb-3 font-semibold underline">Datos del responsable</h1>
-                                <div className="mb-4">
-                                    <label htmlFor="ResponsableNombre" className="block">Nombre :</label>
-                                    <input
-                                        type="text"
-                                        id="ResponsableNombre"
-                                        name="nombre"
-                                        value={responsableDetails.nombre}
-                                        onChange={handleChangeResponsable}
-                                        className="p-2 w-full border rounded"
-                                    />
-                                </div>
-                                <div className="mb-4">
-                                    <label htmlFor="ResponsableApellido" className="block">Apellido:</label>
-                                    <input
-                                        type="text"
-                                        id="ResponsableApellido"
-                                        name="apellido"
-                                        value={responsableDetails.apellido}
-                                        onChange={handleChangeResponsable}
-                                        className="p-2 w-full border rounded"
-                                    />
-                                </div>
-                                <div className="mb-4">
-                                    <label htmlFor="dniR" className="block">DNI:</label>
-                                    <input
-                                        type="number"
-                                        id="dniR"
-                                        name="dni"
-                                        placeholder="Ingrese el DNI del responsable"
-                                        value={responsableDetails.dni ? responsableDetails.dni : null}
-                                        onChange={handleChangeResponsable}
-                                        className="p-2 w-full border rounded"
-                                    />
-                                </div>
-                                <div className="mb-4">
-                                    <label htmlFor="telefonoR" className="block">Teléfono:</label>
-                                    <div className="flex">
-                                        <h3 className="p-2">+54</h3>
+                            {mayor !== true && (
+                                <div>
+                                    <h1 className=" w-full mt-8 mb-3 font-semibold underline">Datos del responsable</h1>
+                                    <div className="mb-4">
+                                        <label htmlFor="ResponsableNombre" className="block">Nombre :</label>
                                         <input
-                                            type="number"
-                                            id="telefonoR"
-                                            name="telefono"
-                                            placeholder="Ingrese su código de área y los dígitos de su teléfono"
-                                            value={responsableDetails.telefono ? responsableDetails.telefono : null}
+                                            type="text"
+                                            id="ResponsableNombre"
+                                            name="nombre"
+                                            value={responsableDetails.nombre}
                                             onChange={handleChangeResponsable}
                                             className="p-2 w-full border rounded"
                                         />
                                     </div>
-
+                                    <div className="mb-4">
+                                        <label htmlFor="ResponsableApellido" className="block">Apellido:</label>
+                                        <input
+                                            type="text"
+                                            id="ResponsableApellido"
+                                            name="apellido"
+                                            value={responsableDetails.apellido}
+                                            onChange={handleChangeResponsable}
+                                            className="p-2 w-full border rounded"
+                                        />
+                                    </div>
+                                    <div className="mb-4">
+                                        <label htmlFor="dniR" className="block">DNI:</label>
+                                        <input
+                                            type="number"
+                                            id="dniR"
+                                            name="dni"
+                                            placeholder="Ingrese el DNI del responsable"
+                                            value={responsableDetails.dni ? responsableDetails.dni : null}
+                                            onChange={handleChangeResponsable}
+                                            className="p-2 w-full border rounded"
+                                        />
+                                    </div>
+                                    <div className="mb-4">
+                                        <label htmlFor="telefonoR" className="block">Teléfono:</label>
+                                        <div className="flex">
+                                            <h3 className="p-2">+54</h3>
+                                            <input
+                                                type="number"
+                                                id="telefonoR"
+                                                name="telefono"
+                                                placeholder="Ingrese su código de área y los dígitos de su teléfono"
+                                                value={responsableDetails.telefono ? responsableDetails.telefono : null}
+                                                onChange={handleChangeResponsable}
+                                                className="p-2 w-full border rounded"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="mb-4">
+                                        <label htmlFor="emailR" className="block">Email:</label>
+                                        <input
+                                            type="text"
+                                            id="emailR"
+                                            name="email"
+                                            placeholder="Ingrese el email del responsable"
+                                            value={responsableDetails.email}
+                                            onChange={handleChangeResponsable}
+                                            className="p-2 w-full border rounded"
+                                        />
+                                    </div>
                                 </div>
-                                <div className="mb-4">
-                                    <label htmlFor="emailR" className="block">Email:</label>
-                                    <input
-                                        type="text"
-                                        id="emailR"
-                                        name="email"
-                                        placeholder="Ingrese el email del responsable"
-                                        value={responsableDetails.email}
-                                        onChange={handleChangeResponsable}
-                                        className="p-2 w-full border rounded"
-                                    />
-                                </div>
-
+                            )}
+                            <div>
+                                <Talleres crearEstado={selectedAlumno} user={obAlumno} cursosElegido={cursosElegido} setCursosElegido={setCursosElegido} />
                             </div>
-                        }
-                        <div>
-                            <Talleres crearEstado={selectedAlumno} user={obAlumno} cursosElegido={cursosElegido} setCursosElegido={setCursosElegido} />
-                        </div>
-                        <div className="flex justify-end space-x-4">
-                            <button
-                                onClick={(((selectedAlumno === -1 || selectedAlumno === -2) ? handleCreateAlumno : handleSaveChanges))}
-
-
-                                className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800"
-                            >
-                                Guardar
-                            </button>
-                            <button
-                                onClick={() => { setSelectedAlumno(null); handleCancel_init() }}
-                                className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800">
-                                Cancelar
-                            </button>
+                            <div className="flex justify-end space-x-4">
+                                <button
+                                    onClick={selectedAlumno === -1 || selectedAlumno === -2 ? handleCreateAlumno : handleSaveChanges}
+                                    className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800"
+                                >
+                                    Guardar
+                                </button>
+                                <button
+                                    onClick={() => { setSelectedAlumno(null); handleCancel_init() }}
+                                    className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800">
+                                    Cancelar
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )
-            }
-        </main >
-    )
+                )}
+            </div>
+        </main>
+        );
+    }
     // #endregion
-}
 //export default Alumnos;
 export default withAuth(Alumnos);

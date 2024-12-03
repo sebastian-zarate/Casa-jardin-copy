@@ -350,7 +350,7 @@ const Cuenta: React.FC = () => {
     return (
         <main className=''>
             <Image src={Background} alt="Background" layout="fill" objectFit="cover" quality={20} priority={true} className='opacity-70'/>
-            <div className="fixed bg-red-500  justify-between w-full p-4" >
+            <div className="fixed bg-red-500  justify-between w-full" >
                 <Navigate />
             </div>
 

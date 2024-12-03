@@ -2,11 +2,9 @@
 import Image from "next/image";
 import Logo from "../../../../public/Images/LogoCasaJardin.png";
 import { useState } from "react";
-import { useRouter } from "next/navigation"; 
 
 export default function Navigate() {
-  const [userLink, setUserLink] = useState<string>("");
-  const router = useRouter(); 
+  const [menuOpen, setMenuOpen] = useState<boolean>(false);
 
   const logout = async () => {
     try {
@@ -16,7 +14,6 @@ export default function Navigate() {
       });
 
       if (response.ok) {
-        //router.push("/start/login");
         window.location.href = "/start/login";
       } else {
         console.error('Error al cerrar sesión:', await response.json());
@@ -30,45 +27,70 @@ export default function Navigate() {
     inactiveTextColor: "text-white",
     hoverTextColor: "hover:text-gray-800",
     underline: "border-b-2 border-transparent hover:border-white",
-};
+  };
 
-function NavLink({ href, children, onClick }: { href?: string, children: React.ReactNode, onClick?: () => void }) {
+  function NavLink({ href, children, onClick }: { href?: string; children: React.ReactNode; onClick?: () => void }) {
     return (
-        <a
-            className={`${styles.inactiveTextColor} cursor-pointer px-4 py-2 font-medium ${styles.hoverTextColor} ${styles.underline} duration-300`}
-            href={href}
-            onClick={onClick}
-        >
-            {children}
-        </a>
+      <a
+        className={`${styles.inactiveTextColor} cursor-pointer px-4 py-2 font-medium ${styles.hoverTextColor} ${styles.underline} duration-300`}
+        href={href}
+        onClick={onClick}
+      >
+        {children}
+      </a>
     );
-}
-
-
-
+  }
 
   return (
-    <nav className="flex justify-between w-full p-3 bg-sky-600" style={{ fontFamily: "Cursive" }}>
+    <nav className="flex justify-between items-center w-full p-3 bg-sky-600" style={{ fontFamily: "Cursive" }}>
       <div className="flex items-center">
-        <Image src={Logo} alt="Logo Casa Jardin" width={50} height={50} />
+        <Image src={Logo} alt="Logo Casa Jardin" className="w-12 h-12 md:w-16 md:h-16 lg:w-20 lg:h-20" />
         <h1 className="ml-2 text-white">Casa Jardín</h1>
       </div>
-      <div className="ml-auto flex space-x-4 py-2 text-white">
+      <div className="hidden md:flex ml-auto space-x-4 py-2 text-white">
         <NavLink href="/Admin/cursos">Talleres</NavLink>
         <NavLink href="/Admin/aulaSelector">Cronogramas</NavLink>
-        <NavLink  href="/Admin/Solicitudes">Solicitudes</NavLink>
-        <NavLink  onClick={() => setUserLink(userLink ? "" : "open")}>
-          Usuario
-        </NavLink>
-        <NavLink  onClick={logout}>Salir</NavLink>
-        {userLink && (
-          <div className="absolute mt-10 w-38 right-20 bg-white border rounded shadow-lg z-50">
-            <a className="block px-4 py-2 text-gray-800 hover:bg-gray-200" href="/Admin/alumnos">Alumnos</a>
-            <a className="block px-4 py-2 text-gray-800 hover:bg-gray-200" href="/Admin/profesionales">Profesionales</a>
-          </div>
-        )}
-        
+        <NavLink href="/Admin/Solicitudes">Solicitudes</NavLink>
+        <NavLink href= "/Admin/profesionales">Profesionales</NavLink>
+        <NavLink href= "/Admin/alumnos">Alumnos</NavLink>
+        <NavLink onClick={logout}>Salir</NavLink>
       </div>
+      <div className="md:hidden flex items-center">
+        <button onClick={() => setMenuOpen(!menuOpen)} className="text-white focus:outline-none">
+          <svg
+            className="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d={menuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16m-7 6h7"}
+            ></path>
+          </svg>
+        </button>
+      </div>
+      {menuOpen && (
+        <div
+          className="md:hidden fixed top-16 left-0 w-full bg-sky-600 text-white flex flex-col items-center space-y-4 py-4 max-h-[70vh] overflow-y-auto z-50 shadow-lg"
+        >
+          <NavLink href="/Admin/cursos">Talleres</NavLink>
+          <div className="border-t w-full"></div>
+          <NavLink href="/Admin/aulaSelector">Cronogramas</NavLink>
+          <div className="border-t w-full"></div>
+          <NavLink href="/Admin/Solicitudes">Solicitudes</NavLink>
+          <div className="border-t w-full"></div>
+          <NavLink href="/Admin/profesionales">Profesionales</NavLink>
+          <div className="border-t w-full"></div>
+          <NavLink href="/Admin/alumnos">Alumnos</NavLink>
+          <div className="border-t w-full"></div>
+          <NavLink onClick={logout}>Salir</NavLink>
+         
+        </div>
+      )}
     </nav>
   );
 }
