@@ -30,7 +30,7 @@ import Loader from '@/components/Loaders/loader/loader';
 
 const Menores: React.FC = () => {
     // Estado para almacenar la pantalla actual
-    const [selectedScreen, setSelectedScreen] = useState<number>(2);
+    const [selectedScreen, setSelectedScreen] = useState<number>(0);
     // Estado para almacenar los cursos seleccionados
     const [selectedCursosId, setSelectedCursosId] = useState<number[]>([]);
     const [cursosYaInscriptosId, setCursosYaInscriptosId] = useState<number[]>([]);

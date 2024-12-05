@@ -28,7 +28,7 @@ const Mayores: React.FC = () => {
     //region UseState
 
     // Estado para almacenar la pantalla actual
-    const [selectedScreen, setSelectedScreen] = useState<number>(3);
+    const [selectedScreen, setSelectedScreen] = useState<number>(0);
     // Estado para almacenar los cursos seleccionados
     const [selectedCursosId, setSelectedCursosId] = useState<number[]>([]);
     const [cursosYaInscriptosId, setCursosYaInscriptosId] = useState<number[]>([]);
@@ -315,10 +315,6 @@ const Mayores: React.FC = () => {
             await createCursoSolicitud({
                 "cursoId": selectedCursosId[i],
                 "solicitudId": solicitud.id,
-            })
-            await createAlumno_Curso({
-                "alumnoId": Number(user?.id),
-                "cursoId": selectedCursosId[i],
             })
             /*             console.log("X:::::", x)
                         console.log("Y:::::", y) */

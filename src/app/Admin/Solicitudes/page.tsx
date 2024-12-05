@@ -17,6 +17,8 @@ import { emailRechazo } from "@/helpers/email/emailRechazoSoli";
 import withAuth from "@/components/Admin/adminAuth";
 import Background from "../../../../public/Images/BackgroundSolicitudes.jpg";
 import Loader from "@/components/Loaders/loader/loader";
+import { getCursoSolicitudBySoliId } from "@/services/curso_solicitud";
+import { createAlumno_Curso } from "@/services/alumno_curso";
 
 
 const solicitudPage: React.FC = () => {
@@ -30,8 +32,6 @@ const solicitudPage: React.FC = () => {
     const [habilitarMayores, setHabilitarMayores] = useState<boolean>(false);
     // Estado para habilitar solicitudes de menores
     const [habilitarMenores, setHabilitarMenores] = useState<boolean>(false);
-    //estado para dejar en espera una solicitud
-    const [esperaSolicitud, setEsperaSolicitud] = useState<number>(0);
 
     const [firmaUsoImagenes, setFirmaUsoImagenes] = useState<string>("");
     const [observacionesUsoImagenes, setObservacionesUsoImagenes] = useState<string>("");
@@ -45,8 +45,11 @@ const solicitudPage: React.FC = () => {
     const [direccionesMenores, setDireccionesMenores] = useState<any[]>()
     const [loading, setLoading] = useState<boolean>(true);
 
+    const [soliMayoresNoLeidas, setSoliMayoresNoLeidas] = useState<number>(0);
+    const [soliMenoresNoLeidas, setSoliMenoresNoLeidas] = useState<number>(0);
 
-    
+
+
 
 
     useEffect(() => {
@@ -61,17 +64,28 @@ const solicitudPage: React.FC = () => {
         fetchDataIfNeeded();
     }, []);
 
-   // Bloquear desplazamiento cuando los modales están activos
-   useEffect(() => {
-    if (habilitarMayores || habilitarMenores) {
-        document.body.classList.add("overflow-hidden");
-    } else {
-        document.body.classList.remove("overflow-hidden");
-    }
-    return () => {
-        document.body.classList.remove("overflow-hidden");
-    };
-}, [habilitarMayores, habilitarMenores]);
+    useEffect(() => {
+
+        const solicitudesNoLeidas = solicitudes.filter((solicitud) => !solicitud.leida);
+        const soliMayoresNoLeid = solicitudesNoLeidas.filter((solicitud) => solicitudesMayores.some((data) => data.solicitudId === solicitud.id));
+        setSoliMayoresNoLeidas(soliMayoresNoLeid.length);
+
+        const soliMenoresNoLeid = solicitudesNoLeidas.filter((solicitud) => solicitudMenores.some((data) => data.solicitudId === solicitud.id));
+        setSoliMenoresNoLeidas(soliMenoresNoLeid.length);
+
+    }, [solicitudesMayores, solicitudMenores]);
+
+    // Bloquear desplazamiento cuando los modales están activos
+    useEffect(() => {
+        if (habilitarMayores || habilitarMenores) {
+            document.body.classList.add("overflow-hidden");
+        } else {
+            document.body.classList.remove("overflow-hidden");
+        }
+        return () => {
+            document.body.classList.remove("overflow-hidden");
+        };
+    }, [habilitarMayores, habilitarMenores]);
 
     const fetchData = async () => {
 
@@ -85,16 +99,16 @@ const solicitudPage: React.FC = () => {
         setSolicitudesMayores(dataMa);
         setSolicitudesMenores(dataMe);
 
-        const [alumnosMayores, alumnosMenores, responsablesMenores] = await getPersonasSoli(dataMa, dataMe);
-
-            console.log("ALUMNOSMAYORES", alumnosMayores)
-            console.log("ALUMNOSMENORES", alumnosMenores)
-            setAlumnosMayores(alumnosMayores);
-            //setDireccionesMayores(direccionesMayores)
-            setAlumnosMenores(alumnosMenores)
-            setResponsables(responsablesMenores)
-            //setDireccionesMenores(direccionesMenores)
         
+        const [alumnosMayores, alumnosMenores, responsablesMenores] = await getPersonasSoli(dataMa, dataMe);
+        console.log("ALUMNOSMAYORES", alumnosMayores)
+        console.log("ALUMNOSMENORES", alumnosMenores)
+        setAlumnosMayores(alumnosMayores);
+        //setDireccionesMayores(direccionesMayores)
+        setAlumnosMenores(alumnosMenores)
+        setResponsables(responsablesMenores)
+        //setDireccionesMenores(direccionesMenores)
+
     }
     const handleEliminarSolicitud = async (solicitudId: number) => {
         //console.log(solicitudMenores);
@@ -103,14 +117,22 @@ const solicitudPage: React.FC = () => {
         fetchData()
     }
     const handleRechazar = async (solicitudId: number, correo: string) => {
-        console.log("Rechazo",correo);
+        console.log("Rechazo", correo);
         await updateSolicitud(solicitudId, { enEspera: true })
         await emailRechazo(correo);
         fetchData()
     }
 
-    const handleAceptarSolicitud = async (solicitudId: number) => {
+    const handleAceptarSolicitud = async (solicitudId: number, idAlumno: number) => {
         await updateSolicitud(solicitudId, { leida: true });
+        const curso_soli = await getCursoSolicitudBySoliId(solicitudId);
+        if (typeof (curso_soli) === "string") return console.log("No se encontraron cursos");
+        for (let i = 0; i < curso_soli.length; i++) {
+            await createAlumno_Curso({
+                "alumnoId": idAlumno,
+                "cursoId": (curso_soli[i].cursoId),
+            })
+        }
         // console.log(soli);
         fetchData()
     }
@@ -153,6 +175,7 @@ const solicitudPage: React.FC = () => {
     firmaReglamento
 
     */
+    //region return
     return (
         <main
             className="relative min-h-screen bg-cover bg-center"
@@ -171,22 +194,26 @@ const solicitudPage: React.FC = () => {
             </div>
             {/* Contenido principal */}
             {!habilitarMayores && !habilitarMenores && (
-                <div className="flex flex-col items-center justify-center min-h-screen relative z-10 mt-16">
-                    <h1 className="text-3xl text-gray-800 my-6" style={{ fontFamily: "Cursive" }}>Solicitudes</h1>
-                    <div className="w-full max-w-lg border p-3 rounded shadow-md bg-sky-600" style={{ fontFamily: "Cursive", opacity: 0.77 }}>
-                        <div className="flex items-center p-5 mb-3 border rounded cursor-pointer hover:bg-gray-400" onClick={() => setHabilitarMayores(!habilitarMayores)}>
-                            <Image src={adultos} alt="adultos" width={180} height={100} />
-                            <h1 className="ml-4 text-white">Solicitudes Mayores</h1>
-                        </div>
-                        
-                        <div className="flex items-center p-5 border rounded cursor-pointer hover:bg-gray-400" onClick={() => setHabilitarMenores(!habilitarMenores)}>
-                            <Image src={menores} alt="menores" width={180} height={100} />
-                            <h1 className="ml-4 text-white">Solicitudes Menores</h1>
+                <div className="flex flex-col items-center justify-center min-h-screen relative z-10  ">
+                    <div className="bg-white py-2 px-4 justify-center items-center rounded-lg shadow-lg w-1/3">
+                        <h1 className="text-3xl text-center text-gray-800 my-6" style={{ fontFamily: "Cursive" }}>Solicitudes</h1>
+                        <div className="w-full  border p-3 rounded shadow-md bg-sky-600" style={{ fontFamily: "Cursive", opacity: 0.77 }}>
+                            <div className="flex items-center p-5 mb-3 border rounded cursor-pointer hover:bg-gray-400 relative" onClick={() => setHabilitarMayores(!habilitarMayores)}>
+                                {soliMayoresNoLeidas > 0 && <h2 className=" absolute top-0 right-0 text-center  mt-2 mr-2 w-8 h-8 bg-red-600 rounded-full  items-center justify-center text-white">{soliMayoresNoLeidas}</h2>}
+                                <Image src={adultos} alt="adultos" width={180} height={100} />
+                                <h1 className="ml-4 text-white">Solicitudes Mayores</h1>
+                            </div>
+
+                            <div className="flex items-center p-5 mb-3 border rounded cursor-pointer hover:bg-gray-400 relative" onClick={() => setHabilitarMenores(!habilitarMenores)}>
+                                {soliMenoresNoLeidas > 0 && <h2 className=" absolute top-0 right-0 text-center  mt-2 mr-2 w-8 h-8 bg-red-600 rounded-full  items-center justify-center text-white">{soliMenoresNoLeidas}</h2>}
+                                <Image src={menores} alt="menores" width={180} height={100} />
+                                <h1 className="ml-4 text-white">Solicitudes Menores</h1>
+                            </div>
                         </div>
                     </div>
                 </div>
             )}
-    
+
             {/* Modales */}
             {habilitarMayores && (
                 <div className="fixed inset-0 flex items-center justify-center p-4 z-30">
@@ -229,11 +256,11 @@ const solicitudPage: React.FC = () => {
                                                         <>
                                                             {!getSolicitud(solicitudMay.solicitudId)?.enEspera ? (
                                                                 <>
-                                                                    <button className="p-2 rounded-full bg-gray-600 hover:bg-green-600" onClick={() => handleAceptarSolicitud(solicitudMay.solicitudId)}>Aceptar</button>
+                                                                    <button className="p-2 rounded-full bg-gray-600 hover:bg-green-600" onClick={() => handleAceptarSolicitud(solicitudMay.solicitudId, solicitudMay.alumnoId)}>Aceptar</button>
                                                                     <button className="p-2 rounded-full bg-gray-600 hover:bg-red-600" onClick={() => handleRechazar(solicitudMay.solicitudId, getAl(solicitudMay.alumnoId).email)}>Rechazar</button>
                                                                 </>
                                                             ) : (
-                                                                <button className="p-2 rounded-sm" onClick={() => handleEliminarSolicitud(solicitudMay.solicitudId)}>Solicitud corregida</button>
+                                                                <button className="p-2 rounded-full bg-gray-600 hover:bg-red-600" onClick={() => handleEliminarSolicitud(solicitudMay.solicitudId)}>Solicitud corregida</button>
                                                             )}
                                                         </>
                                                     )}
@@ -247,7 +274,7 @@ const solicitudPage: React.FC = () => {
                     </div>
                 </div>
             )}
-    
+
             {habilitarMenores && (
                 <div className="fixed inset-0 flex items-center justify-center p-4 z-30">
                     <div className="relative p-6 rounded shadow-md bg-white w-full max-w-lg" style={{ height: '70vh', overflow: 'auto', fontFamily: "Cursive" }}>
@@ -289,11 +316,11 @@ const solicitudPage: React.FC = () => {
                                                         <>
                                                             {!getSolicitud(solicitudMen.solicitudId)?.enEspera ? (
                                                                 <>
-                                                                    <button className="p-2 rounded-full bg-gray-600 hover:bg-green-600" onClick={() => handleAceptarSolicitud(solicitudMen.solicitudId)}>Aceptar</button>
+                                                                    <button className="p-2 rounded-full bg-gray-600 hover:bg-green-600" onClick={() => handleAceptarSolicitud(solicitudMen.solicitudId, solicitudMen.alumnoId)}>Aceptar</button>
                                                                     <button className="p-2 rounded-full bg-gray-600 hover:bg-red-600" onClick={() => handleRechazar(solicitudMen.solicitudId, getAl(solicitudMen.alumnoId).email)}>Rechazar</button>
                                                                 </>
                                                             ) : (
-                                                                <button className="p-2 rounded-sm" onClick={() => handleEliminarSolicitud(solicitudMen.solicitudId)}>Solicitud corregida</button>
+                                                                <button className="p-2 rounded-full bg-gray-600 hover:bg-red-600" onClick={() => handleEliminarSolicitud(solicitudMen.solicitudId)}>Solicitud corregida</button>
                                                             )}
                                                         </>
                                                     )}

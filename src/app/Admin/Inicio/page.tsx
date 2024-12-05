@@ -77,7 +77,7 @@ const Inicio: React.FC = () => {
                 icon: CheckSquare,
                 title: "Solicitudes",
                 description: `${cantSolicitudes} pendientes de revisión`,
-                link: "/Admin/solicitudes",
+                link: "/Admin/Solicitudes",
               },
 
             ].map((block, index) => (

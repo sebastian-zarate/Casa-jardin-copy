@@ -40,7 +40,7 @@ export function validateEmail(email: string) {
     email = email.trim(); // Eliminar espacios en blanco
 
     // Validar formato
-    const emailRegex = /^[a-zA-Z0-9_À-ÿ.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
+    const emailRegex = /^[a-zA-Z0-9_À-ÿ.-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
     if (!emailRegex.test(email)) {
         return "El email no es válido (estructura mínima valida: dominio@email.com)";
     }
