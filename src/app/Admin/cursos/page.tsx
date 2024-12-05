@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Navigate from "../../../components/Admin/navigate/page";
-import Loader from "@/components/loader/loader";
+import Loader from "@/components/Loaders/loader/loader";
 
 import { updateCurso, getCursos, deleteCurso, createCurso, } from "../../../services/cursos";
 import Image from "next/image";
@@ -64,6 +64,7 @@ const Cursos: React.FC = () => {
     nombre: string;
   } | null>(null);
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
 
   //para subir una imagen y asignarla al curso
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -647,8 +648,9 @@ const Cursos: React.FC = () => {
                   selectedCursoId === -1 ? handleCreateCurso : handleSaveChanges
                 }
                 className="bg-red-600 py-1 px-3 text-white rounded text-sm hover:bg-red-700"
+                disabled={isSaving}
               >
-                Guardar
+                {isSaving ? <Loader /> : "Guardar"}
               </button>
               <button
                 onClick={() => setSelectedCursoId(null)}

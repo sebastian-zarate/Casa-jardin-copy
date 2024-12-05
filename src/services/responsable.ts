@@ -12,6 +12,36 @@ export async function getResponsableByAlumnoId(alumnoId: number) {
     },
   });
 }
+export async function getDireccionResponsableByAlumnoId(alumnoId: number) {
+  return await prisma.responsable.findUnique({
+    where: {
+      alumnoId: alumnoId,
+    },
+    include: {
+    direccion: {
+      select: {
+        calle: true,
+        numero: true,
+        localidad: {
+          select: {
+            nombre: true,
+            provincia: {
+              select: {
+                nombre: true,
+                nacionalidad: {
+                  select: {
+                    nombre: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    }
+    }
+  })
+}
 
 
 //obtener todos los responsables
@@ -27,7 +57,7 @@ export async function createResponsable(data: {
   dni: number;
   telefono: string;
   email: string;
-  direccionId: number;
+  direccionId?: number;
 }) {
   const responsable = await getResponsableByAlumnoId(data.alumnoId);
   if(responsable) {

@@ -22,8 +22,9 @@ import { Curso } from "@/services/cursos";
 import withAuth from "../../../components/Admin/adminAuth";
 import PasswordComponent from "@/components/Password/page";
 import { hashPassword } from "@/helpers/hashPassword";
-import { createResponsable, deleteResponsable, deleteResponsableByAlumnoId, getAllResponsables, updateResponsable } from "@/services/responsable";
+import { createResponsable, deleteResponsable, deleteResponsableByAlumnoId, getAllResponsables, getDireccionResponsableByAlumnoId, updateResponsable } from "@/services/responsable";
 import { validateApellido, validateDireccion, validateDni, validateEmail, validateNombre, validatePasswordComplexity, validatePhoneNumber } from "@/helpers/validaciones";
+import Loader from "@/components/Loaders/loadingSave/page";
 // #endregion
 
 const Alumnos: React.FC = () => {
@@ -85,8 +86,21 @@ const Alumnos: React.FC = () => {
     //Estado para almacenar las imagenes
     const [images, setImages] = useState<any[]>([]);
 
-    //useState para almacenar la dirección
-    //useState para almacenar la dirección
+    //useState para almacenar la dirección alumno
+    const [nacionalidadNameResp, setNacionalidadNameResp] = useState<string>();
+    // Estado para almacenar el ID de la provincia, inicialmente nulo
+    const [provinciaNameResp, setProvinciaNameResp] = useState<string>();
+
+    // Estado para almacenar el ID de la localidad, inicialmente nulo
+    const [localidadNameResp, setLocalidadNameResp] = useState<string>();
+
+    // Estado para almacenar la calle, inicialmente nulo
+    const [calleResp, setcalleResp] = useState<string | null>(null);
+
+    // Estado para almacenar el número de la dirección, inicialmente nulo
+    const [numeroResp, setNumeroResp] = useState<number | null>(null);
+
+    //useState para almacenar la dirección alumno
     const [nacionalidadName, setNacionalidadName] = useState<string>();
     // Estado para almacenar el ID de la provincia, inicialmente nulo
     const [provinciaName, setProvinciaName] = useState<string>();
@@ -102,7 +116,6 @@ const Alumnos: React.FC = () => {
 
     // Estado para almacenar el número de la dirección, inicialmente nulo
     const [numero, setNumero] = useState<number | null>(null);
-
     // Estado para almacenar los cursos elegidos, inicialmente un array vacío
     const [cursosElegido, setCursosElegido] = useState<Curso[]>([]);
 
@@ -110,9 +123,16 @@ const Alumnos: React.FC = () => {
     const scrollRef = useRef<HTMLDivElement>(null);
 
     const [habilitarCambioContraseña, setHabilitarCambioContraseña] = useState<boolean>(false)
-    const [correcto, setCorrecto] = useState(false);
+    const [loadingDireccion, setLoadingDireccion] = useState<boolean>(true);
+    const [permitirDireccion, setPermitirDireccion] = useState<boolean>(false);
+
+    const [loadingDireccionResp, setLoadingDireccionResp] = useState<boolean>(true);
+    const [permitirDireccionResp, setPermitirDireccionResp] = useState<boolean>(false);
     //decidir si el alumno elegido es mayor o menor
     const [mayor, setMayor] = useState<boolean>(false);
+    const [AlumnoAEliminar, setAlumnoAEliminar] = useState<any>(null);
+    const [isDeleting, setIsDeleting] = useState<boolean>(false);
+    const [isSaving, setIsSaving] = useState<boolean>(false);
     // #endregion
 
     // #region UseEffects
@@ -131,17 +151,51 @@ const Alumnos: React.FC = () => {
         }
     }, [errorMessage])
 
+    /*     useEffect(() => {
+            if(!nacionalidadName && !provinciaName && !localidadName && !calle && !numero ){
+                setLoadingDireccion(true);
+            }
+            if(!nacionalidadNameResp && !provinciaNameResp && !localidadNameResp && !calleResp && !numeroResp){
+                setLoadingDireccionResp(true);
+            }
+            if(nacionalidadName && provinciaName && localidadName && calle && numero ){
+                setLoadingDireccion(false);
+            }
+            if(nacionalidadNameResp && provinciaNameResp && localidadNameResp && calleResp && numeroResp){
+                setLoadingDireccionResp(false);
+            }
+    
+        }, []); */
     useEffect(() => {
-        if (obAlumno && obAlumno.direccionId) {
-            getUbicacion(obAlumno);
-        } else if (obAlumno && obAlumno.direccionId === null) {
+        if (obAlumno) {
+            /*             console.log("permitirDireccion", permitirDireccion);
+                        console.log("loadingDireccion", loadingDireccion); */
+            if ((!nacionalidadName && !provinciaName && !localidadName && !calle && !numero && (selectedAlumno !== -1 || selectedAlumno !== -2) && obAlumno?.direccionId) && permitirDireccion) {
+                console.log("obAlumno111", obAlumno);
+                getUbicacion(obAlumno);
+            }
+            if ((!nacionalidadNameResp && !provinciaNameResp && !localidadNameResp && !calleResp && !numeroResp && (selectedAlumno !== -1 || selectedAlumno !== -2)) && permitirDireccionResp) {
+                console.log("obAlumno", obAlumno);
+                getUbicacionResp(obAlumno);
+            }
+        }
+
+        if (!obAlumno) {
             setNacionalidadName("");
             setProvinciaName("");
             setLocalidadName("");
             setcalle("");
             setNumero(null);
+            setNacionalidadNameResp("");
+            setProvinciaNameResp("");
+            setLocalidadNameResp("");
+            setcalleResp("");
+            setNumeroResp(null);
+            setLoadingDireccion(false)
+            setLoadingDireccionResp(false)
         }
-    }, [obAlumno]);
+        console.log("obAlumno", obAlumno);
+    }, [obAlumno, permitirDireccion, permitirDireccionResp]);
     useEffect(() => {
         if ((errorMessage.length > 0) && scrollRef.current) {
             scrollRef.current.scrollTop = 0;
@@ -247,17 +301,23 @@ const Alumnos: React.FC = () => {
         //console.log("LOCALIDAD", localidad);
         const direccion = await addDireccion({ calle: String(calle), numero: Number(numero), localidadId: Number(localidad?.id) });
         //console.log("DIRECCION", direccion);
-        return direccion;
+
+        const nacionalidadResp = await addPais({ nombre: String(nacionalidadNameResp) });
+        const provResp = await addProvincias({ nombre: String(provinciaNameResp), nacionalidadId: Number(nacionalidadResp?.id) });
+        const localidadResp = await addLocalidad({ nombre: String(localidadNameResp), provinciaId: Number(provResp?.id) });
+        const direccionResp = await addDireccion({ calle: String(calleResp), numero: Number(numeroResp), localidadId: Number(localidadResp?.id) });
+        return { direccion, direccionResp };
     }
 
     async function getUbicacion(userUpdate: any) {
         // Obtener la dirección del usuario por su ID
         //console.log("SI DIRECCIONID ES FALSE:", Number(userUpdate?.direccionId));
+        setLoadingDireccion(true);
         const direccion = await getDireccionCompleta(userUpdate?.direccionId);
         /* console.log("DIRECCION", direccion);
-        console.log("LOCALIDAD", direccion?.localidad);
-        console.log("PROVINCIA", direccion?.localidad?.provincia);
-        console.log("PAIS", direccion?.localidad?.provincia?.nacionalidad); */
+  console.log("LOCALIDAD", direccion?.localidad);
+  console.log("PROVINCIA", direccion?.localidad?.provincia);
+  console.log("PAIS", direccion?.localidad?.provincia?.nacionalidad); */
         //console.log("NACIONALIDAD", nacionalidad);
         // Actualizar los estados con los datos obtenidos
         setLocalidadName(String(direccion?.localidad?.nombre));
@@ -265,7 +325,18 @@ const Alumnos: React.FC = () => {
         setNacionalidadName(String(direccion?.localidad?.provincia?.nacionalidad?.nombre));
         setNumero(Number(direccion?.numero));
         setcalle(String(direccion?.calle));
-        return { direccion };
+        setLoadingDireccion(false);
+
+        return direccion;
+    }
+    async function getUbicacionResp(userUpdate: any) {
+        const direccionResponsable = await getDireccionResponsableByAlumnoId(userUpdate?.id);
+        setLocalidadNameResp(String(direccionResponsable?.direccion?.localidad?.nombre));
+        setProvinciaNameResp(String(direccionResponsable?.direccion?.localidad?.provincia?.nombre));
+        setNacionalidadNameResp(String(direccionResponsable?.direccion?.localidad?.provincia?.nacionalidad?.nombre));
+        setNumeroResp(Number(direccionResponsable?.direccion?.numero));
+        setcalleResp(String(direccionResponsable?.direccion?.calle));
+        return direccionResponsable
     }
 
     //region validate
@@ -312,8 +383,10 @@ const Alumnos: React.FC = () => {
             }
 
         }
-        resultValidate = validateDireccion(nacionalidadName, provinciaName, localidadName, String(calle), Number(numero));
-        if (resultValidate) return resultValidate
+        if (permitirDireccion) {
+            resultValidate = validateDireccion(nacionalidadName, provinciaName, localidadName, String(calle), Number(numero));
+            if (resultValidate) return resultValidate
+        }
 
         if (responsableDetails && mayor === false) {
             resultValidate = validateNombre(nombreR);
@@ -330,7 +403,10 @@ const Alumnos: React.FC = () => {
                     return "El email del responsable ya está registrado.";
                 }
             }
-
+            if (permitirDireccionResp) {
+                resultValidate = validateDireccion(nacionalidadNameResp, provinciaNameResp, localidadNameResp, String(calleResp), Number(numeroResp));
+                if (resultValidate) return resultValidate
+            }
             //el Dni no puede estar vacio
             resultValidate = validateDni(String(dniR));
             if (resultValidate) return resultValidate;
@@ -382,17 +458,147 @@ const Alumnos: React.FC = () => {
 
         const validationError = await validatealumnoDetails();
 
-
-
         if (validationError) {
             setErrorMessage(validationError);
             return;
         }
-        //se agrega al telefono el código de país
+        setIsSaving(true);
+        //-----------------------------------SI EL USUARIO DESEA CAMBIAR LA DIRECCIÓN---------------------------------------------------------
+        if (permitirDireccion) {
 
-        //SI NO TIENIA DIRECCIÓN CARGADA 
-        if (!obAlumno.direccionId) {
-            const dir = await createUbicacion();
+            //region NO direcc CARGADA 
+            if (!obAlumno.direccionId) {
+                const { direccion, direccionResp } = await createUbicacion();
+                //---------------------------------------------------------------SI ES MENOR-------------------------------------------------------------------------------------------
+                if (mayor === false) {
+                    //console.log("fecha 1", new Date(alumnoDetails.fechaNacimiento));
+                    // console.log("fecha 2", (alumnoDetails.fechaNacimiento));
+                    const newAlumno = await updateAlumno(alumnoDetails?.id || 0, {
+                        nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
+                        dni: Number(alumnoDetails.dni), email: alumnoDetails.email,
+                        direccionId: Number(direccion?.id), fechaNacimiento: new Date(alumnoDetails.fechaNacimiento),
+                        password: alumnoDetails.password
+                    });
+                    if (typeof newAlumno === "string") return setErrorMessage(newAlumno);
+                    if (permitirDireccionResp) {
+                        await updateResponsable(alumnoDetails?.id || 0, {
+                            nombre: responsableDetails.nombre, apellido: responsableDetails.apellido,
+                            dni: Number(responsableDetails.dni), email: responsableDetails.email, telefono: String(responsableDetails.telefono),
+                            alumnoId: newAlumno.id, direccionId: Number(direccionResp?.id)
+                        });
+                    }
+                    else if (!permitirDireccionResp) {
+                        await updateResponsable(alumnoDetails?.id || 0, {
+                            nombre: responsableDetails.nombre, apellido: responsableDetails.apellido,
+                            dni: Number(responsableDetails.dni), email: responsableDetails.email, telefono: String(responsableDetails.telefono),
+                            alumnoId: newAlumno.id
+                        });
+                    }
+
+                    for (const curso of cursosElegido) {                                  //recorre los cursos elegidos y los guarda en la tabla intermedia
+                        await createAlumno_Curso({ cursoId: curso.id, alumnoId: newAlumno.id });
+                    }
+
+                    setVariablesState();
+                    setIsSaving(false);
+                    return;
+                }
+                //-----------------------------------------------------------SI ES MAYOR---------------------------------------------------------------------------------------------------
+                //console.log("ALUMNODETAILS", alumnoDetails);
+                const newAlumno = await updateAlumno(alumnoDetails?.id || 0, {
+                    nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
+                    dni: Number(alumnoDetails.dni), email: alumnoDetails.email, telefono: String(alumnoDetails.telefono),
+                    direccionId: Number(direccion?.id), fechaNacimiento: new Date(alumnoDetails.fechaNacimiento),
+                    password: alumnoDetails.password
+                });
+                if (typeof newAlumno === "string") return setErrorMessage(newAlumno);
+
+                for (const curso of cursosElegido) {                                  //recorre los cursos elegidos y los guarda en la tabla intermedia
+                    await createAlumno_Curso({ cursoId: curso.id, alumnoId: newAlumno.id });
+                }
+
+                setVariablesState();
+                setIsSaving(false);
+                return;
+            }
+            //region si direcc CARGADA
+            else if (obAlumno.direccionId) {
+                const direccion = await getUbicacion(obAlumno);
+                const direccionResponsable = await getUbicacionResp(obAlumno);
+                const localidad = direccion?.localidad;
+                const prov = localidad?.provincia;
+                const nacionalidad = prov?.nacionalidad;
+                try {
+                    const newDireccion = await updateDireccionById(Number(direccion?.id), {
+                        calle: String(calle),
+                        numero: Number(numero),
+                        localidadId: Number(localidad?.id)
+                    });
+                    //console.log("newDireccion", newDireccion);
+                    await updateLocalidad(Number(localidad?.id), {
+                        nombre: String(localidadName),
+                        provinciaId: Number(prov?.id)
+                    });
+                    //console.log("newLocalidad", newLocalidad);
+                    await updateProvinciaById(Number(prov?.id), {
+                        nombre: String(provinciaName),
+                        nacionalidadId: Number(nacionalidad?.id)
+                    });
+                    //---------------------------------------------------------------SI ES MENOR-------------------------------------------------------------------------------------------
+                    if (mayor === false) {
+                        // console.log("fecha 1", new Date(alumnoDetails.fechaNacimiento));
+                        //console.log("fecha 2", (alumnoDetails.fechaNacimiento));
+                        const newAlumno = await updateAlumno(alumnoDetails?.id || 0, {
+                            nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
+                            dni: Number(alumnoDetails.dni), email: alumnoDetails.email,
+                            direccionId: Number(direccion?.id), fechaNacimiento: new Date(alumnoDetails.fechaNacimiento), password: alumnoDetails.password
+                        });
+                        if (typeof newAlumno === "string") return setErrorMessage(newAlumno);
+                        if (permitirDireccionResp) {
+                            await updateResponsable(alumnoDetails?.id || 0, {
+                                nombre: responsableDetails.nombre, apellido: responsableDetails.apellido,
+                                dni: Number(responsableDetails.dni), email: responsableDetails.email, telefono: String(responsableDetails.telefono),
+                                alumnoId: newAlumno.id, direccionId: Number(direccionResponsable?.id)
+                            });
+                        }
+                        else if (!permitirDireccionResp) {
+                            await updateResponsable(alumnoDetails?.id || 0, {
+                                nombre: responsableDetails.nombre, apellido: responsableDetails.apellido,
+                                dni: Number(responsableDetails.dni), email: responsableDetails.email, telefono: String(responsableDetails.telefono),
+                                alumnoId: newAlumno.id
+                            });
+                        }
+                        if (typeof newAlumno === "string") return setErrorMessage(newAlumno);
+                        for (const curso of cursosElegido) {                                  //recorre los cursos elegidos y los guarda en la tabla intermedia
+                            await createAlumno_Curso({ cursoId: curso.id, alumnoId: newAlumno.id });
+                        }
+                        setVariablesState();
+                        setIsSaving(false);
+                        return;
+                    }
+                    //console.log("ALUMNODETAILS", alumnoDetails);
+
+                    //---------------------------------------------------------------SI ES MAYOR-------------------------------------------------------------------------------------------
+                    const newAlumno = await updateAlumno(alumnoDetails?.id || 0, {
+                        nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
+                        dni: Number(alumnoDetails.dni), telefono: String(alumnoDetails.telefono),
+                        direccionId: Number(newDireccion?.id), email: alumnoDetails.email, fechaNacimiento: new Date(alumnoDetails.fechaNacimiento),
+                        password: alumnoDetails.password
+                    });
+                    if (typeof newAlumno === "string") return setErrorMessage(newAlumno);
+                    for (const curso of cursosElegido) {                                  //recorre los cursos elegidos y los guarda en la tabla intermedia
+                        await createAlumno_Curso({ cursoId: curso.id, alumnoId: newAlumno.id });
+                    }
+
+                    setVariablesState();
+                    setIsSaving(false);
+                } catch (error) {
+                    console.error("Error al actualizar el profesional", error);
+                }
+            }
+        }
+        //-----------------------------------SI EL USUARIO NO DESEA CAMBIAR LA DIRECCIÓN---------------------------------------------------------
+        else if (!permitirDireccion) {
             //si es menor
             if (mayor === false) {
                 //console.log("fecha 1", new Date(alumnoDetails.fechaNacimiento));
@@ -400,14 +606,14 @@ const Alumnos: React.FC = () => {
                 const newAlumno = await updateAlumno(alumnoDetails?.id || 0, {
                     nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
                     dni: Number(alumnoDetails.dni), email: alumnoDetails.email,
-                    direccionId: Number(dir?.id), fechaNacimiento: new Date(alumnoDetails.fechaNacimiento),
+                    fechaNacimiento: new Date(alumnoDetails.fechaNacimiento),
                     password: alumnoDetails.password
                 });
                 if (typeof newAlumno === "string") return setErrorMessage(newAlumno);
                 await updateResponsable(alumnoDetails?.id || 0, {
                     nombre: responsableDetails.nombre, apellido: responsableDetails.apellido,
                     dni: Number(responsableDetails.dni), email: responsableDetails.email, telefono: String(responsableDetails.telefono),
-                    alumnoId: newAlumno.id, direccionId: Number(dir?.id)
+                    alumnoId: newAlumno.id
                 });
                 if (typeof newAlumno === "string") return setErrorMessage(newAlumno);
                 for (const curso of cursosElegido) {                                  //recorre los cursos elegidos y los guarda en la tabla intermedia
@@ -415,158 +621,158 @@ const Alumnos: React.FC = () => {
                 }
 
                 setVariablesState();
+                setIsSaving(false);
                 return;
             }
-            //SI ES MAYOR
-            //console.log("ALUMNODETAILS", alumnoDetails);
-            const newAlumno = await updateAlumno(alumnoDetails?.id || 0, {
-                nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
-                dni: Number(alumnoDetails.dni), email: alumnoDetails.email, telefono: String(alumnoDetails.telefono),
-                direccionId: Number(dir?.id), fechaNacimiento: new Date(alumnoDetails.fechaNacimiento),
-                password: alumnoDetails.password
-            });
-            if (typeof newAlumno === "string") return setErrorMessage(newAlumno);
-
-            for (const curso of cursosElegido) {                                  //recorre los cursos elegidos y los guarda en la tabla intermedia
-                await createAlumno_Curso({ cursoId: curso.id, alumnoId: newAlumno.id });
-            }
-
-            setVariablesState();
-            return;
-        }
-        //---------------SI YA TIENE DIRECCIÓN CARGADA
-        const { direccion } = await getUbicacion(obAlumno);
-        const localidad = direccion?.localidad;
-        const prov = localidad?.provincia;
-        const nacionalidad = prov?.nacionalidad;
-        try {
-            const newDireccion = await updateDireccionById(Number(direccion?.id), {
-                calle: String(calle),
-                numero: Number(numero),
-                localidadId: Number(localidad?.id)
-            });
-            //console.log("newDireccion", newDireccion);
-            await updateLocalidad(Number(localidad?.id), {
-                nombre: String(localidadName),
-                provinciaId: Number(prov?.id)
-            });
-            //console.log("newLocalidad", newLocalidad);
-            await updateProvinciaById(Number(prov?.id), {
-                nombre: String(provinciaName),
-                nacionalidadId: Number(nacionalidad?.id)
-            });
-            //--------SI ES MENOR
-            if (mayor === false) {
-                // console.log("fecha 1", new Date(alumnoDetails.fechaNacimiento));
-                //console.log("fecha 2", (alumnoDetails.fechaNacimiento));
+            if (mayor === true) {
+                //console.log("ALUMNODETAILS", alumnoDetails);
                 const newAlumno = await updateAlumno(alumnoDetails?.id || 0, {
                     nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
-                    dni: Number(alumnoDetails.dni), email: alumnoDetails.email,
-                    direccionId: Number(direccion?.id), fechaNacimiento: new Date(alumnoDetails.fechaNacimiento), password: alumnoDetails.password
+                    dni: Number(alumnoDetails.dni), email: alumnoDetails.email, telefono: String(alumnoDetails.telefono),
+                    fechaNacimiento: new Date(alumnoDetails.fechaNacimiento),
+                    password: alumnoDetails.password
                 });
                 if (typeof newAlumno === "string") return setErrorMessage(newAlumno);
-                await updateResponsable(alumnoDetails?.id || 0, {
-                    nombre: responsableDetails.nombre, apellido: responsableDetails.apellido,
-                    dni: Number(responsableDetails.dni), email: responsableDetails.email, telefono: String(responsableDetails.telefono),
-                    alumnoId: newAlumno.id, direccionId: Number(direccion?.id)
-                });
-                if (typeof newAlumno === "string") return setErrorMessage(newAlumno);
+
                 for (const curso of cursosElegido) {                                  //recorre los cursos elegidos y los guarda en la tabla intermedia
                     await createAlumno_Curso({ cursoId: curso.id, alumnoId: newAlumno.id });
                 }
+
                 setVariablesState();
+                setIsSaving(false);
                 return;
             }
-            //console.log("ALUMNODETAILS", alumnoDetails);
-
-            //-------------SI ES MAYOR
-            const newAlumno = await updateAlumno(alumnoDetails?.id || 0, {
-                nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
-                dni: Number(alumnoDetails.dni), telefono: String(alumnoDetails.telefono),
-                direccionId: Number(newDireccion?.id), email: alumnoDetails.email, fechaNacimiento: new Date(alumnoDetails.fechaNacimiento),
-                password: alumnoDetails.password
-            });
-            if (typeof newAlumno === "string") return setErrorMessage(newAlumno);
-            for (const curso of cursosElegido) {                                  //recorre los cursos elegidos y los guarda en la tabla intermedia
-                await createAlumno_Curso({ cursoId: curso.id, alumnoId: newAlumno.id });
-            }
-
-            setVariablesState();
-        } catch (error) {
-            console.error("Error al actualizar el profesional", error);
         }
+
     }
     async function handleCreateAlumno() {
+        setIsSaving(true);
         const validationError = await validatealumnoDetails();
         // console.log("newDireccion", direccion);
         if (validationError) {
             setErrorMessage(validationError);
             return;
         }
-        const dir = await createUbicacion();
-        //se agrega al telefono el código de país
+        //region si agrega direcc
+        if (permitirDireccion) {
+            const { direccion, direccionResp } = await createUbicacion();
+            //se agrega al telefono el código de país
 
-        try {
-            //alumno Mayor
-            if (selectedAlumno == -1) {
-                //region hashPassword
-                //se crea el alumno, si ya existe se lo actualiza pero sin cambiar la contraseña y el email.
-                const newAlumno = await createAlumnoAdmin({
-                    nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
-                    dni: Number(alumnoDetails.dni), email: alumnoDetails.email, telefono: String(alumnoDetails.telefono),
-                    direccionId: Number(dir?.id), password: alumnoDetails.password, rolId: 2,     //rol 2 es alumno
-                    fechaNacimiento: new Date(alumnoDetails.fechaNacimiento)
-                });
-                console.log("newAlumno", newAlumno);
-                if (typeof newAlumno === "string") return setErrorMessage(newAlumno);
-                for (const curso of cursosElegido) {                                  //recorre los cursos elegidos y los guarda en la tabla intermedia
-                    await createAlumno_Curso({ cursoId: curso.id, alumnoId: newAlumno.id });
-                    //console.log(prof_cur)
+            try {
+                //---------------------------------------------------------------SI ES MAYOR-------------------------------------------------------------------------------------------
+                if (selectedAlumno == -1) {
+                    //se crea el alumno, si ya existe se lo actualiza pero sin cambiar la contraseña y el email.
+                    const newAlumno = await createAlumnoAdmin({
+                        nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
+                        dni: Number(alumnoDetails.dni), email: alumnoDetails.email, telefono: String(alumnoDetails.telefono),
+                        direccionId: Number(direccion?.id), password: alumnoDetails.password, rolId: 2,     //rol 2 es alumno
+                        fechaNacimiento: new Date(alumnoDetails.fechaNacimiento)
+                    });
+                    console.log("newAlumno", newAlumno);
+                    if (typeof newAlumno === "string") return setErrorMessage(newAlumno);
+                    for (const curso of cursosElegido) {                                  //recorre los cursos elegidos y los guarda en la tabla intermedia
+                        await createAlumno_Curso({ cursoId: curso.id, alumnoId: newAlumno.id });
+                        //console.log(prof_cur)
+                    }
+
+                    setVariablesState();
+                }
+                //---------------------------------------------------------------SI ES MENOR-------------------------------------------------------------------------------------------
+                if (selectedAlumno === -2) {
+
+                    const newAlumno = await createAlumnoAdmin({
+                        nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
+                        dni: Number(alumnoDetails.dni), email: alumnoDetails.email,
+                        direccionId: Number(direccion?.id), password: alumnoDetails.password, rolId: 2,     //rol 2 es alumno
+                        fechaNacimiento: new Date(alumnoDetails.fechaNacimiento)
+                    });
+
+                    if (typeof newAlumno === "string") return setErrorMessage(newAlumno);
+                    for (const curso of cursosElegido) {                                  //recorre los cursos elegidos y los guarda en la tabla intermedia
+                        await createAlumno_Curso({ cursoId: curso.id, alumnoId: newAlumno.id });
+                        //console.log(prof_cur)
+                    }
+
+                    //responsable
+                    await createResponsable({
+                        nombre: responsableDetails.nombre, apellido: responsableDetails.apellido,
+                        dni: Number(responsableDetails.dni), email: responsableDetails.email, telefono: String(alumnoDetails.telefono),
+                        alumnoId: newAlumno.id, direccionId: Number(direccionResp?.id)
+                    });
+                    setVariablesState();
                 }
 
-                setVariablesState();
+            } catch (error) {
+                console.error("Error al crear el profesional", error);
             }
-            //alumno Menor
-            if (selectedAlumno === -2) {
+        }
+        //region no agrega direcc
+        else if (!permitirDireccion) {
+            try {
+                //---------------------------------------------------------------SI ES MAYOR-------------------------------------------------------------------------------------------
+                if (selectedAlumno == -1) {
+                    //se crea el alumno, si ya existe se lo actualiza pero sin cambiar la contraseña y el email.
+                    const newAlumno = await createAlumnoAdmin({
+                        nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
+                        dni: Number(alumnoDetails.dni), email: alumnoDetails.email, telefono: String(alumnoDetails.telefono),
+                        password: alumnoDetails.password, rolId: 2,     //rol 2 es alumno
+                        fechaNacimiento: new Date(alumnoDetails.fechaNacimiento)
+                    });
+                    console.log("newAlumno", newAlumno);
+                    if (typeof newAlumno === "string") return setErrorMessage(newAlumno);
+                    for (const curso of cursosElegido) {                                  //recorre los cursos elegidos y los guarda en la tabla intermedia
+                        await createAlumno_Curso({ cursoId: curso.id, alumnoId: newAlumno.id });
+                        //console.log(prof_cur)
+                    }
+                    setIsSaving(false);
+                    setVariablesState();
+                }
+                //---------------------------------------------------------------SI ES MENOR-------------------------------------------------------------------------------------------
+                if (selectedAlumno === -2) {
 
-                const newAlumno = await createAlumnoAdmin({
-                    nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
-                    dni: Number(alumnoDetails.dni), email: alumnoDetails.email,
-                    direccionId: Number(dir?.id), password: alumnoDetails.password, rolId: 2,     //rol 2 es alumno
-                    fechaNacimiento: new Date(alumnoDetails.fechaNacimiento)
-                });
+                    const newAlumno = await createAlumnoAdmin({
+                        nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
+                        dni: Number(alumnoDetails.dni), email: alumnoDetails.email,
+                        password: alumnoDetails.password, rolId: 2,     //rol 2 es alumno
+                        fechaNacimiento: new Date(alumnoDetails.fechaNacimiento)
+                    });
 
-                if (typeof newAlumno === "string") return setErrorMessage(newAlumno);
-                for (const curso of cursosElegido) {                                  //recorre los cursos elegidos y los guarda en la tabla intermedia
-                    await createAlumno_Curso({ cursoId: curso.id, alumnoId: newAlumno.id });
-                    //console.log(prof_cur)
+                    if (typeof newAlumno === "string") return setErrorMessage(newAlumno);
+                    for (const curso of cursosElegido) {                                  //recorre los cursos elegidos y los guarda en la tabla intermedia
+                        await createAlumno_Curso({ cursoId: curso.id, alumnoId: newAlumno.id });
+                        //console.log(prof_cur)
+                    }
+
+                    //responsable
+                    await createResponsable({
+                        nombre: responsableDetails.nombre, apellido: responsableDetails.apellido,
+                        dni: Number(responsableDetails.dni), email: responsableDetails.email, telefono: String(alumnoDetails.telefono),
+                        alumnoId: newAlumno.id
+                    });
+                    setIsSaving(false);
+                    setVariablesState();
                 }
 
-                //responsable
-                await createResponsable({
-                    nombre: responsableDetails.nombre, apellido: responsableDetails.apellido,
-                    dni: Number(responsableDetails.dni), email: responsableDetails.email, telefono: String(alumnoDetails.telefono),
-                    alumnoId: newAlumno.id, direccionId: Number(dir?.id)
-                });
-                setVariablesState();
+            } catch (error) {
+                console.error("Error al crear el profesional", error);
             }
-
-        } catch (error) {
-            console.error("Error al crear el profesional", error);
         }
     }
-    async function handleEliminarAlumno(alumno: any) {
-        console.log(alumno);
+    async function handleEliminarAlumno(id: any) {
+        setIsDeleting(true);
+        console.log(id);
         //elimino el responsable si el alumno es menor
         if (mayor === false) {
             console.log("responsable", responsableDetails);
 
-            const responsable = await deleteResponsableByAlumnoId(alumno.id);
+            const responsable = await deleteResponsableByAlumnoId(id);
             console.log("responsable borrado", responsable);
         }
-        const alumnoBorrado = await deleteAlumno(alumno.id);
+        const alumnoBorrado = await deleteAlumno(id);
         console.log("alumno borrado", alumnoBorrado);
         fetchAlumnos();
+        setAlumnoAEliminar(null);
+        setIsDeleting(false);
     }
     async function handleCancel_init() {
         setNacionalidadName("");
@@ -585,6 +791,8 @@ const Alumnos: React.FC = () => {
             alumnoId: 0,
             direccionId: 0
         })
+        setPermitirDireccion(false);
+        setPermitirDireccionResp(false);
     }
     // #endregion
     // Function to handle search input change
@@ -635,7 +843,36 @@ const Alumnos: React.FC = () => {
                         />
                     </div>
                 </div>
+                {AlumnoAEliminar && (
+                    <div className="fixed inset-0 z-20 flex items-center justify-center bg-black bg-opacity-50">
+                        <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative">
+                            {errorMessage && <div style={{ color: "red" }}>{errorMessage}</div>}
 
+                            <h2 className="text-lg mb-4">Confirmar Eliminación</h2>
+                            <p>
+                                ¿Estás seguro de que deseas eliminar el taller:{" "}
+                                <strong>{AlumnoAEliminar.nombre}</strong>?
+                            </p>
+                            <div className="flex justify-end space-x-4 mt-4">
+                                <button
+                                    onClick={() => {
+                                        handleEliminarAlumno(AlumnoAEliminar.id);
+                                    }}
+                                    disabled={isDeleting}
+                                    className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800"
+                                >
+                                    {isDeleting ? "Eliminando..." : "Confirmar Eliminación"}
+                                </button>
+                                <button
+                                    onClick={() => setAlumnoAEliminar(null)}
+                                    className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800"
+                                >
+                                    Cancelar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
                 {/* Contenedor Principal */}
                 <div className="relative mt-8 flex justify-center z-10">
                     <div className="border p-4 w-11/12 sm:w-2/3 md:w-1/2 lg:w-1/3 h-[60vh] bg-gray-800 bg-opacity-60 overflow-y-auto rounded-lg">
@@ -648,11 +885,11 @@ const Alumnos: React.FC = () => {
                                     <div className="flex justify-between w-full mb-2">
                                         <h3 className="text-lg font-semibold text-black">{alumno.nombre} {alumno.apellido}</h3>
                                         <div className="flex space-x-2">
-                                            <button onClick={() => handleEliminarAlumno(alumno)} className="text-red-600 font-bold">
+                                            <button onClick={() => setAlumnoAEliminar(alumno)} className="text-red-600 font-bold">
                                                 <Image src={DeleteIcon} alt="Eliminar" width={27} height={27} />
                                             </button>
                                             <button onClick={() => {
-                                                setSelectedAlumno(alumno); setObAlumno(alumno); console.log("mayor??", mayor);
+                                                setSelectedAlumno(alumno); setObAlumno(alumno);
                                             }} className="text-blue-600 font-bold">
                                                 <Image src={EditIcon} alt="Editar" width={27} height={27} />
                                             </button>
@@ -783,134 +1020,221 @@ const Alumnos: React.FC = () => {
                                     className="p-2 w-full border rounded"
                                 />
                             </div>
-                            {((!nacionalidadName && !provinciaName && !localidadName && !calle && !numero && (selectedAlumno !== -1 || selectedAlumno !== -2) && obAlumno?.direccionId)) && <p className=" text-red-600">Cargando su ubicación...</p>}
-                            <>
-                                <div className="mb-4">
-                                    <label htmlFor="pais" className="block">País:</label>
-                                    <input
-                                        type="text"
-                                        id="pais"
-                                        name="pais"
-                                        value={String(nacionalidadName)}
-                                        placeholder="Ingrese el país donde vive"
-                                        onChange={(e) => setNacionalidadName(e.target.value)}
-                                        className="p-2 w-full border rounded"
-                                    />
-                                </div>
-                                <div className="mb-4">
-                                    <label htmlFor="provincia" className="block">Provincia:</label>
-                                    <input
-                                        type="text"
-                                        id="provincia"
-                                        name="provincia"
-                                        value={String(provinciaName)}
-                                        placeholder="Ingrese la provincia donde vive"
-                                        onChange={(e) => setProvinciaName(e.target.value)}
-                                        className="p-2 w-full border rounded"
-                                    />
-                                </div>
-                                <div className="mb-4">
-                                    <label htmlFor="localidad" className="block">Localidad:</label>
-                                    <input
-                                        type="text"
-                                        id="localidad"
-                                        name="localidad"
-                                        value={String(localidadName)}
-                                        placeholder="Ingrese la localidad donde vive"
-                                        onChange={(e) => setLocalidadName(e.target.value)}
-                                        className="p-2 w-full border rounded"
-                                    />
-                                </div>
-                                <div className="mb-4">
-                                    <label htmlFor="calle" className="block">Calle:</label>
-                                    <input
-                                        type="text"
-                                        id="calle"
-                                        name="calle"
-                                        value={String(calle)}
-                                        placeholder="Ingrese el nombre de su calle"
-                                        onChange={(e) => setcalle(e.target.value)}
-                                        className="p-2 w-full border rounded"
-                                    />
-                                </div>
-                                <div className="mb-4">
-                                    <label htmlFor="numero" className="block">Número:</label>
-                                    <input
-                                        type="number"
-                                        id="numero"
-                                        name="numero"
-                                        placeholder="Ingrese el número de su calle"
-                                        value={numero ? Number(numero) : ""}
-                                        onChange={(e) => setNumero(Number(e.target.value))}
-                                        className="p-2 w-full border rounded"
-                                    />
-                                </div>
-                            </>
-                            {mayor !== true && (
-                                <div>
-                                    <h1 className=" w-full mt-8 mb-3 font-semibold underline">Datos del responsable</h1>
-                                    <div className="mb-4">
-                                        <label htmlFor="ResponsableNombre" className="block">Nombre :</label>
-                                        <input
-                                            type="text"
-                                            id="ResponsableNombre"
-                                            name="nombre"
-                                            value={responsableDetails.nombre}
-                                            onChange={handleChangeResponsable}
-                                            className="p-2 w-full border rounded"
-                                        />
-                                    </div>
-                                    <div className="mb-4">
-                                        <label htmlFor="ResponsableApellido" className="block">Apellido:</label>
-                                        <input
-                                            type="text"
-                                            id="ResponsableApellido"
-                                            name="apellido"
-                                            value={responsableDetails.apellido}
-                                            onChange={handleChangeResponsable}
-                                            className="p-2 w-full border rounded"
-                                        />
-                                    </div>
-                                    <div className="mb-4">
-                                        <label htmlFor="dniR" className="block">DNI:</label>
-                                        <input
-                                            type="number"
-                                            id="dniR"
-                                            name="dni"
-                                            placeholder="Ingrese el DNI del responsable"
-                                            value={responsableDetails.dni ? responsableDetails.dni : null}
-                                            onChange={handleChangeResponsable}
-                                            className="p-2 w-full border rounded"
-                                        />
-                                    </div>
-                                    <div className="mb-4">
-                                        <label htmlFor="telefonoR" className="block">Teléfono:</label>
-                                        <div className="flex">
-                                            <h3 className="p-2">+54</h3>
+                            <button
+                                onClick={() => { setPermitirDireccion(!permitirDireccion); }}
+                                className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800"
+                            >
+                                Desea cargar su dirección ?
+                            </button>
+                            {permitirDireccion && <>
+                                {loadingDireccion && <p className="text-red-600">Cargando su ubicación...</p>}
+                                {!loadingDireccion &&
+                                    <>
+                                        <div className="mb-4">
+                                            <label htmlFor="pais" className="block">País:</label>
+                                            <input
+                                                type="text"
+                                                id="pais"
+                                                name="pais"
+                                                value={String(nacionalidadName)}
+                                                placeholder="Ingrese el país donde vive"
+                                                onChange={(e) => setNacionalidadName(e.target.value)}
+                                                className="p-2 w-full border rounded"
+                                            />
+                                        </div>
+                                        <div className="mb-4">
+                                            <label htmlFor="provincia" className="block">Provincia:</label>
+                                            <input
+                                                type="text"
+                                                id="provincia"
+                                                name="provincia"
+                                                value={String(provinciaName)}
+                                                placeholder="Ingrese la provincia donde vive"
+                                                onChange={(e) => setProvinciaName(e.target.value)}
+                                                className="p-2 w-full border rounded"
+                                            />
+                                        </div>
+                                        <div className="mb-4">
+                                            <label htmlFor="localidad" className="block">Localidad:</label>
+                                            <input
+                                                type="text"
+                                                id="localidad"
+                                                name="localidad"
+                                                value={String(localidadName)}
+                                                placeholder="Ingrese la localidad donde vive"
+                                                onChange={(e) => setLocalidadName(e.target.value)}
+                                                className="p-2 w-full border rounded"
+                                            />
+                                        </div>
+                                        <div className="mb-4">
+                                            <label htmlFor="calle" className="block">Calle:</label>
+                                            <input
+                                                type="text"
+                                                id="calle"
+                                                name="calle"
+                                                value={String(calle)}
+                                                placeholder="Ingrese el nombre de su calle"
+                                                onChange={(e) => setcalle(e.target.value)}
+                                                className="p-2 w-full border rounded"
+                                            />
+                                        </div>
+                                        <div className="mb-4">
+                                            <label htmlFor="numero" className="block">Número:</label>
                                             <input
                                                 type="number"
-                                                id="telefonoR"
-                                                name="telefono"
-                                                placeholder="Ingrese su código de área y los dígitos de su teléfono"
-                                                value={responsableDetails.telefono ? responsableDetails.telefono : null}
+                                                id="numero"
+                                                name="numero"
+                                                placeholder="Ingrese el número de su calle"
+                                                value={numero ? Number(numero) : ""}
+                                                onChange={(e) => setNumero(Number(e.target.value))}
+                                                className="p-2 w-full border rounded"
+                                            />
+                                        </div>
+                                    </>
+                                }
+                            </>
+                            }
+                            {mayor !== true && (
+                                <>
+                                    <div>
+                                        <h1 className=" w-full mt-8 mb-3 font-semibold underline">Datos del responsable</h1>
+                                        <div className="mb-4">
+                                            <label htmlFor="ResponsableNombre" className="block">Nombre :</label>
+                                            <input
+                                                type="text"
+                                                id="ResponsableNombre"
+                                                name="nombre"
+                                                value={responsableDetails.nombre}
+                                                onChange={handleChangeResponsable}
+                                                className="p-2 w-full border rounded"
+                                            />
+                                        </div>
+                                        <div className="mb-4">
+                                            <label htmlFor="ResponsableApellido" className="block">Apellido:</label>
+                                            <input
+                                                type="text"
+                                                id="ResponsableApellido"
+                                                name="apellido"
+                                                value={responsableDetails.apellido}
+                                                onChange={handleChangeResponsable}
+                                                className="p-2 w-full border rounded"
+                                            />
+                                        </div>
+                                        <div className="mb-4">
+                                            <label htmlFor="dniR" className="block">DNI:</label>
+                                            <input
+                                                type="number"
+                                                id="dniR"
+                                                name="dni"
+                                                placeholder="Ingrese el DNI del responsable"
+                                                value={responsableDetails.dni ? responsableDetails.dni : null}
+                                                onChange={handleChangeResponsable}
+                                                className="p-2 w-full border rounded"
+                                            />
+                                        </div>
+                                        <div className="mb-4">
+                                            <label htmlFor="telefonoR" className="block">Teléfono:</label>
+                                            <div className="flex">
+                                                <h3 className="p-2">+54</h3>
+                                                <input
+                                                    type="number"
+                                                    id="telefonoR"
+                                                    name="telefono"
+                                                    placeholder="Ingrese su código de área y los dígitos de su teléfono"
+                                                    value={responsableDetails.telefono ? responsableDetails.telefono : null}
+                                                    onChange={handleChangeResponsable}
+                                                    className="p-2 w-full border rounded"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="mb-4">
+                                            <label htmlFor="emailR" className="block">Email:</label>
+                                            <input
+                                                type="text"
+                                                id="emailR"
+                                                name="email"
+                                                placeholder="Ingrese el email del responsable"
+                                                value={responsableDetails.email}
                                                 onChange={handleChangeResponsable}
                                                 className="p-2 w-full border rounded"
                                             />
                                         </div>
                                     </div>
-                                    <div className="mb-4">
-                                        <label htmlFor="emailR" className="block">Email:</label>
-                                        <input
-                                            type="text"
-                                            id="emailR"
-                                            name="email"
-                                            placeholder="Ingrese el email del responsable"
-                                            value={responsableDetails.email}
-                                            onChange={handleChangeResponsable}
-                                            className="p-2 w-full border rounded"
-                                        />
-                                    </div>
-                                </div>
+                                    <button
+                                        onClick={() => { setPermitirDireccionResp(!permitirDireccionResp); }}
+                                        className="bg-gray-700 py-2 mb-2 px-5 text-white rounded hover:bg-gray-800"
+                                    >
+                                        Desea cargar su dirección ?
+                                    </button>
+                                    {permitirDireccionResp && <>
+                                        {loadingDireccionResp && <p className="text-red-600">Cargando la ubicación del responsable...</p>}
+                                        {!loadingDireccionResp &&
+                                            <>
+                                                <div className="mb-4">
+                                                    <label htmlFor="paisRes" className="block">País:</label>
+                                                    <input
+                                                        type="text"
+                                                        id="paisRes"
+                                                        name="pais"
+                                                        value={String(nacionalidadNameResp)}
+                                                        placeholder="Ingrese el país del responsable"
+                                                        onChange={(e) => setNacionalidadNameResp(e.target.value)}
+                                                        className="p-2 w-full border rounded"
+                                                    />
+                                                </div>
+                                                <div className="mb-4">
+                                                    <label htmlFor="provinciaResp" className="block">Provincia:</label>
+                                                    <input
+                                                        type="text"
+                                                        id="provinciaResp"
+                                                        name="provincia"
+                                                        value={String(provinciaName)}
+                                                        placeholder="Ingrese la provincia del responsable"
+                                                        onChange={(e) => setProvinciaNameResp(e.target.value)}
+                                                        className="p-2 w-full border rounded"
+                                                    />
+                                                </div>
+                                                <div className="mb-4">
+                                                    <label htmlFor="localidadResp" className="block">Localidad:</label>
+                                                    <input
+                                                        type="text"
+                                                        id="localidadResp"
+                                                        name="localidad"
+                                                        value={String(localidadName)}
+                                                        placeholder="Ingrese la localidad del responsable"
+                                                        onChange={(e) => setLocalidadNameResp(e.target.value)}
+                                                        className="p-2 w-full border rounded"
+                                                    />
+                                                </div>
+                                                <div className="mb-4">
+                                                    <label htmlFor="calleResp" className="block">Calle:</label>
+                                                    <input
+                                                        type="text"
+                                                        id="calleResp"
+                                                        name="calle"
+                                                        value={String(calle)}
+                                                        placeholder="Ingrese la calle del responsable"
+                                                        onChange={(e) => setcalleResp(e.target.value)}
+                                                        className="p-2 w-full border rounded"
+                                                    />
+                                                </div>
+                                                <div className="mb-4">
+                                                    <label htmlFor="numeroResp" className="block">Número:</label>
+                                                    <input
+                                                        type="number"
+                                                        id="numeroResp"
+                                                        name="numero"
+                                                        placeholder="Ingrese el número de calle del responsable"
+                                                        value={numero ? Number(numero) : ""}
+                                                        onChange={(e) => setNumeroResp(Number(e.target.value))}
+                                                        className="p-2 w-full border rounded"
+                                                    />
+                                                </div>
+                                            </>
+                                        }
+                                    </>
+                                    }
+                                </>
                             )}
                             <div>
                                 <Talleres crearEstado={selectedAlumno} user={obAlumno} cursosElegido={cursosElegido} setCursosElegido={setCursosElegido} />
@@ -919,8 +1243,9 @@ const Alumnos: React.FC = () => {
                                 <button
                                     onClick={selectedAlumno === -1 || selectedAlumno === -2 ? handleCreateAlumno : handleSaveChanges}
                                     className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800"
+                                    disabled={isSaving}
                                 >
-                                    Guardar
+                                    {isSaving ? <Loader /> : "Guardar"}
                                 </button>
                                 <button
                                     onClick={() => { setSelectedAlumno(null); handleCancel_init() }}
@@ -932,6 +1257,7 @@ const Alumnos: React.FC = () => {
                     </div>
                 )}
             </div>
+
         </main>
     );
 }

@@ -44,7 +44,6 @@ model Direccion {
 
   // Relaciones
   alumnos       Alumno[] // Relación de uno a muchos con Alumno
-  profesional   Profesional[] // Relación de uno a muchos con Profesional
   responsable Responsable[] // Relación de uno a muchos con Responsable
 }
 
@@ -74,9 +73,7 @@ model Profesional {
   password     String    @unique
   telefono     String    @unique
   imagen      String?
-  direccionId Int?  
-  direccion   Direccion? @relation(fields: [direccionId], references: [id]) // Relación de uno a muchos
-
+ 
   prof_cur Profesional_Curso[]
   rolId    Int
   rol      Rol                 @relation(fields: [rolId], references: [id])

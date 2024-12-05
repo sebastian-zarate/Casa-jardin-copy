@@ -25,7 +25,6 @@ type Usuario = {
     telefono: number;
     email: string;
     /*     password: string; */
-    direccionId: number;
     rolId: number;
 };
 
@@ -46,32 +45,19 @@ const Cuenta: React.FC = () => {
     // Estado para almacenar los detalles del curso, inicialmente vacío
     const [profesionalDetails, setprofesionalDetails] = useState<{
         id: number; nombre: string; apellido: string;
-        telefono: number; email: string;  direccionId?: number; rolId?: number;
+        telefono: number; email: string; direccionId?: number; rolId?: number;
     }>({
         id: user?.id || 0,
         nombre: user?.nombre || '',
         apellido: user?.apellido || '',
         telefono: user?.telefono || 0,
         email: user?.email || '',
-        direccionId: user?.direccionId || 0,
         rolId: user?.rolId || 0
     });
     const [profesionalDetailsCopia, setprofesionalDetailsCopia] = useState<{
         id: number; nombre: string; apellido: string;
-        telefono: number; email: string;  direccionId?: number; rolId?: number;
+        telefono: number; email: string; rolId?: number;
     }>();
-    const [nacionalidadName, setNacionalidadName] = useState<string>();
-    // Estado para almacenar el ID de la provincia, inicialmente nulo
-    const [provinciaName, setProvinciaName] = useState<string>();
-
-    // Estado para almacenar el ID de la localidad, inicialmente nulo
-    const [localidadName, setLocalidadName] = useState<string>();
-
-    // Estado para almacenar la calle, inicialmente nulo
-    const [calle, setcalle] = useState<string | null>();
-
-    // Estado para almacenar el número de la dirección, inicialmente nulo
-    const [numero, setNumero] = useState<number | null>();
 
     // Estado para almacenar los cursos elegidos, inicialmente un array vacío
     const [cursosElegido, setCursosElegido] = useState<Curso[]>([]);
@@ -90,7 +76,7 @@ const Cuenta: React.FC = () => {
 
     const router = useRouter();
     useEffect(() => {
-        if (user && !profesionalDetails.email ) {
+        if (user && !profesionalDetails.email) {
             getUser()
             console.log("holaaaaaaaaaaaaaaaaaaaaaa")
         }
@@ -111,7 +97,7 @@ const Cuenta: React.FC = () => {
         //console.log("user", user);
         setUser(user)
         if (!user) return;
-        let talleres= await getCursosByIdProfesional(Number(user?.id));
+        let talleres = await getCursosByIdProfesional(Number(user?.id));
         console.log("talleres", talleres);
         setCursos([])
         talleres.map((curso) => {
@@ -136,45 +122,6 @@ const Cuenta: React.FC = () => {
 
     //region Funciones
 
-
-    async function createUbicacion() {
-        const nacionalidad = await addPais({ nombre: String(nacionalidadName) });
-        const prov = await addProvincias({ nombre: String(localidadName), nacionalidadId: Number(nacionalidad?.id) });
-        const localidad = await addLocalidad({ nombre: String(localidadName), provinciaId: Number(prov?.id) });
-
-        const direccion = await addDireccion({ calle: String(calle), numero: Number(numero), localidadId: Number(localidad?.id) });
-        return { direccion, nacionalidad };
-    }
-    async function getUbicacion(userUpdate: any) {
-        // Obtener la dirección del usuario por su ID
-        //console.log("SI DIRECCIONID ES FALSE:", Number(userUpdate?.direccionId));
-        /*         const direccion = await getDireccionById(Number(userUpdate?.direccionId));
-                //console.log("DIRECCION", direccion);
-        
-                // Obtener la localidad asociada a la dirección
-                const localidad = await getLocalidadById(Number(direccion?.localidadId));
-                //console.log("LOCALIDAD", localidad);
-        
-                // Obtener la provincia asociada a la localidad
-                const prov = await getProvinciasById(Number(localidad?.provinciaId));
-                //console.log("PROVINCIA", prov);
-        
-                // Obtener el país asociado a la provincia
-                const nacionalidad = await getPaisById(Number(prov?.nacionalidadId)); */
-       const direccion = await getDireccionCompleta(userUpdate?.direccionId);
-        console.log("DIRECCION", direccion);
-        console.log("LOCALIDAD", direccion?.localidad);
-        console.log("PROVINCIA", direccion?.localidad?.provincia);
-        console.log("PAIS", direccion?.localidad?.provincia?.nacionalidad);
-        //console.log("NACIONALIDAD", nacionalidad);
-        // Actualizar los estados con los datos obtenidos
-        setLocalidadName(String(direccion?.localidad?.nombre));
-        setProvinciaName(String(direccion?.localidad?.provincia?.nombre));
-        setNacionalidadName(String(direccion?.localidad?.provincia?.nacionalidad?.nombre));
-        setNumero(direccion?.numero);
-        setcalle(direccion?.calle);
-        return { direccion };
-    }
     async function getUser() {
 
         console.log(user?.nombre);
@@ -185,72 +132,61 @@ const Cuenta: React.FC = () => {
             telefono: user?.telefono || 0,
             email: user?.email || '',
             /*             password: user?.password || '', */
-            direccionId: user?.direccionId || 0,
             rolId: user?.rolId || 0
         }
-        if (!userUpdate.direccionId) {
-            setNacionalidadName("")
-            setProvinciaName("")
-            setLocalidadName("")
-            setcalle("")
-            setNumero(0)
-        } else if (userUpdate.direccionId) getUbicacion(userUpdate);
 
         setprofesionalDetails({
             id: userUpdate.id,
             nombre: userUpdate.nombre, apellido: userUpdate.apellido,
             telefono: (userUpdate.telefono),
-            email: userUpdate.email, direccionId: userUpdate.direccionId, rolId: userUpdate.rolId
+            email: userUpdate.email,  rolId: userUpdate.rolId
         });
         setprofesionalDetailsCopia({
             id: userUpdate.id,
             nombre: userUpdate.nombre, apellido: userUpdate.apellido,
             telefono: (userUpdate.telefono),
-            email: userUpdate.email, direccionId: userUpdate.direccionId, rolId: userUpdate.rolId
+            email: userUpdate.email, rolId: userUpdate.rolId
         });
         setUser(userUpdate);
         //setOpenBox(!openBox)
 
         //CARGAR TODAS LAS DIRECCIONES
     }
-        //region validate
-        async function validateProfesionalDetails() {
-            const { nombre, apellido, email, telefono } = profesionalDetails || {};
-    /*         if (JSON.stringify(alumnoDetails) === JSON.stringify(alumnoDetailsCopia)) {
-                return;
-            } */
-            console.log("responsableDetails", profesionalDetails);
-    
-            //validar que el nombre sea de al menos 2 caracteres y no contenga números
-            let resultValidate;
-            if (profesionalDetails) {
-                resultValidate = validateNombre(nombre);
-                if (resultValidate) return resultValidate;
-    
-                resultValidate = validateApellido(apellido);
-                if (resultValidate) return resultValidate;
-    
-                resultValidate = validateEmail(email);
-                if (resultValidate) return resultValidate;
-                if (email !== profesionalDetailsCopia?.email) {
-                    const estado = await emailExists(email)
-                    if (estado) {
-                        return "El email ya está registrado.";
-                    }
-                    if (resultValidate) return resultValidate;
+    //region validate
+    async function validateProfesionalDetails() {
+        const { nombre, apellido, email, telefono } = profesionalDetails || {};
+        /*         if (JSON.stringify(alumnoDetails) === JSON.stringify(alumnoDetailsCopia)) {
+                    return;
+                } */
+        console.log("responsableDetails", profesionalDetails);
+
+        //validar que el nombre sea de al menos 2 caracteres y no contenga números
+        let resultValidate;
+        if (profesionalDetails) {
+            resultValidate = validateNombre(nombre);
+            if (resultValidate) return resultValidate;
+
+            resultValidate = validateApellido(apellido);
+            if (resultValidate) return resultValidate;
+
+            resultValidate = validateEmail(email);
+            if (resultValidate) return resultValidate;
+            if (email !== profesionalDetailsCopia?.email) {
+                const estado = await emailExists(email)
+                if (estado) {
+                    return "El email ya está registrado.";
                 }
-    
-                if ( telefono && typeof (telefono) === "number") {
-                    resultValidate = validatePhoneNumber(String(telefono));
-                    if (resultValidate) return resultValidate;
-    
-                }
-    
+                if (resultValidate) return resultValidate;
             }
-            resultValidate = validateDireccion(nacionalidadName, provinciaName, localidadName, String(calle), Number(numero));
-            if (resultValidate) return resultValidate
-          
+
+            if (telefono && typeof (telefono) === "number") {
+                resultValidate = validatePhoneNumber(String(telefono));
+                if (resultValidate) return resultValidate;
+
+            }
+
         }
+    }
 
     function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
         const { name, value } = e.target;
@@ -268,52 +204,34 @@ const Cuenta: React.FC = () => {
             return;
         }
         if (!profesionalDetails.direccionId) {
-            const { direccion } = await createUbicacion();
             console.log("profesionalDETAILS", profesionalDetails);
             const newprofesional = await updateProfesional(Number(profesionalDetails?.id), {
                 nombre: profesionalDetails.nombre, apellido: profesionalDetails.apellido,
                 email: profesionalDetails.email, telefono: String(profesionalDetails.telefono),
-                direccionId: Number(direccion?.id)
             });
             if (typeof newprofesional === "string") return setErrorMessage(newprofesional);
-            newprofesional.direccionId = direccion?.id;
             console.log("newprofesional", newprofesional);
             setOpenBox(0);
             getUser();
             authorizeAndFetchData();
             return;
         }
-        const { direccion } = await getUbicacion(profesionalDetails);
 
         try {
 
-            const newDireccion = await updateDireccionById(Number(direccion?.id), {
-                calle: String(calle),
-                numero: Number(numero),
-                localidadId: Number(direccion?.localidad?.id)
-            });
-            console.log("newDireccion", newDireccion);
-            const newLocalidad = await updateLocalidad(Number(direccion?.localidad?.id), {
-                nombre: String(localidadName),
-                provinciaId: Number(direccion?.localidad?.provincia?.id)
-            });
-            console.log("newLocalidad", newLocalidad);
-            await updateProvinciaById(Number(direccion?.localidad?.provincia?.id), {
-                nombre: String(provinciaName),
-                nacionalidadId: Number(direccion?.localidad?.provincia?.nacionalidad?.id)
-            });
+
 
             console.log("profesionalDETAILS", profesionalDetails);
             const newprofesional = await updateProfesional(Number(profesionalDetails?.id), {
                 nombre: profesionalDetails.nombre, apellido: profesionalDetails.apellido,
-                 telefono: String(profesionalDetails.telefono),
-                direccionId: Number(newDireccion?.id),  email: profesionalDetails.email
+                telefono: String(profesionalDetails.telefono),
+                email: profesionalDetails.email
             });
             console.log("newprofesional", newprofesional);
         } catch (error) {
             setErrorMessage("Ha ocurrido un error al guardar los cambios.");
         }
-        setNacionalidadName(String(direccion?.localidad?.provincia?.nacionalidad?.nombre))
+
         setOpenBox(0);
         getUser();
         authorizeAndFetchData();
@@ -321,11 +239,11 @@ const Cuenta: React.FC = () => {
 
     }
     //endregion
-//region return
+    //region return
     return (
-        <main style={{fontFamily:"Cursive"}}>
+        <main style={{ fontFamily: "Cursive" }}>
             <Navigate />
- {/*            <div className="fixed inset-0 z-[-1]">
+            {/*            <div className="fixed inset-0 z-[-1]">
                 <Image src={Background} alt="Background" layout="fill" objectFit="cover" quality={80} priority={true} />
             </div> */}
             <div className='absolute mt-20 top-5 '>
@@ -340,13 +258,8 @@ const Cuenta: React.FC = () => {
                         <div className="mb-4">
                             <label className="block text-gray-700 font-bold mb-2">Talleres:</label>
                             {cursos?.length !== 0 ? (
-                                <p className="p-2 border rounded bg-gray-100" style={{ height: '10vh', overflow: "auto" }}> {cursos?.map((curso)=> curso.nombre).join(", ")}</p>
+                                <p className="p-2 border rounded bg-gray-100" style={{ height: '10vh', overflow: "auto" }}> {cursos?.map((curso) => curso.nombre).join(", ")}</p>
                             ) : <p className="p-2 border rounded bg-gray-100">Talleres no cargados</p>}
-                        </div>
-
-                        <div className="mb-4">
-                            <label className="block text-gray-700 font-bold mb-2">Domicilio:</label>
-                            <p className="p-2 border rounded bg-gray-100">{nacionalidadName ? nacionalidadName : "-"}, {provinciaName ? provinciaName : "-"}, {localidadName ? localidadName : "-"}, {calle ? calle : "-"} {numero ? numero : "-"}</p>
                         </div>
 
                         <div className="mb-4">
@@ -448,63 +361,8 @@ const Cuenta: React.FC = () => {
                                 className="p-2 w-full border rounded"
                             />
                         </div>
-                        {((!nacionalidadName && !provinciaName && !localidadName && !calle && !numero && openBox === 1) && user?.direccionId) && <p className=" text-red-600">Cargando su ubicación...</p>}
-                        {<div className="mb-4">
-                            <label htmlFor="pais" className="block">País:</label>
-                            <input
-                                type="text"
-                                id="pais"
-                                name="pais"
-                                value={String(nacionalidadName)}
-                                onChange={(e) => setNacionalidadName(e.target.value)}
-                                className="p-2 w-full border rounded"
-                            />
-                        </div>}
-                        {<div className="mb-4">
-                            <label htmlFor="provincia" className="block">Provincia:</label>
-                            <input
-                                type="text"
-                                id="provincia"
-                                name="provincia"
-                                value={String(provinciaName)}
-                                onChange={(e) => setProvinciaName(e.target.value)}
-                                className="p-2 w-full border rounded"
-                            />
-                        </div>}
-                        { <div className="mb-4">
-                            <label htmlFor="localidad" className="block">Localidad:</label>
-                            <input
-                                type="text"
-                                id="localidad"
-                                name="localidad"
-                                value={String(localidadName)}
-                                onChange={(e) => setLocalidadName(e.target.value)}
-                                className="p-2 w-full border rounded"
-                            />
-                        </div>}
-                         <div className="mb-4">
-                            <label htmlFor="calle" className="block">Calle:</label>
-                            <input
-                                type="text"
-                                id="calle"
-                                name="calle"
-                                value={String(calle)}
-                                onChange={(e) => setcalle(e.target.value)}
-                                className="p-2 w-full border rounded"
-                            />
-                        </div> 
-                            <div className="mb-4">
-                                <label htmlFor="numero" className="block">Número:</label>
-                                <input
-                                    type="text"
-                                    id="numero"
-                                    name="numero"
-                                    value={Number(numero)}
-                                    onChange={(e) => setNumero(Number(e.target.value))}
-                                    className="p-2 w-full border rounded"
-                                />
-                            </div>
-                        
+
+
                         <div>
                             <button
                                 className="py-2  text-black font-bold rounded hover:underline"

@@ -11,7 +11,7 @@ import NoImage from "../../../../public/Images/default-no-image.png";
 import { getImages_talleresAdmin } from "@/services/repoImage";
 //para subir imagenes:
 import { mapearImagenes } from "@/helpers/repoImages";
-import Loader from "@/components/loading/page";
+import Loader from "@/components/Loaders/loading/page";
 // #endregion Imports
 
 const Talleres = () => {

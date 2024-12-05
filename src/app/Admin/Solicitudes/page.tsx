@@ -16,7 +16,7 @@ import { emailTest } from "@/helpers/email/email";
 import { emailRechazo } from "@/helpers/email/emailRechazoSoli";
 import withAuth from "@/components/Admin/adminAuth";
 import Background from "../../../../public/Images/BackgroundSolicitudes.jpg";
-import Loader from "@/components/loader/loader";
+import Loader from "@/components/Loaders/loader/loader";
 
 
 const solicitudPage: React.FC = () => {

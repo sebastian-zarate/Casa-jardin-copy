@@ -15,7 +15,6 @@ export type Profesional = {
   email: string;
   telefono: string;
   password: string;
-  direccionId: number;
   rolId: number;
   imagen: string | null;
 }
@@ -38,7 +37,6 @@ export async function createProfesional(data: {
   email: string;
   telefono: string;
   password: string;
-  direccionId: number;
   imagen: string | null;
 }) {
 
@@ -69,7 +67,6 @@ export async function updateProfesional(id: number, Data: {
   email?: string;
   telefono?: string;
   password?: string;
-  direccionId?: number;
   imagen?: string | null;
 }) {
   const profesional = await prisma.profesional.findUnique({
@@ -93,8 +90,6 @@ export async function updateProfesional(id: number, Data: {
       nombre: Data.nombre,
       apellido: Data.apellido,
       telefono: Data.telefono,
-      direccionId: Data.direccionId,
-      email: Data.email,
       password: Data.password,
       imagen: Data.imagen,
     }
@@ -107,7 +102,6 @@ export async function updateProfesional(id: number, Data: {
     nombre: Data.nombre,
     apellido: Data.apellido,
     telefono: Data.telefono,
-    direccionId: Data.direccionId,
     email: Data.email,
     imagen: Data.imagen,
     }

@@ -43,7 +43,7 @@ export default function Navigate() {
 
   return (
     <nav className="flex justify-between items-center w-full p-3 bg-sky-600" style={{ fontFamily: "Cursive" }}>
-      <div className="flex items-center">
+      <div className="flex items-center cursor-pointer" onClick={()=> window.location.href = "/Admin/Inicio"}>
         <Image src={Logo} alt="Logo Casa Jardin" className="w-12 h-12 md:w-16 md:h-16 lg:w-20 lg:h-20" />
         <h1 className="ml-2 text-white">Casa Jardín</h1>
       </div>
