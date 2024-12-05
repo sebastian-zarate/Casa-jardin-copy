@@ -7,14 +7,15 @@ import Image from "next/image";
 import Navigate from '../../../../../components/alumno/navigate/page';
 import { getImages_talleresAdmin } from '@/services/repoImage';
 import { getCursos, getCursosByEdad } from '@/services/cursos';
-
+import NoImage from "../../../../../../public/Images/default-no-image.png";
+import Loader from '@/components/Loaders/loader/loader';
 interface Datos {
     setSelectedCursosId: React.Dispatch<React.SetStateAction<number[]>>;
     selectedCursosId: number[];
     edad: number;
 }
 
-const SeleccionTaller: React.FC<Datos> = ({ setSelectedCursosId, selectedCursosId, edad }) => {
+const SeleccionTaller: React.FC<Datos> = ({ setSelectedCursosId, selectedCursosId, edad, }) => {
     // Estado para almacenar la lista de cursos
     const [cursos, setCursos] = useState<any[]>([]);
 
@@ -70,41 +71,46 @@ const SeleccionTaller: React.FC<Datos> = ({ setSelectedCursosId, selectedCursosI
 
     return (
         <div>
-            <div className='p-4'>
-                <h3 className='p-2 shadow-md w-60'>Inscripción a talleres - Mayores</h3>
-            </div>
+
             <div className='flex justify-center mt-20'>
                 <h1 className='font-bold text-xg'>Elija los talleres de interés</h1>
             </div>
-            
-            <div className='flex justify-center mt-5 max-w-full overflow-x-auto '>
-                <button 
-                     className='mx-2 py-2 text-white rounded bg-blue-400 px-5 text-xl hover:bg-blue-700'
-                    onClick={() => document.getElementById('scrollable-div')?.scrollBy({ left: -200, behavior: 'smooth' })}>{`<`}</button>
-                <div id='scrollable-div' className='flex overflow-x-auto max-w-3xl space-x-4 p-2 '>
-                    {cursos.map((curso, index) => (
-                        <button
-                            key={curso.id}
-                            className={`p-4 relative justify-center items-center rounded-lg shadow-md ${selectedCursosId?.includes(curso.id) ? 'bg-blue-500' : 'bg-gray-300'}`}
-                            onClick={() => handleButtonClick(curso.id)}
-                        >
-                            <div className="relative w-60 h-40 rounded-lg overflow-hidden ">
-                                <Image
-                                    src={downloadurls[index]}
-                                    alt="Background Image"
-                                    objectFit="cover"
-                                    className="w-full h-full"
-                                    layout="fill"
-                                />
-                            </div>
-                            <h3 className="mt-2 text-center text-black font-semibold">{curso.nombre}</h3>
-                        </button>
-                    ))}
+
+            {cursos.length > 0 && (
+                <div className='flex justify-center mt-5 max-w-full overflow-x-auto '>
+                    <button
+                        className='mx-2 py-2 text-white rounded bg-blue-400 px-5 text-xl hover:bg-blue-700'
+                        onClick={() => document.getElementById('scrollable-div')?.scrollBy({ left: -200, behavior: 'smooth' })}>{`<`}</button>
+                    <div id='scrollable-div' className='flex overflow-x-auto max-w-3xl space-x-4 p-2 '>
+                        {cursos.map((curso, index) => (
+                            <button
+                                key={curso.id}
+                                className={`p-4 relative justify-center items-center rounded-lg shadow-md ${selectedCursosId?.includes(curso.id) ? 'bg-blue-500' : 'bg-gray-300'}`}
+                                onClick={() => handleButtonClick(curso.id)}
+                            >
+                                <div className="relative w-60 h-40 rounded-lg overflow-hidden ">
+                                    <Image
+                                        src={downloadurls[index] || NoImage}
+                                        alt="Background Image"
+                                        objectFit="cover"
+                                        className="w-full h-full"
+                                        layout="fill"
+                                    />
+                                </div>
+                                <h3 className="mt-2 text-center text-black font-semibold">{curso.nombre}</h3>
+                            </button>
+                        ))}
+                    </div>
+                    <button
+                        className='mx-2 py-2 text-white rounded bg-blue-400 px-5 text-xl hover:bg-blue-700'
+                        onClick={() => document.getElementById('scrollable-div')?.scrollBy({ left: 200, behavior: 'smooth' })}>{`>`}</button>
                 </div>
-                <button 
-                    className='mx-2 py-2 text-white rounded bg-blue-400 px-5 text-xl hover:bg-blue-700'
-                    onClick={() => document.getElementById('scrollable-div')?.scrollBy({ left: 200, behavior: 'smooth' })}>{`>`}</button>
-            </div>
+            )}
+            {cursos.length === 0 && (
+                <div className=' w-full justify-center items-center align-middle flex h-full'>
+                    <Loader />
+                </div>
+            )}
 
         </div>
     )

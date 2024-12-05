@@ -37,6 +37,7 @@ export default function But_aside() {
           display: "flex",
           gap: "15px",
         }}
+        className="z-30"
       >
         {/* Botón de WhatsApp */}
         <Whatsapp />

@@ -15,14 +15,11 @@ const AutorizacionImg: React.FC<Datos> = ({ setDatosAutorizacionImage }) => {
 
     return (
         <div>
-            <div className='p-4'>
-                <h3 className='p-2 shadow-md w-60'>Inscripción a talleres - Menores</h3>
-            </div>
 
             <div className='flex flex-col '>
                 <h1 className='flex justify-center  font-bold text-2xl'>Autorización para uso de Imagen</h1>
                 <div className='flex  justify-center '>
-                    <p  className='w-1/2 text-center p-5'>Por medio de la presente, en mi carácter de Padre/Madre/ Tutor/Curador,
+                    <p  className='w-2/3 text-center p-5'>Por medio de la presente, en mi carácter de Padre/Madre/ Tutor/Curador,
                      autorizo al Centro Educativo y Terapéutico “Casa Jardín”, 
                      a utilizar de manera amplia, irrestricta y gratuita las imágenes
                      CUIDADAS del/la menor, que sean tomadas en las Actividades del mismo,

@@ -1,15 +1,15 @@
 "use client"
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import adultos from "../../../../../public/Images/adultos.jpg";
 import menores from "../../../../../public/Images/menores.jpg";
 import But_aside from "../../../../components/but_aside/page";
 import Image from "next/image";
 import Navigate from '../../../../components/alumno/navigate/page';
-import { autorizarUser, fetchUserData} from '@/helpers/cookies';
+import { autorizarUser, fetchUserData } from '@/helpers/cookies';
 import { useRouter } from 'next/navigation';
 import { calcularEdad } from '@/helpers/fechas';
 const Inscripcion: React.FC<{}> = () => {
-    
+
     const [edad, setEdad] = useState<number>(0);
     const router = useRouter();
     const [error, setError] = useState<string>("");
@@ -19,29 +19,29 @@ const Inscripcion: React.FC<{}> = () => {
     }>();
     // Para cambiar al usuario de página si no está logeado
     useEffect(() => {
-            const authorizeAndFetchData = async () => {
-                // Primero verifico que el user esté logeado
-                //console.log("router", router);
-                await autorizarUser(router);
-                // Una vez autorizado obtengo los datos del user y seteo el email
-                const user = await fetchUserData();
-                setAlumnoDetails(user);
-                //console.log("user", user);
-                if (user) {
-                    setEdad(calcularEdad(user.fechaNacimiento));
-                }
-            };
-            authorizeAndFetchData();
+        const authorizeAndFetchData = async () => {
+            // Primero verifico que el user esté logeado
+            //console.log("router", router);
+            await autorizarUser(router);
+            // Una vez autorizado obtengo los datos del user y seteo el email
+            const user = await fetchUserData();
+            setAlumnoDetails(user);
+            //console.log("user", user);
+            if (user) {
+                setEdad(calcularEdad(user.fechaNacimiento));
+            }
+        };
+        authorizeAndFetchData();
 
     }, [router]);
     const validateClick = () => {
-        if(edad && edad >= 18) {
-            if(!alumnoDetails?.dni  || !alumnoDetails?.telefono || !alumnoDetails?.direccionId) {
+        if (edad && edad >= 18) {
+            if (!alumnoDetails?.dni || !alumnoDetails?.telefono || !alumnoDetails?.direccionId) {
                 return ("Debe completar los datos personales antes de continuar");
             }
-        } 
-        if(edad && edad < 18) {
-            if(!alumnoDetails?.dni  || !alumnoDetails?.direccionId) {
+        }
+        if (edad && edad < 18) {
+            if (!alumnoDetails?.dni || !alumnoDetails?.direccionId) {
                 return ("Debe completar los datos personales antes de continuar");
             }
         }
@@ -72,12 +72,12 @@ const Inscripcion: React.FC<{}> = () => {
                 {edad !== null && edad < 18 ? (
                     <button className="flex flex-col items-center" onClick={() => {
                         const vali = validateClick();
-                        if(vali) {
+                        if (vali) {
                             setError(vali);
                         } else {
                             window.location.href = "/usuario/Solicitud/Menores";
                         }
-                        }
+                    }
                     }>
                         <Image src={menores} alt="menores" width={300} height={180} />
                         <span className='mt-2'>Inscripción para menores <br /> Uso de imagen y salidas cercanas</span>
@@ -85,12 +85,12 @@ const Inscripcion: React.FC<{}> = () => {
                 ) : (
                     <button className="flex flex-col items-center" onClick={() => {
                         const vali = validateClick();
-                        if(vali) {
+                        if (vali) {
                             setError(vali);
                         } else {
                             window.location.href = "/usuario/Solicitud/Mayores";
                         }
-                        }
+                    }
                     }>
                         <Image src={adultos} alt="adultos" width={280} height={100} />
                         <span className='mt-2'>Inscripción para adultos</span>
@@ -110,7 +110,12 @@ const Inscripcion: React.FC<{}> = () => {
                     </button>
                 </div>
             </div>
-            <But_aside />
+            <div
+                className="fixed bottom-0 py-2 border-t w-full z-30"
+                style={{ background: "#EF4444" }}
+            >
+                <But_aside />
+            </div>
         </main>
     )
 }

@@ -22,12 +22,13 @@ import { createCursoSolicitud } from '@/services/curso_solicitud';
 import withAuthUser from "../../../../components/alumno/userAuth";
 import { calcularEdad, dateTimeToDate } from '@/helpers/fechas';
 import { validateApellido, validateDireccion, validateDni, validateEmail, validateNombre, validatePhoneNumber } from '@/helpers/validaciones';
+import Loader from '@/components/Loaders/loader/loader';
 
 const Mayores: React.FC = () => {
     //region UseState
 
     // Estado para almacenar la pantalla actual
-    const [selectedScreen, setSelectedScreen] = useState<number>(0);
+    const [selectedScreen, setSelectedScreen] = useState<number>(3);
     // Estado para almacenar los cursos seleccionados
     const [selectedCursosId, setSelectedCursosId] = useState<number[]>([]);
     const [cursosYaInscriptosId, setCursosYaInscriptosId] = useState<number[]>([]);
@@ -75,8 +76,27 @@ const Mayores: React.FC = () => {
     const [user, setUser] = useState<any>();
 
     const [verifi, setVerifi] = useState(false);
+    const [steps, setStep] = useState({
+        stepsItems: ["Talleres", "Datos alumno", "Uso de Imagen", "Reglamentación"],
+        currentStep: 1
+    })
 
+    useEffect(() => {
+        if (!user) {
+            const authorizeAndFetchData = async () => {
+                // Primero verifico que el user esté logeado
 
+                // Una vez autorizado obtengo los datos del user y seteo el email
+
+                const user = await fetchUserData();
+                const edad = calcularEdad(user.fechaNacimiento);
+                if (edad < 18) {
+                    window.location.href = "/usuario/Solicitud/Inscripcion"
+                }
+            };
+            authorizeAndFetchData();
+        };
+    }, [user]);
     const router = useRouter();
     // Para cambiar al usuario de página si no está logeado
     useEffect(() => {
@@ -87,7 +107,7 @@ const Mayores: React.FC = () => {
                 await autorizarUser(router);
                 // Una vez autorizado obtengo los datos del user y seteo el email
                 const user = await fetchUserData();
-                
+
                 const curYaInscriptos = await getCursosByIdAlumno(user.id);
                 const curYaInscriptosId = curYaInscriptos.map((curso) => curso.id);
                 const curYaInscriptosName = curYaInscriptos.map((curso) => curso.nombre);
@@ -122,7 +142,7 @@ const Mayores: React.FC = () => {
                 const pais = await getPaisById(Number(provincia?.nacionalidadId))
  */
                 let direccion, localidad, provincia, pais;
-                if(user.direccionId) {
+                if (user.direccionId) {
                     direccion = await getDireccionCompleta(user.direccionId);
                     localidad = direccion?.localidad;
                     provincia = localidad?.provincia;
@@ -165,50 +185,50 @@ const Mayores: React.FC = () => {
     //datos mayor: nombre, apellido, telefono, correo electronico, dni, pais, localidad, calle
     //datos autorizacionImage: firmo el mayor a cargo?, observaciones? puede ser nulo
     //datos reglamentacion: firmo?
-/*     function validateDatos() {
-        // carrateres especiales en el nombre y la descripción
-        const regex = /^[a-zA-Z0-9_ ,.;áéíóúÁÉÍÓÚñÑüÜ@]*$/; // no quiero que tenga caracteres especiales que las comas y puntos afecten 
-
-
-        if (selectedScreen === 0 && selectedCursosId.length === 0) return "Debe seleccionar al menos un taller";
-        if (selectedScreen === 1) {
-            // Validar que el nombre tenga al menos 2 caracteres
-            if (datosAlumno.nombre.length < 1 && regex.test(datosAlumno.nombre)) {
-                return ("El nombre debe tener al menos 2 caracteres.");
+    /*     function validateDatos() {
+            // carrateres especiales en el nombre y la descripción
+            const regex = /^[a-zA-Z0-9_ ,.;áéíóúÁÉÍÓÚñÑüÜ@]*$/; // no quiero que tenga caracteres especiales que las comas y puntos afecten 
+    
+    
+            if (selectedScreen === 0 && selectedCursosId.length === 0) return "Debe seleccionar al menos un taller";
+            if (selectedScreen === 1) {
+                // Validar que el nombre tenga al menos 2 caracteres
+                if (datosAlumno.nombre.length < 1 && regex.test(datosAlumno.nombre)) {
+                    return ("El nombre debe tener al menos 2 caracteres.");
+                }
+                if (datosAlumno.apellido.length < 1 && regex.test(datosAlumno.apellido)) {
+                    return ("El apellido debe tener al menos 2 caracteres.");
+                }
+                if ((datosAlumno.telefono).toString().length != 9) {
+                    return ("El telefono debe tener al menos 9 números.");
+                }
+                if (datosAlumno.correoElectronico.length < 11 || !datosAlumno.correoElectronico.includes('@')) {
+                    return ("El correo electrónico debe tener al menos 11 caracteres y contener '@'.");
+                }
+                if ((datosAlumno.dni).toString().length != 8) {
+                    return ("El DNI debe tener al menos 8 números.");
+                }
+                if (datosAlumno.pais.length < 1 && regex.test(datosAlumno.pais)) {
+                    return ("El país debe tener al menos 2 caracteres.");
+                }
+                if (datosAlumno.provincia.length < 1 && regex.test(datosAlumno.provincia)) {
+                    return ("La provincia debe tener al menos 2 caracteres.");
+                }
+                if (datosAlumno.localidad.length < 1 && regex.test(datosAlumno.localidad)) {
+                    return ("La localidad debe tener al menos 2 caracteres.");
+                }
+                if (datosAlumno.calle.length < 1 && regex.test(datosAlumno.calle)) {
+                    return ("La calle debe tener al menos 2 caracteres.");
+                }
+                if (!datosAlumno.numero) {
+                    return ("El número debe tener al menos 1 número.");
+                }
             }
-            if (datosAlumno.apellido.length < 1 && regex.test(datosAlumno.apellido)) {
-                return ("El apellido debe tener al menos 2 caracteres.");
-            }
-            if ((datosAlumno.telefono).toString().length != 9) {
-                return ("El telefono debe tener al menos 9 números.");
-            }
-            if (datosAlumno.correoElectronico.length < 11 || !datosAlumno.correoElectronico.includes('@')) {
-                return ("El correo electrónico debe tener al menos 11 caracteres y contener '@'.");
-            }
-            if ((datosAlumno.dni).toString().length != 8) {
-                return ("El DNI debe tener al menos 8 números.");
-            }
-            if (datosAlumno.pais.length < 1 && regex.test(datosAlumno.pais)) {
-                return ("El país debe tener al menos 2 caracteres.");
-            }
-            if (datosAlumno.provincia.length < 1 && regex.test(datosAlumno.provincia)) {
-                return ("La provincia debe tener al menos 2 caracteres.");
-            }
-            if (datosAlumno.localidad.length < 1 && regex.test(datosAlumno.localidad)) {
-                return ("La localidad debe tener al menos 2 caracteres.");
-            }
-            if (datosAlumno.calle.length < 1 && regex.test(datosAlumno.calle)) {
-                return ("La calle debe tener al menos 2 caracteres.");
-            }
-            if (!datosAlumno.numero) {
-                return ("El número debe tener al menos 1 número.");
-            }
-        }
-
-
-
-        return ""
-    } */
+    
+    
+    
+            return ""
+        } */
     //region validate 
     async function validatealumnoDetails() {
         console.log(cursosYaInscriptosName, selectedCursosId)
@@ -219,7 +239,7 @@ const Mayores: React.FC = () => {
         let resultValidate;
         if (selectedScreen === 0 && selectedCursosId.length === 0) return "Debe seleccionar al menos un taller";
         if (selectedScreen === 0 && selectedCursosId.some(id => cursosYaInscriptosId.includes(id))) {
-            return "Ya se encuentra inscripto en uno de los talleres seleccionados (sus talleres: " + cursosYaInscriptosName.join(", ")+").";
+            return "Ya se encuentra inscripto en uno de los talleres seleccionados (sus talleres: " + cursosYaInscriptosName.join(", ") + ").";
         }
 
         if (selectedScreen === 1) {
@@ -235,7 +255,7 @@ const Mayores: React.FC = () => {
             resultValidate = validateDni(String(dni));
             if (resultValidate) return resultValidate;
 
-            if (!telefono ) {
+            if (!telefono) {
                 return "El teléfono no puede estar vacío";
             }
             resultValidate = validatePhoneNumber(String(telefono));
@@ -254,10 +274,11 @@ const Mayores: React.FC = () => {
     async function continuar() {
 
         if (selectedScreen === 0 && selectedCursosId.length === 0) return setError("Debe seleccionar al menos un taller");
-        const err =  await validatealumnoDetails();
+        const err = await validatealumnoDetails();
         if (err != "") return setError(err);
         setSelectedScreen(selectedScreen + 1)
-        console.log("selectedScreen::::", selectedScreen)
+        setStep({ ...steps, currentStep: steps.currentStep + 1 });
+        //console.log("selectedScreen::::", selectedScreen)
     }
     /*
         model SolicitudMayores {
@@ -278,26 +299,6 @@ const Mayores: React.FC = () => {
         //crear solicitud
         const solicitud = await createSolicitud()
 
-        //crear ubicaciones
-      /*   const pais = await addPais({ "nombre": datosAlumno.pais })
-        const provincia = await addProvincias({ "nombre": datosAlumno.provincia, "nacionalidadId": pais.id })
-        const localidad = await addLocalidad({ "nombre": datosAlumno.localidad, "provinciaId": provincia.id })
-        const direccion = await addDireccion({ "calle": datosAlumno.calle, "numero": datosAlumno.numero, "localidadId": localidad.id }) */
-
-        //alumno que pudo ser actualizado
-/*         const newAlumno = {
-            Id: Number(user?.id),
-            nombre: datosAlumno.nombre,
-            apellido: datosAlumno.apellido,
-            dni: datosAlumno.dni,
-            telefono: String(datosAlumno.telefono),
-            email: datosAlumno.correoElectronico,
-            direccionId: direccionId,
-        }
-        console.log("newAlumno:::::", newAlumno)
-        const alumno = await updateAlumno(Number(newAlumno.Id), newAlumno)
-        si alumno es un string es un error
-        if (typeof alumno === "string") return setError(alumno) */
 
         //crear solicitud mayor
         await createSolicitudMayor({
@@ -330,18 +331,49 @@ const Mayores: React.FC = () => {
     return (
         <main>
             <Navigate />
-
-            <div id='miDiv' style={{ height: (selectedScreen < 3 ? '60vh' : 'auto') }}>
+            <div className='p-4  mt-5'>
+                <h3 className='p-2 shadow-md w-60'>Inscripción a talleres - Mayores</h3>
+            </div>
+            <div className="max-w-2xl mx-auto px-4 md:px-0 mb-5 ">
+                <ul aria-label="Steps" className="items-center text-gray-600 font-medium md:flex">
+                    {steps.stepsItems.map((item, idx) => (
+                        <li aria-current={steps.currentStep == idx + 1 ? "step" : false} className="flex gap-x-3 md:flex-col md:flex-1 md:gap-x-0">
+                            <div className="flex flex-col items-center md:flex-row md:flex-1">
+                                <hr className={`w-full border hidden md:block ${idx == 0 ? "border-none" : steps.currentStep >= idx + 1 ? "border-indigo-600" : ""}`} />
+                                <div className={`w-8 h-8 rounded-full border-2 flex-none flex items-center justify-center ${(steps.currentStep > idx + 1 ? "bg-indigo-600 border-indigo-600" : "") || (steps.currentStep == idx + 1 ? "border-indigo-600" : "")}`}>
+                                    <span className={`w-2.5 h-2.5 rounded-full bg-indigo-600 ${steps.currentStep != idx + 1 ? "hidden" : ""}`}></span>
+                                    {
+                                        steps.currentStep > idx + 1 ? (
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-white">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                                            </svg>
+                                        ) : ""
+                                    }
+                                </div>
+                                <hr className={`h-12 border md:w-full md:h-auto ${(idx + 1 == steps.stepsItems.length ? "border-none" : "") || steps.currentStep > idx + 1 ? "border-indigo-600" : ""}`} />
+                            </div>
+                            <div className="h-8 flex justify-center items-center md:mt-3 md:h-auto">
+                                <h3 className={`text-sm ${steps.currentStep == idx + 1 ? "text-indigo-600" : ""}`}>
+                                    {item}
+                                </h3>
+                            </div>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+            <div id='miDiv' className='' style={{ height: "80vh" }}>
                 {selectedScreen === 0 && (
-                    user ? (
+                    (user && cursosYaInscriptosId.length !== 0) ? (
                         <SeleccionTaller
                             edad={calcularEdad(user.fechaNacimiento)}
                             setSelectedCursosId={setSelectedCursosId}
                             selectedCursosId={selectedCursosId}
                         />
-                    ) : (
-                        <div>Cargando...</div>
-                    )
+                    ) :
+                        <div className=' w-full justify-center items-center align-middle flex'>
+                            <Loader />
+                        </div>
+
                 )}
 
                 {selectedScreen === 1 && (
@@ -361,54 +393,81 @@ const Mayores: React.FC = () => {
                         setDatosReglamentacion={setDatosReglamentacion}
                     />
                 )}
+                {selectedScreen === 0 && (
+                    (user && cursosYaInscriptosId.length !== 0) && (
+                        <div className='p-5 w-full'>
+                            <div className='flex mb-5 justify-center   space-x-80'>
+                                <button
+                                    className='mx-2 py-2 text-white rounded bg-black px-6'
+                                    onClick={() => {
+                                        selectedScreen - 1 < 0
+                                            ? window.location.href = "/usuario/Solicitud/Inscripcion"
+                                            : (setSelectedScreen(selectedScreen - 1), setStep({ ...steps, currentStep: steps.currentStep - 1 }));
+                                    }}
+                                >
+                                    Volver
+                                </button>
+                                <button
+                                    className='mx-2 py-2 text-white rounded bg-black px-4'
+                                    onClick={() => { continuar(); }}
+                                >
+                                    Continuar
+                                </button>
+                            </div>
+                        </div>)
+
+                )}
+                {(selectedScreen < 3 && selectedScreen !== 0) && ((
+                    <>
+                        <div className='p-5 w-full'>
+                            <div className='flex mb-5 justify-center   space-x-80'>
+                                <button
+                                    className='mx-2 py-2 text-white rounded bg-black px-6'
+                                    onClick={() => {
+                                        selectedScreen - 1 < 0
+                                            ? window.location.href = "/usuario/Solicitud/Inscripcion"
+                                            : (setSelectedScreen(selectedScreen - 1), setStep({ ...steps, currentStep: steps.currentStep - 1 }));
+                                    }}
+                                >
+                                    Volver
+                                </button>
+                                <button
+                                    className='mx-2 py-2 text-white rounded bg-black px-4'
+                                    onClick={() => { continuar(); }}
+                                >
+                                    Continuar
+                                </button>
+                            </div>
+                        </div>
+                    </>)
+                )}
+
+                {selectedScreen === 3 && (
+                    <div className=' w-full'>
+                        <div className='flex mb-5 justify-center -translate-y-40 space-x-80'>
+                            <button
+                                className='mx-2 py-2 text-white rounded bg-black px-5'
+                                onClick={() => { setSelectedScreen(selectedScreen - 1); setStep({ ...steps, currentStep: steps.currentStep - 1 }) }}
+                            >
+                                Volver
+                            </button>
+                            <button
+                                className='mx-2  py-2 text-white rounded bg-black px-5'
+                                onClick={() => {
+
+                                    if (datosReglamentacion.firma.length < 1 && selectedScreen === 3) return setError("Debe firmar la reglamentación");
+                                    setVerificarEmail(true);
+                                }}
+                            /*    onClick={() => cargarSolicitud()} */
+                            >
+                                Enviar
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
 
-            {selectedScreen < 3 && (
-                <div className='p-5 w-full'>
-                    <div className='flex mb-5 justify-center space-x-80'>
-                        <button
-                            className='mx-2 py-2 text-white rounded bg-black px-6'
-                            onClick={() => {
-                                selectedScreen - 1 < 0
-                                    ? window.location.href = "/usuario/Solicitud/Inscripcion"
-                                    : setSelectedScreen(selectedScreen - 1);
-                            }}
-                        >
-                            Volver
-                        </button>
-                        <button
-                            className='mx-2 py-2 text-white rounded bg-black px-4'
-                            onClick={() => { continuar(); }}
-                        >
-                            Continuar
-                        </button>
-                    </div>
-                </div>
-            )}
 
-            {selectedScreen === 3 && (
-                <div className=' w-full'>
-                    <div className='flex mb-5 justify-center space-x-80'>
-                        <button
-                            className='mx-2 py-2 text-white rounded bg-black px-5'
-                            onClick={() => setSelectedScreen(selectedScreen - 1)}
-                        >
-                            Volver
-                        </button>
-                        <button
-                            className='mx-2  py-2 text-white rounded bg-black px-5'
-                            onClick={() => {
-
-                                if (datosReglamentacion.firma.length < 1 && selectedScreen === 3) return setError("Debe firmar la reglamentación");
-                                setVerificarEmail(true);
-                            }}
-                        /*    onClick={() => cargarSolicitud()} */
-                        >
-                            Enviar
-                        </button>
-                    </div>
-                </div>
-            )}
             {verificarEmail && <div className=' absolute bg-slate-100 rounded-md shadow-md px-2 left-1/2 top-1/2 tranform -translate-x-1/2 -translate-y-1/2'>
                 <button className='absolute top-2 right-2' onClick={() => setVerificarEmail(false)}>X</button>
                 <EmailPage email={user.email} setVerifi={setVerifi} setCorrecto={setCorrecto} correcto={correcto} />
@@ -431,7 +490,10 @@ const Mayores: React.FC = () => {
                 </div>
             </div>}
 
-            <div className=" w-full mt-40" >
+            <div
+                className="fixed bottom-0   border-t w-full z-30"
+                style={{ background: "#EF4444" }}
+            >
                 <But_aside />
             </div>
 

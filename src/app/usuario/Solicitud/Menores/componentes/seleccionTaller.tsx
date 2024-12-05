@@ -7,6 +7,8 @@ import Image from "next/image";
 import Navigate from '../../../../../components/alumno/navigate/page';
 import { getImages_talleresAdmin } from '@/services/repoImage';
 import { getCursos, getCursosByEdad } from '@/services/cursos';
+import NoImage from "../../../../../../public/Images/default-no-image.png";
+import Loader from '@/components/Loaders/loader/loader';
 
 interface Datos {
     setSelectedCursosId: React.Dispatch<React.SetStateAction<number[]>>;
@@ -71,13 +73,10 @@ const SeleccionTaller: React.FC<Datos> = ({ setSelectedCursosId, selectedCursosI
 
     return (
         <div>
-            <div className='p-4'>
-                <h3 className='p-2 shadow-md w-60'>Inscripción a talleres - Menores</h3>
-            </div>
             <div className='flex justify-center mt-20'>
                 <h1 className='font-bold text-xg'>Elija los talleres de interés</h1>
             </div>
-            <div className='flex justify-center mt-5 max-w-full overflow-x-auto '>
+            {cursos.length > 0 && (<div className='flex justify-center mt-5 max-w-full overflow-x-auto '>
                 <button
                     className='mx-2 py-2 text-white rounded bg-blue-400 px-5 text-xl hover:bg-blue-700'
                     onClick={() => document.getElementById('scrollable-div')?.scrollBy({ left: -200, behavior: 'smooth' })}>{`<`}</button>
@@ -90,7 +89,7 @@ const SeleccionTaller: React.FC<Datos> = ({ setSelectedCursosId, selectedCursosI
                         >
                             <div className="relative w-60 h-40 rounded-lg overflow-hidden ">
                                 <Image
-                                    src={downloadurls[index]}
+                                    src={downloadurls[index]  || NoImage}
                                     alt="Background Image"
                                     objectFit="cover"
                                     className="w-full h-full"
@@ -105,7 +104,12 @@ const SeleccionTaller: React.FC<Datos> = ({ setSelectedCursosId, selectedCursosI
                     className='mx-2 py-2 text-white rounded bg-blue-400 px-5 text-xl hover:bg-blue-700'
                     onClick={() => document.getElementById('scrollable-div')?.scrollBy({ left: 200, behavior: 'smooth' })}>{`>`}</button>
             </div>
-
+            )}
+            {cursos.length === 0 && (
+                <div className=' w-full justify-center items-center align-middle flex h-full'>
+                    <Loader />
+                </div>
+            )}
         </div>
     )
 }

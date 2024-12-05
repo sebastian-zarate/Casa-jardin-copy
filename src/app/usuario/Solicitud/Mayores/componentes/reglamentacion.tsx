@@ -15,13 +15,10 @@ const Reglamentacion: React.FC<Datos> = ({ setDatosReglamentacion }) => {
 
     return (
         <div>
-            <div className='p-4'>
-                <h3 className='p-2 shadow-md w-60'>Inscripción a talleres - Mayores</h3>
-            </div>
 
             <div className=' px-4 pb-8 w-full '>
                 <h1 className='flex  justify-center font-bold text-2xl'>Reglamento para alumnos de Centro Educativo Terapéutico CASA JARDÍN</h1>
-                <div className='w-1/2 mx-auto mt-5'>
+                <div className='lg:w-1/2 md:1/2 sm:w-2/3 mx-auto mt-5'>
                     <p>
                         Bienvenido a  “Casa Jardín”, les comunicarnos que
                         hemos elaborado estas normas de convivencia y funcionamiento
@@ -109,7 +106,7 @@ const Reglamentacion: React.FC<Datos> = ({ setDatosReglamentacion }) => {
                         <input type="text" name="firma" id="firma" className="border rounded w-96" placeholder='Ingrese su firma' onChange={(e) => setDatosReglamentacion(prev => ({ ...prev, firma: e.target.value }))} />
                         <div className='flex'>
                             <span>Al hacer clic en enviar usted esta aceptando el&nbsp;</span>
-                            <button className="text-red-500 underline" onClick={() => setAlertaFinal(true)}>Consentimiento</button>
+                            <button className="text-red-500 underline mb-40" onClick={() => setAlertaFinal(true)}>Consentimiento</button>
                         </div>
                     </div>
 

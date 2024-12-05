@@ -15,9 +15,6 @@ const AutorizacionSalidas: React.FC<Datos> = ({ setDatosAutorizacionSalidas }) =
 
     return (
         <div>
-            <div className='p-4'>
-                <h3 className='p-2 shadow-md w-60'>Inscripción a talleres - Menores</h3>
-            </div>
 
             <div className='flex flex-col '>
                 <h1 className='flex justify-center  font-bold text-2xl'>Autorización Anual para Salidas Cercanas</h1>
