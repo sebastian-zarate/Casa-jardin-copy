@@ -7,6 +7,7 @@ import Logo from "../../../../public/Images/LogoCasaJardin.png";
 import { authenticateUser } from "../../../services/Alumno"; // Importa la función `login` desde el servicio
 import { useRouter } from "next/navigation";
 import ImageLogin from '../../../../public/Images/ImageLogin.jpg';
+import Loader from "@/components/Loaders/loadingSave/page";
 
 function Login() {
     // Estados para gestionar los datos del formulario y errores
@@ -15,6 +16,10 @@ function Login() {
     const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
     const router = useRouter();
     const [frase, setFrase] = useState("");
+
+    const [isSaving, setIsSaving] = useState(false);
+
+    const [passwordVisible, setPasswordVisible] = useState(false);
     // Función para validar los datos del formulario
     const validate = () => {
         const newErrors: { email?: string; password?: string } = {};
@@ -35,7 +40,7 @@ function Login() {
 
         // Actualiza el estado de errores
         setErrors(newErrors);
-
+        if(Object.keys(newErrors).length > 0) setIsSaving(false);
         // Retorna `true` si no hay errores, de lo contrario `false`
         return Object.keys(newErrors).length === 0;
     };
@@ -63,17 +68,22 @@ function Login() {
     // Función para manejar el envío del formulario
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
+        setIsSaving(true);
         // Valida los datos del formulario
         if (validate()) {
             // Llama a la función `login` para verificar email y contraseña
             const rolId = await authenticateUser(email, password);
             if (rolId) {
+
                 redirectToRolePage(rolId, router);
             } else {
+
                 setErrors({ email: "Email o contraseña incorrectos." });
+                setIsSaving(false);
             }
+
         }
+        
     };
 
     function redirectToRolePage(rolId: number | null, router: ReturnType<typeof useRouter>) {
@@ -173,7 +183,7 @@ function Login() {
 
                         <div className="relative">
                             <input
-                                type="password"
+                                type={passwordVisible ?  "text": "password"}
                                 id="password"
                                 className="w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm"
                                 placeholder="Ingrese su contraseña"
@@ -182,13 +192,14 @@ function Login() {
                             />
                             {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
 
-                            <span className="absolute inset-y-0 end-0 grid place-content-center px-4">
+                            <span  className=" cursor-pointer absolute inset-y-0 end-0 grid place-content-center px-4">
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     className="size-4 text-gray-400"
                                     fill="none"
                                     viewBox="0 0 24 24"
                                     stroke="currentColor"
+                                    onClick={()=>{setPasswordVisible(!passwordVisible); console.log(passwordVisible)}}
                                 >
                                     <path
                                         strokeLinecap="round"
@@ -215,9 +226,11 @@ function Login() {
 
                         <button
                             type="submit"
-                            className="inline-block rounded-lg bg-blue-500 hover:bg-blue-600 px-5 py-3 text-sm font-medium text-white"
+                            className="inline-block rounded-lg  bg-blue-500 hover:bg-blue-600 px-5 py-3 text-sm font-medium text-white"
+                            
+                            disabled={isSaving}
                         >
-                            Iniciar Sesión
+                            {isSaving ? <Loader  /> : "Iniciar Sesión"}
                         </button>
                     </div>
                 </form>

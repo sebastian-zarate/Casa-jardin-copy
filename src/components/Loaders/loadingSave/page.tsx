@@ -15,7 +15,8 @@ const StyledWrapper = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 3vh;
+  height: 2vh;
+  width: 6vh;
 
 
   svg {

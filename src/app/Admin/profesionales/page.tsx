@@ -209,6 +209,7 @@ const Profesionales = () => {
                 setLocalidadName("");
                 setcalle("");
                 setNumero(0); */
+        setCursosElegido([]);
         setObProfesional(null);
         setSelectedProfesional(null);
         fetchProfesionales();
@@ -424,13 +425,14 @@ const Profesionales = () => {
         }
     }
     async function handleCancel_init() {
-        /*         setNacionalidadName("");
-                setProvinciaName("");
-                setLocalidadName("");
-                setcalle(""); */
         setCursosElegido([]);
-        /*         setNumero(0); */
         setObProfesional(null);
+       // profesionalDetails({ nombre: '', apellido: '', email: '', password: '', telefono: "", especialidad: '' });
+       setProfesionalDetails({ nombre: '', apellido: '', email: '', password: '', telefono: "", especialidad: '' });
+       setSelectedProfesional(null);
+        fetchProfesionales();
+        setErrorMessage("");
+        
     }
 
     // Function to handle search input change

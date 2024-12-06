@@ -16,6 +16,7 @@ import { useRouter } from 'next/navigation';
 import { autorizarUser, fetchUserData } from '@/helpers/cookies';
 import PasswordComponent from '@/components/Password/page';
 import { validateApellido, validateFechaNacimiento, validateDireccion, validateDni, validateEmail, validateNombre, validatePhoneNumber } from '@/helpers/validaciones';
+import Loader from '@/components/Loaders/loadingSave/page';
 type Usuario = {
     id: number;
     nombre: string;
@@ -61,7 +62,18 @@ const Cuenta: React.FC = () => {
     const [alumnoDetailsCopia, setAlumnoDetailsCopia] = useState<{
         id: number; nombre: string; apellido: string; dni: number;
         telefono: number; email: string; fechaNacimiento: string; direccionId?: number; rolId?: number;
-    }>();
+    }>({
+        id: user?.id || 0,
+        nombre: user?.nombre || '',
+        apellido: user?.apellido || '',
+        dni: user?.dni || 0,
+        telefono: user?.telefono || 0,
+        email: user?.email || '',
+        fechaNacimiento: user?.fechaNacimiento ? new Date(user.fechaNacimiento).toISOString().split('T')[0] : '',
+        direccionId: user?.direccionId || 0,
+        rolId: user?.rolId || 0
+    });
+    
     const [nacionalidadName, setNacionalidadName] = useState<string>();
     // Estado para almacenar el ID de la provincia, inicialmente nulo
     const [provinciaName, setProvinciaName] = useState<string>();
@@ -75,8 +87,6 @@ const Cuenta: React.FC = () => {
     // Estado para almacenar el número de la dirección, inicialmente nulo
     const [numero, setNumero] = useState<number | null>();
 
-    // Estado para almacenar los cursos elegidos, inicialmente un array vacío
-    const [cursosElegido, setCursosElegido] = useState<Curso[]>([]);
     //para obtener user by email
 
     const [habilitarCambioContraseña, setHabilitarCambioContraseña] = useState<boolean>(false);
@@ -86,8 +96,12 @@ const Cuenta: React.FC = () => {
     const [cursos, setCursos] = useState<Curso[]>()
 
     const [mayoriaEdad, setMayoriaEdad] = useState<boolean>(false);
-    const [fechaNacimiento, setFechaNacimiento] = useState<Date>();
 
+    const [loadingDireccion, setLoadingDireccion] = useState<boolean>(false);
+    const [permitirDireccion, setPermitirDireccion] = useState<boolean>(false);
+    const [AlumnoAEliminar, setAlumnoAEliminar] = useState<any>(null);
+    const [isDeleting, setIsDeleting] = useState<boolean>(false);
+    const [isSaving, setIsSaving] = useState<boolean>(false);
     //endregion
 
     //region UseEffects
@@ -138,6 +152,26 @@ const Cuenta: React.FC = () => {
             }, 10000);
         }
     }, [errorMessage]);
+    useEffect(() => {
+        if (user) {
+            /*             console.log("permitirDireccion", permitirDireccion);
+                        console.log("loadingDireccion", loadingDireccion); */
+            if ((!nacionalidadName && !provinciaName && !localidadName && !calle && !numero && user?.direccionId) && permitirDireccion) {
+                console.log("obAlumno111", user);
+                getUbicacion(user);
+            }
+
+        }
+
+        if (!user) {
+            setNacionalidadName("");
+            setProvinciaName("");
+            setLocalidadName("");
+            setcalle("");
+            setNumero(null);
+            setLoadingDireccion(false)
+        }
+    }, [user, permitirDireccion]);
     //endregion
 
     //region Funciones
@@ -154,6 +188,7 @@ const Cuenta: React.FC = () => {
     async function getUbicacion(userUpdate: any) {
         // Obtener la dirección del usuario por su ID
         //console.log("SI DIRECCIONID ES FALSE:", Number(userUpdate?.direccionId));
+        setLoadingDireccion(true);
         const direccion = await getDireccionCompleta(userUpdate?.direccionId);
 
         //console.log("NACIONALIDAD", nacionalidad);
@@ -163,6 +198,7 @@ const Cuenta: React.FC = () => {
         setNacionalidadName(String(direccion?.localidad?.provincia?.nacionalidad?.nombre));
         setNumero(direccion?.numero);
         setcalle(direccion?.calle);
+        setLoadingDireccion(false);
         return { direccion };
     }
     async function getUser() {
@@ -185,7 +221,7 @@ const Cuenta: React.FC = () => {
             setProvinciaName("")
             setLocalidadName("")
             setcalle("")
-            setNumero(0)
+            setNumero(null)
         } else if (userUpdate.direccionId) getUbicacion(userUpdate);
 
         setAlumnoDetails({
@@ -251,8 +287,10 @@ const Cuenta: React.FC = () => {
             }
 
         }
-        resultValidate = validateDireccion(nacionalidadName, provinciaName, localidadName, String(calle), Number(numero));
-        if (resultValidate) return resultValidate
+        if (permitirDireccion) {
+            resultValidate = validateDireccion(nacionalidadName, provinciaName, localidadName, String(calle), Number(numero));
+            if (resultValidate) return resultValidate
+        }
         let validateInput = validateFechaNacimiento(new Date(alumnoDetails.fechaNacimiento));
         if (validateInput) return validateInput;
     }
@@ -283,6 +321,12 @@ const Cuenta: React.FC = () => {
 
         };
 
+        setIsSaving(true);
+        
+        if (JSON.stringify(alumnoDetails) !== JSON.stringify(alumnoDetailsCopia)) {
+            setIsSaving(false);
+            return 
+        }
         // Validar campos requeridos después de aplicar .trim()
         if (!trimmedAlumnoDetails.nombre || !trimmedAlumnoDetails.apellido || !trimmedAlumnoDetails.email) {
             setErrorMessage('Los campos Nombre, Apellido y Correo no pueden estar vacíos.');
@@ -292,48 +336,57 @@ const Cuenta: React.FC = () => {
         let newAlumno;
 
         try {
-            if (!alumnoDetails.direccionId) {
-                // Crear ubicación si no existe dirección asociada
-                const { direccion } = await createUbicacion();
+            //region cargar datos con direcc
+            if (permitirDireccion) {
+                if (!alumnoDetails.direccionId) {
+                    // Crear ubicación si no existe dirección asociada
+                    const { direccion } = await createUbicacion();
 
+                    newAlumno = await updateAlumno(Number(alumnoDetails?.id), {
+                        ...trimmedAlumnoDetails,
+                        direccionId: Number(direccion?.id),
+                    });
+
+                } else {
+                    // Actualizar detalles relacionados con la dirección, localidad y provincia
+                    const { direccion } = await getUbicacion(alumnoDetails);
+
+                    const trimmedDireccionDetails = {
+                        calle: String(calle).trim(),
+                        numero: Number(numero),
+                        localidadId: Number(direccion?.localidad?.id),
+                    };
+
+                    const trimmedLocalidadDetails = {
+                        nombre: String(localidadName).trim(),
+                        provinciaId: Number(direccion?.localidad?.provincia?.id),
+                    };
+
+                    const trimmedProvinciaDetails = {
+                        nombre: String(provinciaName).trim(),
+                        nacionalidadId: Number(direccion?.localidad?.provincia?.nacionalidad?.id),
+                    };
+
+                    await updateDireccionById(Number(direccion?.id), trimmedDireccionDetails);
+                    await updateLocalidad(Number(direccion?.localidad?.id), trimmedLocalidadDetails);
+                    await updateProvinciaById(Number(direccion?.localidad?.provincia?.id), trimmedProvinciaDetails);
+
+                    newAlumno = await updateAlumno(Number(alumnoDetails?.id), {
+                        ...trimmedAlumnoDetails,
+                        direccionId: Number(direccion?.id),
+                    });
+                }
+            }
+            //region no cargar datos con direcc
+            else {
                 newAlumno = await updateAlumno(Number(alumnoDetails?.id), {
                     ...trimmedAlumnoDetails,
-                    direccionId: Number(direccion?.id),
-                });
-
-            } else {
-                // Actualizar detalles relacionados con la dirección, localidad y provincia
-                const { direccion } = await getUbicacion(alumnoDetails);
-
-                const trimmedDireccionDetails = {
-                    calle: String(calle).trim(),
-                    numero: Number(numero),
-                    localidadId: Number(direccion?.localidad?.id),
-                };
-
-                const trimmedLocalidadDetails = {
-                    nombre: String(localidadName).trim(),
-                    provinciaId: Number(direccion?.localidad?.provincia?.id),
-                };
-
-                const trimmedProvinciaDetails = {
-                    nombre: String(provinciaName).trim(),
-                    nacionalidadId: Number(direccion?.localidad?.provincia?.nacionalidad?.id),
-                };
-
-                await updateDireccionById(Number(direccion?.id), trimmedDireccionDetails);
-                await updateLocalidad(Number(direccion?.localidad?.id), trimmedLocalidadDetails);
-                await updateProvinciaById(Number(direccion?.localidad?.provincia?.id), trimmedProvinciaDetails);
-
-                newAlumno = await updateAlumno(Number(alumnoDetails?.id), {
-                    ...trimmedAlumnoDetails,
-                    direccionId: Number(direccion?.id),
                 });
             }
-
             // Refrescar datos y cerrar la interfaz de edición
             setOpenBox(0);
             getUser();
+            setIsSaving(false);
             authorizeAndFetchData();
         } catch (error) {
             setErrorMessage("Ha ocurrido un error al guardar los cambios.");
@@ -352,7 +405,7 @@ const Cuenta: React.FC = () => {
             </div>
 
             <div className='absolute mt-20 top-5 '>
-            
+
                 <h1 className='flex my-20 mt-15 items-center justify-center  font-bold text-3xl'>Datos del Estudiante</h1>
                 <div className='flex  justify-center w-screen'>
                     <div className=" mx-auto bg-gray-100 rounded-lg shadow-md px-8 py-6 grid grid-cols-2 gap-x-12 w-8/12">
@@ -402,8 +455,8 @@ const Cuenta: React.FC = () => {
                     </button>
                 </div>
             </div>
-   
-            
+
+
             {openBox === 1 && (
                 <div className="fixed inset-0 flex items-center w-600 justify-center bg-black bg-opacity-50">
                     <div ref={scrollRef} className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative" style={{ height: '70vh', overflow: "auto" }}>
@@ -524,82 +577,88 @@ const Cuenta: React.FC = () => {
                             />
                         </div>
 
-                        {((!nacionalidadName && !provinciaName && !localidadName && !calle && !numero && openBox === 1) && user?.direccionId) && <p className=" text-red-600">Cargando su ubicación...</p>}
-                        {<div className="mb-4">
-                            <label htmlFor="pais" className="block">País:</label>
-                            <input
-                                type="text"
-                                id="pais"
-                                name="pais"
-                                pattern='[A-Za-z ]+'
-                                placeholder='Ej: Argentina'
-                                maxLength={35}
-                                value={String(nacionalidadName)}
-                                onChange={(e) => setNacionalidadName(e.target.value)}
-                                className="p-2 w-full border rounded"
-                            />
-                        </div>}
-                        {<div className="mb-4">
-                            <label htmlFor="provincia" className="block">Provincia:</label>
-                            <input
-                                type="text"
-                                pattern='[A-Za-z ]+'
-                                placeholder='Ej: Entre Ríos'
-                                maxLength={75}
-                                id="provincia"
-                                name="provincia"
-                                value={String(provinciaName)}
-                                onChange={(e) => setProvinciaName(e.target.value)}
-                                className="p-2 w-full border rounded"
-                            />
-                        </div>}
-                        {<div className="mb-4">
-                            <label htmlFor="localidad" className="block">Localidad:</label>
-                            <input
-                                type="text"
-                                pattern='[A-Za-z ]+'
-                                placeholder='Ej: Paraná'
-                                maxLength={35}
-                                id="localidad"
-                                name="localidad"
-                                value={String(localidadName)}
-                                onChange={(e) => setLocalidadName(e.target.value)}
-                                className="p-2 w-full border rounded"
-                            />
-                        </div>}
-                        <div className="mb-4">
-                            <label htmlFor="calle" className="block">Calle:</label>
-                            <input
-                                type="text"
-                                id="calle"
-                                name="calle"
-                                pattern='[A-Za-zÀ-ÿ ]+'
-                                placeholder='Ej: San Martín'
-                                maxLength={75}
-                                value={String(calle)}
-                                onChange={(e) => setcalle(e.target.value)}
-                                className="p-2 w-full border rounded"
-                            />
-                        </div>
-                        <div className="mb-4">
-                            <label htmlFor="numero" className="block">Número:</label>
-                            <input
-                                type="text" // Mejor para manejar validación y restricciones
-                                id="numero"
-                                name="numero"
-                                value={numero ?? ''} // Deja el valor tal como está en el estado
-                                onChange={(e) => {
-                                    const regex = /^[0-9]*$/; // Solo permite números
-                                    if (regex.test(e.target.value)) {
-                                        setNumero(Number(e.target.value)); // Actualiza si es válido
-                                    }
-                                }}
-                                maxLength={5} // Limita el máximo de caracteres (ajusta según tu caso)
-                                placeholder="Ingrese solo números"
-                                className="p-2 w-full border rounded"
-                            />
-                        </div>
-
+                        <button
+                            onClick={() => { setPermitirDireccion(!permitirDireccion); }}
+                            className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800"
+                        >
+                            Desea cargar su dirección ?
+                        </button>
+                        {permitirDireccion && <>
+                            {loadingDireccion && <p className="text-red-600">Cargando su ubicación...</p>}
+                            {!loadingDireccion &&
+                                <>
+                                    <div className="mb-4">
+                                        <label htmlFor="pais" className="block">País:</label>
+                                        <input
+                                            type="text"
+                                            id="pais"
+                                            name="pais"
+                                            pattern='[A-Za-z ]+'
+                                            maxLength={35}
+                                            value={String(nacionalidadName)}
+                                            placeholder="Ingrese el país donde vive"
+                                            onChange={(e) => setNacionalidadName(e.target.value)}
+                                            className="p-2 w-full border rounded"
+                                        />
+                                    </div>
+                                    <div className="mb-4">
+                                        <label htmlFor="provincia" className="block">Provincia:</label>
+                                        <input
+                                            type="text"
+                                            id="provincia"
+                                            name="provincia"
+                                            maxLength={55}
+                                            pattern='[A-Za-z ]+'
+                                            value={String(provinciaName)}
+                                            placeholder="Ingrese la provincia donde vive"
+                                            onChange={(e) => setProvinciaName(e.target.value)}
+                                            className="p-2 w-full border rounded"
+                                        />
+                                    </div>
+                                    <div className="mb-4">
+                                        <label htmlFor="localidad" className="block">Localidad:</label>
+                                        <input
+                                            type="text"
+                                            name="localidad"
+                                            maxLength={35}
+                                            pattern='[A-Za-z ]+'
+                                            value={String(localidadName)}
+                                            placeholder="Ingrese la localidad donde vive"
+                                            onChange={(e) => setLocalidadName(e.target.value)}
+                                            className="p-2 w-full border rounded"
+                                        />
+                                    </div>
+                                    <div className="mb-4">
+                                        <label htmlFor="calle" className="block">Calle:</label>
+                                        <input
+                                            type="text"
+                                            id="calle"
+                                            name="calle"
+                                            maxLength={75}
+                                            pattern='[A-Za-z ]+'
+                                            value={String(calle)}
+                                            placeholder="Ingrese el nombre de su calle"
+                                            onChange={(e) => setcalle(e.target.value)}
+                                            className="p-2 w-full border rounded"
+                                        />
+                                    </div>
+                                    <div className="mb-4">
+                                        <label htmlFor="numero" className="block">Número:</label>
+                                        <input
+                                            type="number"
+                                            id="numero"
+                                            name="numero"
+                                            maxLength={5}
+                                            placeholder="Ingrese el número de su calle"
+                                            value={numero ? Number(numero) : ""}
+                                            onChange={(e) => setNumero(Number(e.target.value))}
+                                            className="p-2 w-full border rounded"
+                                        />
+                                    </div>
+                                </>
+                            }
+                        </>
+                        }
 
                         <div>
                             <button
@@ -617,11 +676,12 @@ const Cuenta: React.FC = () => {
                             <button
                                 onClick={() => { handleSaveChanges(); console.log("openBox", openBox) }}
                                 className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800"
+                                disabled={isSaving}
                             >
-                                Guardar
+                                {isSaving ? <Loader /> : "Guardar"}
                             </button>
                             <button
-                                onClick={() => { setOpenBox(0); console.log(openBox) }}
+                                onClick={() => { setOpenBox(0); console.log(openBox); setPermitirDireccion(false); getUser() }}
                                 className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800"
                             >
                                 Cancelar
@@ -630,7 +690,7 @@ const Cuenta: React.FC = () => {
                     </div>
                 </div>
             )}
-                       <div
+            <div
                 className="fixed bottom-0 py-2 border-t w-full z-30"
                 style={{ background: "#EF4444" }}
             >

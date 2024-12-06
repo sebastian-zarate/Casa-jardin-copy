@@ -18,6 +18,7 @@ import { getCursosByIdProfesional } from '@/services/profesional_curso';
 import { updateProfesional } from '@/services/profesional';
 import { validateApellido, validateDireccion, validateDni, validateEmail, validateNombre, validatePhoneNumber } from '@/helpers/validaciones';
 import { emailExists } from '@/services/Alumno';
+import Loader from '@/components/Loaders/loadingSave/page';
 type Usuario = {
     id: number;
     nombre: string;
@@ -69,6 +70,7 @@ const Cuenta: React.FC = () => {
     //listas de cursos
     const [cursos, setCursos] = useState<Curso[]>()
 
+    const [isSaving, setIsSaving] = useState<boolean>(false);
     //endregion
 
     //region UseEffects
@@ -139,7 +141,7 @@ const Cuenta: React.FC = () => {
             id: userUpdate.id,
             nombre: userUpdate.nombre, apellido: userUpdate.apellido,
             telefono: (userUpdate.telefono),
-            email: userUpdate.email,  rolId: userUpdate.rolId
+            email: userUpdate.email, rolId: userUpdate.rolId
         });
         setprofesionalDetailsCopia({
             id: userUpdate.id,
@@ -203,30 +205,30 @@ const Cuenta: React.FC = () => {
             setErrorMessage(validationError);
             return;
         }
+
+        // Crear un objeto con los campos necesarios, eliminando espacios al inicio y al final
+        const trimmedProfesionalDetails = {
+            nombre: profesionalDetails.nombre.trim(),
+            apellido: profesionalDetails.apellido.trim(),
+            email: profesionalDetails.email.trim(),
+            telefono: profesionalDetails.telefono?.toString().trim(),
+
+        };
+        setIsSaving(true);
+        if (JSON.stringify(profesionalDetails) !== JSON.stringify(profesionalDetailsCopia)) {
+            setIsSaving(false);
+            return
+        }
         if (!profesionalDetails.direccionId) {
             console.log("profesionalDETAILS", profesionalDetails);
-            const newprofesional = await updateProfesional(Number(profesionalDetails?.id), {
-                nombre: profesionalDetails.nombre, apellido: profesionalDetails.apellido,
-                email: profesionalDetails.email, telefono: String(profesionalDetails.telefono),
-            });
+            const newprofesional = await updateProfesional(Number(profesionalDetails?.id), trimmedProfesionalDetails);
             if (typeof newprofesional === "string") return setErrorMessage(newprofesional);
             console.log("newprofesional", newprofesional);
-            setOpenBox(0);
-            getUser();
-            authorizeAndFetchData();
-            return;
         }
 
         try {
-
-
-
             console.log("profesionalDETAILS", profesionalDetails);
-            const newprofesional = await updateProfesional(Number(profesionalDetails?.id), {
-                nombre: profesionalDetails.nombre, apellido: profesionalDetails.apellido,
-                telefono: String(profesionalDetails.telefono),
-                email: profesionalDetails.email
-            });
+            const newprofesional = await updateProfesional(Number(profesionalDetails?.id), trimmedProfesionalDetails);
             console.log("newprofesional", newprofesional);
         } catch (error) {
             setErrorMessage("Ha ocurrido un error al guardar los cambios.");
@@ -234,8 +236,9 @@ const Cuenta: React.FC = () => {
 
         setOpenBox(0);
         getUser();
+        setIsSaving(false);
         authorizeAndFetchData();
-        console.log(openBox)
+        //console.log(openBox)
 
     }
     //endregion
@@ -379,8 +382,9 @@ const Cuenta: React.FC = () => {
                             <button
                                 onClick={() => { handleSaveChanges(); console.log("openBox", openBox) }}
                                 className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800"
+                                disabled={isSaving}
                             >
-                                Guardar
+                                {isSaving ? <Loader /> : "Guardar"}
                             </button>
                             <button
                                 onClick={() => { setOpenBox(0); console.log(openBox) }}

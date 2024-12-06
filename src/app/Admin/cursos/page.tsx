@@ -603,6 +603,12 @@ const Cursos: React.FC = () => {
                     ? cursoDetails.fechaInicio.toISOString().split('T')[0]
                     : ""
                 }
+                min={new Date()
+                  .toISOString()
+                  .split('T')[0]} // El mínimo es hoy
+                max={new Date(new Date().setFullYear(new Date().getFullYear() + 1))
+                  .toISOString()
+                  .split('T')[0]} // Hasta un año desde hoy
                 onChange={handleChange}
                 className="p-2 w-full border rounded"
               />
@@ -620,6 +626,12 @@ const Cursos: React.FC = () => {
                     ? cursoDetails.fechaFin.toISOString().split('T')[0]
                     : ""
                 }
+                min={new Date(new Date().setFullYear(new Date().getMonth() + 1))
+                  .toISOString()
+                  .split('T')[0]} // Hasta un mes desde hoy
+                max={new Date(new Date().setFullYear(new Date().getFullYear() + 1))
+                  .toISOString()
+                  .split('T')[0]} // Hasta un año desde hoy
                 onChange={handleChange}
                 className="p-2 w-full border rounded"
               />

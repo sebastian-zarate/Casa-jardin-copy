@@ -265,7 +265,7 @@ const Mayores: React.FC = () => {
             if (resultValidate) return resultValidate
 
             if (JSON.stringify(datosAlumno) !== JSON.stringify(datosAlumnoCopia)) {
-                return "Los datos del alumno no son los mismos que los registrados en el sistema";
+                return 'Los datos del alumno no son los mismos que los registrados en el sistema. Por favor, actualíselos en "Mi cuenta" antes de continuar.';
             }
         }
         return "";

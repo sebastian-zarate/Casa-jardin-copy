@@ -330,12 +330,14 @@ const Alumnos: React.FC = () => {
         return direccion;
     }
     async function getUbicacionResp(userUpdate: any) {
+        setLoadingDireccionResp(true);
         const direccionResponsable = await getDireccionResponsableByAlumnoId(userUpdate?.id);
         setLocalidadNameResp(String(direccionResponsable?.direccion?.localidad?.nombre));
         setProvinciaNameResp(String(direccionResponsable?.direccion?.localidad?.provincia?.nombre));
         setNacionalidadNameResp(String(direccionResponsable?.direccion?.localidad?.provincia?.nacionalidad?.nombre));
         setNumeroResp(Number(direccionResponsable?.direccion?.numero));
         setcalleResp(String(direccionResponsable?.direccion?.calle));
+        setLoadingDireccionResp(false);
         return direccionResponsable
     }
 
@@ -934,6 +936,7 @@ const Alumnos: React.FC = () => {
                                     type="text"
                                     id="nombre"
                                     name="nombre"
+                                    maxLength={50}
                                     value={alumnoDetails.nombre}
                                     onChange={handleChange}
                                     className="p-2 w-full border rounded"
@@ -943,6 +946,7 @@ const Alumnos: React.FC = () => {
                                     type="text"
                                     id="apellido"
                                     name="apellido"
+                                    maxLength={50}
                                     value={alumnoDetails.apellido}
                                     onChange={handleChange}
                                     className="p-2 w-full border rounded"
@@ -966,6 +970,8 @@ const Alumnos: React.FC = () => {
                                     type="number"
                                     id="dni"
                                     name="dni"
+                                    pattern="[0-9]+"
+                                    maxLength={8}
                                     placeholder="Ingrese su DNI"
                                     value={alumnoDetails.dni ? alumnoDetails.dni : null}
                                     onChange={handleChange}
@@ -981,6 +987,7 @@ const Alumnos: React.FC = () => {
                                             type="number"
                                             id="telefono"
                                             name="telefono"
+                                            maxLength={11} // Limita el número total de caracteres
                                             placeholder="Ingrese su código de área y los dígitos de su teléfono"
                                             value={alumnoDetails.telefono ? alumnoDetails.telefono : null}
                                             onChange={handleChange}
@@ -1017,6 +1024,7 @@ const Alumnos: React.FC = () => {
                                     placeholder={(selectedAlumno === -1 || selectedAlumno === -2) ? "" : "Si desea cambiar la contraseña, ingresela aquí"}
                                     value={alumnoDetails.password}
                                     onChange={handleChange}
+                                    maxLength={50}
                                     className="p-2 w-full border rounded"
                                 />
                             </div>
@@ -1036,6 +1044,8 @@ const Alumnos: React.FC = () => {
                                                 type="text"
                                                 id="pais"
                                                 name="pais"
+                                                pattern='[A-Za-z ]+'
+                                                maxLength={35}
                                                 value={String(nacionalidadName)}
                                                 placeholder="Ingrese el país donde vive"
                                                 onChange={(e) => setNacionalidadName(e.target.value)}
@@ -1048,6 +1058,8 @@ const Alumnos: React.FC = () => {
                                                 type="text"
                                                 id="provincia"
                                                 name="provincia"
+                                                maxLength={55}
+                                                pattern='[A-Za-z ]+'
                                                 value={String(provinciaName)}
                                                 placeholder="Ingrese la provincia donde vive"
                                                 onChange={(e) => setProvinciaName(e.target.value)}
@@ -1058,8 +1070,9 @@ const Alumnos: React.FC = () => {
                                             <label htmlFor="localidad" className="block">Localidad:</label>
                                             <input
                                                 type="text"
-                                                id="localidad"
                                                 name="localidad"
+                                                maxLength={35}
+                                                pattern='[A-Za-z ]+'
                                                 value={String(localidadName)}
                                                 placeholder="Ingrese la localidad donde vive"
                                                 onChange={(e) => setLocalidadName(e.target.value)}
@@ -1072,6 +1085,8 @@ const Alumnos: React.FC = () => {
                                                 type="text"
                                                 id="calle"
                                                 name="calle"
+                                                maxLength={75}
+                                                pattern='[A-Za-z ]+'
                                                 value={String(calle)}
                                                 placeholder="Ingrese el nombre de su calle"
                                                 onChange={(e) => setcalle(e.target.value)}
@@ -1084,6 +1099,7 @@ const Alumnos: React.FC = () => {
                                                 type="number"
                                                 id="numero"
                                                 name="numero"
+                                                maxLength={5}
                                                 placeholder="Ingrese el número de su calle"
                                                 value={numero ? Number(numero) : ""}
                                                 onChange={(e) => setNumero(Number(e.target.value))}
@@ -1104,6 +1120,8 @@ const Alumnos: React.FC = () => {
                                                 type="text"
                                                 id="ResponsableNombre"
                                                 name="nombre"
+                                                pattern='[A-Za-z ]+'
+                                                maxLength={50}
                                                 value={responsableDetails.nombre}
                                                 onChange={handleChangeResponsable}
                                                 className="p-2 w-full border rounded"
@@ -1115,6 +1133,8 @@ const Alumnos: React.FC = () => {
                                                 type="text"
                                                 id="ResponsableApellido"
                                                 name="apellido"
+                                                pattern='[A-Za-z ]+'
+                                                maxLength={50}
                                                 value={responsableDetails.apellido}
                                                 onChange={handleChangeResponsable}
                                                 className="p-2 w-full border rounded"
@@ -1126,7 +1146,9 @@ const Alumnos: React.FC = () => {
                                                 type="number"
                                                 id="dniR"
                                                 name="dni"
-                                                placeholder="Ingrese el DNI del responsable"
+                                                pattern="[0-9]+"
+                                                maxLength={8}
+                                                placeholder="Ingrese el DNI sin puntos ni espacios"
                                                 value={responsableDetails.dni ? responsableDetails.dni : null}
                                                 onChange={handleChangeResponsable}
                                                 className="p-2 w-full border rounded"
@@ -1144,6 +1166,7 @@ const Alumnos: React.FC = () => {
                                                     value={responsableDetails.telefono ? responsableDetails.telefono : null}
                                                     onChange={handleChangeResponsable}
                                                     className="p-2 w-full border rounded"
+                                                    maxLength={11} // Limita el número total de caracteres
                                                 />
                                             </div>
                                         </div>
@@ -1176,6 +1199,7 @@ const Alumnos: React.FC = () => {
                                                         type="text"
                                                         id="paisRes"
                                                         name="pais"
+                                                        maxLength={75}
                                                         value={String(nacionalidadNameResp)}
                                                         placeholder="Ingrese el país del responsable"
                                                         onChange={(e) => setNacionalidadNameResp(e.target.value)}
@@ -1188,6 +1212,7 @@ const Alumnos: React.FC = () => {
                                                         type="text"
                                                         id="provinciaResp"
                                                         name="provincia"
+                                                        maxLength={75}
                                                         value={String(provinciaName)}
                                                         placeholder="Ingrese la provincia del responsable"
                                                         onChange={(e) => setProvinciaNameResp(e.target.value)}
