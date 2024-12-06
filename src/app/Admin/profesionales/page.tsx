@@ -30,6 +30,7 @@ import { validateApellido, validateDireccion, validateDni, validateEmail, valida
 import { dniExists, emailExists } from "@/services/Alumno";
 import Background from "../../../../public/Images/Background.jpeg"
 import Loader from "@/components/Loaders/loadingSave/page";
+import { Trash2, UserRoundPlus, UserRoundX } from "lucide-react";
 // #endregion
 
 const Profesionales = () => {
@@ -69,9 +70,12 @@ const Profesionales = () => {
     const [imagesLoaded, setImagesLoaded] = useState<boolean>(false);
     const [imageUrls, setImageUrls] = useState<any>({});
 
-    const [ProfesionalAEliminar, setProfesionalAEliminar] = useState<any>(null);
+    const [ProfesionalAEliminar, setProfesionalAEliminar] = useState<any[]>([]);
     const [isDeleting, setIsDeleting] = useState<boolean>(false);
     const [isSaving, setIsSaving] = useState<boolean>(false);
+
+    const [allProfesionalesChecked, setAllProfesionalesChecked] = useState<boolean>(false);
+    const [allProfesionalesSelected, setAllProfesionalesSelected] = useState<any[]>([]);
     // #endregion
 
     // #region UseEffects
@@ -309,7 +313,7 @@ const Profesionales = () => {
                 resultValidate = validatePhoneNumber(String(telefono));
                 if (resultValidate) return resultValidate;
             }
-            if (password && password.length > 0) {
+            if ((selectedProfesional === null && password.length > 0) || selectedProfesional === -1) {
                 resultValidate = validatePasswordComplexity(password);
                 if (resultValidate) return resultValidate;
             }
@@ -367,15 +371,19 @@ const Profesionales = () => {
         }
     }
 
-    async function handleEliminarProfesional(profesional: any) {
+    async function handleEliminarProfesional(profesional: any[]) {
         try {
             setIsDeleting(true);
             //borrar profesional del repo
-            await deleteProfesional(profesional.id);
-            //borarr imagen del repo
-            if (profesional.imagen) await handleDeleteProfesionalImage(profesional.imagen);
+            for (const prof of profesional) {
+                await deleteProfesional(prof.id);
+                // Borrar imagen del repo
+                if (prof.imagen) await handleDeleteProfesionalImage(prof.imagen);
+            }
             fetchProfesionales();
             setIsDeleting(false);
+            setProfesionalAEliminar([]);
+            setAllProfesionalesSelected([]);
         } catch (error) {
             console.error("Error al eliminar el profesional", error);
         }
@@ -427,12 +435,12 @@ const Profesionales = () => {
     async function handleCancel_init() {
         setCursosElegido([]);
         setObProfesional(null);
-       // profesionalDetails({ nombre: '', apellido: '', email: '', password: '', telefono: "", especialidad: '' });
-       setProfesionalDetails({ nombre: '', apellido: '', email: '', password: '', telefono: "", especialidad: '' });
-       setSelectedProfesional(null);
+        // profesionalDetails({ nombre: '', apellido: '', email: '', password: '', telefono: "", especialidad: '' });
+        setProfesionalDetails({ nombre: '', apellido: '', email: '', password: '', telefono: "", especialidad: '' });
+        setSelectedProfesional(null);
         fetchProfesionales();
         setErrorMessage("");
-        
+
     }
 
     // Function to handle search input change
@@ -467,37 +475,26 @@ const Profesionales = () => {
                     <Image src={Background} alt="Background" layout="fill" objectFit="cover" quality={80} priority={true} />
                 </div>
 
-                {/* Encabezado */}
-                <div className="relative mt-4 pt-8 flex flex-col items-center z-10">
-                    <h1 className="text-2xl sm:text-3xl bg-white rounded-lg p-2 shadow-lg">PROFESIONALES</h1>
-                </div>
 
-                {/* Barra de búsqueda */}
-                <div className="relative mt-4 flex justify-center z-10">
-                    <div className="relative w-11/12 sm:w-1/4">
-                        <input
-                            type="text"
-                            placeholder="Buscar..."
-                            className="p-2 border rounded w-full"
-                            value={profesionalAbuscar}
-                            onChange={handleSearchChange}
-                        />
-                    </div>
-                </div>
-                {ProfesionalAEliminar && (
+                {ProfesionalAEliminar.length > 0 && (
                     <div className="fixed inset-0 z-20 flex items-center justify-center bg-black bg-opacity-50">
                         <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative">
                             {errorMessage && <div style={{ color: "red" }}>{errorMessage}</div>}
 
                             <h2 className="text-lg mb-4">Confirmar Eliminación</h2>
                             <p>
-                                ¿Estás seguro de que deseas eliminar el taller:{" "}
-                                <strong>{ProfesionalAEliminar.nombre}</strong>?
+                                ¿Estás seguro de que deseas eliminar a
+                                {ProfesionalAEliminar.length !== profesionales.length ? <strong>&nbsp;
+                                    {ProfesionalAEliminar.map((profesional) => {
+                                        return (profesional.nombre + " " + profesional.apellido)
+                                    }).join(", ")}?
+                                </strong> : <strong>&nbsp; todos los profesionales?</strong>
+                                }
                             </p>
                             <div className="flex justify-end space-x-4 mt-4">
                                 <button
                                     onClick={() => {
-                                        handleEliminarProfesional(ProfesionalAEliminar.id);
+                                        handleEliminarProfesional(ProfesionalAEliminar);
                                     }}
                                     disabled={isDeleting}
                                     className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800"
@@ -505,7 +502,7 @@ const Profesionales = () => {
                                     {isDeleting ? "Eliminando..." : "Confirmar Eliminación"}
                                 </button>
                                 <button
-                                    onClick={() => setProfesionalAEliminar(null)}
+                                    onClick={() => setProfesionalAEliminar([])}
                                     className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800"
                                 >
                                     Cancelar
@@ -516,9 +513,13 @@ const Profesionales = () => {
                 )}
                 {/* Contenedor Principal */}
                 <div className="relative mt-8 flex justify-center z-10">
-                    <div className="border p-4 w-11/12 sm:w-2/3 md:w-1/2 lg:w-1/3 h-[60vh] bg-gray-400 bg-opacity-50 overflow-y-auto rounded-lg">
+                    <div className="border p-4 w-11/12 sm:w-2/3 md:w-1/2 lg:w-1/2 h-[60vh] bg-slate-50  overflow-y-auto rounded-lg">
+                        {/* Encabezado */}
+                        <div className=" flex flex-col items-center z-10 p-2">
+                            <h1 className="text-2xl sm:text-2xl bg-slate-50   uppercase">profesionales</h1>
+                        </div>
                         <div className="flex flex-col space-y-4">
-                            {profesionales.map((profesional, index) => (
+                            {/*                           {profesionales.map((profesional, index) => (
                                 <div
                                     key={index}
                                     className="border p-4 relative bg-white w-full flex flex-col justify-center items-center rounded shadow-md"
@@ -550,16 +551,128 @@ const Profesionales = () => {
                                     <h3 className="mt-2 text-black">{profesional.nombre} {profesional.apellido}</h3>
                                     <p className="text-sm text-gray-600">Email: {profesional.email}</p>
                                 </div>
-                            ))}
-                            <button onClick={() => { setSelectedProfesional(-1); setObProfesional(null) }} className="mt-6 mx-4">
-                                <Image
-                                    src={ButtonAdd}
-                                    className="mx-3"
-                                    alt="Image Alt Text"
-                                    width={70}
-                                    height={70}
-                                />
-                            </button>
+                            ))} */}
+                            <div className="relative overflow-x-auto shadow-lg sm:rounded-lg">
+                                <div className=" flex justify-around px-auto bg-white p-2">
+                                    <div className="flex justify-around ">
+                                        <button onClick={() => { setSelectedProfesional(-1); setObProfesional(null) }} className="px-2 w-10 h-10">
+                                            <UserRoundPlus />
+                                        </button>
+                                        <button onClick={() => {allProfesionalesSelected.length > 0 ? setProfesionalAEliminar(allProfesionalesSelected) :""}} className=" w-10 px-2 h-10">
+                                            <Trash2 />
+                                        </button>
+                                    </div>
+                                    {/* Barra de búsqueda */}
+                                    <div className="flex items-center justify-between flex-column flex-wrap md:flex-row space-y-4 md:space-y-0 pb-4 ">
+                                        <label htmlFor="table-search" className="sr-only">Buscar</label>
+                                        <div className="relative">
+                                            <div className="absolute inset-y-0 right-0 rtl:inset-r-0 start-0 flex items-center ps-3 pointer-events-none">
+                                                <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                                                </svg>
+                                            </div>
+                                            <input type="text"
+                                                placeholder="Buscar..."
+                                                value={profesionalAbuscar}
+                                                onChange={handleSearchChange}
+                                                className="block p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-100 focus:ring-blue-500 focus:border-blue-500 "
+                                            />
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <table className="w-full text-sm text-left rtl:text-right text-gray-500 ">
+                                    <thead className="text-xs text-gray-700 uppercase bg-gray-100  ">
+                                        <tr>
+                                            <th scope="col" className="p-4">
+                                                <div className="flex items-center">
+                                                    <input
+                                                        id="checkbox-all-search"
+                                                        type="checkbox"
+                                                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 "
+                                                        onChange={(e) => {
+                                                            if (e.target.checked) {
+                                                                setAllProfesionalesChecked(true);
+                                                                setAllProfesionalesSelected(profesionales);
+
+                                                            }
+                                                            else {
+                                                                setAllProfesionalesChecked(false);
+                                                                setAllProfesionalesSelected([])
+                                                            }
+                                                        }}
+                                                    />
+                                                    <label htmlFor="checkbox-all-search" className="sr-only">checkbox</label>
+                                                </div>
+                                            </th>
+                                            <th scope="col" className="px-6 py-3">
+                                                Nombre
+                                            </th>
+                                            <th scope="col" className="px-6 py-3">
+                                                Especialidad
+                                            </th>
+                                            <th scope="col" className="px-6 py-3">
+                                                Acción
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {
+                                            profesionales.map((profesional, index) => (
+                                                <tr className="bg-white border-b   hover:bg-gray-50 ">
+                                                    <td className="w-4 p-4">
+                                                        <div className="flex items-center">
+                                                            <input
+                                                                id="checkbox-table-search-1"
+                                                                onChange={(e) => {
+                                                                    if (e.target.checked) {
+                                                                        setAllProfesionalesSelected([...allProfesionalesSelected, profesional]);
+                                                                    }
+                                                                    else {
+                                                                        setAllProfesionalesSelected(allProfesionalesSelected.filter((prof) => prof.id !== profesional.id));
+                                                                    }
+                                                                }}
+                                                                checked={allProfesionalesSelected.some((prof) => prof.id === profesional.id) || allProfesionalesChecked}
+                                                                type="checkbox"
+                                                                className="w-4 h-4 text-blue-600  border-gray-300 rounded focus:ring-blue-500"
+                                                            />
+
+                                                        </div>
+                                                    </td>
+                                                    <th scope="row" className="flex items-center px-6 py-4 text-gray-900 whitespace-nowrap ">
+                                                        <Image
+                                                            src={imageUrls[profesional.id] || NoImage}
+                                                            alt={`${profesional.nombre} ${profesional.apellido}`}
+                                                            objectFit="cover"
+                                                            className="w-20 h-25 rounded-full pointer-events-none"
+
+                                                        />
+                                                        <div className="ps-3">
+                                                            <div className="text-base font-semibold">{profesional.nombre + " " + profesional.apellido}</div>
+                                                            <div className="font-normal text-gray-500">{profesional.email}</div>
+                                                        </div>
+                                                    </th>
+                                                    <td className="px-6 py-4">
+                                                        {profesional.especialidad}
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <button
+                                                            onClick={() => {
+                                                                setSelectedProfesional(profesional);
+                                                                setObProfesional(profesional);
+                                                            }}
+                                                            className="font-medium text-blue-600 hover:underline"
+                                                        >
+                                                            Editar profesional
+                                                        </button>
+
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                    </tbody>
+                                </table>
+                            </div>
+
                         </div>
                     </div>
                 </div>

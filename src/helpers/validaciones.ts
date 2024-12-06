@@ -57,6 +57,9 @@ export function validatePasswordComplexity(password: string) {
     const lowercaseRegex = /[a-z]/;
     const numberRegex = /\d/;
     const lengthRegex = /.{8,}/;
+    if (!password) {
+        return "La contraseña no puede estar vacía.";
+    }
 
     if (!uppercaseRegex.test(password)) {
         return "La contraseña debe incluir al menos una letra mayúscula.";

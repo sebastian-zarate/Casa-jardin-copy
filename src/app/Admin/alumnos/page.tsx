@@ -379,7 +379,7 @@ const Alumnos: React.FC = () => {
                 resultValidate = validatePhoneNumber(String(telefono));
                 if (resultValidate) return resultValidate;
             }
-            if (password && password.length > 0) {
+            if (selectedAlumno === -1 || selectedAlumno === -2 || password.length > 0) {
                 resultValidate = validatePasswordComplexity(password);
                 if (resultValidate) return resultValidate;
             }
@@ -457,14 +457,16 @@ const Alumnos: React.FC = () => {
         setErrorMessage("");
     }
     async function handleSaveChanges() {
-
+        setIsSaving(true);
         const validationError = await validatealumnoDetails();
 
         if (validationError) {
+
             setErrorMessage(validationError);
+            
             return;
         }
-        setIsSaving(true);
+
         //-----------------------------------SI EL USUARIO DESEA CAMBIAR LA DIRECCIÓN---------------------------------------------------------
         if (permitirDireccion) {
 
@@ -645,16 +647,17 @@ const Alumnos: React.FC = () => {
                 return;
             }
         }
-
+        setIsSaving(false);
     }
     async function handleCreateAlumno() {
-        setIsSaving(true);
+
         const validationError = await validatealumnoDetails();
         // console.log("newDireccion", direccion);
         if (validationError) {
             setErrorMessage(validationError);
             return;
         }
+        setIsSaving(true);
         //region si agrega direcc
         if (permitirDireccion) {
             const { direccion, direccionResp } = await createUbicacion();
@@ -852,7 +855,7 @@ const Alumnos: React.FC = () => {
 
                             <h2 className="text-lg mb-4">Confirmar Eliminación</h2>
                             <p>
-                                ¿Estás seguro de que deseas eliminar el taller:{" "}
+                                ¿Estás seguro de que deseas eliminar a:{" "}
                                 <strong>{AlumnoAEliminar.nombre}</strong>?
                             </p>
                             <div className="flex justify-end space-x-4 mt-4">
@@ -974,11 +977,16 @@ const Alumnos: React.FC = () => {
                                     maxLength={8}
                                     placeholder="Ingrese su DNI"
                                     value={alumnoDetails.dni ? alumnoDetails.dni : null}
-                                    onChange={handleChange}
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        if (/^\d*$/.test(value)) {
+                                            handleChange(e);
+                                        }
+                                    }}
                                     className="p-2 w-full border rounded"
                                 />
                             </div>
-                            {selectedAlumno !== -2 && mayor === true && (
+                            {selectedAlumno === -2 || ((selectedAlumno !== -2 ) && mayor === true) && (
                                 <div className="mb-4">
                                     <label htmlFor="telefono" className="block">Teléfono:</label>
                                     <div className="flex">
@@ -987,10 +995,16 @@ const Alumnos: React.FC = () => {
                                             type="number"
                                             id="telefono"
                                             name="telefono"
+                                            pattern="[0-9]+" // Solo permite números
                                             maxLength={11} // Limita el número total de caracteres
                                             placeholder="Ingrese su código de área y los dígitos de su teléfono"
-                                            value={alumnoDetails.telefono ? alumnoDetails.telefono : null}
-                                            onChange={handleChange}
+                                            value={alumnoDetails.telefono ? alumnoDetails.telefono : ""}
+                                            onChange={(e) => {
+                                                const value = e.target.value;
+                                                if (/^\d*$/.test(value)) {
+                                                    handleChange(e);
+                                                }
+                                            }}
                                             className="p-2 w-full border rounded"
                                         />
                                     </div>
@@ -1102,7 +1116,12 @@ const Alumnos: React.FC = () => {
                                                 maxLength={5}
                                                 placeholder="Ingrese el número de su calle"
                                                 value={numero ? Number(numero) : ""}
-                                                onChange={(e) => setNumero(Number(e.target.value))}
+                                                onChange={(e) => {
+                                                    const value = e.target.value;
+                                                    if (/^\d*$/.test(value)) {
+                                                        setNumero(Number(e.target.value))
+                                                    }
+                                                }}
                                                 className="p-2 w-full border rounded"
                                             />
                                         </div>
@@ -1150,7 +1169,12 @@ const Alumnos: React.FC = () => {
                                                 maxLength={8}
                                                 placeholder="Ingrese el DNI sin puntos ni espacios"
                                                 value={responsableDetails.dni ? responsableDetails.dni : null}
-                                                onChange={handleChangeResponsable}
+                                                onChange={(e) => {
+                                                    const value = e.target.value;
+                                                    if (/^\d*$/.test(value)) {
+                                                        handleChangeResponsable(e);
+                                                    }
+                                                }}
                                                 className="p-2 w-full border rounded"
                                             />
                                         </div>
@@ -1164,7 +1188,12 @@ const Alumnos: React.FC = () => {
                                                     name="telefono"
                                                     placeholder="Ingrese su código de área y los dígitos de su teléfono"
                                                     value={responsableDetails.telefono ? responsableDetails.telefono : null}
-                                                    onChange={handleChangeResponsable}
+                                                    onChange={(e) => {
+                                                        const value = e.target.value;
+                                                        if (/^\d*$/.test(value)) {
+                                                            handleChangeResponsable(e);
+                                                        }
+                                                    }}
                                                     className="p-2 w-full border rounded"
                                                     maxLength={11} // Limita el número total de caracteres
                                                 />
@@ -1251,7 +1280,12 @@ const Alumnos: React.FC = () => {
                                                         name="numero"
                                                         placeholder="Ingrese el número de calle del responsable"
                                                         value={numero ? Number(numero) : ""}
-                                                        onChange={(e) => setNumeroResp(Number(e.target.value))}
+                                                        onChange={(e) => {
+                                                            const value = e.target.value;
+                                                            if (/^\d*$/.test(value)) {
+                                                                setNumeroResp(Number(e.target.value))
+                                                            }
+                                                        }}
                                                         className="p-2 w-full border rounded"
                                                     />
                                                 </div>
