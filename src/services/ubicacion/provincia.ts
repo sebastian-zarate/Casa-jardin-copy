@@ -24,7 +24,7 @@ export async function getProvinciasByName(ProvinciasName: string) {
   return await prisma.provincia.findFirst({
     where: {
       nombre: {
-        equals: ProvinciasName,
+        equals: ProvinciasName.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleUpperCase(),
         mode: 'insensitive',
       }
     },
@@ -35,14 +35,18 @@ export async function addProvincias(data: {
   nombre: string;
   nacionalidadId: number;
 }) {
-  const provinciaExistente = await getProvinciasByName(data.nombre);
+  const dataTrim = {
+    nombre: data.nombre.trim(),
+    nacionalidadId: data.nacionalidadId,
+  }
+  const provinciaExistente = await getProvinciasByName(dataTrim.nombre);
   if(provinciaExistente){
     console.log("PROVINCIA EXISTENTE")
     return provinciaExistente;
   }
   console.log("PROVINCIA NUEVA")
   const prov = await prisma.provincia.create({
-    data: data
+    data: dataTrim
   });
   return prov;
 }
@@ -51,15 +55,15 @@ export async function updateProvinciaById(id:number, data: {
   nombre: string;
   nacionalidadId: number;
 }) {
-  console.log("actualizo direccion")
-  const newProvincia = {
+  const dataTrim = {
     id: id,
-    nombre: data.nombre,
+    nombre: data.nombre.trim(),
     nacionalidadId: data.nacionalidadId,
   }
+  console.log("actualizo direccion")
   return await prisma.provincia.update({
     where: { id },
-    data: newProvincia
+    data: dataTrim
   });  
 }
 

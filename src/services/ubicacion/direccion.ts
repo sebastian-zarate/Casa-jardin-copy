@@ -17,17 +17,19 @@ export async function updateDireccionById(direccionId: number, data: {
   numero: number;
   localidadId: number;
 }) {
+
+  const dataTrim = {
+    calle: data.calle.trim(),
+    numero: data.numero,
+    localidadId: data.localidadId
+  }
+
   // Verificar si la dirección existe
   const direccion = await prisma.direccion.findUnique({
     where: {
       id: direccionId,
     },
   });
-  const newDireccion = {
-    calle: data.calle,
-    numero: data.numero,
-    localidadId: data.localidadId,
-  };
   
   if (!direccion) {
     throw new Error("La dirección no existe.");
@@ -38,7 +40,7 @@ export async function updateDireccionById(direccionId: number, data: {
     where: {
       id: direccionId,
     },
-    data: newDireccion,
+    data: dataTrim,
   });
 }
 
@@ -46,7 +48,7 @@ export async function getDireccionByCalleNumero(calle: string, numero: number) {
   return await prisma.direccion.findFirst({
     where: {
       calle: {
-        equals: calle,
+        equals: calle.normalize("NFD").replace(/[\u0300-\u036f]/g, ""),
         mode: 'insensitive', // This ensures case-insensitive comparison
       },
       numero: numero,
@@ -59,14 +61,19 @@ export async function addDireccion(data: {
   numero: number;
   localidadId: number;
 }) {
-  const direccionExistente = await getDireccionByCalleNumero(data.calle, data.numero);
+  const dataTrim = {
+    calle: data.calle.trim(),
+    numero: data.numero,
+    localidadId: data.localidadId
+  }
+  const direccionExistente = await getDireccionByCalleNumero(dataTrim.calle, dataTrim.numero);
   if (direccionExistente) {
     console.log("DIRECCION EXISTENTE")
     return direccionExistente;
   }
   console.log("DIRECCION NUEVA")
   const dirr = await prisma.direccion.create({
-    data: data
+    data: dataTrim
   });
   return dirr;
 }

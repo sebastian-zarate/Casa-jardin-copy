@@ -35,8 +35,18 @@ export async function createAlumno(data: {
   mayoriaEdad?: boolean
 
 }) {
+  const alumnoTrim = {
+    nombre: data.nombre.trim(),
+    apellido: data.apellido.trim(),
+    email: data.email.trim(),
+    password: data.password.trim(),
+    telefono: data.telefono?.trim(),
+    direccionId: data.direccionId,
+    fechaNacimiento: data.fechaNacimiento,
+    mayoriaEdad: data.mayoriaEdad
+  }
   // Verificar si el email ya existe en la base de datos
-  const existingAlumno = await emailExists(data.email);
+  const existingAlumno = await emailExists(data.email.trim());
 
   if (existingAlumno) {
     // El email ya existe
@@ -44,11 +54,11 @@ export async function createAlumno(data: {
   }
 
   // Encriptar la contraseña
-  const hashedPassword = await hashPassword(data.password);
+  const hashedPassword = await hashPassword(data.password.trim());
 
   // Crear el objeto de datos del alumno
   const alumnoData = {
-    ...data,
+    ...alumnoTrim,
     password: hashedPassword,
     rolId: 2
   };
@@ -72,22 +82,34 @@ export async function createAlumnoAdmin(data: {
   rolId: number;
 
 }) {
+  const alumnoTrim = {
+    nombre: data.nombre.trim(),
+    apellido: data.apellido.trim(),
+    email: data.email.trim(),
+    password: data.password.trim(),
+    telefono: data?.telefono?.trim(),
+    direccionId: data?.direccionId,
+    dni: data.dni,
+    fechaNacimiento: data.fechaNacimiento,
+    mayoriaEdad: data?.mayoriaEdad,
+    rolId: data.rolId
+  }
   // Verificar si el email ya existe en la base de datos
-  const existingAlumno = await emailExists(data.email);
+  const existingAlumno = await emailExists(data.email.trim());
     // Convertir fechaNacimiento a Date si está presente
   data.fechaNacimiento = new Date(data.fechaNacimiento);
   if (existingAlumno) {
     return "El email ya está registrado";
   }
   // Encriptar la contraseña
-  const hashedPassword = await hashPassword(data.password);
+  const hashedPassword = await hashPassword(data.password.trim());
   data.password = hashedPassword;
 
 //  console.log("fecha:", data.fechaNacimiento)
   console.log("CREANDO ALUMNO COMO ADMIN")
   // Guardar el alumno
   const alum = await prisma.alumno.create({
-    data: data,
+    data: alumnoTrim,
   });
   return alum
 }
@@ -136,14 +158,24 @@ export async function updateAlumno(id: number, data: {
   password?: string;
 
 }) {
-  
+  const alumnoTrim = {
+    nombre: data.nombre.trim(),
+    apellido: data.apellido.trim(),
+    dni: data.dni,
+    telefono: data.telefono,
+    email: data.email.trim(),
+    direccionId: data.direccionId,
+    fechaNacimiento: data.fechaNacimiento,
+    mayoriaEdad: data.mayoriaEdad,
+    password: data.password?.trim(),
+  }
   // Verificar si el alumno existe
   const alumno = await prisma.alumno.findUnique({ where: { id } });
   if (!alumno) {
     return("El alumno no existe.");
   }
   // Verificar si el email ya existe en la base de datos
-  const existingAlumno = await verifyusuario(id, data.email, alumno.email);
+  const existingAlumno = await verifyusuario(id, data.email.trim(), alumno.email.trim());
   if (!existingAlumno) {
     return("El email ya está registrado");
   }
@@ -154,34 +186,36 @@ export async function updateAlumno(id: number, data: {
   //console.log("Actualizando alumno password", data.password);
   // Crear objeto de datos del alumno
   let alumnoData: any = {};
-  if (data.password) {
-    data.password = await hashPassword(data.password);
+  //si se envía la contraseña, se actualiza
+  if (alumnoTrim.password) {
+    alumnoTrim.password = await hashPassword(alumnoTrim.password);
     alumnoData = {
       id: id,
-      nombre: data.nombre,
-      apellido: data.apellido,
-      dni: (data.dni),
-      telefono: data.telefono,
-      direccionId: data.direccionId,
-      email: data.email,
-      fechaNacimiento: data.fechaNacimiento,
-      password: data.password,
+      nombre: alumnoTrim.nombre,
+      apellido: alumnoTrim.apellido,
+      dni: (alumnoTrim.dni),
+      telefono: alumnoTrim.telefono,
+      direccionId: alumnoTrim.direccionId,
+      email: alumnoTrim.email,
+      fechaNacimiento: alumnoTrim.fechaNacimiento,
+      password: alumnoTrim.password,
     }
   }
-  if(!data.password){
+  // Si no se envía la contraseña, no se actualiza
+  if(!alumnoTrim.password){
     // Actualizar el alumno
     alumnoData = {
     id: id,
-    nombre: data.nombre,
-    apellido: data.apellido,
-    dni: (data.dni),
-    telefono: data.telefono,
-    direccionId: data.direccionId,
-    email: data.email,
-    fechaNacimiento: data.fechaNacimiento,
+    nombre: alumnoTrim.nombre,
+    apellido: alumnoTrim.apellido,
+    dni: (alumnoTrim.dni),
+    telefono: alumnoTrim.telefono,
+    direccionId: alumnoTrim.direccionId,
+    email: alumnoTrim.email,
+    fechaNacimiento: alumnoTrim.fechaNacimiento,
     }
   }
-  
+  console.log("Actualizando alumno", alumnoData);
   return await prisma.alumno.update({
     where: { id },
     data: alumnoData,
@@ -190,14 +224,14 @@ export async function updateAlumno(id: number, data: {
 //cambiar contraseña
 export async function changePassword(password:string, newPassword:string, email:string) {
   console.log(password, newPassword, email);
-  const alumno = await prisma.alumno.findUnique({ where: { email } });
+  const alumno = await prisma.alumno.findUnique({ where: { email: email.trim()  } });
   if (!alumno) {
     return "El alumno no existe.";
   }
   if (!await verifyPassword(password, alumno.password)) {
     return "Contraseña incorrecta.";
   }
-  const hashedPassword = await hashPassword(newPassword);
+  const hashedPassword = await hashPassword(newPassword.trim());
   console.log("Se guardó correctamente la contraseña");
   return await prisma.alumno.update({
     where: { id: alumno.id },
@@ -217,7 +251,7 @@ export async function getAlumnoByCookie() {
     const email: any = user.email;
     const alumno = await prisma.alumno.findUnique({
       where: {
-        email: email
+        email: email.trim()
       }
     });
     return alumno;
@@ -258,7 +292,7 @@ export async function deleteAlumno(id: number) {
 export async function getAlumnoByEmail(email: string) {
   return await prisma.alumno.findUnique({
     where: {
-      email: email,
+      email: email.trim(),
     },
   });
 }

@@ -23,7 +23,7 @@ import withAuth from "../../../components/Admin/adminAuth";
 import PasswordComponent from "@/components/Password/page";
 import { hashPassword } from "@/helpers/hashPassword";
 import { createResponsable, deleteResponsable, deleteResponsableByAlumnoId, getAllResponsables, getDireccionResponsableByAlumnoId, updateResponsable } from "@/services/responsable";
-import { validateApellido, validateDireccion, validateDni, validateEmail, validateNombre, validatePasswordComplexity, validatePhoneNumber } from "@/helpers/validaciones";
+import { validateApellido, validateDireccion, validateDni, validateEmail, validateFechaNacimiento, validateNombre, validatePasswordComplexity, validatePhoneNumber } from "@/helpers/validaciones";
 import Loader from "@/components/Loaders/loadingSave/page";
 // #endregion
 
@@ -39,45 +39,45 @@ const Alumnos: React.FC = () => {
     const [obAlumno, setObAlumno] = useState<any>(null);
 
     const [alumnoDetails, setAlumnoDetails] = useState<any>({
-        id: 0,
+        id: null,
         nombre: "",
         apellido: "",
-        dni: 0,
-        telefono: 0,
+        dni: null,
+        telefono: null,
         email: "",
         password: "",
         fechaNacimiento: new Date(),
         direccionId: null
     });
     const [alumnoDetailsCopia, setAlumnoDetailsCopia] = useState<any>({
-        id: 0,
+        id: null,
         nombre: "",
         apellido: "",
-        dni: 0,
-        telefono: 0,
+        dni: null,
+        telefono: null,
         email: "",
         password: "",
         fechaNacimiento: new Date(),
         direccionId: null
     });
     const [responsableDetails, setResponsableDetails] = useState<any>({
-        id: 0,
+        id: null,
         nombre: "",
         apellido: "",
-        dni: 0,
-        telefono: 0,
+        dni: null,
+        telefono: null,
         email: "",
-        alumnoId: 0,
+        alumnoId: null,
         direccionId: null
     });
     const [responsableDetailsCopia, setResponsableDetailsCopia] = useState<any>({
-        id: 0,
+        id: null,
         nombre: "",
         apellido: "",
-        dni: 0,
-        telefono: 0,
+        dni: null,
+        telefono: null,
         email: "",
-        alumnoId: 0,
+        alumnoId: null,
         direccionId: null
     });
     const [responsables, setResponsables] = useState<any[]>([]);
@@ -367,18 +367,25 @@ const Alumnos: React.FC = () => {
             }
 
 
-            resultValidate = validateDni(String(dni));
-            if (resultValidate) return resultValidate;
-            if (dni !== alumnoDetailsCopia.dni) {
-                const estado = await dniExists(Number(dni))
-                if (estado) {
-                    return "El dni ya está registrado.";
+            if (dni) {
+                resultValidate = validateDni(String(dni));
+                if (resultValidate) return resultValidate;
+                if (dni !== alumnoDetailsCopia.dni) {
+                    const estado = await dniExists(Number(dni))
+                    if (estado) {
+                        return "El dni ya está registrado.";
+                    }
                 }
             }
+            resultValidate = validateFechaNacimiento(alumnoDetails.fechaNacimiento);
+            if (resultValidate) return resultValidate;
+
             if (mayor && telefono && typeof (telefono) === "number") {
                 resultValidate = validatePhoneNumber(String(telefono));
                 if (resultValidate) return resultValidate;
             }
+
+
             if (selectedAlumno === -1 || selectedAlumno === -2 || password.length > 0) {
                 resultValidate = validatePasswordComplexity(password);
                 if (resultValidate) return resultValidate;
@@ -463,9 +470,10 @@ const Alumnos: React.FC = () => {
         if (validationError) {
 
             setErrorMessage(validationError);
-            
+            setIsSaving(false);
             return;
         }
+        setPermitirDireccion(false);
 
         //-----------------------------------SI EL USUARIO DESEA CAMBIAR LA DIRECCIÓN---------------------------------------------------------
         if (permitirDireccion) {
@@ -479,22 +487,22 @@ const Alumnos: React.FC = () => {
                     // console.log("fecha 2", (alumnoDetails.fechaNacimiento));
                     const newAlumno = await updateAlumno(alumnoDetails?.id || 0, {
                         nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
-                        dni: Number(alumnoDetails.dni), email: alumnoDetails.email,
-                        direccionId: Number(direccion?.id), fechaNacimiento: new Date(alumnoDetails.fechaNacimiento),
+                        dni: (alumnoDetails.dni), email: alumnoDetails.email,
+                        direccionId: (direccion?.id), fechaNacimiento: new Date(alumnoDetails.fechaNacimiento),
                         password: alumnoDetails.password
                     });
                     if (typeof newAlumno === "string") return setErrorMessage(newAlumno);
                     if (permitirDireccionResp) {
                         await updateResponsable(alumnoDetails?.id || 0, {
                             nombre: responsableDetails.nombre, apellido: responsableDetails.apellido,
-                            dni: Number(responsableDetails.dni), email: responsableDetails.email, telefono: String(responsableDetails.telefono),
-                            alumnoId: newAlumno.id, direccionId: Number(direccionResp?.id)
+                            dni: (responsableDetails.dni), email: responsableDetails.email, telefono: (responsableDetails.telefono ? String(responsableDetails.telefono) : responsableDetails.telefono),
+                            alumnoId: newAlumno.id, direccionId: (direccionResp?.id)
                         });
                     }
                     else if (!permitirDireccionResp) {
                         await updateResponsable(alumnoDetails?.id || 0, {
                             nombre: responsableDetails.nombre, apellido: responsableDetails.apellido,
-                            dni: Number(responsableDetails.dni), email: responsableDetails.email, telefono: String(responsableDetails.telefono),
+                            dni: (responsableDetails.dni), email: responsableDetails.email, telefono: (responsableDetails.telefono ? String(responsableDetails.telefono) : responsableDetails.telefono),
                             alumnoId: newAlumno.id
                         });
                     }
@@ -509,10 +517,16 @@ const Alumnos: React.FC = () => {
                 }
                 //-----------------------------------------------------------SI ES MAYOR---------------------------------------------------------------------------------------------------
                 //console.log("ALUMNODETAILS", alumnoDetails);
+                const telefonoExists = alumnos.some(alumno => alumno.telefono === String(alumnoDetails.telefono) && alumno.id !== alumnoDetails.id);
+                if (telefonoExists) {
+                    setErrorMessage("El teléfono ya está registrado.");
+                    setIsSaving(false);
+                    return;
+                }
                 const newAlumno = await updateAlumno(alumnoDetails?.id || 0, {
                     nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
-                    dni: Number(alumnoDetails.dni), email: alumnoDetails.email, telefono: String(alumnoDetails.telefono),
-                    direccionId: Number(direccion?.id), fechaNacimiento: new Date(alumnoDetails.fechaNacimiento),
+                    dni: (alumnoDetails.dni), email: alumnoDetails.email, telefono: (alumnoDetails.telefono ? String(alumnoDetails.telefono) : alumnoDetails.telefono),
+                    direccionId: (direccion?.id), fechaNacimiento: new Date(alumnoDetails.fechaNacimiento),
                     password: alumnoDetails.password
                 });
                 if (typeof newAlumno === "string") return setErrorMessage(newAlumno);
@@ -554,21 +568,21 @@ const Alumnos: React.FC = () => {
                         //console.log("fecha 2", (alumnoDetails.fechaNacimiento));
                         const newAlumno = await updateAlumno(alumnoDetails?.id || 0, {
                             nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
-                            dni: Number(alumnoDetails.dni), email: alumnoDetails.email,
-                            direccionId: Number(direccion?.id), fechaNacimiento: new Date(alumnoDetails.fechaNacimiento), password: alumnoDetails.password
+                            dni: (alumnoDetails.dni), email: alumnoDetails.email,
+                            direccionId: (direccion?.id), fechaNacimiento: new Date(alumnoDetails.fechaNacimiento), password: alumnoDetails.password
                         });
                         if (typeof newAlumno === "string") return setErrorMessage(newAlumno);
                         if (permitirDireccionResp) {
                             await updateResponsable(alumnoDetails?.id || 0, {
                                 nombre: responsableDetails.nombre, apellido: responsableDetails.apellido,
-                                dni: Number(responsableDetails.dni), email: responsableDetails.email, telefono: String(responsableDetails.telefono),
-                                alumnoId: newAlumno.id, direccionId: Number(direccionResponsable?.id)
+                                dni: (responsableDetails.dni), email: responsableDetails.email, telefono: (alumnoDetails.telefono ? String(alumnoDetails.telefono) : alumnoDetails.telefono),
+                                alumnoId: newAlumno.id, direccionId: (direccionResponsable?.id)
                             });
                         }
                         else if (!permitirDireccionResp) {
                             await updateResponsable(alumnoDetails?.id || 0, {
                                 nombre: responsableDetails.nombre, apellido: responsableDetails.apellido,
-                                dni: Number(responsableDetails.dni), email: responsableDetails.email, telefono: String(responsableDetails.telefono),
+                                dni: (responsableDetails.dni), email: responsableDetails.email, telefono: (responsableDetails.telefono ? String(responsableDetails.telefono) : responsableDetails.telefono),
                                 alumnoId: newAlumno.id
                             });
                         }
@@ -585,8 +599,8 @@ const Alumnos: React.FC = () => {
                     //---------------------------------------------------------------SI ES MAYOR-------------------------------------------------------------------------------------------
                     const newAlumno = await updateAlumno(alumnoDetails?.id || 0, {
                         nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
-                        dni: Number(alumnoDetails.dni), telefono: String(alumnoDetails.telefono),
-                        direccionId: Number(newDireccion?.id), email: alumnoDetails.email, fechaNacimiento: new Date(alumnoDetails.fechaNacimiento),
+                        dni: (alumnoDetails.dni), telefono: (alumnoDetails.telefono ? String(alumnoDetails.telefono) : alumnoDetails.telefono),
+                        direccionId: (newDireccion?.id), email: alumnoDetails.email, fechaNacimiento: new Date(alumnoDetails.fechaNacimiento),
                         password: alumnoDetails.password
                     });
                     if (typeof newAlumno === "string") return setErrorMessage(newAlumno);
@@ -609,14 +623,14 @@ const Alumnos: React.FC = () => {
                 // console.log("fecha 2", (alumnoDetails.fechaNacimiento));
                 const newAlumno = await updateAlumno(alumnoDetails?.id || 0, {
                     nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
-                    dni: Number(alumnoDetails.dni), email: alumnoDetails.email,
+                    dni: (alumnoDetails.dni), email: alumnoDetails.email,
                     fechaNacimiento: new Date(alumnoDetails.fechaNacimiento),
                     password: alumnoDetails.password
                 });
                 if (typeof newAlumno === "string") return setErrorMessage(newAlumno);
                 await updateResponsable(alumnoDetails?.id || 0, {
                     nombre: responsableDetails.nombre, apellido: responsableDetails.apellido,
-                    dni: Number(responsableDetails.dni), email: responsableDetails.email, telefono: String(responsableDetails.telefono),
+                    dni: (responsableDetails.dni), email: responsableDetails.email, telefono: (alumnoDetails.telefono ? String(alumnoDetails.telefono) : alumnoDetails.telefono),
                     alumnoId: newAlumno.id
                 });
                 if (typeof newAlumno === "string") return setErrorMessage(newAlumno);
@@ -632,7 +646,7 @@ const Alumnos: React.FC = () => {
                 //console.log("ALUMNODETAILS", alumnoDetails);
                 const newAlumno = await updateAlumno(alumnoDetails?.id || 0, {
                     nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
-                    dni: Number(alumnoDetails.dni), email: alumnoDetails.email, telefono: String(alumnoDetails.telefono),
+                    dni: (alumnoDetails.dni), email: alumnoDetails.email, telefono: (alumnoDetails.telefono ? String(alumnoDetails.telefono) : alumnoDetails.telefono),
                     fechaNacimiento: new Date(alumnoDetails.fechaNacimiento),
                     password: alumnoDetails.password
                 });
@@ -870,6 +884,7 @@ const Alumnos: React.FC = () => {
                                 </button>
                                 <button
                                     onClick={() => setAlumnoAEliminar(null)}
+                                    disabled={isDeleting}
                                     className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800"
                                 >
                                     Cancelar
@@ -943,6 +958,7 @@ const Alumnos: React.FC = () => {
                                     value={alumnoDetails.nombre}
                                     onChange={handleChange}
                                     className="p-2 w-full border rounded"
+                                    required
                                 />
                                 <label htmlFor="apellido" className="block">Apellido:</label>
                                 <input
@@ -953,6 +969,7 @@ const Alumnos: React.FC = () => {
                                     value={alumnoDetails.apellido}
                                     onChange={handleChange}
                                     className="p-2 w-full border rounded"
+                                    required
                                 />
                             </div>
                             <div className="mb-4">
@@ -965,6 +982,7 @@ const Alumnos: React.FC = () => {
                                     value={alumnoDetails.email}
                                     onChange={handleChange}
                                     className="p-2 w-full border rounded"
+                                    required
                                 />
                             </div>
                             <div className="mb-4">
@@ -984,9 +1002,10 @@ const Alumnos: React.FC = () => {
                                         }
                                     }}
                                     className="p-2 w-full border rounded"
+                                    required
                                 />
                             </div>
-                            {selectedAlumno === -2 || ((selectedAlumno !== -2 ) && mayor === true) && (
+                            {selectedAlumno === -2 || ((selectedAlumno !== -2) && mayor === true) && (
                                 <div className="mb-4">
                                     <label htmlFor="telefono" className="block">Teléfono:</label>
                                     <div className="flex">
@@ -998,7 +1017,7 @@ const Alumnos: React.FC = () => {
                                             pattern="[0-9]+" // Solo permite números
                                             maxLength={11} // Limita el número total de caracteres
                                             placeholder="Ingrese su código de área y los dígitos de su teléfono"
-                                            value={alumnoDetails.telefono ? alumnoDetails.telefono : ""}
+                                            value={alumnoDetails.telefono ? alumnoDetails.telefono : null}
                                             onChange={(e) => {
                                                 const value = e.target.value;
                                                 if (/^\d*$/.test(value)) {
@@ -1027,6 +1046,7 @@ const Alumnos: React.FC = () => {
                                         new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0] :
                                         new Date(new Date().setFullYear(new Date().getFullYear() - 3)).toISOString().split('T')[0]
                                     }
+                                    required
                                 />
                             </div>
                             <div className="mb-4">
@@ -1307,6 +1327,7 @@ const Alumnos: React.FC = () => {
                                     {isSaving ? <Loader /> : "Guardar"}
                                 </button>
                                 <button
+                                    disabled={isSaving}
                                     onClick={() => { setSelectedAlumno(null); handleCancel_init() }}
                                     className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800">
                                     Cancelar

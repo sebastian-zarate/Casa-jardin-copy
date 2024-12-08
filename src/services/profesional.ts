@@ -40,17 +40,26 @@ export async function createProfesional(data: {
   imagen: string | null;
 }) {
 
+  const profTrim = {
+    nombre: data.nombre.trim(),
+    apellido: data.apellido.trim(),
+    especialidad: data.especialidad.trim(),
+    email: data.email.trim(),
+    telefono: data.telefono.trim(),
+    password: data.password.trim(),
+    imagen: data.imagen,
+  }
   // Verificar si el email ya existe
-  const existingProfesional = emailExists(data.email);
+  const existingProfesional = emailExists(data.email?.trim(),);
 
   if (!existingProfesional) {
     return ('El email ya está en uso');
   }
 
   // Encriptar la contraseña
-  const hashedPassword = await hashPassword(data.password);
+  const hashedPassword = await hashPassword(data.password.trim());
   const newProfesional = {
-    ...data,
+    ...profTrim,
     password: hashedPassword,
     rolId: 3,
   }
@@ -77,20 +86,20 @@ export async function updateProfesional(id: number, Data: {
   if (!profesional) {
     return "Profesional no encontrado";
   }
-  const existingProfesional = await verifyusuario(id, String(Data.email), String(profesional.email));
+  const existingProfesional = await verifyusuario(id, String(Data.email).trim(), String(profesional.email).trim());
   if (!existingProfesional) {
     return "El email ya está en uso";
   }
   let profesionalData: any = {};
   // Si se envía la contraseña, se actualiza
   if (Data.password) {
-    Data.password = await hashPassword(Data.password);
+    Data.password = await hashPassword(Data.password.trim());
     profesionalData = {
       id: id,
-      nombre: Data.nombre,
-      apellido: Data.apellido,
-      telefono: Data.telefono,
-      password: Data.password,
+      nombre: Data.nombre?.trim(),
+      apellido: Data.apellido?.trim(),
+      telefono: Data.telefono?.trim(),
+      password: Data.password?.trim(),
       imagen: Data.imagen,
     }
   }
@@ -99,10 +108,10 @@ export async function updateProfesional(id: number, Data: {
     // Actualizar el alumno
     profesionalData = {
     id: id,
-    nombre: Data.nombre,
-    apellido: Data.apellido,
-    telefono: Data.telefono,
-    email: Data.email,
+    nombre: Data.nombre?.trim(),
+    apellido: Data.apellido?.trim(),
+    telefono: Data.telefono?.trim(),
+    email: Data.email?.trim(),
     imagen: Data.imagen,
     }
   }
@@ -132,7 +141,7 @@ export async function deleteProfesional(id: number) {
 export async function getProfesionalByEmail(email: string) {
   return await prisma.profesional.findUnique({
     where: {
-      email: email,
+      email: email.trim(),
     },
   });
 }

@@ -26,14 +26,18 @@ export async function addLocalidad(data: {
   nombre: string;
   provinciaId: number}) {
 
-    const localidades = await getLocalidadByName(data.nombre);
+    const dataTrim = {
+      nombre: data.nombre.trim(),
+      provinciaId: data.provinciaId,
+    }
+    const localidades = await getLocalidadByName(dataTrim.nombre);
     if(localidades) {
       console.log("LOCALIDAD EXISTENTE")
       return localidades;
     }
     console.log("LOCALIDAD NUEVA")
     const loc = await prisma.localidad.create({
-      data: data
+      data: dataTrim
     });
     return loc;
 }
@@ -41,15 +45,15 @@ export async function updateLocalidad(id:number, data: {
   nombre: string;
   provinciaId: number;
 }) {
-  const newLocalidad= {
-    id: id,
-    nombre: data.nombre,
+  const dataTrim = {
+    nombre: data.nombre.trim(),
     provinciaId: data.provinciaId,
   }
+
   console.log("actualizo direccion")
   return await prisma.localidad.update({
     where: { id },
-    data: newLocalidad
+    data: dataTrim
   });
 }
 
@@ -65,7 +69,7 @@ export async function getLocalidadByName(LocalidadName: string) {
   return await prisma.localidad.findFirst({
     where: {
       nombre: {
-        equals: LocalidadName,
+        equals: LocalidadName.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleUpperCase(),
         mode: 'insensitive', // This ensures case-insensitive comparison
       },
     },

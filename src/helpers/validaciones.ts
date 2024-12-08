@@ -237,20 +237,17 @@ export function validateFechaNacimiento(fechaNacimiento: Date | undefined) {
     if (!fechaNacimiento) {
         return "La fecha de nacimiento no puede estar vacía.";
     }
-    if (fechaNacimiento > new Date()) {
-        return "La fecha de nacimiento no puede ser mayor a la fecha actual.";
+    const today = new Date();
+    const minDate = new Date(today.getFullYear() - 100, today.getMonth(), today.getDate());
+    const maxDate = new Date(today.getFullYear() - 2, today.getMonth(), today.getDate());
+    console.log(new Date(fechaNacimiento))
+    console.log("HOLAAAAAAAA",minDate)
+    console.log(maxDate)
+    if (new Date(fechaNacimiento) < minDate) {
+        return "La fecha de nacimiento no puede ser mayor a 100 años atrás de la fecha actual.";
     }
-    // Validar que la fecha de nacimiento sea mayor a 2 años
-    const minDate = new Date();
-    minDate.setFullYear(minDate.getFullYear() - 2);
-    if (fechaNacimiento > minDate) {
-        return "La fecha de nacimiento debe ser mayor a 2 años.";
-    }
-    // Validar que la fecha de nacimiento sea menor a 100 años
-    const maxDate = new Date();
-    maxDate.setFullYear(maxDate.getFullYear() - 100);
-    if (fechaNacimiento < maxDate) {
-        return "La fecha de nacimiento no puede ser mayor a 100 años.";
+    if (new Date(fechaNacimiento) > maxDate) {
+        return "La fecha de nacimiento debe ser 2 años atrás de la fecha actaul.";
     }
     return null;
 }

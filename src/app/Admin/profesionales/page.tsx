@@ -461,7 +461,7 @@ const Profesionales = () => {
 
     // #region Return
     return (
-        <main className="relative min-h-screen bg-cover bg-center"
+        <main className="relative  bg-cover bg-center"
             style={{
                 backgroundImage: `url(${Background})`,
                 backgroundSize: "cover",
@@ -469,7 +469,7 @@ const Profesionales = () => {
             }}
         >
             <Navigate />
-            <div className="relative min-h-screen w-full">
+            <div className="relative  w-full">
                 {/* Background */}
                 <div className="fixed inset-0 z-[-1]">
                     <Image src={Background} alt="Background" layout="fill" objectFit="cover" quality={80} priority={true} />
@@ -503,6 +503,7 @@ const Profesionales = () => {
                                 </button>
                                 <button
                                     onClick={() => setProfesionalAEliminar([])}
+                                    disabled={isDeleting}
                                     className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800"
                                 >
                                     Cancelar
@@ -513,46 +514,14 @@ const Profesionales = () => {
                 )}
                 {/* Contenedor Principal */}
                 <div className="relative mt-8 flex justify-center z-10">
-                    <div className="border p-4 w-11/12 sm:w-2/3 md:w-1/2 lg:w-1/2 h-[60vh] bg-slate-50  overflow-y-auto rounded-lg">
+                    <div className="border p-4 max-w-[96vh] w-11/12 sm:w-2/3 md:w-4/5 lg:w-2/3 h-[62vh] bg-slate-50  overflow-y-auto rounded-lg">
                         {/* Encabezado */}
                         <div className=" flex flex-col items-center z-10 p-2">
                             <h1 className="text-2xl sm:text-2xl bg-slate-50   uppercase">profesionales</h1>
                         </div>
-                        <div className="flex flex-col space-y-4">
-                            {/*                           {profesionales.map((profesional, index) => (
-                                <div
-                                    key={index}
-                                    className="border p-4 relative bg-white w-full flex flex-col justify-center items-center rounded shadow-md"
-                                >
-                                    <div className="relative w-full h-40">
-                                        <Image
-                                            src={imageUrls[profesional.id] || NoImage}
-                                            alt={`${profesional.nombre} ${profesional.apellido}`}
-                                            objectFit="cover"
-                                            layout="fill"
-                                            className="pointer-events-none"
-                                        />
-                                        <button
-                                            onClick={() => setProfesionalAEliminar(profesional)}
-                                            className="absolute top-2 right-2 bg-red-500 rounded-full p-1"
-                                        >
-                                            <Image src={DeleteIcon} alt="Eliminar" width={20} height={20} />
-                                        </button>
-                                        <button
-                                            onClick={() => {
-                                                setSelectedProfesional(profesional);
-                                                setObProfesional(profesional);
-                                            }}
-                                            className="absolute top-2 right-10 bg-yellow-400 rounded-full p-1"
-                                        >
-                                            <Image src={EditIcon} alt="Editar" width={20} height={20} />
-                                        </button>
-                                    </div>
-                                    <h3 className="mt-2 text-black">{profesional.nombre} {profesional.apellido}</h3>
-                                    <p className="text-sm text-gray-600">Email: {profesional.email}</p>
-                                </div>
-                            ))} */}
-                            <div className="relative overflow-x-auto shadow-lg sm:rounded-lg">
+                        <div className="flex flex-col space-y-4 bg-white">
+
+                            <div className="relative overflow-x-auto  shadow-lg sm:rounded-lg">
                                 <div className=" flex justify-around px-auto bg-white p-2">
                                     <div className="flex justify-around ">
                                         <button onClick={() => { setSelectedProfesional(-1); setObProfesional(null) }} className="px-2 w-10 h-10">
@@ -647,9 +616,9 @@ const Profesionales = () => {
                                                             className="w-20 h-25 rounded-full pointer-events-none"
 
                                                         />
-                                                        <div className="ps-3">
+                                                        <div className="ps-3 min-w-64 max-w-96">
                                                             <div className="text-base font-semibold">{profesional.nombre + " " + profesional.apellido}</div>
-                                                            <div className="font-normal text-gray-500">{profesional.email}</div>
+                                                            <div className="font-normal text-gray-500 ">{profesional.email}</div>
                                                         </div>
                                                     </th>
                                                     <td className="px-6 py-4">
@@ -696,6 +665,7 @@ const Profesionales = () => {
                                 type="text"
                                 id="nombre"
                                 name="nombre"
+                                required
                                 value={profesionalDetails.nombre}
                                 onChange={handleChange}
                                 className="p-2 w-full border rounded"
@@ -705,6 +675,7 @@ const Profesionales = () => {
                                 type="text"
                                 id="apellido"
                                 name="apellido"
+                                required
                                 value={profesionalDetails.apellido}
                                 onChange={handleChange}
                                 className="p-2 w-full border rounded"
@@ -716,6 +687,7 @@ const Profesionales = () => {
                                 type="email"
                                 id="email"
                                 name="email"
+                                required
                                 value={profesionalDetails.email}
                                 onChange={handleChange}
                                 className="p-2 w-full border rounded"
@@ -786,6 +758,7 @@ const Profesionales = () => {
                             </button>
                             <button
                                 onClick={() => { setSelectedProfesional(null); handleCancel_init() }}
+                                disabled={isSaving}
                                 className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800">
                                 Cancelar
                             </button>

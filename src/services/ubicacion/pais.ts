@@ -31,25 +31,27 @@ export async function getPaisByName(pais: string) {
 export async function updatePaisById(id:number, data: {
   nombre: string;
 }) {
-  const newPais = {
-    id: id,
-    nombre: data.nombre,
+  const dataTrim = {
+    nombre: data.nombre.trim(),
   }
   console.log("actualizo pais")
 
   return await prisma.nacionalidad.update({
     where: { id },
-    data: newPais
+    data: dataTrim
   });
 }
 
 export async function addPais(data: {
   nombre: string;
 }) {
+  const dataTrim = {
+    nombre: data.nombre.trim(),
+  }
   const paisExistente = await prisma.nacionalidad.findFirst({
     where: {
       nombre: {
-        equals: data.nombre,
+        equals: dataTrim.nombre.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleUpperCase(),
         mode: 'insensitive', // This ensures case-insensitive comparison
       },
     },
@@ -60,7 +62,7 @@ export async function addPais(data: {
   }
   console.log("PAIS NUEVO")
   const pais = prisma.nacionalidad.create({
-    data: data
+    data: dataTrim
   })
   return pais
 

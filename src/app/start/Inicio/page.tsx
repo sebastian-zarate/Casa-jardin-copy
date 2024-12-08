@@ -122,7 +122,7 @@ const Inicio = () => {
       </div>
 
       {/* Contenido principal */}
-      <div className="flex flex-col items-center justify-center mt-10 px-4">
+      <div className="flex flex-col items-center justify-center mt-10 ">
         {/*         <div className="flex items-center p-4 justify-around  bg-white rounded-lg shadow-lg  h-full mt-10">
           <div>
             <h1
@@ -156,7 +156,7 @@ const Inicio = () => {
           </div>
           <img src="" alt="" />
         </div> */}
-        <section className="py-42 w-2/3 ">
+        <section className="py-42 w-full lg:w-2/3 md:w-2/3 ">
           <div className="container">
             <div className="grid items-center gap-8 lg:grid-cols-2 shadow-lg rounded-lg p-2">
               <div className="flex flex-col p-2 items-center text-center lg:items-start lg:text-left">
@@ -185,7 +185,7 @@ const Inicio = () => {
             </div>
           </div>
         </section>
-        <section className="w-full sm:w-2/3 mx-auto md:w-2/3">
+        <section className="  mx-auto w-full lg:w-2/3 md:w-2/3 ">
           <div className="mx-auto bg-blue-200 shadow-lg rounded-lg max-w-screen-xl px-4 py-8 sm:px-6 lg:px-8 ">
             <div className="ml-5 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4 md:items-center md:gap-8">
               <div className="md:col-span-1 mb-8 md:mb-0">
@@ -202,14 +202,14 @@ const Inicio = () => {
               </div>
               </div>
               <div className="md:col-span-1 lg:ml-40 lg:col-span-3 mt-8 md:mt-0">
-              <Image className="max-h-96 lg:ml-5 xl:ml-15 md:ml-0 sm:ml-0 rounded-md object-cover" src={goalSectionStartImage} alt="goalChild" width={500} height={400} />
+              <Image className="lg:max-h-80 max-h-60 min-h-45 lg:ml-5 xl:ml-15 md:ml-0 sm:ml-0 rounded-md object-cover" src={goalSectionStartImage} alt="goalChild" width={500} height={400} />
               </div>
             </div>
           </div>
         </section>
 
 
-        <div className="lg:flex md:flex sm:flex-col justify-center items-center lg:justify-around p-2  bg-slate-100 rounded-lg shadow-lg w-2/3 h-full mt-10">
+        <div className="lg:flex md:flex sm:flex-col justify-center items-center lg:justify-around p-2  bg-slate-100 rounded-lg shadow-lg w-full lg:w-2/3 md:w-2/3 h-full mt-10">
           <div className=" flex flex-col p-4">
             <h1 className="text-2xl font-semibold text-gray-900 sm:text-3xl">Pasos a seguir para registrarse:</h1>
             <h2 className="mb-8 max-w-xl text-zinc-600 lg:text-xl">¡Únete a nosotros y forma parte de esta experiencia única!</h2>

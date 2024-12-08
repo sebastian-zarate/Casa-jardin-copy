@@ -186,7 +186,7 @@ const solicitudPage: React.FC = () => {
             }}
         >
             {/* Navegación */}
-            <div className="fixed top-0 left-0 right-0 flex justify-between w-full px-4 pt-2 bg-sky-600 z-50">
+            <div className="fixed top-0 left-0 right-0 flex justify-between w-full px-4 bg-sky-600 z-50">
                 <Navigate />
             </div>
             <div className="fixed inset-0 z-[-1]">
@@ -195,7 +195,7 @@ const solicitudPage: React.FC = () => {
             {/* Contenido principal */}
             {!habilitarMayores && !habilitarMenores && (
                 <div className="flex flex-col items-center justify-center min-h-screen relative z-10  ">
-                    <div className="bg-white py-2 px-4 justify-center items-center rounded-lg shadow-lg w-1/3">
+                    <div className="bg-white py-2 px-4 justify-center items-center rounded-lg shadow-lg w-4/5 lg:w-1/2 md:w-2/3 sm:w-4/5">
                         <h1 className="text-3xl text-center text-gray-800 my-6" style={{ fontFamily: "Cursive" }}>Solicitudes</h1>
                         <div className="w-full  border p-3 rounded shadow-md bg-sky-600" style={{ fontFamily: "Cursive", opacity: 0.77 }}>
                             <div className="flex items-center p-5 mb-3 border rounded cursor-pointer hover:bg-gray-400 relative" onClick={() => setHabilitarMayores(!habilitarMayores)}>
@@ -217,9 +217,9 @@ const solicitudPage: React.FC = () => {
             {/* Modales */}
             {habilitarMayores && (
                 <div className="fixed inset-0 flex items-center justify-center p-4 z-30">
-                    <div className="relative p-6 rounded shadow-md bg-white w-full max-w-lg" style={{ height: '70vh', overflow: 'auto', fontFamily: "Cursive" }}>
+                    <div className="relative p-6 rounded shadow-md bg-white w-4/5 lg:w-1/2 md:w-2/3 sm:w-4/5" style={{ height: '70vh', overflow: 'auto', fontFamily: "Cursive" }}>
                         <h1 className="text-center mb-4">Historial de solicitudes</h1>
-                        <button className="absolute top-2 right-2 p-1" onClick={() => setHabilitarMayores(!habilitarMayores)}>X</button>
+                        <button className="absolute top-2 right-2 p-1" onClick={() => {setHabilitarMayores(!habilitarMayores); setSolicitudSelected(0)}}>X</button>
                         <div className="p-4 space-y-4">
                             {loading ? (
                                 <div className="w-full h-full flex flex-col items-center justify-center">
@@ -277,9 +277,9 @@ const solicitudPage: React.FC = () => {
 
             {habilitarMenores && (
                 <div className="fixed inset-0 flex items-center justify-center p-4 z-30">
-                    <div className="relative p-6 rounded shadow-md bg-white w-full max-w-lg" style={{ height: '70vh', overflow: 'auto', fontFamily: "Cursive" }}>
+                    <div className="relative p-6 rounded shadow-md bg-white w-4/5 lg:w-1/2 md:w-2/3 sm:w-4/5" style={{ height: '70vh', overflow: 'auto', fontFamily: "Cursive" }}>
                         <h1 className="text-center mb-4">Historial de solicitudes</h1>
-                        <button className="absolute top-2 right-2 p-1" onClick={() => setHabilitarMenores(!habilitarMenores)}>X</button>
+                        <button className="absolute top-2 right-2 p-1" onClick={() => {setHabilitarMenores(!habilitarMenores); setSolicitudSelected(0)}}>X</button>
                         <div className="p-4 space-y-4">
                             {loading ? (
                                 <div className="w-full h-full flex flex-col items-center justify-center">

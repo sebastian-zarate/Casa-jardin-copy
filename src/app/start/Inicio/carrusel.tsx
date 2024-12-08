@@ -33,9 +33,9 @@ const Carrusel = () => {
         }
     };
     return (
-        <div id="indicators-carousel" className={`relative rounded-lg w-1/2 `} data-carousel="static">
+        <div id="indicators-carousel" className={`relative rounded-lg sm:w-full md:w-full lg:w-1/2 `} data-carousel="static">
             {/* Carousel wrapper */}
-            <div className="relative h-56 overflow-hidden rounded-lg md:h-[40vh] bg-white">
+            <div className="relative h-56 overflow-hidden rounded-lg md:h-[30vh] bg-white">
                 {images.map((image, index) => (
                     <div
                         key={index}
@@ -45,12 +45,9 @@ const Carrusel = () => {
                     >
                         <Image
                             src={downloadurls[index]}
-                            className={` rounded-lg min-h-[20vh] md:min-h-[35vh] ${currentImageIndex === 0 ? "translate-y-10" : ""}`}
+                            className={`rounded-lg w-full h-full object-cover ${currentImageIndex === 0 ? "translate-y-10" : ""}`}
                             alt={`Slide ${index}`}
-                            layout="responsive"
-                            width={1050}
-                            height={875}
-                            objectFit="cover"
+                            layout="fill"
                         />
                     </div>
                 ))}

@@ -316,7 +316,7 @@ const Cuenta: React.FC = () => {
             apellido: alumnoDetails.apellido.trim(),
             email: alumnoDetails.email.trim(),
             telefono: alumnoDetails.telefono?.toString().trim(),
-            dni: Number(alumnoDetails.dni),
+            dni: (alumnoDetails.dni),
             fechaNacimiento: new Date(alumnoDetails.fechaNacimiento),
 
         };
@@ -342,9 +342,9 @@ const Cuenta: React.FC = () => {
                     // Crear ubicación si no existe dirección asociada
                     const { direccion } = await createUbicacion();
 
-                    newAlumno = await updateAlumno(Number(alumnoDetails?.id), {
+                    newAlumno = await updateAlumno((alumnoDetails?.id), {
                         ...trimmedAlumnoDetails,
-                        direccionId: Number(direccion?.id),
+                        direccionId: (direccion?.id),
                     });
 
                 } else {
@@ -373,7 +373,7 @@ const Cuenta: React.FC = () => {
 
                     newAlumno = await updateAlumno(Number(alumnoDetails?.id), {
                         ...trimmedAlumnoDetails,
-                        direccionId: Number(direccion?.id),
+                        direccionId: (direccion?.id),
                     });
                 }
             }
@@ -480,6 +480,7 @@ const Cuenta: React.FC = () => {
                                 value={alumnoDetails.nombre}
                                 onChange={handleChange}
                                 className="p-2 w-full border rounded"
+                                required
                             />
                         </div>
                         <div className="mb-4">
@@ -494,6 +495,7 @@ const Cuenta: React.FC = () => {
                                 value={(alumnoDetails.apellido)}
                                 onChange={handleChange}
                                 className="p-2 w-full border rounded"
+                                required
                             />
                         </div>
                         <div className="mb-4">
@@ -512,6 +514,7 @@ const Cuenta: React.FC = () => {
                                         handleChange(e); // Actualiza solo si es un número válido
                                     }
                                 }}
+                                required
                                 className="p-2 w-full border rounded"
                             />
                         </div>
@@ -525,6 +528,7 @@ const Cuenta: React.FC = () => {
                                 value={(alumnoDetails.email)}
                                 onChange={handleChange}
                                 className="p-2 w-full border rounded"
+                                required
                             />
                         </div>
                         {/*                       <div className="mb-4">
@@ -574,6 +578,7 @@ const Cuenta: React.FC = () => {
                                     .toISOString()
                                     .split('T')[0]} // Hace 2 años desde hoy
                                 onChange={handleChange}
+                                required
                             />
                         </div>
 
@@ -683,6 +688,7 @@ const Cuenta: React.FC = () => {
                             <button
                                 onClick={() => { setOpenBox(0); console.log(openBox); setPermitirDireccion(false); getUser() }}
                                 className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800"
+                                disabled={isSaving}
                             >
                                 Cancelar
                             </button>

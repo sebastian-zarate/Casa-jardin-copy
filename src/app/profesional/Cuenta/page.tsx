@@ -320,6 +320,7 @@ const Cuenta: React.FC = () => {
                                 value={profesionalDetails.nombre}
                                 onChange={handleChange}
                                 className="p-2 w-full border rounded"
+                                required
                             />
                         </div>
                         <div className="mb-4">
@@ -331,6 +332,7 @@ const Cuenta: React.FC = () => {
                                 value={(profesionalDetails.apellido)}
                                 onChange={handleChange}
                                 className="p-2 w-full border rounded"
+                                required
                             />
                         </div>
                         <div className="mb-4">
@@ -342,6 +344,7 @@ const Cuenta: React.FC = () => {
                                 value={(profesionalDetails.email)}
                                 onChange={handleChange}
                                 className="p-2 w-full border rounded"
+                                required
                             />
                         </div>
                         <div className="mb-4">
@@ -389,6 +392,7 @@ const Cuenta: React.FC = () => {
                             <button
                                 onClick={() => { setOpenBox(0); console.log(openBox) }}
                                 className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800"
+                                disabled={isSaving}
                             >
                                 Cancelar
                             </button>

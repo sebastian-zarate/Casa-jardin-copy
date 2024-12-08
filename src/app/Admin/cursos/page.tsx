@@ -666,6 +666,7 @@ const Cursos: React.FC = () => {
               </button>
               <button
                 onClick={() => setSelectedCursoId(null)}
+                disabled={isSaving}
                 className="bg-gray-600 py-1 px-3 text-white rounded text-sm hover:bg-gray-700"
               >
                 Cancelar
@@ -697,6 +698,7 @@ const Cursos: React.FC = () => {
               <button
                 onClick={() => setCursoAEliminar(null)}
                 className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800"
+                disabled={isDeleting}
               >
                 Cancelar
               </button>
