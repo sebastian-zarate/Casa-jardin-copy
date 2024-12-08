@@ -90,9 +90,7 @@ const Nosotros = () => {
           <div className="bg-white bg-opacity-90 p-4 rounded-lg shadow-md">
             <h1 className="text-xl text-black">Misión:</h1>
             <h2 className="text-xl text-black max-w-lg">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras purus mauris,
-              congue in elit eu, hendrerit interdum mi. Praesent lectus nibh, feugiat
-              blandit justo fringilla, luctus semper odio.
+                Ofrecer espacios educativos y de acompañamiento para niños, adolescentes y adultos, abarcando los desafíos de cada etapa de sus vidas, promoviendo la realización de sus metas personales, teniendo en cuenta para esto, todas las dimensiones del ser humano.  
             </h2>
           </div>
 
@@ -100,9 +98,7 @@ const Nosotros = () => {
           <div className="bg-white bg-opacity-90 p-4 rounded-lg shadow-md">
             <h1 className="text-xl text-black">Visión:</h1>
             <h2 className="text-xl text-black max-w-lg">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras purus mauris,
-              congue in elit eu, hendrerit interdum mi. Praesent lectus nibh, feugiat
-              blandit justo fringilla, luctus semper odio.
+               Ser una institución líder en Crespo y la región, reconocida por contar con un equipo profesional comprometido con el acompañamiento integral de personas que enfrentan desafíos o buscan alcanzar metas en una sociedad en constante transformación. Adaptarnos a las necesidades educativas y terapéuticas de niños, adolescentes y adultos, permaneciendo siempre fieles a nuestros valores, objetivos y misión.
             </h2>
           </div>
 
@@ -110,9 +106,7 @@ const Nosotros = () => {
           <div className="bg-white bg-opacity-90 p-4 rounded-lg shadow-md">
             <h1 className="text-xl text-black">Valores:</h1>
             <h2 className="text-xl text-black max-w-lg">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras purus mauris,
-              congue in elit eu, hendrerit interdum mi. Praesent lectus nibh, feugiat
-              blandit justo fringilla, luctus semper odio.
+               En Casa Jardín, nos guiamos por valores fundamentales que reflejan nuestro compromiso con la comunidad. Promovemos el espíritu de familia, la cercanía y el amor al trabajo, actuando con solidaridad, empatía e integridad. Fomentamos la creatividad, innovación, la resiliencia y el respeto por la naturaleza, mientras priorizamos la escucha activa, la transparencia y la mejora continua. Trabajamos con responsabilidad y calidad, siempre fieles a nuestra misión. 
             </h2>
           </div>
         </div>
