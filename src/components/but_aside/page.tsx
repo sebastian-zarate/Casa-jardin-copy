@@ -12,7 +12,7 @@ export default function But_aside() {
         alignItems: "center",
         justifyContent: "space-between",
         color: "#FFFFFF",
-        padding: "5px",
+        padding: "3px",
         borderRadius: "5px",
       }}
     >

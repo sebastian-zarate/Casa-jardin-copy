@@ -18,7 +18,6 @@ const StyledWrapper = styled.div`
   height: 2vh;
   width: 6vh;
 
-
   svg {
     width: 2em; /* Tamaño más pequeño */
     transform-origin: center;
@@ -27,7 +26,7 @@ const StyledWrapper = styled.div`
 
   circle {
     fill: none;
-    stroke: hsl(230, 97%, 59%);
+    stroke: white; /* Color blanco */
     stroke-width: 2;
     stroke-dasharray: 1, 200;
     stroke-dashoffset: 0;

@@ -6,11 +6,13 @@ import Navigate from "../../../components/Admin/navigate/page"; // Ajusta la rut
 import Image from "next/image";
 import Background from "../../../../public/Images/BackgroundSolicitudes.jpg"; // Ajusta la ruta según tu estructura de carpetas
 import withAuth from "../../../components/Admin/adminAuth";
-import { getCursos } from "@/services/cursos";
+import { getCantCursosActivos, getCursos } from "@/services/cursos";
 import { getSolicitudes } from "@/services/Solicitud/Solicitud";
 import { getAlumnos } from "@/services/Alumno";
 import { getProfesionales } from "@/services/profesional";
 import { ZoomIn, Blocks, Laptop, ListEnd, ChevronRight, Clipboard, Book, GraduationCap, Users, Brush, CheckSquare } from 'lucide-react';
+import { getCantAlumnosInscriptos } from "@/services/alumno_curso";
+import { getCantProfesionalesActivos } from "@/services/profesional_curso";
 
 const Inicio: React.FC = () => {
   const router = useRouter();
@@ -28,14 +30,17 @@ const Inicio: React.FC = () => {
   const getCantidades = async () => {
     // Lógica para obtener la cantidad de talleres, solicitudes, alumnos y profesores
     const talleres = await getCursos();
-    setCantTalleres(talleres.length);
+    const talleresActivos = await getCantCursosActivos();
+    setCantTalleres(talleresActivos);
     let solicitudes = await getSolicitudes();
     solicitudes = solicitudes.filter((solicitud) => solicitud.leida === false);
     setCantSolicitudes(solicitudes.length);
-    const alumnos = await getAlumnos()
-    setCantAlumnos(alumnos.length);
-    const profesores = await getProfesionales();
-    setCantProfesores(profesores.length);
+/*     const alumnos = await getAlumnos()
+    setCantAlumnos(alumnos.length); */
+    const alumnos = await getCantAlumnosInscriptos();
+    setCantAlumnos(alumnos);
+    const profesores = await getCantProfesionalesActivos();
+    setCantProfesores(profesores);
     //console.log(talleres, solicitudes, alumnos, profesores);
     setLoading(true);
   }
@@ -70,7 +75,7 @@ const Inicio: React.FC = () => {
               {
                 icon: Clipboard,
                 title: "Profesionales",
-                description: `${cantProfesores} profesionales de la academia`,
+                description: `${cantProfesores} profesionales activos`,
                 link: "/Admin/profesionales",
               },
               {

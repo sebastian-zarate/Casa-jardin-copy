@@ -7,6 +7,7 @@ import TituloCasaJardin from '../../../../public/Images/TituloCasaJardin.png';
 import { useState, useEffect } from "react";
 import { createAlumno, emailExists } from "../../../services/Alumno";
 import { validateApellido, validateEmail, validateNombre, validatePasswordComplexity } from '@/helpers/validaciones';
+import Loader from '@/components/Loaders/loadingSave/page';
 
 function Signup() {
     // Se crean los estados para los campos del formulario de registro
@@ -22,6 +23,7 @@ function Signup() {
     const edadMaxima = new Date(Hoy.getFullYear() - 100, Hoy.getMonth(), Hoy.getDate());
 
     const [error, setError] = useState("");
+    const [isSaving, setIsSaving] = useState(false);
     // en para los errores de registro se muestra un mensaje de error por 5 segundos
     // 
     useEffect(() => {
@@ -70,6 +72,7 @@ function Signup() {
     // en esta funsion se envian los datos del formulario de registro
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
+        setIsSaving(true)
         // Recortar espacios en blanco de cada campo antes de validar o enviar los datos
         const trimmedData = {
           nombre: nombre.trim(),
@@ -83,6 +86,7 @@ function Signup() {
         const validationError = await validateForm(trimmedData);
         // Si hay un error en la validación se muestra el mensaje de error
         if (validationError) {
+            setIsSaving(false)
           setError(validationError);
           return;
         }
@@ -270,8 +274,9 @@ function Signup() {
                             <button
                                 className="py-2 px-4 bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 focus:ring-offset-blue-200 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg"
                                 type="submit"
+                                disabled={isSaving}
                             >
-                                Registrarse
+                            {isSaving ? <div className=' w-full flex justify-center'><Loader  /></div> : "Registrarse"}
                             </button>
                         </div>
                         <div className="flex items-center justify-between mt-4">

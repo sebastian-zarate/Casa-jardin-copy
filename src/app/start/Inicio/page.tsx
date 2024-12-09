@@ -123,40 +123,7 @@ const Inicio = () => {
 
       {/* Contenido principal */}
       <div className="flex flex-col items-center justify-center mt-10 ">
-        {/*         <div className="flex items-center p-4 justify-around  bg-white rounded-lg shadow-lg  h-full mt-10">
-          <div>
-            <h1
-              className="text-3xl text-black text-center"
-              style={{ fontFamily: "Cursive", color: "#000000" }}
-            >
-              Bienvenidos a Casa Jardin
-            </h1>
-            <h2
-              className="max-w-2xl text-center mt-6 text-base leading-relaxed text-gray-800"
-              style={{ fontFamily: "Cursive" }}
-            >
-              ¡Bienvenidos a Casa Jardin, un espacio para Aprender, Crear y Crecer!
-              <br />
-              <br />
-              En nuestra academia, creemos que el aprendizaje no tiene límites de edad.
-              Por eso, hemos diseñado un lugar donde personas de todas las generaciones,
-              desde los más pequeños hasta adultos, pueden desarrollar nuevas habilidades,
-              descubrir sus talentos y explorar su creatividad.
-              <br />
-              <br />
-              Nuestro objetivo es ofrecer un entorno inclusivo y acogedor donde cada
-              estudiante se sienta inspirado para alcanzar su máximo potencial. Ya sea
-              que busques explorar un nuevo pasatiempo, mejorar tus habilidades o
-              disfrutar de un espacio creativo, aquí encontrarás una comunidad apasionada
-              y comprometida contigo.
-              <br />
-              <br />
-              ¡Únete a nosotros y forma parte de esta experiencia de aprendizaje única!
-            </h2>
-          </div>
-          <img src="" alt="" />
-        </div> */}
-        <section className="py-42 w-full lg:w-2/3 md:w-2/3 ">
+        <section className="py-42 w-full lg:w-2/3 md:w-2/3 text-pretty font-sans text-lg leading-relaxed ">
           <div className="container">
             <div className="grid items-center gap-8 lg:grid-cols-2 shadow-lg rounded-lg p-2">
               <div className="flex flex-col p-2 items-center text-center lg:items-start lg:text-left">
@@ -185,8 +152,8 @@ const Inicio = () => {
             </div>
           </div>
         </section>
-        <section className="  mx-auto w-full lg:w-2/3 md:w-2/3 ">
-          <div className="mx-auto bg-blue-200 shadow-lg rounded-lg max-w-screen-xl px-4 py-8 sm:px-6 lg:px-8 ">
+        <section className="  mx-auto w-full lg:w-2/3 md:w-2/3  ">
+          <div className=" text-pretty font-sans text-lg leading-relaxed mx-auto bg-blue-200 shadow-lg rounded-lg max-w-screen-xl px-4 py-8 sm:px-6 lg:px-8 ">
             <div className="ml-5 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4 md:items-center md:gap-8">
               <div className="md:col-span-1 mb-8 md:mb-0">
               <div className="max-w-lg md:max-w-none">
@@ -209,7 +176,7 @@ const Inicio = () => {
         </section>
 
 
-        <div className="lg:flex md:flex sm:flex-col justify-center items-center lg:justify-around p-2  bg-slate-100 rounded-lg shadow-lg w-full lg:w-2/3 md:w-2/3 h-full mt-10">
+        <div className="lg:flex md:flex sm:flex-col justify-center items-center lg:justify-around p-2  rounded-lg shadow-lg w-full lg:w-2/3 md:w-2/3 h-full mt-10 bg-white">
           <div className=" flex flex-col p-4">
             <h1 className="text-2xl font-semibold text-gray-900 sm:text-3xl">Pasos a seguir para registrarse:</h1>
             <h2 className="mb-8 max-w-xl text-zinc-600 lg:text-xl">¡Únete a nosotros y forma parte de esta experiencia única!</h2>
@@ -220,7 +187,7 @@ const Inicio = () => {
       </div>
 
       {/* Recordatorio colocado arriba */}
-      <div className="w-full z-40 mb-20 translate-y-2 bg-yellow-100  text-yellow-700 p-4 text-center mt-4 shadow-md">
+      <div className="w-full z-40 mb-20 translate-y-2 bg-yellow-100  text-yellow-700 p-4 text-center mt-4 shadow-md ">
         <p className="text-lg">
           Nota: Para aprovechar al máximo nuestra plataforma, recuerda{" "}
           <span className="font-semibold">iniciar sesión</span> o{" "}

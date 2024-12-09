@@ -1,5 +1,6 @@
 'use server'
 import { PrismaClient } from "@prisma/client";
+import { get } from "http";
 
 const prisma = new PrismaClient();
 
@@ -35,6 +36,15 @@ export async function getalumnos_cursoByIdAlumno(alumnoId: number) {
       alumnoId: alumnoId,
     },
   });
+}
+export async function getAllAlumnos_cursos() {
+  return await prisma.alumno_Curso.findMany();
+}
+export async function getCantAlumnosInscriptos() {
+  const alum_Curso = await getAllAlumnos_cursos();
+  const uniqueAlumnos = Array.from(new Set(alum_Curso.map(alum_cur => alum_cur.alumnoId)));
+  const cantAlumno = uniqueAlumnos.length;
+  return cantAlumno;
 }
 
 export async function getCursosByIdAlumno(id: number) {

@@ -67,3 +67,13 @@ export async function getCursosByIdProfesional(profesionalId: number) {
   console.log("CURSOS", arrayCursos);
   return arrayCursos;
 }
+export async function getAllProfesionales_cursos() {
+  return await prisma.alumno_Curso.findMany();
+}
+export async function getCantProfesionalesActivos() {
+  const prof_Curso = await getAllProfesionales_cursos();
+  const uniqueProfesionales = Array.from(new Set(prof_Curso.map(prof_Curs => prof_Curs.alumnoId)));
+  const cantProf = uniqueProfesionales.length;
+  return   cantProf
+  
+}

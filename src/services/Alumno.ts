@@ -5,6 +5,7 @@ import { hashPassword, verifyPassword } from "../helpers/hashPassword";
 
 import { encrypt, getUserFromCookie } from "@/helpers/jwt";
 import { cookies } from "next/headers";
+import { getalumnos_cursoByIdAlumno } from "./alumno_curso";
 const prisma = new PrismaClient();
 
 // Definir el tipo Alumno
@@ -374,6 +375,15 @@ export async function verifyusuario(id: number, email: string, currentEmail: str
     console.error('Error en la verificación del usuario:', error);
     return false; // Si ocurre algún error, devolvemos false
   }
+}
+
+//verificar si el alumno pertenece a algun curso
+export async function verifyAlumnoCurso(alumnoId: number){
+   const alumnoExist = await getalumnos_cursoByIdAlumno(alumnoId);
+    if(alumnoExist){
+      return true;
+    }
+    return false;
 }
 
 
