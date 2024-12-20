@@ -612,6 +612,8 @@ const Profesionales = () => {
                                                         <Image
                                                             src={imageUrls[profesional.id] || NoImage}
                                                             alt={`${profesional.nombre} ${profesional.apellido}`}
+                                                            width={70}
+                                                            height={90}
                                                             objectFit="cover"
                                                             className="w-20 h-25 rounded-full pointer-events-none"
 

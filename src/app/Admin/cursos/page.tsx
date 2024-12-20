@@ -18,10 +18,13 @@ import { autorizarAdmin } from "@/helpers/cookies";
 import { useRouter } from "next/navigation";
 //para subir imagenes:
 import { handleUploadCursoImage, handleDeleteCursoImage, mapearImagenes } from "@/helpers/repoImages";
+import { Trash2 } from "lucide-react";
 const Cursos: React.FC = () => {
   // Estado para almacenar la lista de cursos
   const [cursos, setCursos] = useState<
     {
+      visible: boolean;
+      selected: boolean;
       id: number;
       nombre: string;
       descripcion: string;
@@ -58,6 +61,9 @@ const Cursos: React.FC = () => {
   //Estado para almacenar las imagenes
   const [images, setImages] = useState<any[]>([]);
   const [downloadurls, setDownloadurls] = useState<any[]>([]);
+  // Estado para almacenar si todos los cursos están seleccionados
+  const [allCursosChecked, setAllCursosChecked] = useState<boolean>(false);
+
   // Efecto para obtener la lista de cursos al montar el componente
   const [cursoAEliminar, setCursoAEliminar] = useState<{
     id: number;
@@ -140,7 +146,7 @@ const Cursos: React.FC = () => {
     try {
       let curs = await getCursos(); // Obtén la lista de cursos
       curs.sort((a, b) => a.nombre.localeCompare(b.nombre)); // Ordena los cursos por nombre
-      setCursos(curs); // Actualiza el estado con la lista de cursos
+      setCursos(curs.map(curso => ({ ...curso, visible: true, selected: false }))); // Actualiza el estado con la lista de cursos
     } catch (error) {
 
     } finally {
@@ -312,11 +318,12 @@ const Cursos: React.FC = () => {
       descripcion: cursoDetails.descripcion.trim(),
     };
 
-    const validationError = validateCursoDetails(trimmedCursoDetails); // Llama a la función de validación con los detalles recortados
+    const validationError = validateCursoDetails(trimmedCursoDetails);
     if (validationError) {
-      setErrorMessage(validationError); // Muestra el mensaje de error si hay un error
+      setErrorMessage(validationError);
       return;
     }
+
 
     if (selectedCursoId !== null) {
       try {
@@ -351,7 +358,7 @@ const Cursos: React.FC = () => {
         setErrorMessage(""); // Limpiar mensaje de error si todo fue bien
 
       } catch (error) {
-        console.error("Imposible actualizar el curso", error); // Manejo de errores
+        console.error("No se pudo actualizar el curso, intente de nuevo", error); // Manejo de errores
       }
     }
   }
@@ -373,9 +380,11 @@ const Cursos: React.FC = () => {
         // Actualizar la lista de cursos, excluyendo el curso eliminado
         setCursos(cursos.filter((curso) => curso.id !== id));
         setCursoAEliminar(null); // Cerrar la ventana de confirmación
+        setErrorMessage(""); // Limpiar mensaje de error si todo fue bien
       } else {
         // Si la eliminación falló, mostrar el mensaje de error devuelto
         setErrorMessage(result.message);
+
       }
     } catch (error) {
       setErrorMessage(
@@ -436,81 +445,205 @@ const Cursos: React.FC = () => {
 
 
 
+  function setAllCrusosSelected(cursos: { id: number; nombre: string; descripcion: string; fechaInicio: Date; fechaFin: Date; edadMinima: number; edadMaxima: number; imagen: string | null; imageUrl?: string; }[]) {
+    throw new Error("Function not implemented.");
+  }
+
   //region return
   return (
-    <main className="relative min-h-screen w-screen" style={{ fontFamily: "Cursive" }}>
+    <main
+      className="relative bg-cover bg-center"
+      style={{
+      backgroundImage: `url(${Background})`,
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+      }}
+    >
       <Navigate />
+      <div className="relative w-full">
+      {/* Fondo Fijo */}
       <div className="fixed inset-0 z-[-1]">
-        <Image src={Background} alt="Background" layout="fill" objectFit="cover" quality={80} priority={true} />
+      <Image
+      src={Background}
+      alt="Background"
+      layout="fill"
+      objectFit="cover"
+      quality={80}
+      priority={true}
+      />
       </div>
-      <h1 className="absolute top-20 left-4 sm:top-40 sm:left-40 mb-5 text-2xl sm:text-3xl bg-white rounded-lg p-2">Talleres</h1>
-      <div
-        className="top-40 sm:top-60 border p-1 absolute left-1/2 transform -translate-x-1/2 h-[60vh] max-h-[60vh] w-11/12 sm:w-auto overflow-y-auto"
-        style={{ background: "#D9D9D9" }}
-      >
-        {loading ? (
-          <div className="w-full h-auto flex flex-col items-center justify-center">
-            <Loader />
-            <h1>Cargando Talleres</h1>
-          </div>
-        ) : (
-          <>
-            <div className="flex justify-start mb-4">
-              <button onClick={() => setSelectedCursoId(-1)} className="flex items-center mx-7 mt-6">
-                <Image
-                  src={ButtonAdd}
-                  alt="Agregar Curso"
-                  width={70}
-                  height={70}
-                  className="mx-2"
-                />
-                <span className="text-black font-medium">Agregar nuevo taller</span>
-              </button>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 my-4">
-              {cursos.map((curso, index) => (
-                <div
-                  key={curso.id}
-                  className="border p-4 mx-2 relative w-full sm:w-47 h-47 flex flex-col justify-center items-center bg-white"
-                >
-                  <div className="relative w-full h-20">
-                    <Image
-                      src={curso.imageUrl || NoImage}
-                      alt="Background Image"
-                      objectFit="cover"
-                      className="w-full h-full pointer-events-none"
-                      layout="fill"
-                    />
-                    <button
-                      onClick={() => setCursoAEliminar(curso)}
-                      className="absolute top-0 right-0 text-red-600 font-bold"
-                    >
-                      <Image
-                        src={DeleteIcon}
-                        alt="Eliminar"
-                        width={27}
-                        height={27}
-                        className="pointer-events-none"
-                      />
-                    </button>
-                    <button
-                      onClick={() => setSelectedCursoId(curso.id)}
-                      className="absolute top-0 right-8 text-red-600 font-bold"
-                    >
-                      <Image src={EditIcon} alt="Editar" width={27} height={27} className="pointer-events-none" />
-                    </button>
-                  </div>
-                  <h3 className="flex bottom-0 text-black z-1">{curso.nombre}</h3>
-                </div>
-              ))}
-            </div>
-
-          </>
+      {cursoAEliminar && (
+      <div className="fixed inset-0 z-20 flex items-center justify-center bg-black bg-opacity-50">
+      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative">
+        <h2 className="text-lg mb-4">Confirmar Eliminación</h2>
+        {errorMessage && (
+          <div className="mb-3 text-red-600 text-sm">{errorMessage}</div>
         )}
+        <p>
+        ¿Estás seguro de que deseas eliminar el curso{" "}
+    
+        </p>
+        <p>
+          ¿Estás seguro de que deseas eliminar los siguientes cursos:{" "}
+          {cursos.filter(curso => curso.selected).map((curso, index) => (
+            <span key={curso.id}>
+              <strong>{curso.nombre}</strong>{index < cursos.filter(curso => curso.selected).length - 1 ? ', ' : ''}
+            </span>
+          ))}?
+        </p>
+        <div className="flex justify-end space-x-4 mt-4">
+        <button
+        onClick={() => handleEliminarCurso(cursoAEliminar.id)} // Se pasa el id del curso
+        className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800"
+        >
+        Confirmar
+        </button>
+        <button
+        onClick={() => {
+          setCursoAEliminar(null);
+          setErrorMessage(null);
+        }} // Cierra el modal
+        className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800"
+        >
+        Cancelar
+        </button>
+        </div>
+      </div>
+      </div>
+      )}
+
+      {/* Contenedor Principal */}
+      <div className="relative mt-8 flex justify-center z-10">
+      <div className="border p-4 max-w-[96vh] w-11/12 sm:w-2/3 md:w-4/5 lg:w-2/3 h-[62vh] bg-slate-50 overflow-y-auto rounded-lg">
+      {/* Encabezado */}
+      <div className="flex flex-col items-center z-10 p-2">
+        <h1 className="text-2xl sm:text-2xl bg-slate-50 uppercase">Cursos</h1>
+      </div>
+
+      {/* Contenido */}
+      <div className="flex flex-col space-y-4 bg-white"></div>
+        {/* Contenido */}
+        <div className="flex flex-col space-y-4 bg-white">
+          <div className="relative overflow-x-auto shadow-lg sm:rounded-lg">
+          <div className="flex justify-around px-auto bg-white p-2">
+            {/* Acciones y Búsqueda */}
+            <div className="flex justify-around">
+            <button onClick={() => setSelectedCursoId(-1)} className="px-2 w-10 h-10">
+              <Image src={ButtonAdd} alt="Agregar Taller" />
+            </button>
+            <button onClick={() => {
+              const selectedCurso = cursos.find(curso => curso.selected);
+              if (selectedCurso) {
+                setCursoAEliminar({ id: selectedCurso.id, nombre: selectedCurso.nombre });
+              }
+            }} className="w-10 px-2 h-10">
+              <Trash2 />
+            </button>
+            </div>
+            <div className="relative">
+            <div className="absolute inset-y-0 right-0 flex items-center pointer-events-none">
+              <svg
+              className="w-4 h-4 text-gray-500"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 20 20"
+              >
+              <path
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
+              />
+              </svg>
+            </div>
+            <input
+              type="text"
+              placeholder="Buscar..."
+              className="block p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-100 focus:ring-blue-500 focus:border-blue-500"
+              onChange={(e) => {
+              const searchTerm = e.target.value.toLowerCase();
+              setCursos(cursos.map(curso => ({
+                ...curso,
+                visible: curso.nombre.toLowerCase().includes(searchTerm) || curso.descripcion.toLowerCase().includes(searchTerm)
+              })));
+              }}
+            />
+            </div>
+          </div>
+
+          {/* Tabla */}
+          <table className="w-full text-sm text-left text-gray-500">
+            <thead className="text-xs text-gray-700 uppercase bg-gray-100">
+            <tr>
+              <th scope="col" className="p-4">
+              <input
+                type="checkbox"
+                onChange={(e) => {
+                const checked = e.target.checked;
+                setCursos(cursos.map(curso => ({
+                  ...curso,
+                  selected: checked
+                })));
+                }}
+              />
+              </th>
+              <th scope="col" className="px-6 py-3">Nombre</th>
+              <th scope="col" className="px-6 py-3">Descripción</th>
+              <th scope="col" className="px-6 py-3">Acción</th>
+            </tr>
+            </thead>
+            <tbody>
+            {cursos.filter(curso => curso.visible !== false).map((curso) => (
+              <tr className="bg-white border-b hover:bg-gray-50" key={curso.id}>
+              <td className="w-4 p-4">
+                <div className="flex items-center">
+                <input
+                  id={`checkbox-table-search-${curso.id}`}
+                  type="checkbox"
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  checked={curso.selected || false}
+                  onChange={(e) => {
+                  const checked = e.target.checked;
+                  setCursos(cursos.map(c => c.id === curso.id ? { ...c, selected: checked } : c));
+                  }}
+                />
+                </div>
+              </td>
+              <th scope="row" className="flex items-center px-6 py-4 text-gray-900 whitespace-nowrap ">
+                <Image
+                src={curso.imageUrl || NoImage}
+                alt={`${curso.nombre} `}
+                width={70}
+                height={100}
+                objectFit="cover"
+                className="w-20 h-25 rounded-full pointer-events-none"
+                />
+                <div className="ps-3 min-w-64 max-w-96">
+                <div className="text-base font-semibold">{curso.nombre}</div>
+                </div>
+              </th>
+              <td className="px-6 py-4">{curso.descripcion}</td>
+              <td className="px-6 py-4">
+                <button
+                onClick={() => setSelectedCursoId(curso.id)}
+                className="font-medium text-blue-600 hover:underline w-full text-left"
+                >
+                Editar taller
+                </button>
+              </td>
+              </tr>
+            ))}
+            </tbody>
+          </table>
+          </div>
+        </div>
+        </div>
+      </div>
       </div>
 
       {selectedCursoId !== null && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="bg-white p-4 rounded-lg shadow-lg w-full max-w-md relative max-h-full overflow-y-auto">
             <h2 className="text-xl font-semibold mb-3">
               {selectedCursoId === -1 ? "Crear Taller" : "Editar Taller"}
@@ -637,7 +770,6 @@ const Cursos: React.FC = () => {
               />
             </div>
 
-
             <div className="mb-3">
               <label htmlFor="imagen" className="block text-sm font-medium">
                 Imagen:
@@ -675,37 +807,7 @@ const Cursos: React.FC = () => {
           </div>
         </div>
       )}
-      {cursoAEliminar && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative">
-            {errorMessage && <div style={{ color: "red" }}>{errorMessage}</div>}
-
-            <h2 className="text-lg mb-4">Confirmar Eliminación</h2>
-            <p>
-              ¿Estás seguro de que deseas eliminar el taller:{" "}
-              <strong>{cursoAEliminar.nombre}</strong>?
-            </p>
-            <div className="flex justify-end space-x-4 mt-4">
-              <button
-                onClick={() => {
-                  handleEliminarCurso(cursoAEliminar.id);
-                }}
-                disabled={isDeleting}
-                className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800"
-              >
-                {isDeleting ? "Eliminando..." : "Confirmar Eliminación"}
-              </button>
-              <button
-                onClick={() => setCursoAEliminar(null)}
-                className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800"
-                disabled={isDeleting}
-              >
-                Cancelar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+     
     </main>
   );
 };

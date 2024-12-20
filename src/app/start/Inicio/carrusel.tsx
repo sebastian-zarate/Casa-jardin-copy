@@ -33,7 +33,7 @@ const Carrusel = () => {
         }
     };
     return (
-        <div id="indicators-carousel" className={`relative rounded-lg sm:w-full md:w-full lg:w-1/2 `} data-carousel="static">
+        <div id="indicators-carousel" className={`relative rounded-lg sm:w-full md:w-full lg:w-1/2 `}>
             {/* Carousel wrapper */}
             <div className="relative h-56 overflow-hidden rounded-lg md:h-[30vh] bg-white">
                 {images.map((image, index) => (

@@ -38,7 +38,7 @@ const StyledWrapper = styled.div`
     overflow: hidden;
     transition-duration: 0.3s;
     box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.199);
-    background-color: #4285F4; /* Color de Google Maps */
+    background-color:rgb(36, 49, 70); /* Color de Google Maps */
   }
 
   .sign {

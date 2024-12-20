@@ -209,3 +209,10 @@ export async function getCantCursosActivos(){
     });
     return cursosActivos.size;
 }
+// obtener los cursos que actualmente estan activos
+
+export async function getCursosActivos(){
+    const cursos = await getCursos();
+    const fechaHoy = new Date();
+    return cursos.filter(curso => curso.fechaInicio <= fechaHoy && curso.fechaFin >= fechaHoy);
+}
