@@ -22,8 +22,7 @@ const Carrusel = () => {
     // Método para obtener las imagenes
     const fetchImages = async () => {
         const result = await getImages_procesoInscrip();
-        console.log(result.images, "LAS IMAGENESSSSS");
-        console.log(result.downloadurls, "LOS DOWNLOADURLS");
+    
         if (result.error) {
             setErrorMessage(result.error);
         } else {
