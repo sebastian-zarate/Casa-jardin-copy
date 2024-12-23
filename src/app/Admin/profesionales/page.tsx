@@ -667,6 +667,8 @@ const Profesionales = () => {
                                 type="text"
                                 id="nombre"
                                 name="nombre"
+                                pattern="^[a-zA-Z\s]+$" // Solo permite letras y espacios
+                                placeholder="Ingrese el nombre del profesional."
                                 required
                                 value={profesionalDetails.nombre}
                                 onChange={handleChange}
@@ -677,6 +679,8 @@ const Profesionales = () => {
                                 type="text"
                                 id="apellido"
                                 name="apellido"
+                                pattern="^[a-zA-Z\s]+$" // Solo permite letras y espacios
+                                placeholder="Ingrese el apellido del profesional."
                                 required
                                 value={profesionalDetails.apellido}
                                 onChange={handleChange}
@@ -689,6 +693,7 @@ const Profesionales = () => {
                                 type="email"
                                 id="email"
                                 name="email"
+                                placeholder="Ingrese el email del profesional."
                                 required
                                 value={profesionalDetails.email}
                                 onChange={handleChange}
@@ -701,6 +706,7 @@ const Profesionales = () => {
                                 type="text"
                                 id="especialidad"
                                 name="especialidad"
+                                placeholder="Ingrese la especialidad del profesional."
                                 value={profesionalDetails.especialidad}
                                 onChange={handleChange}
                                 className="p-2 w-full border rounded"
@@ -709,17 +715,29 @@ const Profesionales = () => {
                         <div className="mb-4">
                             <label htmlFor="telefono" className="block">Teléfono:</label>
                             <div className="flex">
-                                <h3 className="p-2">+54</h3>
-                                <input
-                                    type="number"
-                                    id="telefono"
-                                    name="telefono"
-                                    placeholder="Ingrese su código de área y los dígitos de su teléfono"
-                                    value={profesionalDetails.telefono ? profesionalDetails.telefono : null}
-                                    onChange={handleChange}
-                                    className="p-2 w-full border rounded"
-                                />
-                            </div>
+                            <span className="p-2 bg-gray-200 rounded-l">+54</span>
+
+
+                            <input
+                                type="text"
+                                id="telefono"
+                                name="telefono"
+                                placeholder="Ingrese el teléfono del profesional."
+                                pattern="^\d{8,12}$" // Solo permite números, entre 8 y 15 dígitos
+                                title="El teléfono debe tener entre 8 y 12 números."
+                                maxLength={12} // Limitar la longitud a 15 caracteres
+                                value={profesionalDetails.telefono}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+
+                                    // Filtra solo los números
+                                    if (/^\d*$/.test(value)) {
+                                        handleChange(e); // Actualiza el estado solo si es válido
+                                    }
+                                }}
+                                className="p-2 w-full border rounded"
+                            />
+                        </div>
                         </div>
                         <div className="mb-4">
                             <label htmlFor="password" className="block">Contraseña:</label>
@@ -727,7 +745,8 @@ const Profesionales = () => {
                                 type="password"
                                 id="password"
                                 name="password"
-                                placeholder={(selectedProfesional === -1 || selectedProfesional === -2) ? "" : "Si desea cambiar la contraseña, ingresela aquí"}
+                             
+                                placeholder={(selectedProfesional === -1 || selectedProfesional === -2) ? "Ingrese una contaseña" : "Si desea cambiar la contraseña, ingresela aquí"}
                                 value={profesionalDetails.password}
                                 onChange={handleChange}
                                 className="p-2 w-full border rounded"

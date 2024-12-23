@@ -19,6 +19,7 @@ import { useRouter } from "next/navigation";
 //para subir imagenes:
 import { handleUploadCursoImage, handleDeleteCursoImage, mapearImagenes } from "@/helpers/repoImages";
 import { Trash2 } from "lucide-react";
+import { validateCursoDetails, validateFechaInicioModificacion, validateFechaInicio } from "@/helpers/validaciones";
 const Cursos: React.FC = () => {
   // Estado para almacenar la lista de cursos
   const [cursos, setCursos] = useState<
@@ -77,6 +78,7 @@ const Cursos: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   //booleano para saber si las imagenes ya se cargaron
   const [imagesLoaded, setImagesLoaded] = useState<boolean>(false);
+  const [fechaInicioAnterior, setFechaInicioAnterior] = useState<Date | null>(null);
 
   //boolean para saber si estan cargando los cursos
   const [loading, setLoading] = useState<boolean>(true);
@@ -224,90 +226,7 @@ const Cursos: React.FC = () => {
     }
   };
 
-  // Función para validar los detalles del curso
-  function validateCursoDetails(details: {
-    nombre: string;
-    descripcion: string;
-    fechaInicio: Date;
-    fechaFin: Date;
-    edadMinima: number;
-    edadMaxima: number;
-  }) {
-    const {
-      nombre,
-      descripcion,
-      fechaInicio,
-      fechaFin,
-      edadMinima,
-      edadMaxima,
-    } = details;
 
-    // Validar que el nombre tenga entre 2 y 50 caracteres
-    if (nombre.length < 2 || nombre.length > 50) {
-      return "El nombre debe tener entre 2 y 50 caracteres.";
-    }
-
-    // Validar que la descripción tenga entre 5 y 300 palabras
-    const descripcionWords = descripcion.trim().split(/\s+/).length;
-    if (descripcionWords < 5) {
-      return "La descripción debe tener al menos 5 palabras.";
-    }
-    if (descripcionWords > 300) {
-      return "La descripción no puede exceder las 300 palabras.";
-    }
-
-    // Validar que el nombre y la descripción no contengan caracteres no permitidos
-    const regex = /^[a-zA-Z0-9À-ÿ\u00f1\u00d1\u00fc\u00dc\s.,:-]*$/;
-    if (!regex.test(nombre)) {
-      return "El nombre del curso solo puede contener letras, números, espacios, puntos, comas y guiones.";
-    }
-    if (!regex.test(descripcion)) {
-      return "La descripción solo puede contener letras, números, espacios, puntos, comas y guiones.";
-    }
-
-    // Validar que la fecha de inicio sea anterior a la fecha de fin
-    if (new Date(fechaInicio) >= new Date(fechaFin)) {
-      return "La fecha de inicio debe ser anterior a la fecha de fin.";
-    }
-    // el rango de fechas no puede ser menor a 7 días
-    const diffTime = Math.abs(new Date(fechaFin).getTime() - new Date(fechaInicio).getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    if (diffDays < 7) {
-      return "El rango de fechas no puede ser menor a 7 días.";
-    }
-
-    // Validar rango de edades si ambos están definidos
-    // Validar que la edad mínima sea un número entero positivo
-    // Validar que la edad mínima sea un número entero positivo
-    const minEdad = Number(edadMinima);
-    const maxEdad = Number(edadMaxima);
-
-    // Validar que los valores sean números válidos
-    if (isNaN(minEdad) || isNaN(maxEdad)) {
-      return "Las edades mínima y máxima deben ser números válidos.";
-    }
-
-    // Validar valores negativos
-    if (minEdad < 0 || maxEdad < 0) {
-      return "Las edades no pueden ser valores negativos.";
-    }
-    // edad minimia no puede puede menor a 2 años
-    if (minEdad < 2) {
-      return "La edad mínima no puede ser menor a 2 años.";
-    }
-
-    // Validar el rango de edades
-    if (minEdad > maxEdad) {
-      return "La edad mínima no puede ser mayor que la edad máxima.";
-    }
-
-    if (maxEdad > 100) {
-      return "La edad máxima no puede ser mayor que 99 años.";
-    }
-
-    return null; // No hay errores
-  }
 
   // Función para manejar el guardado de cambios en el curso
   async function handleSaveChanges() {
@@ -319,11 +238,12 @@ const Cursos: React.FC = () => {
     };
 
     const validationError = validateCursoDetails(trimmedCursoDetails);
-    if (validationError) {
+    const validationErrorFechaInicio = validateFechaInicioModificacion(trimmedCursoDetails.fechaInicio, fechaInicioAnterior || undefined);
+    if (validationError || validationErrorFechaInicio) {
       setErrorMessage(validationError);
       return;
     }
-
+   
 
     if (selectedCursoId !== null) {
       try {
@@ -358,7 +278,7 @@ const Cursos: React.FC = () => {
         setErrorMessage(""); // Limpiar mensaje de error si todo fue bien
 
       } catch (error) {
-        console.error("No se pudo actualizar el curso, intente de nuevo", error); // Manejo de errores
+        console.error("Imposible actualizar el curso", error); // Manejo de errores
       }
     }
   }
@@ -374,17 +294,15 @@ const Cursos: React.FC = () => {
       if (result.success === true) {
         console.log(result.message); // "Curso eliminado con éxito"
         setErrorMessage(null); // Limpiar mensaje de error en caso de éxito
-        if (cursoDetails.imagen) {
-          handleDeleteCursoImage(cursoDetails.imagen || ""); // Eliminar la imagen del repositorio
+        if(cursoDetails.imagen){
+            handleDeleteCursoImage(cursoDetails.imagen || ""); // Eliminar la imagen del repositorio
         }
         // Actualizar la lista de cursos, excluyendo el curso eliminado
         setCursos(cursos.filter((curso) => curso.id !== id));
         setCursoAEliminar(null); // Cerrar la ventana de confirmación
-        setErrorMessage(""); // Limpiar mensaje de error si todo fue bien
       } else {
         // Si la eliminación falló, mostrar el mensaje de error devuelto
         setErrorMessage(result.message);
-
       }
     } catch (error) {
       setErrorMessage(
@@ -401,7 +319,8 @@ const Cursos: React.FC = () => {
     };
 
     const validationError = validateCursoDetails(trimmedCursoDetails); // Llama a la función de validación con los detalles recortados
-    if (validationError) {
+    const validationErrorFechaInicio = validateFechaInicio(trimmedCursoDetails.fechaInicio);
+    if (validationError || validationErrorFechaInicio) {
       setErrorMessage(validationError); // Muestra el mensaje de error si hay un error
       return;
     }
@@ -445,9 +364,7 @@ const Cursos: React.FC = () => {
 
 
 
-  function setAllCrusosSelected(cursos: { id: number; nombre: string; descripcion: string; fechaInicio: Date; fechaFin: Date; edadMinima: number; edadMaxima: number; imagen: string | null; imageUrl?: string; }[]) {
-    throw new Error("Function not implemented.");
-  }
+
 
   //region return
   return (
@@ -611,7 +528,10 @@ const Cursos: React.FC = () => {
               <td className="px-6 py-4">{curso.descripcion}</td>
               <td className="px-6 py-4">
                 <button
-                onClick={() => setSelectedCursoId(curso.id)}
+                onClick={() => {
+                  setSelectedCursoId(curso.id);
+                  setFechaInicioAnterior(curso.fechaInicio);
+                }}
                 className="font-medium text-blue-600 hover:underline w-full text-left"
                 >
                 Editar taller
@@ -782,7 +702,10 @@ const Cursos: React.FC = () => {
                 {isSaving ? <Loader /> : "Guardar"}
               </button>
               <button
-                onClick={() => setSelectedCursoId(null)}
+                onClick={() => {
+                  setSelectedCursoId(null);
+                  setErrorMessage(null);
+                }}
                 disabled={isSaving}
                 className="bg-gray-600 py-1 px-3 text-white rounded text-sm hover:bg-gray-700"
               >

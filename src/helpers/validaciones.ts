@@ -309,10 +309,7 @@ export function validateCursoDetails(details: {
       return "El rango de fechas no puede ser menor a 7 días.";
     }
     // la fecha del inicio no puede ser menor a la fecha actual
-    if (new Date(fechaInicio) < new Date()) {
-      return "La fecha de inicio no puede ser menor a la fecha actual.";
-    }
-  
+    
     // Validar que la edad mínima sea un número entero positivo
     const minEdad = Number(edadMinima);
     const maxEdad = Number(edadMaxima);
@@ -320,11 +317,11 @@ export function validateCursoDetails(details: {
     if (isNaN(minEdad) || isNaN(maxEdad)) {
       return "Las edades mínima y máxima deben ser números válidos.";
     }
-  
+  // la edad minima no puede ser menor a 2 años
     if (minEdad < 0 || maxEdad < 0) {
       return "Las edades no pueden ser valores negativos.";
     }
-  
+    //  la edad minima no puede ser mayor a la edad maxima
     if (minEdad < 2) {
       return "La edad mínima no puede ser menor a 2 años.";
     }
@@ -339,4 +336,31 @@ export function validateCursoDetails(details: {
   
     return null; // No hay errores
   }
+  
+
+  // validar que la fecha de inicio no sea menor a la fecha actual
+export function validateFechaInicio(fechaInicio: Date | undefined) {
+    if (!fechaInicio) {
+        return "La fecha de inicio no puede estar vacía.";
+    }
+    if (fechaInicio >= new Date()) {
+        return "La fecha de inicio no puede ser menor a la fecha actual.";
+    }
+    return null;
+}
+// validar que la fecha de inicio no sea mayor a la fecha  de inicio ingresada anteriormente 
+// esta es para la modificacion de un curso
+export function validateFechaInicioModificacion(fechaInicio: Date | undefined, fechaInicioAnterior: Date | undefined) {
+    if (!fechaInicio) {
+        return "La fecha de inicio no puede estar vacía.";
+    }
+    if (fechaInicio <= new Date()) {
+        return "La fecha de inicio no puede ser menor a la fecha actual.";
+    }
+    if (fechaInicioAnterior && fechaInicio <= fechaInicioAnterior) {
+        return "La fecha de inicio debe ser mayor a la fecha de inicio anterior.";
+    }
+    
+    return null;
+}
   

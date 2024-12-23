@@ -16,6 +16,7 @@ import But_aside from "@/components/but_aside/page";
 
 // Define the Aula interface para definir la estructura de los datos de aula
 interface Aula {
+    visible: boolean;
     id: number;
     nombre: string;
 }
@@ -33,7 +34,7 @@ const Aulas: React.FC = () => {
     // Define the fetchAulas function to get the list of aulas
     const fetchAulas = async () => {
         try {
-            const response: Aula[] = await getAulas();
+            const response = (await getAulas()).map(aula => ({ ...aula, visible: true })) as Aula[];
             setAulas(response);
         } catch (error) {
             console.error("Error al obtener las aulas:", error);
@@ -129,219 +130,267 @@ const Aulas: React.FC = () => {
     };
 
     return (
-        <main className="relative min-h-screen w-screen " style={{ fontFamily: "Cursive" }}>
-            
+        <main
+            className="relative bg-cover bg-center"
+            style={{
+                backgroundImage: `url(${Background})`,
+            }}
+        >
             <Navigate />
-            <div className="fixed inset-0 z-[-1]">
-                <Image src={Background} alt="Background" layout="fill" objectFit="cover" quality={80} priority={true} />
-            </div>
 
-            {/* Muestra el título de la página */}
-            
-            <h1 className="absolute top-40 sm:left-40 mb-5 text-2xl  sm:text-3xl bg-white rounded-lg p-2 ">Salones </h1>
+            <div className="relative w-full">
+                {/* Fondo Fijo */}
+                <div className="fixed inset-0 z-[-1]">
+                    <Image
+                        src={Background}
+                        alt="Background"
+                        layout="fill"
+                        objectFit="cover"
+                        quality={80}
+                        priority
+                    />
+                </div>
 
+                {/* Contenedor Principal */}
+                <div className="relative mt-8 flex justify-center">
+                    <div className="border p-4 max-w-[96vh] w-11/12 sm:w-2/3 md:w-4/5 lg:w-2/3 h-[62vh] bg-slate-50 overflow-y-auto rounded-lg">
+                        <div className="flex flex-col items-center p-2">
+                            <h1 className="text-2xl uppercase">Salones</h1>
+                        </div>
 
-            {/* Muestra la lista de aulas */}
-            <div
-        className="top-60 border p-1 absolute left-40 h-[calc(80vh-15rem)] overflow-y-auto "
-        style={{ background: "#D9D9D9" }}
-      >
-         <div className="flex justify-start mb-4 ">
-          <button onClick={() => setSelectedAulaIdCrear(-1)} className="flex items-center mx-7 mt-6">
-            <Image
-              src={ButtonAdd}
-              alt="Añadir Aula"
-              width={70}
-              height={70}
-              className="mx-2"
-            />
-            <span className="text-black font-medium">Agregar un nuevo Salón</span>
-          </button>
-        </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 my-4">
-                    {aulas.map((aula) => (
-                        <button
-                            key={aula.id}
-                            onClick={() => handleSelectAula(aula.id)} // Añadir onClick para seleccionar el aula
-                            className="border p-4 mx-2 relative w-47 h-47 justify-center items-center"
-                        >
-                            <div className="relative w-30 h-20">
-                                <Image
-                                    src={Background}
-                                    alt="Background Image"
-                                    objectFit="cover"
-                                    className="w-full h-full"
-                                    layout="fill"
+                        <div className="flex flex-col space-y-4 bg-white">
+                            <div className="relative overflow-x-auto shadow-lg sm:rounded-lg mb-4">
+                                {/* Barra de acciones */}
+                                <div className="flex justify-around bg-white p-2 mb-4">
+                                    <button
+                                        onClick={() => setSelectedAulaIdCrear(-1)}
+                                        className="px-2 w-10 h-10"
+                                    >
+                                        <Image src={ButtonAdd} alt="Agregar Salón" />
+                                    </button>
+                                    <input
+                                        type="text"
+                                        placeholder="Buscar..."
+                                        className="block p-2 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-100 focus:ring-blue-500 focus:border-blue-500"
+                                        onChange={(e) => {
+                                            const searchTerm = e.target.value.toLowerCase();
+                                            setAulas(
+                                                aulas.map((aula) => ({
+                                                    ...aula,
+                                                    visible: aula.nombre.toLowerCase().includes(searchTerm),
+                                                }))
+                                            );
+                                        }}
+                                    />
+                                </div>
+
+                                {/* Tabla de salones */}
+                                <table className="w-full text-sm text-left text-gray-500 mb-4">
+                                    <thead className="text-xs text-gray-700 uppercase bg-gray-100">
+                                        <tr>
+                                            <th className="px-6 py-3">Nombre</th>
+                                            <th className="px-6 py-3">Acción</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {aulas.filter((aula) => aula.visible).map((aula) => (
+                                            <tr
+                                                className="bg-white border-b hover:bg-gray-50"
+                                                key={aula.id}
+                                            >
+                                                <td className="px-6 py-4 text-gray-900">
+                                                    <div className="text-base font-semibold">{aula.nombre}</div>
+                                                </td>
+                                                <td className="px-6 py-4 space-y-2">
+                                                    <div>
+                                                        <button
+                                                            onClick={() => setSelectedAulaId(aula.id)}
+                                                            className="font-medium text-blue-600 hover:underline"
+                                                        >
+                                                            Ver Horario
+                                                        </button>
+                                                    </div>
+                                                    <div>
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setSelectedAulaIdModificar(aula.id);
+                                                                setAulaDetails({ nombre: aula.nombre }); // Inicializa el campo de entrada con el nombre del aula
+                                                            }}
+                                                            className="font-medium text-blue-600 hover:underline w-full text-left mb-2"
+                                                        >
+                                                            Editar
+                                                        </button>
+
+                                                    </div>
+                                                    <div>
+                                                        <button
+                                                            onClick={() => setSelectedAulaIdEliminar(aula.id)}
+                                                            className="font-medium text-red-600 hover:underline"
+                                                        >
+                                                            Eliminar
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Componente Horario */}
+                {selectedAulaId && (
+                    <div className="fixed top-0 left-0 right-0 bottom-0 bg-white shadow-lg overflow-auto">
+                        <Horario idAula={selectedAulaId} />
+                    </div>
+                )}
+
+                {/* Modales para Crear/Editar */}
+                {(selectedAulaIdCrear !== null || selectedAulaIdModificar) && (
+                    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                        <div className="bg-white p-4 rounded-lg shadow-lg w-full max-w-md relative max-h-screen overflow-y-auto">
+                            <h2 className="text-lg font-semibold mb-3">
+                                {selectedAulaIdCrear === -1 ? "Agregar Salón" : "Modificar Salón"}
+                            </h2>
+                            {errorMessage && (
+                                <div className="mb-3 text-red-600 text-sm">{errorMessage}</div>
+                            )}
+                            <div className="mb-3">
+                                <label htmlFor="nombre" className="block text-sm">
+                                    {selectedAulaIdCrear === -1
+                                        ? "Nombre de Salón:"
+                                        : `Nuevo nombre de ${selectedAulaNombre}:`}
+                                </label>
+                                <input
+                                    type="text"
+                                    id="nombre"
+                                    value={aulaDetails.nombre}
+                                    onChange={(e) =>
+                                        setAulaDetails({ ...aulaDetails, nombre: e.target.value })
+                                    }
+                                    className="p-1 w-full border rounded text-sm"
                                 />
+                            </div>
+                            <div className="flex justify-end space-x-2">
                                 <button
-                                    onClick={(e) => {
-                                        e.stopPropagation(); // Previene la propagación del evento para que no seleccione el aula
-                                        setSelectedAulaIdEliminar(aula.id); // Llama a la función para eliminar el aula
-                                        setSelectedAulaNombre(aula.nombre); // Guarda el nombre del aula para mostrarlo en el mensaje
-                                    }}
-                                    className="absolute top-0 right-0 text-red-600 font-bold"
+                                    onClick={
+                                        selectedAulaIdCrear === -1
+                                            ? handleCreateAula
+                                            : () => selectedAulaIdModificar !== null && handleModificarAula(selectedAulaIdModificar)
+                                    }
+                                    className="bg-red-600 py-1 px-3 text-white rounded text-sm hover:bg-red-700"
                                 >
-                                    <Image src={DeleteIcon} alt="Eliminar" width={27} height={27} />
+                                    Guardar
                                 </button>
                                 <button
-                                    onClick={(e) => {
-                                        e.stopPropagation(); // Previene la propagación del evento para que no seleccione el aula
-                                        setSelectedAulaIdModificar(aula.id); // Añadir onClick para seleccionar el aula
-                                        setSelectedAulaNombre(aula.nombre); // Guarda el nombre del aula para mostrarlo en el mensaje
+                                    onClick={() => {
+                                        setSelectedAulaIdCrear(null);
+                                        setSelectedAulaIdModificar(null);
+                                        setErrorMessage(null);
+                                        setAulaDetails({ nombre: "" });
                                     }}
-                                    className="absolute top-0 right-8 text-red-600 font-bold"
+                                    className="bg-gray-600 py-1 px-3 text-white rounded text-sm hover:bg-gray-700"
                                 >
-                                    <Image src={EditIcon} alt="Editar" width={30} height={30} />
+                                    Cancelar
                                 </button>
                             </div>
-                            <h3 className="flex bottom-0 text-black z-1">
-                                {aula.nombre}
-                            </h3>
-                        </button>
+                        </div>
+                    </div>
+                )}
 
-                    ))}
+                {selectedAulaIdModificar && (
+                    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                        <div className="bg-white p-4 rounded-lg shadow-lg w-full max-w-md relative max-h-screen overflow-y-auto">
+                            <h2 className="text-lg font-semibold mb-3">Modificar Salón</h2>
+                            {errorMessage && (
+                                <div className="mb-3 text-red-600 text-sm">{errorMessage}</div>
+                            )}
+                            <div className="mb-3">
+                                <label htmlFor="nombre" className="block text-sm">
+                                    Nuevo nombre de {selectedAulaNombre}:
+                                </label>
+                                <input
+                                    type="text"
+                                    id="nombre"
+                                    value={aulaDetails.nombre} // Se usa aulaDetails.nombre como valor del input
+                                    onChange={(e) =>
+                                        setAulaDetails({ ...aulaDetails, nombre: e.target.value })
+                                    }
+                                    className="p-1 w-full border rounded text-sm"
+                                />
+                            </div>
+                            <div className="flex justify-end space-x-2">
+                                <button
+                                    onClick={() => {
+                                        if (selectedAulaIdModificar) handleModificarAula(selectedAulaIdModificar);
+                                    }}
+                                    className="bg-red-600 py-1 px-3 text-white rounded text-sm hover:bg-red-700"
+                                >
+                                    Guardar Cambios
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setSelectedAulaIdModificar(null);
+                                        setErrorMessage(null);
+                                        setAulaDetails({ nombre: "" }); // Limpia el estado al cerrar
+                                    }}
+                                    className="bg-gray-600 py-1 px-3 text-white rounded text-sm hover:bg-gray-700"
+                                >
+                                    Cancelar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+                
+                {/* Modal para Eliminar */}
+                {selectedAulaIdEliminar && (
+                    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                        <div className="bg-white p-4 rounded-lg shadow-lg w-full max-w-md relative">
+                            <h2 className="text-lg font-semibold mb-3">Eliminar Salón</h2> 
+                            {errorMessage && (
+                                <div className="mb-3 text-red-600 text-sm">{errorMessage}</div>
+                            )}
+                            <div className="mb-3">
+                                <p>¿Estás seguro de eliminar el salón?</p>
+                            </div>
+                           
+                            <div className="flex justify-end space-x-2">
+                                <button
+                                    onClick={() => {
+                                        if (selectedAulaIdEliminar) handleEliminarAula(selectedAulaIdEliminar);
+                                    }
+                                    }
+                                    className="bg-red-600 py-1 px-3 text-white rounded text-sm hover:bg-red-700"
+                                >
+                                    Eliminar
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setSelectedAulaIdEliminar(null);
+                                        setErrorMessage(null);
+                                    }}
+                                    className="bg-gray-600 py-1 px-3 text-white rounded text-sm hover:bg-gray-700"
+                                >   
+                                    Cancelar    
+                                </button>
 
-                </div>
+                            </div>
+                    </div>
+                 </div>
+                )}
             </div>
-         
-     
-
-
-            {/* Componente Horario con el ID del aula seleccionada */}
-            {selectedAulaId && (
-                <div className=" fixed top-0 left-0 right-0 bottom-0 bg-white  shadow-lg overflow-auto">
-                    <Horario idAula={selectedAulaId} />
-                </div>
-            )}
-            {/* Crear Aula */}
-            {selectedAulaIdCrear !== null && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-                    <div className="bg-white p-4 rounded-lg shadow-lg w-full max-w-md relative max-h-screen overflow-y-auto">
-                        <h2 className="text-lg font-semibold mb-3">
-                            {selectedAulaIdCrear === -1 ? "Agregar Salón" : "Editar Salón"}
-                        </h2>
-                        {errorMessage && (
-                            <div className="mb-3 text-red-600 text-sm">{errorMessage}</div>
-                        )}
-                        <div className="mb-3">
-                            <label htmlFor="nombre" className="block text-sm">Nombre de Salón:</label>
-                            <input
-                                type="text"
-                                id="nombre"
-                                value={aulaDetails.nombre}
-                                onChange={(e) =>
-                                    setAulaDetails({ ...aulaDetails, nombre: e.target.value })
-                                }
-                                className="p-1 w-full border rounded text-sm"
-                            />
-                        </div>
-                        <div className="flex justify-end space-x-2">
-                            <button
-                                onClick={handleCreateAula}
-                                className="bg-red-600 py-1 px-3 text-white rounded text-sm hover:bg-red-700"
-                            >
-                                Guardar
-                            </button>
-                            <button
-                                onClick={() => {
-                                    setSelectedAulaIdCrear(null);
-                                    setErrorMessage(null);
-                                    setAulaDetails({ nombre: "" });
-                                }}
-                                className="bg-gray-600 py-1 px-3 text-white rounded text-sm hover:bg-gray-700"
-                            >
-                                Cancelar
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Eliminar Aula */}
-            {selectedAulaIdEliminar && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-                    <div className="bg-white p-4 rounded-lg shadow-lg w-full max-w-md relative max-h-screen overflow-y-auto">
-                        <h2 className="text-lg font-semibold mb-3">
-                            ¿Eliminar el salón: {selectedAulaNombre}?
-                        </h2>
-                        {errorMessage && (
-                            <div className="mb-3 text-red-600 text-sm">{errorMessage}</div>
-                        )}
-                        <div className="flex justify-end space-x-2">
-                            <button
-                                onClick={() => handleEliminarAula(selectedAulaIdEliminar)}
-                                className="bg-red-600 py-1 px-3 text-white rounded text-sm hover:bg-red-700"
-                            >
-                                Eliminar
-                            </button>
-                            <button
-                                onClick={() => {
-                                    setSelectedAulaIdEliminar(null);
-                                    setErrorMessage(null);
-                                }}
-                                className="bg-gray-600 py-1 px-3 text-white rounded text-sm hover:bg-gray-700"
-                            >
-                                Cancelar
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Modificar Aula */}
-            {selectedAulaIdModificar && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-                    <div className="bg-white p-4 rounded-lg shadow-lg w-full max-w-md relative max-h-screen overflow-y-auto">
-                        <h2 className="text-lg font-semibold mb-3">Modificar Salón</h2>
-                        {errorMessage && (
-                            <div className="mb-3 text-red-600 text-sm">{errorMessage}</div>
-                        )}
-                        <div className="mb-3">
-                            <label htmlFor="nombre" className="block text-sm">
-                                Nuevo nombre de {selectedAulaNombre}:
-                            </label>
-                            <input
-                                type="text"
-                                id="nombre"
-                                value={aulaDetails.nombre}
-                                onChange={(e) =>
-                                    setAulaDetails({ ...aulaDetails, nombre: e.target.value })
-                                }
-                                className="p-1 w-full border rounded text-sm"
-                            />
-                        </div>
-                        <div className="flex justify-end space-x-2">
-                            <button
-                                onClick={() => {
-                                    if (selectedAulaIdModificar) handleModificarAula(selectedAulaIdModificar);
-                                }}
-                                className="bg-red-600 py-1 px-3 text-white rounded text-sm hover:bg-red-700"
-                            >
-                                Guardar Cambios
-                            </button>
-                            <button
-                                onClick={() => {
-                                    setSelectedAulaIdModificar(null);
-                                    setErrorMessage(null);
-                                    setAulaDetails({ nombre: "" });
-                                }}
-                                className="bg-gray-600 py-1 px-3 text-white rounded text-sm hover:bg-gray-700"
-                            >
-                                Cancelar
-                            </button>
-                        </div>
-                    </div>
-
-                </div>
-            )}
-         
-
-       
-
-
-
         </main>
-    );       
+
+
+
+
+
+
+    );
 
 };
 
