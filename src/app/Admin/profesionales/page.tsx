@@ -612,9 +612,11 @@ const Profesionales = () => {
                                                         <Image
                                                             src={imageUrls[profesional.id] || NoImage}
                                                             alt={`${profesional.nombre} ${profesional.apellido}`}
+                                                            layout="fixed"
                                                             objectFit="cover"
                                                             className="w-20 h-25 rounded-full pointer-events-none"
-
+                                                            width={80}
+                                                            height={80} // Adjusted height to maintain aspect ratio
                                                         />
                                                         <div className="ps-3 min-w-64 max-w-96">
                                                             <div className="text-base font-semibold">{profesional.nombre + " " + profesional.apellido}</div>
