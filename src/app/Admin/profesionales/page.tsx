@@ -238,11 +238,11 @@ const Profesionales = () => {
             const fileExtension =
                 lastDotIndex !== -1 ? fileName.substring(lastDotIndex + 1) : ""; // Obtener la extensión del archivo
             // Concatenar id, nombre y apellido del profesional con la extensión // Concatenar nombre del profesional con la extensión
-            console.log("ProfesionalDetails inside onFileChange: ", profesionalDetails);
+          
             const fileNameWithExtension = `${profesionalDetails.email}_${profesionalDetails.nombre}_${profesionalDetails.apellido}.${fileExtension}`;
-            console.log("FileNameWithExtension: ", fileNameWithExtension);
+        
             setProfesionalDetails({ ...profesionalDetails, imagen: fileNameWithExtension });
-            console.log("Imagen seleccionada:", fileNameWithExtension);
+         
         }
     };
 
@@ -330,7 +330,7 @@ const Profesionales = () => {
         if (result.error) {
             setUploadError(result.error);
         } else {
-            console.log("Image uploaded successfully:", result.result);
+           
             setImagesLoaded(false); // Establecer en falso para que se vuelvan a cargar las imágenes
         }
     };
