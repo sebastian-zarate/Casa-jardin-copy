@@ -249,8 +249,7 @@ const Profesionales = () => {
     // Método para obtener las imagenes
     const fetchImages = async () => {
         const result = await getImagesUser();
-        console.log(result.images, "LAS IMAGENESSSSS");
-        console.log(result.downloadurls, "LOS DOWNLOADURLS");
+      
         if (result.error) {
             setErrorMessage(result.error);
         } else {
@@ -475,21 +474,14 @@ const Profesionales = () => {
                     <Image src={Background} alt="Background" layout="fill" objectFit="cover" quality={80} priority={true} />
                 </div>
 
-
-                {ProfesionalAEliminar.length > 0 && (
+                {ProfesionalAEliminar.length === 1 && (
                     <div className="fixed inset-0 z-20 flex items-center justify-center bg-black bg-opacity-50">
                         <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative">
                             {errorMessage && <div style={{ color: "red" }}>{errorMessage}</div>}
 
                             <h2 className="text-lg mb-4">Confirmar Eliminación</h2>
                             <p>
-                                ¿Estás seguro de que deseas eliminar a
-                                {ProfesionalAEliminar.length !== profesionales.length ? <strong>&nbsp;
-                                    {ProfesionalAEliminar.map((profesional) => {
-                                        return (profesional.nombre + " " + profesional.apellido)
-                                    }).join(", ")}?
-                                </strong> : <strong>&nbsp; todos los profesionales?</strong>
-                                }
+                                ¿Estás seguro de que deseas eliminar al profesional {ProfesionalAEliminar[0]?.nombre + " " + ProfesionalAEliminar[0]?.apellido}?
                             </p>
                             <div className="flex justify-end space-x-4 mt-4">
                                 <button
@@ -502,7 +494,10 @@ const Profesionales = () => {
                                     {isDeleting ? "Eliminando..." : "Confirmar Eliminación"}
                                 </button>
                                 <button
-                                    onClick={() => setProfesionalAEliminar([])}
+                                    onClick={() => {
+                                        setProfesionalAEliminar([]);
+                                        setErrorMessage("");
+                                    }}
                                     disabled={isDeleting}
                                     className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800"
                                 >
@@ -512,6 +507,7 @@ const Profesionales = () => {
                         </div>
                     </div>
                 )}
+                    
                 {/* Contenedor Principal */}
                 <div className="relative mt-8 flex justify-center z-10">
                     <div className="border p-4 max-w-[96vh] w-11/12 sm:w-2/3 md:w-4/5 lg:w-2/3 h-[62vh] bg-slate-50  overflow-y-auto rounded-lg">
@@ -527,9 +523,7 @@ const Profesionales = () => {
                                         <button onClick={() => { setSelectedProfesional(-1); setObProfesional(null) }} className="px-2 w-10 h-10">
                                             <UserRoundPlus />
                                         </button>
-                                        <button onClick={() => {allProfesionalesSelected.length > 0 ? setProfesionalAEliminar(allProfesionalesSelected) :""}} className=" w-10 px-2 h-10">
-                                            <Trash2 />
-                                        </button>
+                                        
                                     </div>
                                     {/* Barra de búsqueda */}
                                     <div className="flex items-center justify-between flex-column flex-wrap md:flex-row space-y-4 md:space-y-0 pb-4 ">
@@ -554,25 +548,7 @@ const Profesionales = () => {
                                     <thead className="text-xs text-gray-700 uppercase bg-gray-100  ">
                                         <tr>
                                             <th scope="col" className="p-4">
-                                                <div className="flex items-center">
-                                                    <input
-                                                        id="checkbox-all-search"
-                                                        type="checkbox"
-                                                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 "
-                                                        onChange={(e) => {
-                                                            if (e.target.checked) {
-                                                                setAllProfesionalesChecked(true);
-                                                                setAllProfesionalesSelected(profesionales);
-
-                                                            }
-                                                            else {
-                                                                setAllProfesionalesChecked(false);
-                                                                setAllProfesionalesSelected([])
-                                                            }
-                                                        }}
-                                                    />
-                                                    <label htmlFor="checkbox-all-search" className="sr-only">checkbox</label>
-                                                </div>
+                                                
                                             </th>
                                             <th scope="col" className="px-6 py-3">
                                                 Nombre
@@ -590,23 +566,7 @@ const Profesionales = () => {
                                             profesionales.map((profesional, index) => (
                                                 <tr className="bg-white border-b   hover:bg-gray-50 ">
                                                     <td className="w-4 p-4">
-                                                        <div className="flex items-center">
-                                                            <input
-                                                                id="checkbox-table-search-1"
-                                                                onChange={(e) => {
-                                                                    if (e.target.checked) {
-                                                                        setAllProfesionalesSelected([...allProfesionalesSelected, profesional]);
-                                                                    }
-                                                                    else {
-                                                                        setAllProfesionalesSelected(allProfesionalesSelected.filter((prof) => prof.id !== profesional.id));
-                                                                    }
-                                                                }}
-                                                                checked={allProfesionalesSelected.some((prof) => prof.id === profesional.id) || allProfesionalesChecked}
-                                                                type="checkbox"
-                                                                className="w-4 h-4 text-blue-600  border-gray-300 rounded focus:ring-blue-500"
-                                                            />
-
-                                                        </div>
+                                                        
                                                     </td>
                                                     <th scope="row" className="flex items-center px-6 py-4 text-gray-900 whitespace-nowrap ">
                                                         <Image
@@ -634,7 +594,15 @@ const Profesionales = () => {
                                                             }}
                                                             className="font-medium text-blue-600 hover:underline"
                                                         >
-                                                            Editar profesional
+                                                            <Image src={EditIcon} alt="Editar" width={24} height={24} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => {
+                                                                setProfesionalAEliminar([profesional]);
+                                                            }}
+                                                            className="font-medium justify-center text-red-600 hover:underline ml-2"
+                                                        >
+                                                            <Image src={DeleteIcon} alt="Eliminar" width={25} height={26} />
                                                         </button>
 
                                                     </td>

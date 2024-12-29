@@ -54,25 +54,48 @@ const principal: React.FC = () => {
     const [imagesLoaded, setImagesLoaded] = useState<boolean>(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-
+    const [loading, setLoading] = useState(true); // Estado de carga
     const router = useRouter();
     // Para cambiar al usuario de página si no está logeado
     // Para cambiar al usuario de página si no está logeado
     useEffect(() => {
-      const authorizeAndFetchData = async () => {
-        await autorizarUser(router);
-        const user = await fetchUserData();
-        setUsuario(user);
-        setUserName(user?.nombre + " " + user?.apellido);
-        if (!user) return;
-        let talleres = await getCursosByIdProfesional(Number(user?.id));
-        setCursos(talleres);
-        fetchImages(talleres);
+      const verificarAutenticacion = async () => {
+        try {
+          setLoading(true);
+          await autorizarUser(router); // Verifica si el usuario está autorizado
+          const user = await fetchUserData(); // Obtén los datos del usuario
+  
+            if (!user) {
+            router.push("/start/login"); // Redirige al login si no hay usuario
+            return;
+          }
+  
+          setUsuario(user);
+  
+          const talleres = await getCursosByIdProfesional(Number(user.id)); // Obtén cursos
+          setCursos(talleres);
+        } catch (error) {
+          console.error("Error al verificar autenticación:", error);
+          router.push("/login"); // Redirige al login si ocurre un error
+        } finally {
+          setLoading(false);
+        }
       };
   
-      authorizeAndFetchData();
+      verificarAutenticacion();
     }, [router]);
-
+  
+    if (loading) {
+      return (
+        <div className="fixed inset-0 flex items-center justify-center bg-white">
+      
+        </div>
+      );
+    }
+  
+    if (!usuario) {
+      return null; // Esto es opcional, ya que el usuario será redirigido
+    }
     const authorizeAndFetchData = async () => {
         console.time("authorizeAndFetchData");
         // Primero verifico que el user esté logeado

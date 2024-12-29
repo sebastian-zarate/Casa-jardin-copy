@@ -918,9 +918,7 @@ const Alumnos: React.FC = () => {
                                     </div>
                                     {/* Barra de búsqueda */}
                                     <div className="flex items-center justify-between flex-column flex-wrap md:flex-row space-y-4 md:space-y-0 pb-4">
-                                        <button onClick={() => { allAlumnosSelected.length > 0 ? setAlumnoAEliminar(allAlumnosSelected) : "" }} className=" w-10 px-2 h-10">
-                                            <Trash2 />
-                                        </button>
+                                      
                                         <label htmlFor="table-search" className="sr-only">Buscar</label>
                                         <div className="relative">
                                             <div className="absolute inset-y-0 right-0 rtl:inset-r-0 start-0 flex items-center ps-3 pointer-events-none">
@@ -940,31 +938,18 @@ const Alumnos: React.FC = () => {
                                 <table className="w-full text-sm text-left rtl:text-right text-gray-500">
                                     <thead className="text-xs text-gray-700 uppercase bg-gray-100">
                                         <tr>
-                                            <th scope="col" className="p-4">
-                                                <div className="flex items-center">
-                                                    <input
-                                                        id="checkbox-all-search"
-                                                        type="checkbox"
-                                                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
-                                                        onChange={(e) => {
-                                                            if (e.target.checked) {
-                                                                setAllAlumnosChecked(true);
-                                                                setAllAlumnosSelected(alumnos);
-                                                            } else {
-                                                                setAllAlumnosChecked(false);
-                                                                setAllAlumnosSelected([]);
-                                                            }
-                                                        }}
-                                                    />
-                                                    <label htmlFor="checkbox-all-search" className="sr-only">checkbox</label>
+                                            <th scope="col" className="p-4 text-center">
+                                                <div className="flex items-center justify-center">
+                                                    Codigo
                                                 </div>
                                             </th>
-                                            <th scope="col" className="px-4 py-3">
+                                           
+                                            <th scope="col" className="px-5 py-3">
                                                 Nombre
                                             </th>
 
                                             <th scope="col" className="px-4 py-3">
-                                                Tipo
+                                                Mayoría de edad
                                             </th>
                                             <th scope="col" className="px-4 py-3">
                                                 Acción
@@ -975,21 +960,11 @@ const Alumnos: React.FC = () => {
                                         {alumnos.map((alumno, index) => (
                                             <tr className="bg-white border-b hover:bg-gray-50" key={index}>
                                                 <td className="w-4 p-4">
-                                                    <div className="flex items-center">
-                                                        <input
-                                                            id={`checkbox-table-search-${index}`}
-                                                            type="checkbox"
-                                                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                                                            onChange={(e) => {
-                                                                if (e.target.checked) {
-                                                                    setAllAlumnosSelected([...allAlumnosSelected, alumno]);
-                                                                } else {
-                                                                    setAllAlumnosSelected(allAlumnosSelected.filter((alum) => alum.id !== alumno.id));
-                                                                }
-                                                            }}
-                                                            checked={allAlumnosSelected.some((alum) => alum.id === alumno.id) || allAlumnosChecked}
-                                                        />
+                                                <td className="px-5 py-3 text-black">
+                                                    <div className="flex items-center text-black">
+                                                        <span>{alumno.id}</span>
                                                     </div>
+                                                </td>
                                                 </td>
                                                 <th scope="row" className="flex flex-col items-start px-6 py-4 text-gray-900 whitespace-nowrap">
                                                     <div className="ps-3 min-w-64 max-w-96">
@@ -1010,9 +985,15 @@ const Alumnos: React.FC = () => {
                                                         }}
                                                         className="font-medium text-blue-600 hover:underline"
                                                     >
-                                                        Editar
+                                                      <Image src={EditIcon} alt="Editar" width={24} height={24} />
                                                     </button>
-
+                                                    <button
+                                                        onClick={() => setAlumnoAEliminar(alumno)}
+                                                        className="font-medium text-red-600 hover:underline"
+                                                    >
+                                                        <Image src={DeleteIcon} alt="Eliminar" width={24} height={24} />
+                                                    </button>
+          
                                                 </td>
                                             </tr>
                                         ))}

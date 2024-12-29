@@ -390,43 +390,36 @@ const Cursos: React.FC = () => {
       />
       </div>
       {cursoAEliminar && (
-      <div className="fixed inset-0 z-20 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative">
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative">
+        {errorMessage && <div style={{ color: "red" }}>{errorMessage}</div>}
         <h2 className="text-lg mb-4">Confirmar Eliminación</h2>
-        {errorMessage && (
-          <div className="mb-3 text-red-600 text-sm">{errorMessage}</div>
-        )}
         <p>
-        ¿Estás seguro de que deseas eliminar el curso{" "}
-    
-        </p>
-        <p>
-          ¿Estás seguro de que deseas eliminar los siguientes cursos:{" "}
-          {cursos.filter(curso => curso.selected).map((curso, index) => (
-            <span key={curso.id}>
-              <strong>{curso.nombre}</strong>{index < cursos.filter(curso => curso.selected).length - 1 ? ', ' : ''}
-            </span>
-          ))}?
+          ¿Estás seguro de que deseas eliminar el taller:{" "}
+          <strong>{cursoAEliminar.nombre}</strong>?
         </p>
         <div className="flex justify-end space-x-4 mt-4">
-        <button
-        onClick={() => handleEliminarCurso(cursoAEliminar.id)} // Se pasa el id del curso
-        className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800"
-        >
-        Confirmar
-        </button>
-        <button
-        onClick={() => {
+            <button
+            onClick={() => {
+              handleEliminarCurso(cursoAEliminar.id);
+            }}
+            disabled={isDeleting}
+            className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800"
+            >
+            {isDeleting ? "Eliminando..." : "Confirmar Eliminación"}
+            </button>
+          <button
+            onClick={() => {
           setCursoAEliminar(null);
           setErrorMessage(null);
-        }} // Cierra el modal
-        className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800"
-        >
-        Cancelar
-        </button>
+            }}
+            className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800"
+          >
+            Cancelar
+          </button>
         </div>
-      </div>
-      </div>
+          </div>
+        </div>
       )}
 
       {/* Contenedor Principal */}
@@ -434,7 +427,7 @@ const Cursos: React.FC = () => {
       <div className="border p-4 max-w-[96vh] w-11/12 sm:w-2/3 md:w-4/5 lg:w-2/3 h-[62vh] bg-slate-50 overflow-y-auto rounded-lg">
       {/* Encabezado */}
       <div className="flex flex-col items-center z-10 p-2">
-        <h1 className="text-2xl sm:text-2xl bg-slate-50 uppercase">Cursos</h1>
+        <h1 className="text-2xl sm:text-2xl bg-slate-50 uppercase">Talleres</h1>
       </div>
 
       {/* Contenido */}
@@ -442,105 +435,85 @@ const Cursos: React.FC = () => {
         {/* Contenido */}
         <div className="flex flex-col space-y-4 bg-white">
           <div className="relative overflow-x-auto shadow-lg sm:rounded-lg">
-          <div className="flex justify-around px-auto bg-white p-2">
-            {/* Acciones y Búsqueda */}
-            <div className="flex justify-around">
-            <button onClick={() => setSelectedCursoId(-1)} className="px-2 w-10 h-10">
-              <Image src={ButtonAdd} alt="Agregar Taller" />
-            </button>
-            <button onClick={() => {
-              const selectedCurso = cursos.find(curso => curso.selected);
-              if (selectedCurso) {
-                setCursoAEliminar({ id: selectedCurso.id, nombre: selectedCurso.nombre });
-              }
-            }} className="w-10 px-2 h-10">
-              <Trash2 />
-            </button>
-            </div>
-            <div className="relative">
-            <div className="absolute inset-y-0 right-0 rtl:inset-r-0 start-0 flex items-center ps-3 pointer-events-none"><svg className="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"></path></svg></div>
-            <input
-              type="text"
-              placeholder="Buscar..."
-              className="block p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-100 focus:ring-blue-500 focus:border-blue-500"
-              onChange={(e) => {
+            <div className="flex justify-between items-center bg-white p-4">
+              {/* Acciones y Búsqueda */}
+              <button onClick={() => setSelectedCursoId(-1)} className="px-2 w-10 h-10">
+          <Image src={ButtonAdd} alt="Agregar Taller" />
+              </button>
+              <div className="relative w-80">
+          <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+            <svg className="w-4 h-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+              <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"></path>
+            </svg>
+          </div>
+          <input
+            type="text"
+            placeholder="Buscar..."
+            className="block p-2 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-full bg-gray-100 focus:ring-blue-500 focus:border-blue-500"
+            onChange={(e) => {
               const searchTerm = e.target.value.toLowerCase();
               setCursos(cursos.map(curso => ({
                 ...curso,
                 visible: curso.nombre.toLowerCase().includes(searchTerm) || curso.descripcion.toLowerCase().includes(searchTerm)
               })));
-              }}
-            />
+            }}
+          />
+              </div>
             </div>
-          </div>
 
-          {/* Tabla */}
-          <table className="w-full text-sm text-left text-gray-500">
-            <thead className="text-xs text-gray-700 uppercase bg-gray-100">
-            <tr>
-              <th scope="col" className="p-4">
-              <input
-                type="checkbox"
-                onChange={(e) => {
-                const checked = e.target.checked;
-                setCursos(cursos.map(curso => ({
-                  ...curso,
-                  selected: checked
-                })));
-                }}
-              />
-              </th>
-              <th scope="col" className="px-6 py-3">Nombre</th>
-              <th scope="col" className="px-6 py-3">Descripción</th>
-              <th scope="col" className="px-6 py-3">Acción</th>
-            </tr>
-            </thead>
-            <tbody>
-            {cursos.filter(curso => curso.visible !== false).map((curso) => (
-              <tr className="bg-white border-b hover:bg-gray-50" key={curso.id}>
+            {/* Tabla */}
+            <table className="w-full text-sm text-left text-gray-500">
+              <thead className="text-xs text-gray-700 uppercase bg-gray-100">
+          <tr>
+            <th scope="col" className="p-4"></th>
+            <th scope="col" className="px-6 py-3">Nombre</th>
+            <th scope="col" className="px-6 py-3">Descripción</th>
+            <th scope="col" className="px-6 py-3">Acción</th>
+          </tr>
+              </thead>
+              <tbody>
+          {cursos.filter(curso => curso.visible !== false).map((curso) => (
+            <tr className="bg-white border-b hover:bg-gray-50" key={curso.id}>
               <td className="w-4 p-4">
                 <div className="flex items-center">
-                <input
-                  id={`checkbox-table-search-${curso.id}`}
-                  type="checkbox"
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                  checked={curso.selected || false}
-                  onChange={(e) => {
-                  const checked = e.target.checked;
-                  setCursos(cursos.map(c => c.id === curso.id ? { ...c, selected: checked } : c));
-                  }}
-                />
+            <div className="text-base font-semibold text-gray-700">{curso.nombre}</div>
                 </div>
               </td>
-              <th scope="row" className="flex items-center px-6 py-4 text-gray-900 whitespace-nowrap ">
+              <th scope="row" className="flex items-center px-6 py-4 text-gray-900 whitespace-nowrap">
                 <Image
-                src={curso.imageUrl || NoImage}
-                alt={`${curso.nombre} `}
-                width={70}
-                height={100}
-                objectFit="cover"
-                className="w-20 h-25 rounded-full pointer-events-none"
+            src={curso.imageUrl || NoImage}
+            alt={`${curso.nombre} `}
+            width={70}
+            height={100}
+            objectFit="cover"
+            className="w-20 h-25 rounded-full pointer-events-none"
                 />
-                <div className="ps-3 min-w-64 max-w-96">
-                <div className="text-base font-semibold">{curso.nombre}</div>
-                </div>
+          
               </th>
               <td className="px-6 py-4">{curso.descripcion}</td>
               <td className="px-6 py-4">
-                <button
-                onClick={() => {
-                  setSelectedCursoId(curso.id);
-                  setFechaInicioAnterior(curso.fechaInicio);
-                }}
-                className="font-medium text-blue-600 hover:underline w-full text-left"
-                >
-                Editar taller
-                </button>
+                <div className="flex justify-around">
+            <button
+              onClick={() => {
+                setSelectedCursoId(curso.id);
+                setFechaInicioAnterior(curso.fechaInicio);
+              }}
+              className="px-2 w-10 h-10"
+            >
+              <Image src={EditIcon} alt="Editar Taller" />
+            </button>
+            <button
+                 onClick={() => setCursoAEliminar(curso)}
+              className="px-2 w-10 h-10"
+            >
+              <Image src={DeleteIcon} alt="Eliminar Taller" />
+            </button>
+                </div>
               </td>
-              </tr>
-            ))}
-            </tbody>
-          </table>
+            </tr>
+          ))}
+              </tbody>
+            </table>
           </div>
         </div>
         </div>
@@ -715,6 +688,8 @@ const Cursos: React.FC = () => {
           </div>
         </div>
       )}
+
+
      
     </main>
   );

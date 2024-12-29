@@ -28,6 +28,7 @@ const Aulas: React.FC = () => {
     const [selectedAulaIdEliminar, setSelectedAulaIdEliminar] = useState<number | null>(null); // Añadir estado para el ID del aula seleccionada
     const [aulaDetails, setAulaDetails] = useState<{ nombre: string }>({ nombre: "" });
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [isDeleting, setIsDeleting] = useState<boolean>(false);
     const [selectedAulaNombre, setSelectedAulaNombre] = useState(""); // Estado para el nombre del aula
     // modificar aula
     const [selectedAulaIdModificar, setSelectedAulaIdModificar] = useState<number | null>(null); // Añadir estado para el ID del aula seleccionada
@@ -202,33 +203,34 @@ const Aulas: React.FC = () => {
                                                     <div className="text-base font-semibold">{aula.nombre}</div>
                                                 </td>
                                                 <td className="px-6 py-4 space-y-2">
-                                                    <div>
-                                                        <button
-                                                            onClick={() => setSelectedAulaId(aula.id)}
-                                                            className="font-medium text-blue-600 hover:underline"
-                                                        >
-                                                            Ver Horario
-                                                        </button>
-                                                    </div>
-                                                    <div>
+                                                    
+                                                    <div className="flex items-center space-x-4">
                                                         <button
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
                                                                 setSelectedAulaIdModificar(aula.id);
                                                                 setAulaDetails({ nombre: aula.nombre }); // Inicializa el campo de entrada con el nombre del aula
                                                             }}
-                                                            className="font-medium text-blue-600 hover:underline w-full text-left mb-2"
+                                                            className="font-medium text-blue-600 hover:underline flex items-center"
                                                         >
-                                                            Editar
+                                                            <Image src={EditIcon} alt="Editar" width={24} height={24} className="mr-1" />
                                                         </button>
-
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setSelectedAulaIdEliminar(aula.id);
+                                                            }}
+                                                            className="font-medium text-red-600 hover:underline flex items-center"
+                                                        >
+                                                            <Image src={DeleteIcon} alt="Eliminar" width={24} height={24} className="mr-1" />
+                                                        </button>
                                                     </div>
                                                     <div>
                                                         <button
-                                                            onClick={() => setSelectedAulaIdEliminar(aula.id)}
-                                                            className="font-medium text-red-600 hover:underline"
+                                                            onClick={() => setSelectedAulaId(aula.id)}
+                                                            className="font-medium text-blue-600 hover:underline border border-blue-600 rounded px-2 py-0.75 hover:bg-blue-600 hover:text-white transition"
                                                         >
-                                                            Eliminar
+                                                            Ver Horario
                                                         </button>
                                                     </div>
                                                 </td>
@@ -361,12 +363,15 @@ const Aulas: React.FC = () => {
                             <div className="flex justify-end space-x-2">
                                 <button
                                     onClick={() => {
-                                        if (selectedAulaIdEliminar) handleEliminarAula(selectedAulaIdEliminar);
-                                    }
-                                    }
-                                    className="bg-red-600 py-1 px-3 text-white rounded text-sm hover:bg-red-700"
+                                        if (selectedAulaIdEliminar) {
+                                            setIsDeleting(true);
+                                            handleEliminarAula(selectedAulaIdEliminar).finally(() => setIsDeleting(false));
+                                        }
+                                    }}
+                                    disabled={isDeleting}
+                                    className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800"
                                 >
-                                    Eliminar
+                                    {isDeleting ? "Eliminando..." : "Confirmar Eliminación"}
                                 </button>
                                 <button
                                     onClick={() => {

@@ -80,7 +80,7 @@ const Cuenta: React.FC = () => {
     useEffect(() => {
         if (user && !profesionalDetails.email) {
             getUser()
-            console.log("holaaaaaaaaaaaaaaaaaaaaaa")
+           
         }
 
     }, [user]);
@@ -90,13 +90,11 @@ const Cuenta: React.FC = () => {
     }, [router]);
 
     const authorizeAndFetchData = async () => {
-        console.time("authorizeAndFetchData");
-        // Primero verifico que el user esté logeado
-        //console.log("router", router);
+        
         await autorizarUser(router);
-        // Una vez autorizado obtengo los datos del user y seteo el email
+        
         const user = await fetchUserData();
-        //console.log("user", user);
+        
         setUser(user)
         if (!user) return;
         let talleres = await getCursosByIdProfesional(Number(user?.id));
