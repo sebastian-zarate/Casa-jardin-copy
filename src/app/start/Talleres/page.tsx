@@ -5,7 +5,7 @@ import Navigate from "../../../components/start/navigate/page";
 import But_aside from "../../../components/but_aside/page";
 import Image from "next/image";
 import Background from "../../../../public/Images/BackgroundSolicitudes.jpg";
-import { getCursos } from "@/services/cursos";
+import { getCursosActivos } from "@/services/cursos";
 //imagen default si el curso no tiene imagen
 import NoImage from "../../../../public/Images/default-no-image.png";
 import { getImages_talleresAdmin } from "@/services/repoImage";
@@ -35,15 +35,14 @@ const Talleres = () => {
 
 
     async function fetchTalleres() {
-        const taller = await getCursos();
+        const taller = await getCursosActivos();
         console.log(taller);
         setCursos(taller);
     }
     // Método para obtener las imagenes
     const fetchImages = async () => {
         const result = await getImages_talleresAdmin();
-        console.log(result.images, "LAS IMAGENESSSSS");
-        console.log(result.downloadurls, "LOS DOWNLOADURLS");
+    
         if (result.error) {
             setErrorMessage(result.error);
         } else {

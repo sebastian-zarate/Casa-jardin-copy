@@ -25,6 +25,7 @@ import { hashPassword } from "@/helpers/hashPassword";
 import { createResponsable, deleteResponsable, deleteResponsableByAlumnoId, getAllResponsables, getDireccionResponsableByAlumnoId, updateResponsable } from "@/services/responsable";
 import { validateApellido, validateDireccion, validateDni, validateEmail, validateFechaNacimiento, validateNombre, validatePasswordComplexity, validatePhoneNumber } from "@/helpers/validaciones";
 import Loader from "@/components/Loaders/loadingSave/page";
+import { Trash2, UserRoundPlus, UserRoundX } from "lucide-react";
 // #endregion
 
 const Alumnos: React.FC = () => {
@@ -133,6 +134,8 @@ const Alumnos: React.FC = () => {
     const [AlumnoAEliminar, setAlumnoAEliminar] = useState<any>(null);
     const [isDeleting, setIsDeleting] = useState<boolean>(false);
     const [isSaving, setIsSaving] = useState<boolean>(false);
+    const [allAlumnosChecked, setAllAlumnosChecked] = useState<boolean>(false);
+    const [allAlumnosSelected, setAllAlumnosSelected] = useState<any[]>([]);
     // #endregion
 
     // #region UseEffects
@@ -835,33 +838,32 @@ const Alumnos: React.FC = () => {
 
     // #region Return
     return (
-        <main className="relative min-h-screen w-screen" style={{ fontFamily: "Cursive" }}>
-            <div className="fixed top-0 left-0 right-0 flex justify-between w-full px-4 pt-2 bg-sky-600 z-20">
-                <Navigate />
-            </div>
-            <div className="relative min-h-screen w-full pt-16">
-                {/* Background */}
+        <main
+            className="relative bg-cover bg-center"
+            style={{
+                backgroundImage: `url(${Background})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+            }}
+        >
+            <Navigate />
+            <div className="relative w-full">
+                {/* Fondo Fijo */}
                 <div className="fixed inset-0 z-[-1]">
-                    <Image src={Background} alt="Background" layout="fill" objectFit="cover" quality={80} priority={true} />
+                    <Image
+                        src={Background}
+                        alt="Background"
+                        layout="fill"
+                        objectFit="cover"
+                        quality={80}
+                        priority={true}
+                    />
                 </div>
 
-                {/* Encabezado */}
-                <div className="relative mt-16 sm:mt-20 flex flex-col items-center z-10">
-                    <h1 className="text-2xl sm:text-3xl bg-white rounded-lg p-2 shadow-lg">ALUMNOS</h1>
-                </div>
 
-                {/* Barra de búsqueda */}
-                <div className="relative mt-4 flex justify-center z-10">
-                    <div className="relative w-11/12 sm:w-1/4">
-                        <input
-                            type="text"
-                            placeholder="Buscar..."
-                            className="p-2 border rounded w-full"
-                            value={alumnoAbuscar}
-                            onChange={handleSearchChange}
-                        />
-                    </div>
-                </div>
+
+
+
                 {AlumnoAEliminar && (
                     <div className="fixed inset-0 z-20 flex items-center justify-center bg-black bg-opacity-50">
                         <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative">
@@ -895,46 +897,112 @@ const Alumnos: React.FC = () => {
                 )}
                 {/* Contenedor Principal */}
                 <div className="relative mt-8 flex justify-center z-10">
-                    <div className="border p-4 w-11/12 sm:w-2/3 md:w-1/2 lg:w-1/3 h-[60vh] bg-gray-800 bg-opacity-60 overflow-y-auto rounded-lg">
-                        <div className="flex flex-col space-y-4">
-                            {alumnos.map((alumno, index) => (
-                                <div
-                                    key={index}
-                                    className="border p-4 relative bg-white w-full flex flex-col justify-center items-center rounded shadow-md"
-                                >
-                                    <div className="flex justify-between w-full mb-2">
-                                        <h3 className="text-lg font-semibold text-black">{alumno.nombre} {alumno.apellido}</h3>
-                                        <div className="flex space-x-2">
-                                            <button onClick={() => setAlumnoAEliminar(alumno)} className="text-red-600 font-bold">
-                                                <Image src={DeleteIcon} alt="Eliminar" width={27} height={27} />
-                                            </button>
-                                            <button onClick={() => {
-                                                setSelectedAlumno(alumno); setObAlumno(alumno);
-                                            }} className="text-blue-600 font-bold">
-                                                <Image src={EditIcon} alt="Editar" width={27} height={27} />
-                                            </button>
+                    <div className="border p-4 max-w-[96vh] w-11/12 sm:w-2/3 md:w-4/5 lg:w-2/3 h-[62vh] bg-slate-50 overflow-y-auto rounded-lg">
+                        {/* Encabezado */}
+                        <div className="flex flex-col items-center z-10 p-2">
+                            <h1 className="text-2xl sm:text-2xl bg-slate-50 uppercase">Alumnos</h1>
+                        </div>
+                        <div className="flex flex-col space-y-4 bg-white">
+                            <div className="relative overflow-x-auto shadow-lg sm:rounded-lg">
+                                <div className="flex justify-around px-auto bg-white p-2">
+                                    <div className="flex justify-center space-x-4">
+                                        <button onClick={() => { setSelectedAlumno(-1); setObAlumno(null); setMayor(true) }} className="px-2 w-10 h-10 flex flex-col items-center">
+                                            <UserRoundPlus />
+                                            <span>Mayor</span>
+                                        </button>
+                                        <button onClick={() => { setSelectedAlumno(-2); setObAlumno(null); setMayor(false) }} className="px-2 w-10 h-10 flex flex-col items-center">
+                                            <UserRoundPlus />
+                                            <span>Menor</span>
+                                        </button>
+
+                                    </div>
+                                    {/* Barra de búsqueda */}
+                                    <div className="flex items-center justify-between flex-column flex-wrap md:flex-row space-y-4 md:space-y-0 pb-4">
+                                      
+                                        <label htmlFor="table-search" className="sr-only">Buscar</label>
+                                        <div className="relative">
+                                            <div className="absolute inset-y-0 right-0 rtl:inset-r-0 start-0 flex items-center ps-3 pointer-events-none">
+                                                <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                                                </svg>
+                                            </div>
+                                            <input type="text"
+                                                placeholder="Buscar..."
+                                                value={alumnoAbuscar}
+                                                onChange={handleSearchChange}
+                                                className="block p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-100 focus:ring-blue-500 focus:border-blue-500"
+                                            />
                                         </div>
                                     </div>
-                                    <div className="text-sm text-gray-600">
-                                        <p>Email: {alumno.email}</p>
-                                        {alumno.fechaNacimiento && (
-                                            <p>
-                                                {new Date().getFullYear() - new Date(alumno.fechaNacimiento).getFullYear() < 18 ? "Menor de edad" : "Mayor de edad"}
-                                            </p>
-                                        )}
-                                    </div>
                                 </div>
-                            ))}
+                                <table className="w-full text-sm text-left rtl:text-right text-gray-500">
+                                    <thead className="text-xs text-gray-700 uppercase bg-gray-100">
+                                        <tr>
+                                            <th scope="col" className="p-4 text-center">
+                                                <div className="flex items-center justify-center">
+                                                    Codigo
+                                                </div>
+                                            </th>
+                                           
+                                            <th scope="col" className="px-5 py-3">
+                                                Nombre
+                                            </th>
+
+                                            <th scope="col" className="px-4 py-3">
+                                                Mayoría de edad
+                                            </th>
+                                            <th scope="col" className="px-4 py-3">
+                                                Acción
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {alumnos.map((alumno, index) => (
+                                            <tr className="bg-white border-b hover:bg-gray-50" key={index}>
+                                                <td className="w-4 p-4">
+                                                <td className="px-5 py-3 text-black">
+                                                    <div className="flex items-center text-black">
+                                                        <span>{alumno.id}</span>
+                                                    </div>
+                                                </td>
+                                                </td>
+                                                <th scope="row" className="flex flex-col items-start px-6 py-4 text-gray-900 whitespace-nowrap">
+                                                    <div className="ps-3 min-w-64 max-w-96">
+                                                        {alumno.nombre} {alumno.apellido}
+                                                    </div>
+                                                    <div className="ps-3 min-w-64 max-w-96 text-xs">
+                                                        {alumno.email}
+                                                    </div>
+                                                </th>
+                                                <td className="px-6 py-4">
+                                                    {new Date().getFullYear() - new Date(alumno.fechaNacimiento).getFullYear() >= 18 ? "Mayor" : "Menor"}
+                                                </td>
+                                                <td className="px-6 py-4 flex space-x-4">
+                                                    <button
+                                                        onClick={() => {
+                                                            setSelectedAlumno(alumno);
+                                                            setObAlumno(alumno);
+                                                        }}
+                                                        className="font-medium text-blue-600 hover:underline"
+                                                    >
+                                                      <Image src={EditIcon} alt="Editar" width={24} height={24} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setAlumnoAEliminar(alumno)}
+                                                        className="font-medium text-red-600 hover:underline"
+                                                    >
+                                                        <Image src={DeleteIcon} alt="Eliminar" width={24} height={24} />
+                                                    </button>
+          
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                        <button onClick={() => { setSelectedAlumno(-1); setObAlumno(null); setMayor(true) }} className="mt-6 mx-4 bg-white rounded-full p-2 hover:bg-sky-400">
-                            Agregar mayor
-                        </button>
-                        <button onClick={() => { setSelectedAlumno(-2); setObAlumno(null); setMayor(false) }} className="mt-6 mx-4 bg-white rounded-full p-2 hover:bg-sky-400">
-                            Agregar menor
-                        </button>
                     </div>
                 </div>
-
                 {/* Modal */}
                 {selectedAlumno !== null && (
                     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-20">
@@ -954,6 +1022,8 @@ const Alumnos: React.FC = () => {
                                     type="text"
                                     id="nombre"
                                     name="nombre"
+                                    placeholder="Ingrese nombre del alumno"
+                                    pattern="[A-Za-z ]+"
                                     maxLength={50}
                                     value={alumnoDetails.nombre}
                                     onChange={handleChange}
@@ -966,6 +1036,8 @@ const Alumnos: React.FC = () => {
                                     id="apellido"
                                     name="apellido"
                                     maxLength={50}
+                                    pattern=" [A-Za-z ]+"
+                                    placeholder="Ingrese apellido del alumno"
                                     value={alumnoDetails.apellido}
                                     onChange={handleChange}
                                     className="p-2 w-full border rounded"
@@ -978,7 +1050,9 @@ const Alumnos: React.FC = () => {
                                     type="email"
                                     id="email"
                                     name="email"
-                                    placeholder={selectedAlumno === -2 ? "Si no tiene email, el mismo debe ser del responsable" : ""}
+                                    placeholder={selectedAlumno === -2 ? "Si no tiene email, el mismo debe ser del responsable" : "Ingrese email del alumno"}
+                                    pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$"
+                                    max={75}
                                     value={alumnoDetails.email}
                                     onChange={handleChange}
                                     className="p-2 w-full border rounded"
@@ -986,48 +1060,46 @@ const Alumnos: React.FC = () => {
                                 />
                             </div>
                             <div className="mb-4">
-                                <label htmlFor="dni" className="block">DNI:</label>
-                                <input
-                                    type="number"
-                                    id="dni"
-                                    name="dni"
-                                    pattern="[0-9]+"
-                                    maxLength={8}
-                                    placeholder="Ingrese su DNI"
-                                    value={alumnoDetails.dni ? alumnoDetails.dni : null}
-                                    onChange={(e) => {
-                                        const value = e.target.value;
-                                        if (/^\d*$/.test(value)) {
-                                            handleChange(e);
-                                        }
-                                    }}
-                                    className="p-2 w-full border rounded"
-                                    required
-                                />
-                            </div>
+                                            <label htmlFor="dni" className="block">DNI:</label>
+                                            <input
+                                                type="text" // Cambiado a "text" para mayor control
+                                                id="dni"
+                                                name="dni"
+                                                placeholder="Ingrese el DNI"
+                                                value={alumnoDetails.dni || ''} // Asegurar un valor por defecto como cadena vacía
+                                                maxLength={8} // Limitar a 8 caracteres
+                                                onChange={(e) => {
+                                                    const value = e.target.value.replace(/\D/g, ""); // Eliminar cualquier caracter no numérico
+                                                    const formattedValue = value
+
+                                                    setAlumnoDetails({ ...alumnoDetails, dni: formattedValue }); // Actualizar el estado
+                                                }}
+                                                className="p-2 w-full border rounded"
+                                            />
+                                        </div>
+                                        
                             {selectedAlumno === -2 || ((selectedAlumno !== -2) && mayor === true) && (
-                                <div className="mb-4">
-                                    <label htmlFor="telefono" className="block">Teléfono:</label>
-                                    <div className="flex">
-                                        <h3 className="p-2">+54</h3>
-                                        <input
-                                            type="number"
-                                            id="telefono"
-                                            name="telefono"
-                                            pattern="[0-9]+" // Solo permite números
-                                            maxLength={11} // Limita el número total de caracteres
-                                            placeholder="Ingrese su código de área y los dígitos de su teléfono"
-                                            value={alumnoDetails.telefono ? alumnoDetails.telefono : null}
-                                            onChange={(e) => {
-                                                const value = e.target.value;
-                                                if (/^\d*$/.test(value)) {
-                                                    handleChange(e);
-                                                }
-                                            }}
-                                            className="p-2 w-full border rounded"
-                                        />
-                                    </div>
+                            
+                            <div className="mb-4">
+                                <label htmlFor="telefono" className="block">Teléfono:</label>
+                                <div className="flex items-center">
+                                    <span className="p-2 bg-gray-200 rounded-l">+54</span>
+                                    <input
+                                        type="text"
+                                        id="telefono"
+                                        name="telefono"
+                                        placeholder="Ingrese el número de teléfono"
+                                        maxLength={10} // Limitar a 10 dígitos
+                                        value={alumnoDetails.telefono || ''} // Asegurar un valor inicial válido
+                                        onChange={(e) => {
+                                            const value = e.target.value.replace(/\D/g, ""); // Eliminar caracteres no numéricos
+                                            setAlumnoDetails({ ...alumnoDetails, telefono: value }); // Actualizar el estado
+                                        }}
+                                        className="p-2 w-full border rounded-r"
+                                    />
                                 </div>
+                                
+                            </div>
                             )}
                             <div className="flex-col flex mb-4">
                                 <label htmlFor="fechaNacimiento">Fecha de Nacimiento</label>
@@ -1135,6 +1207,7 @@ const Alumnos: React.FC = () => {
                                                 name="numero"
                                                 maxLength={5}
                                                 placeholder="Ingrese el número de su calle"
+
                                                 value={numero ? Number(numero) : ""}
                                                 onChange={(e) => {
                                                     const value = e.target.value;
@@ -1160,6 +1233,7 @@ const Alumnos: React.FC = () => {
                                                 id="ResponsableNombre"
                                                 name="nombre"
                                                 pattern='[A-Za-z ]+'
+                                                placeholder="Ingrese el nombre del responsable"
                                                 maxLength={50}
                                                 value={responsableDetails.nombre}
                                                 onChange={handleChangeResponsable}
@@ -1173,6 +1247,7 @@ const Alumnos: React.FC = () => {
                                                 id="ResponsableApellido"
                                                 name="apellido"
                                                 pattern='[A-Za-z ]+'
+                                                placeholder="Ingrese el apellido del responsable"
                                                 maxLength={50}
                                                 value={responsableDetails.apellido}
                                                 onChange={handleChangeResponsable}
@@ -1180,44 +1255,42 @@ const Alumnos: React.FC = () => {
                                             />
                                         </div>
                                         <div className="mb-4">
-                                            <label htmlFor="dniR" className="block">DNI:</label>
+                                            <label htmlFor="dni" className="block">DNI:</label>
                                             <input
-                                                type="number"
-                                                id="dniR"
+                                                type="text" // Cambiado a "text" para mayor control
+                                                id="dni"
                                                 name="dni"
-                                                pattern="[0-9]+"
-                                                maxLength={8}
-                                                placeholder="Ingrese el DNI sin puntos ni espacios"
-                                                value={responsableDetails.dni ? responsableDetails.dni : null}
+                                                placeholder="Ingrese el DNI"
+                                                value={responsableDetails.dni || ''} // Asegurar un valor por defecto como cadena vacía
+                                                maxLength={8} // Limitar a 8 caracteres
                                                 onChange={(e) => {
-                                                    const value = e.target.value;
-                                                    if (/^\d*$/.test(value)) {
-                                                        handleChangeResponsable(e);
-                                                    }
+                                                    const value = e.target.value.replace(/\D/g, ""); // Eliminar cualquier caracter no numérico
+                                                    const formattedValue = value
+
+                                                    setResponsableDetails({ ...responsableDetails, dni: formattedValue }); // Actualizar el estado
                                                 }}
                                                 className="p-2 w-full border rounded"
                                             />
                                         </div>
                                         <div className="mb-4">
-                                            <label htmlFor="telefonoR" className="block">Teléfono:</label>
-                                            <div className="flex">
-                                                <h3 className="p-2">+54</h3>
+                                            <label htmlFor="telefono" className="block">Teléfono:</label>
+                                            <div className="flex items-center">
+                                                <span className="p-2 bg-gray-200 rounded-l">+54</span>
                                                 <input
-                                                    type="number"
-                                                    id="telefonoR"
+                                                    type="text"
+                                                    id="telefono"
                                                     name="telefono"
-                                                    placeholder="Ingrese su código de área y los dígitos de su teléfono"
-                                                    value={responsableDetails.telefono ? responsableDetails.telefono : null}
+                                                    placeholder="Ingrese el número de teléfono"
+                                                    maxLength={10} // Limitar a 10 dígitos
+                                                    value={responsableDetails.telefono || ''} // Asegurar un valor inicial válido
                                                     onChange={(e) => {
-                                                        const value = e.target.value;
-                                                        if (/^\d*$/.test(value)) {
-                                                            handleChangeResponsable(e);
-                                                        }
+                                                        const value = e.target.value.replace(/\D/g, ""); // Eliminar caracteres no numéricos
+                                                        setResponsableDetails({ ...responsableDetails, telefono: value }); // Actualizar el estado
                                                     }}
-                                                    className="p-2 w-full border rounded"
-                                                    maxLength={11} // Limita el número total de caracteres
+                                                    className="p-2 w-full border rounded-r"
                                                 />
                                             </div>
+                                            
                                         </div>
                                         <div className="mb-4">
                                             <label htmlFor="emailR" className="block">Email:</label>

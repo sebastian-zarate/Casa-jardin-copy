@@ -58,7 +58,7 @@ const solicitudPage: React.FC = () => {
             if (solicitudes.length === 0) {
                 await fetchData();
             }
-            console.log("carga finalizada")
+            
             setLoading(false);
         };
         fetchDataIfNeeded();

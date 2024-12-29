@@ -98,6 +98,26 @@ export async function deleteCurso(id: number): Promise<{ success: boolean, messa
                 cursoId: id
             }
         })
+        // busco que que el curso no tenga un profesor asignado para poder eliminarlo si tiene un profesor asignado no se puede eliminar
+        // muestra un mensaje de error
+        const profesor_curso = await prisma.profesional_Curso.findFirst({
+            where: {
+                cursoId: id
+            }
+        })
+        if (profesor_curso) {
+            return { success: false, message: "El Curso seleccionado tiene un profesor asignado y no puede ser eliminado." };    
+        }
+        // si el curso tiene un alumno asignado no se puede eliminar y muestra un mensaje de error
+        const alumno_curso = await prisma.alumno_Curso.findFirst({
+            where: {
+                cursoId: id
+            }
+        })
+        if (alumno_curso) {
+            return { success: false, message: "El Curso seleccionado tiene un alumno asignado y no puede ser eliminado." };    
+        }
+       
         if (cronograma) {
             // Verificar si el cronograma tiene un cronogramaDiaHora asignado
             const cronogramaDiaHora = await prisma.cronogramaDiaHora.findFirst({
@@ -208,4 +228,11 @@ export async function getCantCursosActivos(){
         }
     });
     return cursosActivos.size;
+}
+// obtener los cursos que actualmente estan activos
+
+export async function getCursosActivos(){
+    const cursos = await getCursos();
+    const fechaHoy = new Date();
+    return cursos.filter(curso => curso.fechaInicio <= fechaHoy && curso.fechaFin >= fechaHoy);
 }

@@ -80,7 +80,7 @@ const Cuenta: React.FC = () => {
     useEffect(() => {
         if (user && !profesionalDetails.email) {
             getUser()
-            console.log("holaaaaaaaaaaaaaaaaaaaaaa")
+           
         }
 
     }, [user]);
@@ -90,13 +90,11 @@ const Cuenta: React.FC = () => {
     }, [router]);
 
     const authorizeAndFetchData = async () => {
-        console.time("authorizeAndFetchData");
-        // Primero verifico que el user esté logeado
-        //console.log("router", router);
+        
         await autorizarUser(router);
-        // Una vez autorizado obtengo los datos del user y seteo el email
+        
         const user = await fetchUserData();
-        //console.log("user", user);
+        
         setUser(user)
         if (!user) return;
         let talleres = await getCursosByIdProfesional(Number(user?.id));
@@ -297,9 +295,12 @@ const Cuenta: React.FC = () => {
                     </button>
                 </div>
             </div>
-            <div className="fixed bottom-0 py-1 border-t bg-white w-full" style={{ opacity: 0.66 }}>
-                <But_aside />
-            </div>
+           <div
+                       className="fixed bottom-0 py-2 border-t w-full z-30"
+                       style={{ background: "#EF4444" }}
+                     >
+                       <But_aside />
+                     </div>
             {openBox === 1 && (
                 <div className="fixed inset-0 flex items-center w-600 justify-center bg-black bg-opacity-50">
                     <div ref={scrollRef} className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative" style={{ height: '70vh', overflow: "auto" }}>

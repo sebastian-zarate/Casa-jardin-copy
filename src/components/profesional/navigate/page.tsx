@@ -50,9 +50,10 @@ export default function Navigate() {
         <h1 className="ml-2 text-white">Casa Jardín</h1>
       </div>
       <div className="hidden md:flex ml-auto space-x-4 py-2 text-white">
-        <NavLink href="/profesional/Cuenta">Mi Perfil</NavLink>
+       
         <NavLink href="/profesional/cronogramap/listar">Calendario</NavLink>
-        <NavLink href="/profesional/principal">Principal</NavLink>
+        <NavLink href="/profesional/principal">Principal</NavLink> 
+        <NavLink href="/profesional/Cuenta">Mi Perfil</NavLink>
         <NavLink onClick={logout}>Salir</NavLink>
       </div>
       <div className="md:hidden flex items-center">
