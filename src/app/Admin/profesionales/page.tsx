@@ -545,18 +545,20 @@ const Profesionales = () => {
 
                                 </div>
                                 <table className="w-full text-sm text-left rtl:text-right text-gray-500 ">
-                                    <thead className="text-xs text-gray-700 uppercase bg-gray-100  ">
+                                    <thead className="text-xs text-gray-700 uppercase bg-gray-100">
                                         <tr>
-                                            <th scope="col" className="p-4">
-                                                
+                                            <th scope="col" className="p-4 text-center">
+                                                <div className="flex items-center justify-center">
+                                                    Codigo
+                                                </div>
                                             </th>
-                                            <th scope="col" className="px-6 py-3">
+                                            <th scope="col" className="px-5 py-3">
                                                 Nombre
                                             </th>
-                                            <th scope="col" className="px-6 py-3">
+                                            <th scope="col" className="px-4 py-3">
                                                 Especialidad
                                             </th>
-                                            <th scope="col" className="px-6 py-3">
+                                            <th scope="col" className="px-4 py-3">
                                                 Acción
                                             </th>
                                         </tr>
@@ -565,8 +567,12 @@ const Profesionales = () => {
                                         {
                                             profesionales.map((profesional, index) => (
                                                 <tr className="bg-white border-b   hover:bg-gray-50 ">
-                                                    <td className="w-4 p-4">
-                                                        
+                                                    <td className="">
+                                                       
+                                                            <div className="flex items-center text-black justify-center">
+                                                                {profesional.id}
+                                                            </div>
+                                                       
                                                     </td>
                                                     <th scope="row" className="flex items-center px-6 py-4 text-gray-900 whitespace-nowrap ">
                                                         <Image
