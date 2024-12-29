@@ -25,16 +25,16 @@ export default function Navigate() {
   }
 
   return (
-    <nav className="flex justify-between items-center w-full p-3" style={{ backgroundColor: "#3f8df5", fontFamily: "Cursive" }}>
-      <div className="flex items-center">
-        <Image src={Logo} alt="Logo Casa Jardin" width={50} height={50} />
+    <nav className="flex justify-between items-center w-full p-3 bg-sky-600">
+      <div className="flex items-center cursor-pointer" onClick={()=> window.location.href = "/start/Inicio"}>
+        <Image src={Logo} alt="Logo Casa Jardin" width={50} height={50} draggable="false"/>
         <h1 className="ml-2 text-white">Casa Jardín</h1>
       </div>
       <div className="hidden md:flex ml-auto space-x-4 py-2 text-white">
         <NavLink href="/start/Inicio">Inicio</NavLink>
         <NavLink href="/start/Nosotros">Nosotros</NavLink>
         <NavLink href="/start/Talleres">Talleres</NavLink>
-        <NavLink href="/start/signup">Ingresar</NavLink>
+        <NavLink href="/start/login">Ingresar</NavLink>
       </div>
       <div className="md:hidden flex items-center">
         <button onClick={() => setMenuOpen(!menuOpen)} className="text-white focus:outline-none">
@@ -56,9 +56,9 @@ export default function Navigate() {
       </div>
       {menuOpen && (
         <div
-          className="md:hidden fixed top-16 left-0 w-full bg-blue-500 text-white flex flex-col items-center space-y-4 py-4 max-h-[70vh] overflow-y-auto z-50 shadow-lg"
-          style={{ backgroundColor: "#3f8df5" }}
+          className="md:hidden fixed top-16 left-0 w-full bg-sky-600 text-white flex flex-col items-center space-y-4 py-4 max-h-[70vh] overflow-y-auto z-50 shadow-lg"
         >
+          <div className="border-t w-full"></div>
           <NavLink href="/start/Inicio">Inicio</NavLink>
           <div className="border-t w-full"></div>
           <NavLink href="/start/Nosotros">Nosotros</NavLink>

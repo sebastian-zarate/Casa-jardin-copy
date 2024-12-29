@@ -27,8 +27,8 @@ export default function But_aside() {
         }}
       >
         <Image src={Logo} alt="Logo Casa Jardín" width={50} height={50} />
-        <h2 style={{ marginTop: "10px", fontSize: "14px", fontFamily: "Cursive" }}>
-          Centro Educativo y Terapéutico "Casa Jardín"
+        <h2 style={{ marginTop: "10px", fontSize: "14px"}}>
+          Centro Educativo y Terapéutico "Casa Jardín222"
         </h2>
       </div>
 
@@ -37,10 +37,10 @@ export default function But_aside() {
         style={{
           display: "flex",
           gap: "25px", // Aumentar el valor de gap para más separación entre los botones
-          zIndex: 30, // Añadir z-index para que los botones estén por encima del contenido
+          //zIndex: 30, // Añadir z-index para que los botones estén por encima del contenido
           opacity: 0.9, // Añadir transparencia a los botones
         }}
-        className="z-30"
+        //className="z-30"
       >
         {/* Botón de WhatsApp */}
         <Whatsapp />

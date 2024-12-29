@@ -77,3 +77,24 @@ export async function getCantProfesionalesActivos() {
   return   cantProf
   
 }
+
+//devuelve una lista de profesionales que estan a cargo de un curso
+export async function getProfesionalesByCursoId(cursoId: number) {
+  const prof_cur = await prisma.profesional_Curso.findMany({
+    where: {
+      cursoId: cursoId,
+    },
+  });
+  let arrayProfesionales: any[] = [];
+  for (const pc of prof_cur) {
+    const profesional = await prisma.profesional.findFirst({
+      where: {
+        id: pc.profesionalId,
+      },
+    });
+    if (profesional) {
+      arrayProfesionales.push(profesional);
+    }
+  }
+  return arrayProfesionales;
+}

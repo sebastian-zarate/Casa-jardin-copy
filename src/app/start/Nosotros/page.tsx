@@ -7,8 +7,14 @@ import Image from "next/image";
 import Background from "../../../../public/Images/CollageImage.jpg";
 import TabbedContent from "./tabs";
 import { getImagesUser } from "@/services/repoImage";
+import RotatingImages from "@/components/start/rotatingImages";
 
-const RotatingImages: React.FC = () => {
+
+
+
+
+
+const Nosotros = () => {
   const [images, setImages] = useState<any[]>([]);
   const [downloadurls, setDownloadurls] = useState<any[]>([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -36,34 +42,10 @@ const RotatingImages: React.FC = () => {
       setDownloadurls(result.downloadurls);
     }
   };
-
-
-  return (
-    <div className="flex justify-center py-2 w-[384px] aspect-[10/17] relative overflow-hidden">
-      {downloadurls.length > 0 && (
-        <Image
-          src={downloadurls[currentImageIndex]}
-          alt="Background"
-          fill
-          quality={80}
-          priority={true}
-          className="z-0 rounded-lg object-cover"
-        />
-      )}
-    </div>
-  );
-};
-
-
-
-
-
-
-const Nosotros = () => {
   return (
     <main className="relative min-h-screen  overflow-hidden">
       {/* Fondo */}
-      <div className="fixed inset-0">
+      <div className="fixed inset-0 pointer-events-none">
         <Image
           src={Background}
           alt="Background"
@@ -76,7 +58,7 @@ const Nosotros = () => {
       </div>
 
       {/* Encabezado fijo */}
-      <div className="fixed top-0 left-0 right-0   w-full p-1 z-50" style={{ backgroundColor: "#3f8df5" }}>
+      <div className="fixed top-0 left-0 right-0   w-full z-50">
         <Navigate />
       </div>
 
@@ -91,14 +73,13 @@ const Nosotros = () => {
 
         {/* Contenedor de imágenes en rotación */}
         <div className="   min-h-80 ">
-          <RotatingImages />
+          <RotatingImages images={downloadurls}/>
         </div>
       </div>
 
       {/* Pie de página fijo */}
       <div
-        className="fixed  bottom-0 py-0.1 border-t w-full z-30"
-        style={{ opacity: 0.89, background: "#3f8df5" }}
+        className="fixed  bottom-0 py-0.1 border-t w-full z-30 bg-sky-600 opacity-90"
       >
         <But_aside />
       </div>

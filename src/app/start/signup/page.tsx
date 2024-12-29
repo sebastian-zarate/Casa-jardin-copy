@@ -111,7 +111,7 @@ function Signup() {
     //region return
     return (
         /* From Uiverse.io by themrsami */
-        <main style={{ backgroundColor: "#3f8df5" }}>
+        <main className='bg-sky-600'>
             <button
                 className="bg-white text-center w-10 rounded-2xl top-20 md:left-20 lg:left-20 absolute text-black text-xl font-semibold group"
                 type="button"
