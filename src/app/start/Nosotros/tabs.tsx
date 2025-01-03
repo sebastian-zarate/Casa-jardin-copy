@@ -1,6 +1,6 @@
 'use client'
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/start/ui/custom-tabs" 
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/varios/ui/custom-tabs" 
 
 export default function TabbedContent() {
   return (

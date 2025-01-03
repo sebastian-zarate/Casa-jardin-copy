@@ -8,11 +8,11 @@ import Background from "../../../../public/Images/BackgroundSolicitudes.jpg"; //
 import withAuth from "../../../components/Admin/adminAuth";
 import { getCantCursosActivos, getCursos } from "@/services/cursos";
 import { getSolicitudes } from "@/services/Solicitud/Solicitud";
-import { getAlumnos } from "@/services/Alumno";
-import { getProfesionales } from "@/services/profesional";
-import { ZoomIn, Blocks, Laptop, ListEnd, ChevronRight, Clipboard, Book, GraduationCap, Users, Brush, CheckSquare } from 'lucide-react';
 import { getCantAlumnosInscriptos } from "@/services/alumno_curso";
 import { getCantProfesionalesActivos } from "@/services/profesional_curso";
+//para front
+import { DashboardCard } from "@/components/varios/DashboardCard";
+import { ZoomIn, Blocks, Laptop, ListEnd, ChevronRight, Clipboard, Book, GraduationCap, Users, Brush, CheckSquare, Calendar, Apple} from 'lucide-react';
 
 const Inicio: React.FC = () => {
   const router = useRouter();
@@ -45,6 +45,11 @@ const Inicio: React.FC = () => {
     setLoading(true);
   }
 
+  const handleNavigation = (route: string) => {
+    const basePath = "/Admin";
+    router.push(`${basePath}${route}`);
+  };
+
   return (
     <main className="relative min-h-screen w-screen">
       <Navigate />
@@ -59,7 +64,42 @@ const Inicio: React.FC = () => {
             ¡Bienvenido de nuevo! Estamos listos para seguir construyendo juntos.
           </h2>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {[
+          <DashboardCard
+            title="Talleres"
+            description={`${cantTalleres} talleres activos`}
+            icon={GraduationCap}
+            onClick={() => handleNavigation('/cursos')}
+            gradient="bg-gradient-to-br from-sky-700 to-sky-500"
+          />
+          <DashboardCard
+            title="Alumnos"
+            description={`${cantAlumnos} alumnos inscriptos`}
+            icon={Users}
+            onClick={() => handleNavigation('/alumnos')}
+            gradient="bg-gradient-to-br from-purple-500 to-pink-600"
+          />
+          <DashboardCard
+            title="Profesionales"
+            description={`${cantProfesores} profesionales registrados`}
+            icon={Apple}
+            onClick={() => handleNavigation('/profesionales')}
+            gradient="bg-gradient-to-br from-yellow-500 to-orange-600"
+          />
+          <DashboardCard
+            title="Solicitudes"
+            description={`${cantSolicitudes} solicitudes pendientes`}
+            icon={CheckSquare}
+            onClick={() => handleNavigation('/solicitudes')}
+            gradient="bg-gradient-to-br from-red-500 to-rose-600"
+          />
+          <DashboardCard
+            title="Cronograma"
+            description="Revisa el cronograma de talleres"
+            icon={Calendar}
+            onClick={() => handleNavigation('/aulaSelector')}
+            gradient="bg-gradient-to-br from-blue-500 to-cyan-600"
+          />    
+            {/* {[
               {
                 icon: Brush,
                 title: "Talleres",
@@ -97,7 +137,7 @@ const Inicio: React.FC = () => {
                   <ChevronRight className="w-4" />
                 </a>
               </div>
-            ))}
+            ))} */}
           </div>
         </div>
       </section>

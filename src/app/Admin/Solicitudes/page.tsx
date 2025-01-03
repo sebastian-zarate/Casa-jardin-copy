@@ -20,6 +20,13 @@ import Loader from "@/components/Loaders/loader/loader";
 import { getCursoSolicitudBySoliId } from "@/services/curso_solicitud";
 import { createAlumno_Curso } from "@/services/alumno_curso";
 
+//front
+import { Smile, Baby, XCircle} from "lucide-react";
+import { DashboardCard } from "@/components/varios/DashboardCard";
+// para la tabla
+import { SolicitudData, columns } from "@/components/Admin/solicitudes/column";
+import { DataTable } from "@/components/Admin/solicitudes/data-table";
+
 
 const solicitudPage: React.FC = () => {
     // Estado para almacenar las solicitudes de mayores
@@ -48,7 +55,14 @@ const solicitudPage: React.FC = () => {
     const [soliMayoresNoLeidas, setSoliMayoresNoLeidas] = useState<number>(0);
     const [soliMenoresNoLeidas, setSoliMenoresNoLeidas] = useState<number>(0);
 
+    //para las solicitudes filtradas
+    const [filtroMayores, setFiltroMayores] = useState(false);
+    const [mayoresFiltradas, setMayoresFiltradas] = useState<number[]>([]);
+    const [mayoresColData, setMayoresColData] = useState<SolicitudData[]>([]);
 
+    const [filtroMenores, setFiltroMenores] = useState(false);
+    const [menoresFiltradas, setMenoresFiltradas] = useState<number[]>([]);
+    const [menoresColData, setMenoresColData] = useState<SolicitudData[]>([])
 
 
 
@@ -69,9 +83,10 @@ const solicitudPage: React.FC = () => {
         const solicitudesNoLeidas = solicitudes.filter((solicitud) => !solicitud.leida);
         const soliMayoresNoLeid = solicitudesNoLeidas.filter((solicitud) => solicitudesMayores.some((data) => data.solicitudId === solicitud.id));
         setSoliMayoresNoLeidas(soliMayoresNoLeid.length);
-
+        console.log("soli mayores no leidas: ",soliMayoresNoLeid);
         const soliMenoresNoLeid = solicitudesNoLeidas.filter((solicitud) => solicitudMenores.some((data) => data.solicitudId === solicitud.id));
         setSoliMenoresNoLeidas(soliMenoresNoLeid.length);
+        console.log("soli menores no leidas: ",soliMenoresNoLeid);
 
     }, [solicitudesMayores, solicitudMenores]);
 
@@ -108,6 +123,34 @@ const solicitudPage: React.FC = () => {
         setAlumnosMenores(alumnosMenores)
         setResponsables(responsablesMenores)
         //setDireccionesMenores(direccionesMenores)
+
+        // Seteo inicial de solicitudes filtradas
+        const mayoresData = dataMa.map((solicitud) => {
+            const solicitudEstado = soli.find((s) => s.id === solicitud.solicitudId);
+            const alumno = alumnosMayores.find((a) => a?.id === solicitud.alumnoId)
+             
+            return {
+            codigo: solicitud.solicitudId,
+            alumno: alumno ? alumno.nombre + alumno.apellido : "Error: datos no disponibles",
+            email: alumno ? alumno.email : "Error: datos no disponibles",
+            estado: solicitudEstado?.leida ? "Leída" : "No leída",
+            };
+        });
+        setMayoresColData(mayoresData)
+
+        const menoresData = dataMe.map((solicitud) => {
+            const solicitudEstado = soli.find((s) => s.id === solicitud.solicitudId);
+            const alumno = alumnosMenores.find((a) => a?.id === solicitud.alumnoId)
+             
+            return {
+            codigo: solicitud.solicitudId,
+            alumno: alumno ? alumno.nombre + alumno.apellido : "Error: datos no disponibles",
+            email: alumno ? alumno.email : "Error: datos no disponibles",
+            estado: solicitudEstado?.leida ? "Leída" : "No leída",
+            };
+        });
+        setMenoresColData(menoresData)
+
 
     }
     const handleEliminarSolicitud = async (solicitudId: number) => {
@@ -195,20 +238,23 @@ const solicitudPage: React.FC = () => {
             {/* Contenido principal */}
             {!habilitarMayores && !habilitarMenores && (
                 <div className="flex flex-col items-center justify-center min-h-screen relative z-10  ">
-                    <div className="bg-white py-2 px-4 justify-center items-center rounded-lg shadow-lg w-4/5 lg:w-1/2 md:w-2/3 sm:w-4/5">
-                        <h1 className="text-3xl text-center text-gray-800 my-6" style={{ fontFamily: "Cursive" }}>Solicitudes</h1>
-                        <div className="w-full  border p-3 rounded shadow-md bg-sky-600" style={{ fontFamily: "Cursive", opacity: 0.77 }}>
-                            <div className="flex items-center p-5 mb-3 border rounded cursor-pointer hover:bg-gray-400 relative" onClick={() => setHabilitarMayores(!habilitarMayores)}>
-                                {soliMayoresNoLeidas > 0 && <h2 className=" absolute top-0 right-0 text-center  mt-2 mr-2 w-8 h-8 bg-red-600 rounded-full  items-center justify-center text-white">{soliMayoresNoLeidas}</h2>}
-                                <Image src={adultos} alt="adultos" width={180} height={100} />
-                                <h1 className="ml-4 text-white">Solicitudes Mayores</h1>
-                            </div>
-
-                            <div className="flex items-center p-5 mb-3 border rounded cursor-pointer hover:bg-gray-400 relative" onClick={() => setHabilitarMenores(!habilitarMenores)}>
-                                {soliMenoresNoLeidas > 0 && <h2 className=" absolute top-0 right-0 text-center  mt-2 mr-2 w-8 h-8 bg-red-600 rounded-full  items-center justify-center text-white">{soliMenoresNoLeidas}</h2>}
-                                <Image src={menores} alt="menores" width={180} height={100} />
-                                <h1 className="ml-4 text-white">Solicitudes Menores</h1>
-                            </div>
+                    <div className= "py-2 px-4 justify-center items-center rounded-lg shadow-lg w-4/5 lg:w-1/2 md:w-2/3 sm:w-4/5">
+                    <h1 className="text-3xl text-center text-gray-800 my-6">Solicitudes</h1>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <DashboardCard
+                            title="Solicitudes Mayores"
+                            description={soliMayoresNoLeidas > 0 ? `${soliMayoresNoLeidas} solicitudes pendientes` : "No hay solicitudes pendientes"}
+                            icon={Smile}
+                            onClick={() => setHabilitarMayores(!habilitarMayores)}
+                            gradient="bg-gradient-to-br from-emerald-500 to-teal-600"
+                            />
+                            <DashboardCard
+                            title="Solicitudes Menores"
+                            description={soliMenoresNoLeidas > 0 ? `${soliMenoresNoLeidas} solicitudes pendientes` : "No hay solicitudes pendientes"}
+                            icon={Baby}
+                            onClick={() => setHabilitarMenores(!habilitarMenores)}
+                            gradient="bg-gradient-to-br from-purple-500 to-pink-600"
+                            />
                         </div>
                     </div>
                 </div>
@@ -217,58 +263,21 @@ const solicitudPage: React.FC = () => {
             {/* Modales */}
             {habilitarMayores && (
                 <div className="fixed inset-0 flex items-center justify-center p-4 z-30">
-                    <div className="relative p-6 rounded shadow-md bg-white w-4/5 lg:w-1/2 md:w-2/3 sm:w-4/5" style={{ height: '70vh', overflow: 'auto', fontFamily: "Cursive" }}>
-                        <h1 className="text-center mb-4">Historial de solicitudes</h1>
-                        <button className="absolute top-2 right-2 p-1" onClick={() => {setHabilitarMayores(!habilitarMayores); setSolicitudSelected(0)}}>X</button>
-                        <div className="p-4 space-y-4">
-                            {loading ? (
-                                <div className="w-full h-full flex flex-col items-center justify-center">
-                                    <Loader />
-                                    <h1>Cargando solicitudes</h1>
-                                </div>
-                            ) : (
-                                solicitudesMayores.map((solicitudMay, key) => (
-                                    <div key={key} className="p-4 rounded cursor-pointer space-y-2 bg-sky-600" style={{ color: "white" }}
-                                        onClick={() => {
-                                            setSolicitudSelected(solicitudMay.id);
-                                            setFirmaUsoImagenes(String(solicitudMay.firmaUsoImagenes));
-                                            setObservacionesUsoImagenes(String(solicitudMay.observacionesUsoImagenes));
-                                            setFirmaReglamento(String(solicitudMay.firmaReglamento));
-                                        }}>
-                                        <span className="block p-4 space-y-2">Solicitud: {solicitudMay.solicitudId}</span>
-                                        {solicitudSelected === solicitudMay.id && (
-                                            <>
-                                                <div className="space-y-2">
-                                                    <div className="">
-                                                        <h2 className="font-semibold">Datos del alumno:</h2>
-                                                        <span className="block">Nombre: {getAl(solicitudMay.alumnoId).nombre} {getAl(solicitudMay.alumnoId)?.apellido}</span>
-                                                        <span className="block">Teléfono: {getAl(solicitudMay.alumnoId)?.telefono}</span>
-                                                        <span className="block">Correo: {getAl(solicitudMay.alumnoId)?.email}</span>
-                                                        <span className="block">DNI: {getAl(solicitudMay.alumnoId)?.dni}</span>
-                                                        <span className="block">Fecha de Nacimiento: {new Date(getAl(solicitudMay.alumnoId)?.fechaNacimiento).toISOString().split('T')[0]}</span>
-                                                    </div>
-                                                    <span className="block">{firmaUsoImagenes.length > 0 ? "Accedió al uso de la imagen" : "No estuvo de acuerdo con el uso de la imagen"}</span>
-                                                    {observacionesUsoImagenes.length > 0 && <span className="block">Observaciones sobre el uso de imagen: {observacionesUsoImagenes}</span>}
-                                                    <span className="block">Firmó el reglamento</span>
-                                                </div>
-                                                <div className="space-x-2 mt-4">
-                                                    {!getSolicitud(solicitudMay.solicitudId)?.leida && (
-                                                        <>
-                                                            {!getSolicitud(solicitudMay.solicitudId)?.enEspera ? (
-                                                                <>
-                                                                    <button className="p-2 rounded-full bg-gray-600 hover:bg-green-600" onClick={() => handleAceptarSolicitud(solicitudMay.solicitudId, solicitudMay.alumnoId)}>Aceptar</button>
-                                                                    <button className="p-2 rounded-full bg-gray-600 hover:bg-red-600" onClick={() => handleRechazar(solicitudMay.solicitudId, getAl(solicitudMay.alumnoId).email)}>Rechazar</button>
-                                                                </>
-                                                            ) : (
-                                                                <button className="p-2 rounded-full bg-gray-600 hover:bg-red-600" onClick={() => handleEliminarSolicitud(solicitudMay.solicitudId)}>Solicitud corregida</button>
-                                                            )}
-                                                        </>
-                                                    )}
-                                                </div>
-                                            </>
-                                        )}
-                                    </div>
-                                ))
+                    <div className="relative p-6 rounded shadow-md bg-white w-full" style={{ height: '70vh', overflow: 'auto', maxWidth: 'none' }}>
+                    <h1 className="text-center mb-4">Historial de solicitudes Mayores</h1>
+                    <button className="absolute top-2 right-2 p-1" onClick={() => { setHabilitarMayores(!habilitarMayores); setSolicitudSelected(0) }}>
+                        <XCircle className="w-6 h-6 text-gray-800 hover:text-red-500" />
+                    </button>
+                    <div className="p-4 space-y-4">
+                        {loading ? (
+                        <div className="w-full h-full flex flex-col items-center justify-center">
+                            <Loader />
+                            <h1>Cargando solicitudes</h1>
+                        </div>
+                        ) : (
+                        <div className="container mx-auto py-3 overflow-x-auto">
+                                <DataTable columns={columns} data={mayoresColData} />
+                            </div>
                             )}
                         </div>
                     </div>
@@ -277,58 +286,21 @@ const solicitudPage: React.FC = () => {
 
             {habilitarMenores && (
                 <div className="fixed inset-0 flex items-center justify-center p-4 z-30">
-                    <div className="relative p-6 rounded shadow-md bg-white w-4/5 lg:w-1/2 md:w-2/3 sm:w-4/5" style={{ height: '70vh', overflow: 'auto', fontFamily: "Cursive" }}>
-                        <h1 className="text-center mb-4">Historial de solicitudes</h1>
-                        <button className="absolute top-2 right-2 p-1" onClick={() => {setHabilitarMenores(!habilitarMenores); setSolicitudSelected(0)}}>X</button>
-                        <div className="p-4 space-y-4">
-                            {loading ? (
-                                <div className="w-full h-full flex flex-col items-center justify-center">
-                                    <Loader />
-                                    <h1>Cargando solicitudes</h1>
-                                </div>
-                            ) : (
-                                solicitudMenores.map((solicitudMen, key) => (
-                                    <div key={key} className="p-4 rounded cursor-pointer space-y-2 bg-sky-600" style={{ color: "white" }}
-                                        onClick={() => {
-                                            setSolicitudSelected(solicitudMen.id);
-                                            setFirmaUsoImagenes(String(solicitudMen.firmaUsoImagenes));
-                                            setObservacionesUsoImagenes(String(solicitudMen.observacionesUsoImagenes));
-                                            setFirmaReglamento(String(solicitudMen.firmaReglamento));
-                                        }}>
-                                        <span className="block p-4 space-y-2">Solicitud: {solicitudMen.solicitudId}</span>
-                                        {solicitudSelected === solicitudMen.id && (
-                                            <>
-                                                <div className="space-y-2">
-                                                    <div className="">
-                                                        <h2 className="font-semibold">Datos del alumno:</h2>
-                                                        <span className="block">Nombre: {getAl(solicitudMen.alumnoId).nombre} {getAl(solicitudMen.alumnoId)?.apellido}</span>
-                                                        <span className="block">Teléfono: {getAl(solicitudMen.alumnoId)?.telefono}</span>
-                                                        <span className="block">Correo: {getAl(solicitudMen.alumnoId)?.email}</span>
-                                                        <span className="block">DNI: {getAl(solicitudMen.alumnoId)?.dni}</span>
-                                                        <span className="block">Fecha de Nacimiento: {new Date(getAl(solicitudMen.alumnoId)?.fechaNacimiento).toISOString().split('T')[0]}</span>
-                                                    </div>
-                                                    <span className="block">{firmaUsoImagenes.length > 0 ? "Accedió al uso de la imagen" : "No estuvo de acuerdo con el uso de la imagen"}</span>
-                                                    {observacionesUsoImagenes.length > 0 && <span className="block">Observaciones sobre el uso de imagen: {observacionesUsoImagenes}</span>}
-                                                    <span className="block">Firmó el reglamento</span>
-                                                </div>
-                                                <div className="space-x-2 mt-4">
-                                                    {!getSolicitud(solicitudMen.solicitudId)?.leida && (
-                                                        <>
-                                                            {!getSolicitud(solicitudMen.solicitudId)?.enEspera ? (
-                                                                <>
-                                                                    <button className="p-2 rounded-full bg-gray-600 hover:bg-green-600" onClick={() => handleAceptarSolicitud(solicitudMen.solicitudId, solicitudMen.alumnoId)}>Aceptar</button>
-                                                                    <button className="p-2 rounded-full bg-gray-600 hover:bg-red-600" onClick={() => handleRechazar(solicitudMen.solicitudId, getAl(solicitudMen.alumnoId).email)}>Rechazar</button>
-                                                                </>
-                                                            ) : (
-                                                                <button className="p-2 rounded-full bg-gray-600 hover:bg-red-600" onClick={() => handleEliminarSolicitud(solicitudMen.solicitudId)}>Solicitud corregida</button>
-                                                            )}
-                                                        </>
-                                                    )}
-                                                </div>
-                                            </>
-                                        )}
-                                    </div>
-                                ))
+                    <div className="relative p-6 rounded shadow-md bg-white w-full" style={{ height: '70vh', overflow: 'auto', maxWidth: 'none' }}>
+                    <h1 className="text-center mb-4">Historial de solicitudes Menores</h1>
+                    <button className="absolute top-2 right-2 p-1" onClick={() => { setHabilitarMenores(!habilitarMenores); setSolicitudSelected(0) }}>
+                        <XCircle className="w-6 h-6 text-gray-800 hover:text-red-500" />
+                    </button>
+                    <div className="p-4 space-y-4">
+                        {loading ? (
+                        <div className="w-full h-full flex flex-col items-center justify-center">
+                            <Loader />
+                            <h1>Cargando solicitudes</h1>
+                        </div>
+                        ) : (
+                        <div className="container mx-auto py-10 overflow-x-auto">
+                                <DataTable columns={columns} data={menoresColData} />
+                            </div>
                             )}
                         </div>
                     </div>
