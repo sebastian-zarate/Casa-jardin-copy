@@ -53,6 +53,7 @@ const solicitudPage: React.FC = () => {
     const [direccionesMenores, setDireccionesMenores] = useState<any[]>()
     const [loading, setLoading] = useState<boolean>(true);
 
+    //para las solicitudes no leidas
     const [soliMayoresNoLeidas, setSoliMayoresNoLeidas] = useState<number>(0);
     const [soliMenoresNoLeidas, setSoliMenoresNoLeidas] = useState<number>(0);
 
@@ -235,6 +236,12 @@ const solicitudPage: React.FC = () => {
     }
     const columns = createColumns(handleVerDetalles, handleAcceptSolicitud, handleReject);
 
+    const handleSelectMayores = async (solicitudId: number) => {
+        //para tener la data de la solicitud
+        const solicitudMa = solicitudes.find((solicitud) => solicitud.id === solicitudId);
+
+    }
+
     //region return
     return (
         <main
@@ -339,7 +346,7 @@ const solicitudPage: React.FC = () => {
                                 </div>
                                 <div>
                                     <h2 className="text-lg font-semibold">Alumno</h2>
-                                    <p>nombre hardcodeado</p>
+                                    <p>{}</p>
                                 </div>
                                 <div>
                                     <h2 className="text-lg font-semibold">Email</h2>

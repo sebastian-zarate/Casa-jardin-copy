@@ -89,7 +89,7 @@ const Inicio: React.FC = () => {
             title="Solicitudes"
             description={`${cantSolicitudes} solicitudes pendientes`}
             icon={CheckSquare}
-            onClick={() => handleNavigation('/solicitudes')}
+            onClick={() => handleNavigation('/Solicitudes')}
             gradient="bg-gradient-to-br from-red-500 to-rose-600"
           />
           <DashboardCard
