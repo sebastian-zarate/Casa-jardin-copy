@@ -24,8 +24,9 @@ import { createAlumno_Curso } from "@/services/alumno_curso";
 import { Smile, Baby, XCircle} from "lucide-react";
 import { DashboardCard } from "@/components/varios/DashboardCard";
 // para la tabla
-import { SolicitudData, columns } from "@/components/Admin/solicitudes/column";
+import { SolicitudData, createColumns } from "@/components/Admin/solicitudes/column";
 import { DataTable } from "@/components/Admin/solicitudes/data-table";
+import { create } from "domain";
 
 
 const solicitudPage: React.FC = () => {
@@ -64,6 +65,7 @@ const solicitudPage: React.FC = () => {
     const [menoresFiltradas, setMenoresFiltradas] = useState<number[]>([]);
     const [menoresColData, setMenoresColData] = useState<SolicitudData[]>([])
 
+    const [showSelect, setShowSelect] = useState(false);
 
 
     useEffect(() => {
@@ -218,6 +220,21 @@ const solicitudPage: React.FC = () => {
     firmaReglamento
 
     */
+
+    //creo las columnas para la tabla (las columnas de acciones)
+    const handleVerDetalles = async (solicitudId: number) => {
+        setSolicitudSelected(solicitudId);
+        setShowSelect(true);
+    }
+
+    const handleAcceptSolicitud = async (solicitudId: number) => {
+        console.log("aceptar solicitud: ", solicitudId);
+    }
+    const handleReject = async (solicitudId: number) => {
+        console.log("rechazar solicitud: ", solicitudId);
+    }
+    const columns = createColumns(handleVerDetalles, handleAcceptSolicitud, handleReject);
+
     //region return
     return (
         <main
@@ -262,7 +279,7 @@ const solicitudPage: React.FC = () => {
 
             {/* Modales */}
             {habilitarMayores && (
-                <div className="fixed inset-0 flex items-center justify-center p-4 z-30">
+                <div className="fixed inset-0 flex items-center justify-center p-4 z-10">
                     <div className="relative p-6 rounded shadow-md bg-white w-full" style={{ height: '70vh', overflow: 'auto', maxWidth: 'none' }}>
                     <h1 className="text-center mb-4">Historial de solicitudes Mayores</h1>
                     <button className="absolute top-2 right-2 p-1" onClick={() => { setHabilitarMayores(!habilitarMayores); setSolicitudSelected(0) }}>
@@ -285,7 +302,7 @@ const solicitudPage: React.FC = () => {
             )}
 
             {habilitarMenores && (
-                <div className="fixed inset-0 flex items-center justify-center p-4 z-30">
+                <div className="fixed inset-0 flex items-center justify-center p-4 z-10">
                     <div className="relative p-6 rounded shadow-md bg-white w-full" style={{ height: '70vh', overflow: 'auto', maxWidth: 'none' }}>
                     <h1 className="text-center mb-4">Historial de solicitudes Menores</h1>
                     <button className="absolute top-2 right-2 p-1" onClick={() => { setHabilitarMenores(!habilitarMenores); setSolicitudSelected(0) }}>
@@ -306,6 +323,45 @@ const solicitudPage: React.FC = () => {
                     </div>
                 </div>
             )}
+
+            {showSelect && (
+                <div className="fixed inset-0 flex items-center justify-center p-4 z-30">
+                    <div className="relative p-6 rounded shadow-md bg-white w-full" style={{ height: '70vh', overflow: 'auto', maxWidth: 'none' }}>
+                        <h1 className="text-center mb-4">Detalles de la solicitud</h1>
+                        <button className="absolute top-2 right-2 p-1" onClick={() => { setShowSelect(false); setSolicitudSelected(0) }}>
+                            <XCircle className="w-6 h-6 text-gray-800 hover:text-red-500" />
+                        </button>
+                        <div className="p-4 space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <h2 className="text-lg font-semibold">Solicitud ID</h2>
+                                    <p>{solicitudSelected}</p>
+                                </div>
+                                <div>
+                                    <h2 className="text-lg font-semibold">Alumno</h2>
+                                    <p>nombre hardcodeado</p>
+                                </div>
+                                <div>
+                                    <h2 className="text-lg font-semibold">Email</h2>
+                                    <p>email hardodeado</p>
+                                </div>
+                                <div>
+                                    <h2 className="text-lg font-semibold">Firma Uso de Imágenes</h2>
+                                    <p>{firmaUsoImagenes}</p>
+                                </div>
+                                <div>
+                                    <h2 className="text-lg font-semibold">Observaciones Uso de Imágenes</h2>
+                                    <p>{observacionesUsoImagenes}</p>
+                                </div>
+                                <div>
+                                    <h2 className="text-lg font-semibold">Firma Reglamento</h2>
+                                    <p>{firmaReglamento}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                )}
         </main>
     );
 };
