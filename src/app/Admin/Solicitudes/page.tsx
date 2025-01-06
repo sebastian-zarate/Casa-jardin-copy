@@ -423,6 +423,29 @@ const solicitudPage: React.FC = () => {
                 </div>
             )}
 
+            {habilitarMenores && (
+                <div className="fixed inset-0 flex items-center justify-center p-4 z-10">
+                    <div className="relative p-6 rounded shadow-md bg-white w-full" style={{ height: '70vh', overflow: 'auto', maxWidth: 'none' }}>
+                    <h1 className="text-center mb-4">Historial de solicitudes Menores</h1>
+                    <button className="absolute top-2 right-2 p-1" onClick={() => { setHabilitarMenores(!habilitarMenores); setSolicitudIdSelected(0) }}>
+                        <XCircle className="w-6 h-6 text-gray-800 hover:text-red-500" />
+                    </button>
+                    <div className="p-4 space-y-4">
+                        {loading ? (
+                        <div className="w-full h-full flex flex-col items-center justify-center">
+                            <Loader />
+                            <h1>Cargando solicitudes</h1>
+                        </div>
+                        ) : (
+                        <div className="container mx-auto py-10 overflow-x-auto">
+                                <DataTable columns={columns} data={menoresColData} />
+                            </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {showSelect && (
                 <div className="fixed inset-0 flex items-center justify-center p-4 z-30">
                     <div className="relative p-6 rounded shadow-md bg-white w-full" style={{ height: '70vh', overflow: 'auto', maxWidth: 'none' }}>
