@@ -27,6 +27,7 @@ import SolicitudMenoresCard from "@/components/Admin/solicitudes/SolicitudMenore
 import { SolicitudData, createColumns } from "@/components/Admin/solicitudes/column";
 import { DataTable } from "@/components/Admin/solicitudes/data-table";
 import { create } from "domain";
+import { Button } from "@/components/ui/button";
 
 
 const solicitudPage: React.FC = () => {
@@ -473,6 +474,11 @@ const solicitudPage: React.FC = () => {
                                     />
                                 )}
                             </div>
+                            <div className="flex justify-center items-center space-x-4">
+                            <Button className="bg-sky-600">Aceptar</Button>
+                            <Button className="bg-red-600">Rechazar</Button>
+                            </div>
+                            
                         </div>
                     </div>
                 </div>
