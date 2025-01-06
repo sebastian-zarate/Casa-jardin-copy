@@ -67,6 +67,7 @@ const solicitudPage: React.FC = () => {
 
     //para cuando se selecciona una solicitud
     const [mayor, setMayor] = useState<boolean>(false);
+    const [leida, setLeida] = useState<boolean>(false);
     const [solicitudIdSelected, setSolicitudIdSelected] = useState<number>(0);
     const [alumnoSelected, setAlumnoSelected] = useState<any>(null);
     const [responsableSelected, setResponsableSelected] = useState<any>();
@@ -335,6 +336,12 @@ const solicitudPage: React.FC = () => {
         const flatCrusos = cursos.flat();
         const curs = flatCrusos.filter((curso) => curso.solicitudId === solicitudId);
 
+        //cambiar estado leida si es necesario
+        const s = solicitudes.find((solicitud) => solicitud.id === solicitudId);
+        if (s) {
+            setLeida(s.leida);
+        }
+
         console.log("CURS", curs);
         setCursosSelected(curs);
         setFirmaUsoImagenes(sol.firmaUsoImagenes ? "Uso permitido" : "Uso denegado");
@@ -474,11 +481,13 @@ const solicitudPage: React.FC = () => {
                                     />
                                 )}
                             </div>
-                            <div className="flex justify-center items-center space-x-4">
-                            <Button className="bg-sky-600">Aceptar</Button>
-                            <Button className="bg-red-600">Rechazar</Button>
-                            </div>
-                            
+                            {/* Botones de acción si la solicitud es No Leída*/}
+                            { !leida && (
+                                <div className="flex justify-center items-center space-x-4">
+                                <Button className="bg-sky-600" onClick={() => console.log("to do")}>Aceptar</Button>
+                                <Button className="bg-red-600" onClick={() => console.log("to do")}>Rechazar</Button>
+                                </div>
+                            )}  
                         </div>
                     </div>
                 </div>
