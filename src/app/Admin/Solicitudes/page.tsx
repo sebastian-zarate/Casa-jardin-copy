@@ -20,7 +20,8 @@ import { getSolicitudesCompletas } from "@/services/Solicitud/Solicitud";
 //front
 import { Smile, Baby, XCircle} from "lucide-react";
 import { DashboardCard } from "@/components/varios/DashboardCard";
-import SolicitudCard from "@/components/Admin/solicitudes/SolicitudCard";
+import SolicitudMayoresCard from "@/components/Admin/solicitudes/SolicitudMayoresCard";
+import SolicitudMenoresCard from "@/components/Admin/solicitudes/SolicitudMenoresCard";
 
 // para la tabla
 import { SolicitudData, createColumns } from "@/components/Admin/solicitudes/column";
@@ -383,14 +384,14 @@ const solicitudPage: React.FC = () => {
                             title="Solicitudes Mayores"
                             description={soliMayoresNoLeidas > 0 ? `${soliMayoresNoLeidas} solicitudes pendientes` : "No hay solicitudes pendientes"}
                             icon={Smile}
-                            onClick={() => setHabilitarMayores(!habilitarMayores)}
+                            onClick={() => {setHabilitarMayores(!habilitarMayores); setMayor(true)}}
                             gradient="bg-gradient-to-br from-emerald-500 to-teal-600"
                             />
                             <DashboardCard
                             title="Solicitudes Menores"
                             description={soliMenoresNoLeidas > 0 ? `${soliMenoresNoLeidas} solicitudes pendientes` : "No hay solicitudes pendientes"}
                             icon={Baby}
-                            onClick={() => setHabilitarMenores(!habilitarMenores)}
+                            onClick={() => {setHabilitarMenores(!habilitarMenores); setMayor(false)}}
                             gradient="bg-gradient-to-br from-purple-500 to-pink-600"
                             />
                         </div>
@@ -403,7 +404,7 @@ const solicitudPage: React.FC = () => {
                 <div className="fixed inset-0 flex items-center justify-center p-4 z-10">
                     <div className="relative p-6 rounded shadow-md bg-white w-full" style={{ height: '70vh', overflow: 'auto', maxWidth: 'none' }}>
                     <h1 className="text-center mb-4">Historial de solicitudes Mayores</h1>
-                    <button className="absolute top-2 right-2 p-1" onClick={() => { setHabilitarMayores(!habilitarMayores); }}>
+                    <button className="absolute top-2 right-2 p-1" onClick={() => { setHabilitarMayores(!habilitarMayores);}}>
                         <XCircle className="w-6 h-6 text-gray-800 hover:text-red-500" />
                     </button>
                     <div className="p-4 space-y-4">
@@ -422,84 +423,37 @@ const solicitudPage: React.FC = () => {
                 </div>
             )}
 
-            {habilitarMenores && (
-                <div className="fixed inset-0 flex items-center justify-center p-4 z-10">
-                    <div className="relative p-6 rounded shadow-md bg-white w-full" style={{ height: '70vh', overflow: 'auto', maxWidth: 'none' }}>
-                    <h1 className="text-center mb-4">Historial de solicitudes Menores</h1>
-                    <button className="absolute top-2 right-2 p-1" onClick={() => { setHabilitarMenores(!habilitarMenores);}}>
-                        <XCircle className="w-6 h-6 text-gray-800 hover:text-red-500" />
-                    </button>
-                    <div className="p-4 space-y-4">
-                        {loading ? (
-                        <div className="w-full h-full flex flex-col items-center justify-center">
-                            <Loader />
-                            <h1>Cargando solicitudes</h1>
-                        </div>
-                        ) : (
-                        <div className="container mx-auto py-10 overflow-x-auto">
-                                <DataTable columns={columns} data={menoresColData} />
-                            </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {(showSelect && mayor === false) && (
+            {showSelect && (
                 <div className="fixed inset-0 flex items-center justify-center p-4 z-30">
                     <div className="relative p-6 rounded shadow-md bg-white w-full" style={{ height: '70vh', overflow: 'auto', maxWidth: 'none' }}>
                         <h1 className="text-center mb-4">Detalles de la solicitud</h1>
-                        <button className="absolute top-2 right-2 p-1" onClick={() => { setShowSelect(false);}}>
+                        <button className="absolute top-2 right-2 p-1" onClick={() => { setShowSelect(false); }}>
                             <XCircle className="w-6 h-6 text-gray-800 hover:text-red-500" />
                         </button>
                         <div className="p-4 space-y-4">
                             <div>
-                                <SolicitudCard 
-                                data={{ 
-                                    id: solicitudIdSelected, 
-                                    cursoSolicitud: cursosSelected, 
-                                    solicitudMenores: solicitudSelectedData }}
-                                >
-                                </SolicitudCard>
-                            </div>
-                            {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <h2 className="text-lg font-semibold">Solicitud ID</h2>
-                                    <p>
-                                        {solicitudIdSelected}
-                                    </p>
-                                </div>
-                                <div>
-                                    <h2 className="text-lg font-semibold">Alumno</h2>
-                                    <p>{alumnoSelected.nombre} {alumnoSelected.apellido}</p>
-                                </div>
-                                {responsableSelected && (
-                                    <div>
-                                        <h2 className="text-lg font-semibold">Responsable</h2>
-                                        <p>{responsableSelected.nombre} {responsableSelected.apellido}</p>
-                                    </div>
+                                {mayor ? (
+                                    <SolicitudMayoresCard
+                                        data={{ 
+                                            id: solicitudIdSelected, 
+                                            cursoSolicitud: cursosSelected, 
+                                            solicitudMayores: solicitudSelectedData 
+                                        }}
+                                    />
+                                ) : (
+                                    <SolicitudMenoresCard 
+                                        data={{ 
+                                            id: solicitudIdSelected, 
+                                            cursoSolicitud: cursosSelected, 
+                                            solicitudMenores: solicitudSelectedData 
+                                        }}
+                                    />
                                 )}
-                                <div>
-                                    <h2 className="text-lg font-semibold">Email</h2>
-                                    <p>{alumnoSelected.email}</p>
-                                </div>
-                                <div>
-                                    <h2 className="text-lg font-semibold">Firma Uso de Imágenes</h2>
-                                    <p>{firmaUsoImagenes}</p>
-                                </div>
-                                <div>
-                                    <h2 className="text-lg font-semibold">Observaciones Uso de Imágenes</h2>
-                                    <p>{observacionesUsoImagenes}</p>
-                                </div>
-                                <div>
-                                    <h2 className="text-lg font-semibold">Firma Reglamento</h2>
-                                    <p>{firmaReglamento}</p>
-                                </div>
-                            </div> */}
+                            </div>
                         </div>
                     </div>
                 </div>
-                )}
+            )}
         </main>
     );
 };

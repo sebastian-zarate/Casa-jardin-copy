@@ -1,49 +1,9 @@
 "use client"
 import React, {useState, useEffect} from 'react';
-import { Smile, User, Phone, MapPin, Heart, BookOpen, Camera, FileSignature } from 'lucide-react';
+import { Smile, User, Phone, MapPin, Heart, BookOpen, Camera, FileSignature, NotebookText } from 'lucide-react';
 import { getDireccionCompleta } from '@/services/ubicacion/direccion';
 import { getCursoById } from '@/services/cursos';
-import InfoSection from './info-section';
 
-
-
-interface SolicitudData {
-  id: number;
-  cursoSolicitud: [{
-    id: number,
-    solicitudId: number,
-    cursoId: number,
-  }],
-  solicitudMenores: {
-    alumno: {
-      nombre: string;
-      apellido: string;
-      dni: number;
-      direccionId: number;
-      email: string;
-      fechaNacimiento: Date;
-      responsable: {
-        nombre: string;
-        apellido: string;
-        direccionId: number;
-        dni: number;
-        email: string;
-        telefono: string;
-      };
-    };
-    alergia: string;
-    enfermedad: string;
-    especialista: string;
-    medicacion: string;
-    terapia: string;
-    firmaReglamento: string;
-    firmaSalidas: string;
-    firmaUsoImagenes: string;
-    observacionesSalidas: string;
-    observacionesUsoImagenes: string;
-    motivoAsistencia: string;
-  };
-}
 
 interface SolicitudCardProps {
   data: {
@@ -89,7 +49,7 @@ interface SolicitudCardProps {
   }
 }
 
-const SolicitudCard: React.FC<SolicitudCardProps> = ({ data }) => {
+const SolicitudMenoresCard: React.FC<SolicitudCardProps> = ({ data }) => {
   const [cursos, setCursos] = useState<any>(["No se pudo cargar los cursos"]);
   const [direccionAlumno, setDireccionAlumno] = useState<any>("No se pudo cargar la dirección");
   const [direccionResponsable, setDireccionResponsable] = useState<any>("No se pudo cargar la dirección");
@@ -139,15 +99,15 @@ const SolicitudCard: React.FC<SolicitudCardProps> = ({ data }) => {
           <div className="bg-white rounded-lg shadow-lg overflow-hidden">
           <div className="bg-blue-600 p-4 text-white">
             <h2 className="text-2xl font-bold flex items-center gap-2">
-              <User className="w-6 h-6" />
-              Información Solicitud {data.id}
+              <NotebookText className="w-6 h-6" />
+              Solicitud N° {data.id}
             </h2>
           </div>
           
-          <div className="p-4 sm:p-6 flex flex-col md:grid md:grid-cols-2 gap-6">
+          <div className="p-4 sm:p-6 flex flex-col md:grid md:grid-cols-2 gap-6 bg-sky-50">
             <div className="space-y-2">
               <h3 className="font-semibold text-gray-700">
-                <User className="w-5 h-5" />
+                <User className="w-5 h-5 text-sky-700"/>
                 Datos Personales</h3>
               
               <div className="mt-2 space-y-2">
@@ -212,8 +172,8 @@ const SolicitudCard: React.FC<SolicitudCardProps> = ({ data }) => {
           </div> 
   
           <div className="border-t">
-            <div className="bg-gray-50 p-4">
-              <h3 className="font-semibold text-gray-700 flex items-center gap-2">
+            <div className="bg-yellow-50 p-4">
+              <h3 className="font-semibold text-yellow-700 flex items-center gap-2">
               <FileSignature className="w-6 h-6" />
                 Autorizaciones y Observaciones
               </h3>
@@ -243,5 +203,5 @@ const SolicitudCard: React.FC<SolicitudCardProps> = ({ data }) => {
   );
 };
 
-export default SolicitudCard;
+export default SolicitudMenoresCard;
 
