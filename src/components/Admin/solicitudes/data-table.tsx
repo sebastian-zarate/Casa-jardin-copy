@@ -1,5 +1,6 @@
 "use client"
 import React, {useState}from "react"
+import { Button } from "@/components/ui/button"
 import {
   ColumnDef,
   flexRender,
@@ -55,12 +56,13 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="rounded-md border">
-       <div className="flex items-center py-4">
-        <button  
-        className="max-w-sm bg-sky-600 hover:bg-sky-700 text-white font-bold py-2 px-4 mx-1 rounded" 
+       <div className="flex items-center py-4 border-b-2 border-slate-200">
+        <Button
+        className="max-w-sm bg-sky-600 hover:bg-sky-700 text-white font-bold py-2 px-4 mx-3 rounded"
         onClick={toggleFilter}
-        > {filterActive ? "Mostrar todas" : "Filtrar leídas"}
-        </button>
+        >
+          {filterActive ? "Mostrar todas" : "Filtrar leídas"}
+        </Button>
       </div> 
       <Table>
         <TableHeader>

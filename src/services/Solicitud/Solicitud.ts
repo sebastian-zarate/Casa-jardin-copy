@@ -154,19 +154,23 @@ export async function getSolicitudCompleta(solicitudId: number) {
     include: {
       solicitudMayores: {
         include: {
-          alumno: true, // Datos del alumno para mayores
+          alumno: {
+            include: {
+              direccion: true, // Dirección relacionada con el alumno
+            },
+          }
         },
       },
       solicitudMenores: {
         include: {
           alumno: {
             include: {
-              direccion: true, // Dirección relacionada con el alumno
+             direccion: true, // Dirección relacionada con el alumno
               responsable: {
                 include: {
                   direccion: true, // Dirección relacionada con el responsable
                 },
-              }
+              } 
             },
 
           },
@@ -196,7 +200,7 @@ export async function getSolicitudesCompletas() {
         include: {
           alumno: {
             include: {
-              direccion: true, // Dirección relacionada con el alumno
+              //direccion: true, // Dirección relacionada con el alumno
               responsable: {
                 include: {
                   direccion: true, // Dirección relacionada con el responsable

@@ -1,28 +1,27 @@
 "use client"
-import { getAllSolicitudesMayores, SolicitudMayor } from "@/services/Solicitud/SolicitudMayor";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 //import Background from "../../../../public/Images/Background.jpeg"
 import Navigate from "@/components/Admin/navigate/page";
-import adultos from "../../../../public/Images/Mayores.jpg";
-import menores from "../../../../public/Images/menores.jpg";
+
+import { getAllSolicitudesMayores, SolicitudMayor } from "@/services/Solicitud/SolicitudMayor";
 import { deleteSolicitud, getAllSolicitudes, getPersonasSoli, getPersonasSoli2, getSolicitudById, Solicitud, updateSolicitud } from "@/services/Solicitud/Solicitud";
-import { getAlumnoById } from "@/services/Alumno";
 import { getAllSolicitudesMenores, SolicitudMenores } from "@/services/Solicitud/SolicitudMenor";
-import { Alumno } from "@prisma/client";
-import { getDireccionCompleta } from "@/services/ubicacion/direccion";
-import { getResponsableByAlumnoId } from "@/services/responsable";
-import { emailTest } from "@/helpers/email/email";
 import { emailRechazo } from "@/helpers/email/emailRechazoSoli";
-import withAuth from "@/components/Admin/adminAuth";
 import Background from "../../../../public/Images/BackgroundSolicitudes.jpg";
 import Loader from "@/components/Loaders/loader/loader";
 import { getCursoSolicitudBySoliId } from "@/services/curso_solicitud";
 import { createAlumno_Curso } from "@/services/alumno_curso";
 
+//nuevas llamadas
+import { getSolicitudesCompletas } from "@/services/Solicitud/Solicitud";
+
+
 //front
 import { Smile, Baby, XCircle} from "lucide-react";
 import { DashboardCard } from "@/components/varios/DashboardCard";
+import SolicitudCard from "@/components/Admin/solicitudes/SolicitudCard";
+
 // para la tabla
 import { SolicitudData, createColumns } from "@/components/Admin/solicitudes/column";
 import { DataTable } from "@/components/Admin/solicitudes/data-table";
@@ -33,7 +32,7 @@ const solicitudPage: React.FC = () => {
     // Estado para almacenar las solicitudes de mayores
     const [solicitudesMayores, setSolicitudesMayores] = useState<SolicitudMayor[]>([]);
     // Estado para almacenar las solicitud de menores
-    const [solicitudMenores, setSolicitudesMenores] = useState<SolicitudMenores[]>([]);
+    const [solicitudesMenores, setSolicitudesMenores] = useState<SolicitudMenores[]>([]);
     // Estado para almacenar las solicitudes todas
     const [solicitudes, setSolicitudes] = useState<Solicitud[]>([]);
     // Estado para habilitar solicitudes de mayores
@@ -44,7 +43,7 @@ const solicitudPage: React.FC = () => {
     const [firmaUsoImagenes, setFirmaUsoImagenes] = useState<string>("");
     const [observacionesUsoImagenes, setObservacionesUsoImagenes] = useState<string>("");
     const [firmaReglamento, setFirmaReglamento] = useState<string>("");
-    const [solicitudSelected, setSolicitudSelected] = useState<number>(0);
+    
 
     const [alumnosMayores, setAlumnosMayores] = useState<any[]>()
     const [direccionesMayores, setDireccionesMayores] = useState<any[]>()
@@ -58,15 +57,21 @@ const solicitudPage: React.FC = () => {
     const [soliMenoresNoLeidas, setSoliMenoresNoLeidas] = useState<number>(0);
 
     //para las solicitudes filtradas
-    const [filtroMayores, setFiltroMayores] = useState(false);
-    const [mayoresFiltradas, setMayoresFiltradas] = useState<number[]>([]);
     const [mayoresColData, setMayoresColData] = useState<SolicitudData[]>([]);
-
-    const [filtroMenores, setFiltroMenores] = useState(false);
-    const [menoresFiltradas, setMenoresFiltradas] = useState<number[]>([]);
     const [menoresColData, setMenoresColData] = useState<SolicitudData[]>([])
 
+    //para almacenar los cursos que trae la llamada
+    const [cursos, setCursos] = useState<any[]>([]);
+
+    //para cuando se selecciona una solicitud
+    const [mayor, setMayor] = useState<boolean>(false);
+    const [solicitudIdSelected, setSolicitudIdSelected] = useState<number>(0);
+    const [alumnoSelected, setAlumnoSelected] = useState<any>(null);
+    const [responsableSelected, setResponsableSelected] = useState<any>();
+    const [cursosSelected, setCursosSelected] = useState<any[]>([]);
     const [showSelect, setShowSelect] = useState(false);
+    const [solicitudSelectedData, setSolitudSelectedData] = useState<any>(null);
+
 
 
     useEffect(() => {
@@ -82,16 +87,10 @@ const solicitudPage: React.FC = () => {
     }, []);
 
     useEffect(() => {
-
-        const solicitudesNoLeidas = solicitudes.filter((solicitud) => !solicitud.leida);
-        const soliMayoresNoLeid = solicitudesNoLeidas.filter((solicitud) => solicitudesMayores.some((data) => data.solicitudId === solicitud.id));
-        setSoliMayoresNoLeidas(soliMayoresNoLeid.length);
-        console.log("soli mayores no leidas: ",soliMayoresNoLeid);
-        const soliMenoresNoLeid = solicitudesNoLeidas.filter((solicitud) => solicitudMenores.some((data) => data.solicitudId === solicitud.id));
-        setSoliMenoresNoLeidas(soliMenoresNoLeid.length);
-        console.log("soli menores no leidas: ",soliMenoresNoLeid);
-
-    }, [solicitudesMayores, solicitudMenores]);
+      if(solicitudes){
+      contarSolicitudesNoLeidas();
+      }
+    }, [solicitudesMayores, solicitudesMenores]);
 
     // Bloquear desplazamiento cuando los modales están activos
     useEffect(() => {
@@ -106,6 +105,97 @@ const solicitudPage: React.FC = () => {
     }, [habilitarMayores, habilitarMenores]);
 
     const fetchData = async () => {
+        //hago la llamada a la base de datos
+        const data = await getSolicitudesCompletas();
+        console.log("DATA", data);
+        //despues de obtener los datos, guardo los useStates correspondientes
+      const soli: any = [];
+      const soliMayores: any = [];
+      const soliMenores: any = [];
+      const alumnosMay: any = [];
+      const alumnosMen: any = [];
+      const responsables: any = [];
+      const curs: any = [];
+
+      data.forEach((solicitud) => {
+        soli.push({
+          //esto se utiliza para las columnas de la tabla
+          id: solicitud.id,
+          leida: solicitud.leida,
+          enEspera: solicitud.enEspera,
+        });
+
+        //esto ya es para para los datos de las solicitudes 
+        if (solicitud.solicitudMayores) {
+          soliMayores.push(solicitud.solicitudMayores);
+          alumnosMay.push(solicitud.solicitudMayores.alumno);
+        }
+
+        if (solicitud.solicitudMenores) {
+          soliMenores.push(solicitud.solicitudMenores);
+          alumnosMen.push(solicitud.solicitudMenores.alumno);
+          if (solicitud.solicitudMenores.alumno.responsable) {
+            responsables.push(solicitud.solicitudMenores.alumno.responsable);
+          }
+        }
+        curs.push(solicitud.cursoSolicitud);
+      });
+
+      console.log("1 SOLICITUDES", soli);
+      console.log("2 SOLICITUDES MAYORES", soliMayores);
+      console.log("3 SOLICITUDES MENORES", soliMenores);
+      console.log("4 ALUMNOS MAYORES", alumnosMay);
+      console.log("5 ALUMNOS MENORES", alumnosMen);
+      console.log("6 RESPONSABLES", responsables);
+      console.log("7 CURSOS", curs);
+
+
+      setSolicitudes(soli);
+      setSolicitudesMayores(soliMayores);
+      setSolicitudesMenores(soliMenores);
+      setAlumnosMayores(alumnosMay);
+      setAlumnosMenores(alumnosMen);
+      setResponsables(responsables);
+      setCursos(curs)
+
+        const mayoresData = soliMayores.map((solicitud: any) => {
+            const s = soli.find((s: any) => s.id === solicitud.solicitudId);
+            return {
+            codigo: solicitud.solicitudId,
+            alumno: solicitud.alumno ? solicitud.alumno.nombre + solicitud.alumno.apellido : "Error: datos no disponibles",
+            email: solicitud.alumno ? solicitud.alumno.email : "Error: datos no disponibles",
+            estado: s?.leida ? "Leída" : "No leída",
+            };
+        });
+
+        console.log("MAYORES DATA", mayoresData);
+        setMayoresColData(mayoresData);
+
+        const menoresData = soliMenores.map((solicitud: any) => {
+            const s = soli.find((s: any) => s.id === solicitud.solicitudId);
+            return {
+            codigo: solicitud.solicitudId,
+            alumno: solicitud.alumno ? solicitud.alumno.nombre + solicitud.alumno.apellido : "Error: datos no disponibles",
+            email: solicitud.alumno ? solicitud.alumno.email : "Error: datos no disponibles",
+            estado: s.leida ? "Leída" : "No leída",
+            };
+        });
+
+        console.log("MENORES DATA", menoresData);
+        setMenoresColData(menoresData);
+    }
+
+    const contarSolicitudesNoLeidas = () => {
+        const solicitudesNoLeidas = solicitudes.filter((solicitud) => !solicitud.leida);
+        const soliMayoresNoLeid = solicitudesNoLeidas.filter((solicitud) => solicitudesMayores.some((data) => data.solicitudId === solicitud.id));
+        setSoliMayoresNoLeidas(soliMayoresNoLeid.length);
+        console.log("soli mayores no leidas: ",soliMayoresNoLeid);
+        const soliMenoresNoLeid = solicitudesNoLeidas.filter((solicitud) => solicitudesMenores.some((data) => data.solicitudId === solicitud.id));
+        setSoliMenoresNoLeidas(soliMenoresNoLeid.length);
+        console.log("soli menores no leidas: ",soliMenoresNoLeid);
+    }
+
+    /* const fetchData = async () => {
 
         const [dataMa, dataMe, soli] = await Promise.all([
             getAllSolicitudesMayores(),
@@ -155,7 +245,7 @@ const solicitudPage: React.FC = () => {
         setMenoresColData(menoresData)
 
 
-    }
+    } */
     const handleEliminarSolicitud = async (solicitudId: number) => {
         //console.log(solicitudMenores);
         await deleteSolicitud(solicitudId);
@@ -223,10 +313,34 @@ const solicitudPage: React.FC = () => {
     */
 
     //creo las columnas para la tabla (las columnas de acciones)
-    const handleVerDetalles = async (solicitudId: number) => {
-        setSolicitudSelected(solicitudId);
+    const handleVerDetalles = (solicitudId: number) => {
+        setSolicitudIdSelected(solicitudId);
+        //para tener la data de la solicitud
+        const sol = solicitudesMayores.find((solicitud) => solicitud.solicitudId === solicitudId) || solicitudesMenores.find((solicitud) => solicitud.solicitudId === solicitudId);
+        if (!sol) return;
+        console.log("SOL", sol);
+        //para tener la data del alumno
+        console.log("ALUMNOSMAYORES", alumnosMayores)
+        
+        const al = alumnosMayores?.find((alumno) => alumno.id === sol.alumnoId) || alumnosMenores?.find((alumno) => alumno.id === sol.alumnoId);
+        console.log("AL", al);
+        if(al){
+            setAlumnoSelected(al);
+        }
+        //fijar los cursos
+        console.log("CURSOS", cursos);
+        console.log("soli id", solicitudId);
+        const flatCrusos = cursos.flat();
+        const curs = flatCrusos.filter((curso) => curso.solicitudId === solicitudId);
+
+        console.log("CURS", curs);
+        setCursosSelected(curs);
+        setFirmaUsoImagenes(sol.firmaUsoImagenes ? "Uso permitido" : "Uso denegado");
+        setObservacionesUsoImagenes(sol.observacionesUsoImagenes ? sol.observacionesUsoImagenes : "No hay observaciones");
+        setFirmaReglamento(sol.firmaReglamento ? "Firmado" : "No firmado");
+        setSolitudSelectedData(sol);
         setShowSelect(true);
-    }
+      };
 
     const handleAcceptSolicitud = async (solicitudId: number) => {
         console.log("aceptar solicitud: ", solicitudId);
@@ -234,7 +348,7 @@ const solicitudPage: React.FC = () => {
     const handleReject = async (solicitudId: number) => {
         console.log("rechazar solicitud: ", solicitudId);
     }
-    const columns = createColumns(handleVerDetalles, handleAcceptSolicitud, handleReject);
+    const columns = createColumns(handleVerDetalles);
 
     const handleSelectMayores = async (solicitudId: number) => {
         //para tener la data de la solicitud
@@ -285,11 +399,11 @@ const solicitudPage: React.FC = () => {
             )}
 
             {/* Modales */}
-            {habilitarMayores && (
+            {(habilitarMayores) && (
                 <div className="fixed inset-0 flex items-center justify-center p-4 z-10">
                     <div className="relative p-6 rounded shadow-md bg-white w-full" style={{ height: '70vh', overflow: 'auto', maxWidth: 'none' }}>
                     <h1 className="text-center mb-4">Historial de solicitudes Mayores</h1>
-                    <button className="absolute top-2 right-2 p-1" onClick={() => { setHabilitarMayores(!habilitarMayores); setSolicitudSelected(0) }}>
+                    <button className="absolute top-2 right-2 p-1" onClick={() => { setHabilitarMayores(!habilitarMayores); }}>
                         <XCircle className="w-6 h-6 text-gray-800 hover:text-red-500" />
                     </button>
                     <div className="p-4 space-y-4">
@@ -301,7 +415,7 @@ const solicitudPage: React.FC = () => {
                         ) : (
                         <div className="container mx-auto py-3 overflow-x-auto">
                                 <DataTable columns={columns} data={mayoresColData} />
-                            </div>
+                        </div>
                             )}
                         </div>
                     </div>
@@ -312,7 +426,7 @@ const solicitudPage: React.FC = () => {
                 <div className="fixed inset-0 flex items-center justify-center p-4 z-10">
                     <div className="relative p-6 rounded shadow-md bg-white w-full" style={{ height: '70vh', overflow: 'auto', maxWidth: 'none' }}>
                     <h1 className="text-center mb-4">Historial de solicitudes Menores</h1>
-                    <button className="absolute top-2 right-2 p-1" onClick={() => { setHabilitarMenores(!habilitarMenores); setSolicitudSelected(0) }}>
+                    <button className="absolute top-2 right-2 p-1" onClick={() => { setHabilitarMenores(!habilitarMenores);}}>
                         <XCircle className="w-6 h-6 text-gray-800 hover:text-red-500" />
                     </button>
                     <div className="p-4 space-y-4">
@@ -331,26 +445,43 @@ const solicitudPage: React.FC = () => {
                 </div>
             )}
 
-            {showSelect && (
+            {(showSelect && mayor === false) && (
                 <div className="fixed inset-0 flex items-center justify-center p-4 z-30">
                     <div className="relative p-6 rounded shadow-md bg-white w-full" style={{ height: '70vh', overflow: 'auto', maxWidth: 'none' }}>
                         <h1 className="text-center mb-4">Detalles de la solicitud</h1>
-                        <button className="absolute top-2 right-2 p-1" onClick={() => { setShowSelect(false); setSolicitudSelected(0) }}>
+                        <button className="absolute top-2 right-2 p-1" onClick={() => { setShowSelect(false);}}>
                             <XCircle className="w-6 h-6 text-gray-800 hover:text-red-500" />
                         </button>
                         <div className="p-4 space-y-4">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <SolicitudCard 
+                                data={{ 
+                                    id: solicitudIdSelected, 
+                                    cursoSolicitud: cursosSelected, 
+                                    solicitudMenores: solicitudSelectedData }}
+                                >
+                                </SolicitudCard>
+                            </div>
+                            {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <h2 className="text-lg font-semibold">Solicitud ID</h2>
-                                    <p>{solicitudSelected}</p>
+                                    <p>
+                                        {solicitudIdSelected}
+                                    </p>
                                 </div>
                                 <div>
                                     <h2 className="text-lg font-semibold">Alumno</h2>
-                                    <p>{}</p>
+                                    <p>{alumnoSelected.nombre} {alumnoSelected.apellido}</p>
                                 </div>
+                                {responsableSelected && (
+                                    <div>
+                                        <h2 className="text-lg font-semibold">Responsable</h2>
+                                        <p>{responsableSelected.nombre} {responsableSelected.apellido}</p>
+                                    </div>
+                                )}
                                 <div>
                                     <h2 className="text-lg font-semibold">Email</h2>
-                                    <p>email hardodeado</p>
+                                    <p>{alumnoSelected.email}</p>
                                 </div>
                                 <div>
                                     <h2 className="text-lg font-semibold">Firma Uso de Imágenes</h2>
@@ -364,7 +495,7 @@ const solicitudPage: React.FC = () => {
                                     <h2 className="text-lg font-semibold">Firma Reglamento</h2>
                                     <p>{firmaReglamento}</p>
                                 </div>
-                            </div>
+                            </div> */}
                         </div>
                     </div>
                 </div>
