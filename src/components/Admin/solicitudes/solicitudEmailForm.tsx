@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, {useState } from 'react';
 import { X, Send, ChevronDown, ChevronUp, Wand2, Loader2 } from 'lucide-react';
 import { updateSolicitud } from '@/services/Solicitud/Solicitud';
 import { emailAceptar, emailRechazo } from '@/helpers/email/emailSolicitudes';
-import { getCursoSolicitudBySoliId } from '@/services/curso_solicitud';
 import { createAlumno_Curso } from '@/services/alumno_curso';
+import { sendEmailCustom } from '@/helpers/sendmail';
+import { send } from 'process';
 
 interface SolicitudEmailFormProps {
   soliAlumno: {solicitudId: number, alumno: any};
@@ -121,7 +122,7 @@ saludos cordiales, Casa Jardín`);
   const handleRechazar = async (solicitudId: number, correo: string) => {
     try {
       await updateSolicitud(solicitudId, { leida: true, enEspera: true });
-      await emailRechazo(correo, title, body);
+      await sendEmailCustom(soliAlumno.alumno.correo, title, body);
       setSuccessMessage('La solicitud ha sido rechazada correctamente.');
     } catch (error) {
       throw error;
@@ -142,7 +143,7 @@ saludos cordiales, Casa Jardín`);
           "cursoId": (curso),
         });
       }
-      await emailAceptar(soliAlumno.alumno.email, title, body);
+      await sendEmailCustom(soliAlumno.alumno.correo, title, body)
       setSuccessMessage('La solicitud ha sido aceptada correctamente.');
     } catch (error) {
       throw error;

@@ -4,7 +4,7 @@ import { guardarCodigoConfirmacion } from "@/services/redis";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
-  const { receptor } = req.body;
+  const { receptor, titulo, texto} = req.body;
 
   // Generate a 6-digit confirmation code
   const randomCode = Math.floor(100000 + Math.random() * 900000);
@@ -45,28 +45,8 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   const mailData = {
     from: "maldonado12net@gmail.com",
     to: receptor,
-    subject: "Código de confirmación - Casa Jardín",
-    text: "Código de confirmación",
-    html: `
-      <body>
-        <div style="font-family: Arial, sans-serif; text-align: center; background-color: black; padding: 2%;">
-          <h1 style="color: white;">Casa Jardín</h1>
-          <div style="font-family: Arial, sans-serif; text-align: center; background-color: rgb(255, 255, 255); padding-bottom: 5px; margin-left: 10%; margin-right: 10%;">
-            <h1 style="color: #333;">Código de confirmación</h1>
-            <img src="cid:logoimage" alt="logo"></img>
-            <p>Tu código es: <strong style="font-size: 18px; color: brown;">${randomCode}</strong></p>
-            <p>Por favor, ingrésalo en la página para completar su solicitud de inscripción.</p>
-          </div>
-        </div>
-      </body>
-    `,
-    attachments: [
-      {
-        filename: "LogoCasaJardin.png",
-        path: logoPath,
-        cid: "logoimage",
-      },
-    ],
+    subject: titulo,
+    text: texto,
   };
 
   //enviar email
