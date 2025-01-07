@@ -105,6 +105,7 @@ export async function getDireccionCompleta (DireccionId: number) {
       }
     }
   });
+  console.log("dir completa", direccion);
   return direccion;
 }
 

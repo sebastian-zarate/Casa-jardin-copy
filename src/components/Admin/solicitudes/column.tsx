@@ -1,7 +1,7 @@
 "use client"
 import {ColumnDef} from "@tanstack/react-table";
-import {Button} from "@/components/ui/button";
-import { MoreHorizontal } from "lucide-react";
+import {Button, buttonVariants} from "@/components/ui/button";
+import {SquareArrowOutUpRight, Trash2} from "lucide-react";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -16,14 +16,13 @@ export type SolicitudData = {
     codigo: number;
     alumno: string; //nombre y apellido
     email: string;
-    estado: string; //pendiente, no pendiente
+    estado: string; //leido, no leido
 }
 
 //defino las columnas que va a tener la tabla
 export const createColumns= (
     onViewDetails: (solicitudId: number) => void,
-    onAccept: (solicitudId: number) => void,
-    onReject: (solicitudId: number) => void
+    onDelete: (solicitudId: number) => void
     ): ColumnDef<SolicitudData>[] => [
     
     {
@@ -48,26 +47,25 @@ export const createColumns= (
         cell: ({ row }) => {
             const solicitud = row.original; //variable que contiene la fila actual
             return (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="h-8 w-8 p-0">
-                      <span className="sr-only">Abrir menu</span>
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Opciones</DropdownMenuLabel>
-                    <DropdownMenuItem
-                      onClick={() => onViewDetails(solicitud.codigo)}
-                    >
-                      Ver detalles
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem className="text-green-600" onClick={() => onAccept(solicitud.codigo)}>Aceptar</DropdownMenuItem>
-                    <DropdownMenuItem className="text-red-600" onClick={() => onReject(solicitud.codigo)}>Rechazar</DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-            )
+              <>
+                <Button
+                  variant="link"
+                  size="icon"
+                  onClick={() => onViewDetails(solicitud.codigo)}
+                  className="text-gray-600 hover:text-sky-600"
+                >
+                  <SquareArrowOutUpRight />
+                </Button>
+                <Button
+                  variant="link"
+                  size="icon"
+                  onClick={() => onDelete(solicitud.codigo)}
+                  className="text-gray-600 hover:text-red-600"
+                >
+                  <Trash2/>
+                </Button>
+              </>
+            );
         },
     },        
 ];
