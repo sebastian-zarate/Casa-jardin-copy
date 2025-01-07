@@ -1,14 +1,13 @@
 "use client"
-import React, {useState}from "react"
+import React, { useState } from "react"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import {
   ColumnDef,
   flexRender,
   getCoreRowModel,
   useReactTable,
-  //eventos de la tabla
   getFilteredRowModel,
-  ColumnFilter,
   ColumnFiltersState
 } from "@tanstack/react-table"
 
@@ -30,56 +29,63 @@ export function DataTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
-    const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-    const [filterActive, setFilterActive] = useState(false)  // Nuevo estado para controlar el filtro
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+  const [filterActive, setFilterActive] = useState(false)
   
-    
   const table = useReactTable({
     data,
     columns,
-    getCoreRowModel: getCoreRowModel(), //principal
-    onColumnFiltersChange: setColumnFilters, //filtrado
-    getFilteredRowModel: getFilteredRowModel(), //filtrado
+    getCoreRowModel: getCoreRowModel(),
+    onColumnFiltersChange: setColumnFilters,
+    getFilteredRowModel: getFilteredRowModel(),
     state: {
-        columnFilters,
+      columnFilters,
     },
   })
 
   const toggleFilter = () => {
     if (filterActive) {
-      setColumnFilters([])  // Limpia el filtro
+      setColumnFilters(filters => filters.filter(f => f.id !== "estado"))
     } else {
-      setColumnFilters([{ id: "estado", value: "No leída" }])  // Aplica el filtro
+      setColumnFilters(filters => [...filters.filter(f => f.id !== "estado"), { id: "estado", value: "No leída" }])
     }
-    setFilterActive(!filterActive)  // Alterna el estado
+    setFilterActive(!filterActive)
   }
 
   return (
     <div className="rounded-md border">
-       <div className="flex items-center py-4 border-b-2 border-slate-200">
+      <div className="flex items-center gap-4 p-4 border-b-2 border-slate-200">
         <Button
-        className="max-w-sm bg-sky-600 hover:bg-sky-700 text-white font-bold py-2 px-4 mx-3 rounded"
-        onClick={toggleFilter}
+          className="bg-sky-600 hover:bg-sky-700 text-white font-bold rounded"
+          onClick={toggleFilter}
         >
           {filterActive ? "Mostrar todas" : "Filtrar leídas"}
         </Button>
-      </div> 
+        <div className="flex-1 max-w-sm">
+          <Input
+            placeholder="Buscar por nombre..."
+            value={(table.getColumn("alumno")?.getFilterValue() as string) ?? ""}
+            onChange={(event) =>
+              table.getColumn("alumno")?.setFilterValue(event.target.value)
+            }
+            className="max-w-sm"
+          />
+        </div>
+      </div>
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => {
-                return (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </TableHead>
-                )
-              })}
+              {headerGroup.headers.map((header) => (
+                <TableHead key={header.id}>
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
+                </TableHead>
+              ))}
             </TableRow>
           ))}
         </TableHeader>
@@ -92,8 +98,8 @@ export function DataTable<TData, TValue>({
               >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell 
-                  key={cell.id}
-                  className={cell.column.id === "estado" && cell.getValue() === "No leída" ? "text-red-500" : ""}
+                    key={cell.id}
+                    className={cell.column.id === "estado" && cell.getValue() === "No leída" ? "text-red-500" : ""}
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
@@ -103,7 +109,7 @@ export function DataTable<TData, TValue>({
           ) : (
             <TableRow>
               <TableCell colSpan={columns.length} className="h-24 text-center">
-                No results.
+                Sin Resultados.
               </TableCell>
             </TableRow>
           )}

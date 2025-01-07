@@ -7,7 +7,7 @@ import Navigate from "@/components/Admin/navigate/page";
 import { getAllSolicitudesMayores, SolicitudMayor } from "@/services/Solicitud/SolicitudMayor";
 import { deleteSolicitud, getAllSolicitudes, getPersonasSoli, getPersonasSoli2, getSolicitudById, Solicitud, updateSolicitud } from "@/services/Solicitud/Solicitud";
 import { getAllSolicitudesMenores, SolicitudMenores } from "@/services/Solicitud/SolicitudMenor";
-import { emailRechazo } from "@/helpers/email/emailRechazoSoli";
+import { emailRechazo } from "@/helpers/email/emailSolicitudes";
 import Background from "../../../../public/Images/BackgroundSolicitudes.jpg";
 import Loader from "@/components/Loaders/loader/loader";
 import { getCursoSolicitudBySoliId } from "@/services/curso_solicitud";
@@ -22,6 +22,7 @@ import { Smile, Baby, XCircle} from "lucide-react";
 import { DashboardCard } from "@/components/varios/DashboardCard";
 import SolicitudMayoresCard from "@/components/Admin/solicitudes/SolicitudMayoresCard";
 import SolicitudMenoresCard from "@/components/Admin/solicitudes/SolicitudMenoresCard";
+import { SolicitudEmailForm } from "@/components/Admin/solicitudes/solicitudEmailForm";
 
 // para la tabla
 import { SolicitudData, createColumns } from "@/components/Admin/solicitudes/column";
@@ -75,6 +76,11 @@ const solicitudPage: React.FC = () => {
     const [showSelect, setShowSelect] = useState(false);
     const [solicitudSelectedData, setSolitudSelectedData] = useState<any>(null);
 
+    //para el ultimo componente, que abre el modal para accept o reject
+    const [manejarSolitud, setManejarSolicitud] = useState<boolean>(false);
+    const [aceptar, setAceptar] = useState<boolean>(false);
+    const [solicitudAlumnoMap, setSolicitudAlumnoMapping] = useState<{ [key: number]: any }>({});
+
 
 
     useEffect(() => {
@@ -119,6 +125,7 @@ const solicitudPage: React.FC = () => {
       const alumnosMen: any = [];
       const responsables: any = [];
       const curs: any = [];
+      const solicitudAlumnoMapping: { [key: number]: any } = {};
 
       data.forEach((solicitud) => {
         soli.push({
@@ -132,6 +139,7 @@ const solicitudPage: React.FC = () => {
         if (solicitud.solicitudMayores) {
           soliMayores.push(solicitud.solicitudMayores);
           alumnosMay.push(solicitud.solicitudMayores.alumno);
+          solicitudAlumnoMapping[solicitud.solicitudMayores.alumno.id] = solicitud.solicitudMayores.alumno;
         }
 
         if (solicitud.solicitudMenores) {
@@ -140,6 +148,7 @@ const solicitudPage: React.FC = () => {
           if (solicitud.solicitudMenores.alumno.responsable) {
             responsables.push(solicitud.solicitudMenores.alumno.responsable);
           }
+        solicitudAlumnoMapping[solicitud.solicitudMenores.alumno.id] = solicitud.solicitudMenores.alumno;
         }
         curs.push(solicitud.cursoSolicitud);
       });
@@ -165,7 +174,7 @@ const solicitudPage: React.FC = () => {
             const s = soli.find((s: any) => s.id === solicitud.solicitudId);
             return {
             codigo: solicitud.solicitudId,
-            alumno: solicitud.alumno ? solicitud.alumno.nombre + solicitud.alumno.apellido : "Error: datos no disponibles",
+            alumno: solicitud.alumno ? solicitud.alumno.nombre + " " + solicitud.alumno.apellido : "Error: datos no disponibles",
             email: solicitud.alumno ? solicitud.alumno.email : "Error: datos no disponibles",
             estado: s?.leida ? "Leída" : "No leída",
             };
@@ -178,7 +187,7 @@ const solicitudPage: React.FC = () => {
             const s = soli.find((s: any) => s.id === solicitud.solicitudId);
             return {
             codigo: solicitud.solicitudId,
-            alumno: solicitud.alumno ? solicitud.alumno.nombre + solicitud.alumno.apellido : "Error: datos no disponibles",
+            alumno: solicitud.alumno ? solicitud.alumno.nombre + " " + solicitud.alumno.apellido : "Error: datos no disponibles",
             email: solicitud.alumno ? solicitud.alumno.email : "Error: datos no disponibles",
             estado: s.leida ? "Leída" : "No leída",
             };
@@ -255,66 +264,7 @@ const solicitudPage: React.FC = () => {
         //console.log(soliElim);
         fetchData()
     }
-    const handleRechazar = async (solicitudId: number, correo: string) => {
-        console.log("Rechazo", correo);
-        await updateSolicitud(solicitudId, { enEspera: true })
-        await emailRechazo(correo);
-        fetchData()
-    }
-
-    const handleAceptarSolicitud = async (solicitudId: number, idAlumno: number) => {
-        await updateSolicitud(solicitudId, { leida: true });
-        const curso_soli = await getCursoSolicitudBySoliId(solicitudId);
-        if (typeof (curso_soli) === "string") return console.log("No se encontraron cursos");
-        for (let i = 0; i < curso_soli.length; i++) {
-            await createAlumno_Curso({
-                "alumnoId": idAlumno,
-                "cursoId": (curso_soli[i].cursoId),
-            })
-        }
-        // console.log(soli);
-        fetchData()
-    }
-
-    const getSolicitud = (solicitudId: number) => {
-        const sol = solicitudes.find((solicitud) => solicitud.id === solicitudId);
-        // console.log(sol);
-        return sol;
-    }
-    const getAl = (id: number) => {
-        const alumnoMayor = alumnosMayores?.reduce((acc, alumno) => {
-            if (alumno.id === id) {
-                return alumno;
-            }
-            return acc;
-        }, null);
-        if (!alumnoMayor) {
-            return alumnosMenores?.reduce((acc, alumno) => {
-                if (alumno.id === id) {
-                    return alumno;
-                }
-                return acc;
-            }, null);
-        }
-        return alumnoMayor
-    }
-    const getResp = (id: number) => {
-        return responsables?.reduce((acc, resp) => {
-            if (resp.alumnoId === id) {
-                return resp;
-            }
-            return acc;
-        }, null);
-    }
-    /*
-    SolicitudId
-    Nombre y apellido alumno
-    firmaUsoImagenes
-    observacionesUsoImagenes
-    firmaReglamento
-
-    */
-
+    
     //creo las columnas para la tabla (las columnas de acciones)
     const handleVerDetalles = (solicitudId: number) => {
         setSolicitudIdSelected(solicitudId);
@@ -351,19 +301,8 @@ const solicitudPage: React.FC = () => {
         setShowSelect(true);
       };
 
-    const handleAcceptSolicitud = async (solicitudId: number) => {
-        console.log("aceptar solicitud: ", solicitudId);
-    }
-    const handleReject = async (solicitudId: number) => {
-        console.log("rechazar solicitud: ", solicitudId);
-    }
-    const columns = createColumns(handleVerDetalles);
-
-    const handleSelectMayores = async (solicitudId: number) => {
-        //para tener la data de la solicitud
-        const solicitudMa = solicitudes.find((solicitud) => solicitud.id === solicitudId);
-
-    }
+    
+    const columns = createColumns(handleVerDetalles, handleEliminarSolicitud);
 
     //region return
     return (
@@ -484,8 +423,27 @@ const solicitudPage: React.FC = () => {
                             {/* Botones de acción si la solicitud es No Leída*/}
                             { !leida && (
                                 <div className="flex justify-center items-center space-x-4">
-                                <Button className="bg-sky-600" onClick={() => console.log("to do")}>Aceptar</Button>
-                                <Button className="bg-red-600" onClick={() => console.log("to do")}>Rechazar</Button>
+                                <Button className="bg-sky-600" onClick={() => {setManejarSolicitud(true); setAceptar(true)}}>Aceptar</Button>
+                                <Button className="bg-red-600" onClick={() => {setManejarSolicitud(true); setAceptar(false)}}>Rechazar</Button>
+
+                                {manejarSolitud && (
+                                    aceptar ? (
+                                        <SolicitudEmailForm
+                                            soliAlumno={{solicitudId: solicitudIdSelected, alumno: alumnoSelected}}
+                                            cursos={cursosSelected}
+                                            aceptar={true}
+                                            onSubmit={() => fetchData()}
+                                            onClose={() =>{setManejarSolicitud(false), setShowSelect(false)}}
+                                        />
+                                    ) : (
+                                        <SolicitudEmailForm
+                                            soliAlumno={{solicitudId: solicitudIdSelected, alumno: alumnoSelected}}
+                                            aceptar={false}
+                                            onSubmit = {() => fetchData()}
+                                            onClose={() =>{setManejarSolicitud(false), setShowSelect(false)}}
+                                        />
+                                    )
+                                )} 
                                 </div>
                             )}  
                         </div>

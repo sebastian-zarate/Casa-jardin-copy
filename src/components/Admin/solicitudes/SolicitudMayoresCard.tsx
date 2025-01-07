@@ -37,23 +37,25 @@ const SolicitudMayoresCard: React.FC<SolicitudCardProps> = ({ data }) => {
   const [cursos, setCursos] = useState<any>(["No se pudo cargar los cursos"]);
   const [direccionAlumno, setDireccionAlumno] = useState<any>("No se pudo cargar la dirección");
   const [loaded, setLoaded] = useState(false);
+  const [dataFetched, setDataFetched] = useState(false);
   const alumno = data.solicitudMayores.alumno;
-  console.log('Alumno mayoooo:', alumno);
+  //console.log('Alumno mayoooo:', alumno);
  
-
-
   useEffect(() => {
-    console.log('Fetching data...');
-    fetchData();
-  }, [data, alumno]);
+    if (!dataFetched) {
+      console.log('Fetching data...');
+      fetchData();
+    }
+  }, [dataFetched]); // Solo depende de dataFetched
+
 
   const fetchData = async () => {
-    console.log('Flag 1');
+   // console.log('Flag 1');
     try {
-        console.log('Flag 2');
+      // console.log('Flag 2');
         const direccionAlumnoData: any = await getDireccionCompleta(alumno.direccionId);
   
-        console.log('Dirección Alumno mayooo:', direccionAlumnoData);
+      // console.log('Dirección Alumno mayooo:', direccionAlumnoData);
 
         const cur = data.cursoSolicitud.map(curso => ({
             cursoId: curso.cursoId,
@@ -70,6 +72,7 @@ const SolicitudMayoresCard: React.FC<SolicitudCardProps> = ({ data }) => {
   
         setDireccionAlumno(direccionAlumnoStr.trim());
         setLoaded(true);
+        setDataFetched(true);
     } catch (error) {
         console.error('Error fetching data:', error);
     }
@@ -109,8 +112,8 @@ return (
                 Cursos seleccionados
               </h3>
               <div className="grid gap-4">
-                {cursos.map((course: any) => (
-                  <div key={course.id}>
+              {cursos.map((course: any, index: number) => (
+                    <div key={`${course.id}-${index}`}>
                     <p className="break-words font-semibold flex items-center gap-2">
                         <MoveRight className="w-5 h-5" /> {course.nombre}
                     </p>
