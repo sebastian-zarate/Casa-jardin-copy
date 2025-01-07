@@ -1,6 +1,5 @@
 import nodemailer from "nodemailer";
 import path from "path";
-import { guardarCodigoConfirmacion } from "@/services/redis";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
@@ -63,8 +62,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     });
   });
 
-  // Save the confirmation code in Redis
-  await guardarCodigoConfirmacion(receptor, randomCode.toString());
+
 
   res.status(200).json({ status: "OK" });
 };

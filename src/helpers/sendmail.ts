@@ -12,13 +12,13 @@ export const sendEmail = async (email: string): Promise<void> => {
     }
 };
 
-export const sendEmailCustom = async (email: string, title?: string, body?: string): Promise<void> => {
-  const response = await fetch("/api/sendMail", {
+export const sendEmailCustom = async (email: string, titulo?: string, texto?: string): Promise<void> => {
+  const response = await fetch("/api/sendMailcustom", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ receptor: email }),
+    body: JSON.stringify({ receptor: email, titulo: titulo, texto: texto }),
   });
 
   if (!response.ok) {

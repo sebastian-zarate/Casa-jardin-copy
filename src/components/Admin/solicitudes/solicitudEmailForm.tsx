@@ -122,7 +122,8 @@ saludos cordiales, Casa Jardín`);
   const handleRechazar = async (solicitudId: number, correo: string) => {
     try {
       await updateSolicitud(solicitudId, { leida: true, enEspera: true });
-      await sendEmailCustom(soliAlumno.alumno.correo, title, body);
+      console.log(soliAlumno.alumno.email)
+      await sendEmailCustom(soliAlumno.alumno.email, title, body);
       setSuccessMessage('La solicitud ha sido rechazada correctamente.');
     } catch (error) {
       throw error;
@@ -143,7 +144,8 @@ saludos cordiales, Casa Jardín`);
           "cursoId": (curso),
         });
       }
-      await sendEmailCustom(soliAlumno.alumno.correo, title, body)
+      console.log(soliAlumno.alumno.email)
+      await sendEmailCustom(soliAlumno.alumno.email, title, body)
       setSuccessMessage('La solicitud ha sido aceptada correctamente.');
     } catch (error) {
       throw error;
