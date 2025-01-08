@@ -5,11 +5,8 @@ import { NextApiRequest, NextApiResponse } from "next";
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   const { receptor, titulo, texto} = req.body;
 
-  // Generate a 6-digit confirmation code
-  const randomCode = Math.floor(100000 + Math.random() * 900000);
-
-  // Path to the logo image
-  const logoPath = path.join(process.cwd(), 'public', 'Images', 'LogoCasaJardin.png');
+  console.log("titulo", titulo)
+  console.log("texto", texto)
 
   const transporter = nodemailer.createTransport({
     service: "gmail",

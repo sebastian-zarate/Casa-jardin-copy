@@ -123,6 +123,8 @@ saludos cordiales, Casa Jardín`);
     try {
       await updateSolicitud(solicitudId, { leida: true, enEspera: true });
       console.log(soliAlumno.alumno.email)
+      console.log(title)
+      console.log(body)
       await sendEmailCustom(soliAlumno.alumno.email, title, body);
       setSuccessMessage('La solicitud ha sido rechazada correctamente.');
     } catch (error) {
@@ -145,6 +147,8 @@ saludos cordiales, Casa Jardín`);
         });
       }
       console.log(soliAlumno.alumno.email)
+      console.log(title)
+      console.log(body)
       await sendEmailCustom(soliAlumno.alumno.email, title, body)
       setSuccessMessage('La solicitud ha sido aceptada correctamente.');
     } catch (error) {
