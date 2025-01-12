@@ -90,7 +90,7 @@ const Menores: React.FC = () => {
 
 
     const [steps, setStep] = useState({
-        stepsItems: ["Talleres", "Datos del Alumno", "Uso de Imagen", "Salidas", "Reglamentación"],
+        stepsItems: ["Talleres", "Datos del Alumno", "Condición de salud", "Uso de Imagen", "Salidas", "Reglamentación"],
         currentStep: 1
     })
 
