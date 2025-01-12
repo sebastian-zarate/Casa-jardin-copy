@@ -1,4 +1,4 @@
-export const sendEmail = async (email: string): Promise<void> => {
+export const sendEmail = async (email: string): Promise<Response> => {
     const response = await fetch("/api/sendMail", {
       method: "POST",
       headers: {
@@ -10,9 +10,10 @@ export const sendEmail = async (email: string): Promise<void> => {
     if (!response.ok) {
       throw new Error("Error sending email");
     }
+    return response
 };
 
-export const sendEmailCustom = async (email: string, titulo?: string, texto?: string): Promise<void> => {
+export const sendEmailCustom = async (email: string, titulo?: string, texto?: string): Promise<Response> => {
   const response = await fetch("/api/sendMailcustom", {
     method: "POST",
     headers: {
@@ -24,4 +25,5 @@ export const sendEmailCustom = async (email: string, titulo?: string, texto?: st
   if (!response.ok) {
     throw new Error("Error sending email");
   }
+  return response
 };

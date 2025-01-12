@@ -1,10 +1,8 @@
 import React, {useState } from 'react';
 import { X, Send, ChevronDown, ChevronUp, Wand2, Loader2 } from 'lucide-react';
 import { updateSolicitud } from '@/services/Solicitud/Solicitud';
-import { emailAceptar, emailRechazo } from '@/helpers/email/emailSolicitudes';
 import { createAlumno_Curso } from '@/services/alumno_curso';
 import { sendEmailCustom } from '@/helpers/sendmail';
-import { send } from 'process';
 
 interface SolicitudEmailFormProps {
   soliAlumno: {solicitudId: number, alumno: any};
@@ -71,7 +69,7 @@ export function SolicitudEmailForm({soliAlumno, cursos, aceptar, onSubmit, onClo
         await handleAceptarSolicitud(soliAlumno.solicitudId, soliAlumno.alumno.id, selectCursosId);
       }
       else{
-        await handleRechazar(soliAlumno.solicitudId, soliAlumno.alumno.email);
+        await handleRechazar(soliAlumno.solicitudId);
       }
       onSubmit({ selectedItems, title, body });
     } catch (error) {
@@ -119,16 +117,18 @@ saludos cordiales, Casa Jardín`);
     });
   };
 
-  const handleRechazar = async (solicitudId: number, correo: string) => {
+  const handleRechazar = async (solicitudId: number) => {
     try {
       await updateSolicitud(solicitudId, { leida: true, enEspera: true });
-      console.log(soliAlumno.alumno.email)
-      console.log(title)
-      console.log(body)
-      await sendEmailCustom(soliAlumno.alumno.email, title, body);
-      setSuccessMessage('La solicitud ha sido rechazada correctamente.');
+      const response = await sendEmailCustom(soliAlumno.alumno.email, title, body);
+      
+      if (response.ok) {
+        setSuccessMessage('La solicitud ha sido rechazada correctamente.');
+      } else {
+        throw new Error('Error sending email');
+      }
     } catch (error) {
-      throw error;
+      console.error(error);
     } finally {
       setTimeout(() => {
         setSuccessMessage(null);
@@ -146,13 +146,15 @@ saludos cordiales, Casa Jardín`);
           "cursoId": (curso),
         });
       }
-      console.log(soliAlumno.alumno.email)
-      console.log(title)
-      console.log(body)
-      await sendEmailCustom(soliAlumno.alumno.email, title, body)
-      setSuccessMessage('La solicitud ha sido aceptada correctamente.');
+      const response = await sendEmailCustom(soliAlumno.alumno.email, title, body);
+      
+      if (response.ok) {
+        setSuccessMessage('La solicitud ha sido aceptada correctamente.');
+      } else {
+        throw new Error('Error sending email');
+      }
     } catch (error) {
-      throw error;
+      console.error(error);
     } finally {
       setTimeout(() => {
         setSuccessMessage(null);

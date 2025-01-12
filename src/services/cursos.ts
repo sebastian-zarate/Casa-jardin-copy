@@ -236,3 +236,30 @@ export async function getCursosActivos(){
     const fechaHoy = new Date();
     return cursos.filter(curso => curso.fechaInicio <= fechaHoy && curso.fechaFin >= fechaHoy);
 }
+
+export async function getCursosDisponiblesAlumno(edad: number, alumnoId: number){
+    const fechaHoy = new Date()
+    return await prisma.curso.findMany({
+        where: {
+            edadMinima: {
+                lte: edad
+            },
+            edadMaxima: {
+                gte: edad
+            },
+            fechaInicio: {
+                lte: fechaHoy
+            },
+            fechaFin: {
+                gte: fechaHoy
+            },
+            // para que no se muestren los cursos en los que el alumno ya esta inscripto
+            alum_cur: {
+                none: {
+                    alumnoId
+                }
+            }
+            //despues hay que agregar que no muestre los que ya le creo una solicitud
+        }
+    })
+}

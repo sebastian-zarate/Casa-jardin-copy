@@ -1,10 +1,22 @@
 "use client"
-import { NotebookText, User } from 'lucide-react';
-import React, { useState } from 'react';
+import { NotebookText, Phone, User } from 'lucide-react';
+import React from 'react';
 
 
 interface Datos {
-    setDatosAlumno: React.Dispatch<React.SetStateAction<{
+    datosMenor: {
+        nombre: string;
+        apellido: string;
+        fechaNacimiento: string;
+        correoElectronico: string;
+        dni: number;
+        pais: string;
+        provincia: string;
+        localidad: string;
+        calle: string;
+        numero: number;
+      };
+    datosMayor: {
         nombre: string;
         apellido: string;
         telefono: number;
@@ -15,30 +27,14 @@ interface Datos {
         localidad: string;
         calle: string;
         numero: number;
-        fechaNacimiento: string;
-    }>>;
-    datosAlumno: {
-        nombre: string;
-        apellido: string;
-        telefono: number;
-        correoElectronico: string;
-        dni: number;
-        pais: string;
-        provincia: string;
-        localidad: string;
-        calle: string;
-        numero: number;
-        fechaNacimiento: string;
     };
-    setError: React.Dispatch<React.SetStateAction<string>>;
 }
 
-const DatosAlumno: React.FC<Datos> = ({ setDatosAlumno, datosAlumno, setError }) => {
-    const [cursos, setCursos] = useState<any>(["No se pudo cargar los cursos"]);
-    const [direccionAlumno, setDireccionAlumno] = useState<any>("No se pudo cargar la dirección");
-    const alumno = datosAlumno;
-    const direccionAlumnoStr = `${direccionAlumno.calle || ''} ${direccionAlumno.numero || ''}, ${direccionAlumno.localidad || 'Unknown'}, ${direccionAlumno.provincia || 'Unknown'}, ${direccionAlumno.pais || 'Unknown'}`;	
-
+const DatosAlumno: React.FC<Datos> = ({ datosMenor, datosMayor }) => {
+    const alumno = datosMenor;
+    const responsable = datosMayor;
+    const direccionAlumnoStr = `${alumno.calle || ''} ${alumno.numero || ''}, ${alumno.localidad || 'Unknown'}, ${alumno.provincia || 'Unknown'}, ${alumno.pais || 'Unknown'}`;	
+    const direccionResponsableStr = `${responsable.calle || ''} ${responsable.numero || ''}, ${responsable.localidad || 'Unknown'}, ${responsable.provincia || 'Unknown'}, ${responsable.pais || 'Unknown'}`;
 
   
   
@@ -63,7 +59,7 @@ const DatosAlumno: React.FC<Datos> = ({ setDatosAlumno, datosAlumno, setError })
               <div className="space-y-2">
                 <h3 className="font-semibold text-gray-700 flex items-center gap-2">
                   <User className="w-5 h-5 text-sky-700" />
-                  Datos Personales
+                  Datos del Alumno
                 </h3>
       
                 <div className="mt-2 space-y-2">
@@ -71,8 +67,26 @@ const DatosAlumno: React.FC<Datos> = ({ setDatosAlumno, datosAlumno, setError })
                   <p className="font-medium"><span className="font-semibold">DNI:</span> {alumno.dni}</p>
                   <p className="font-medium"><span className="font-semibold">Email:</span> {alumno.correoElectronico}</p>
                   <p className="font-medium"><span className="font-semibold">Fecha de Nacimiento:</span> {new Date(alumno.fechaNacimiento).toLocaleDateString()}</p>
-                  <p className="font-medium"><span className="font-semibold">Dirección:</span> {direccionAlumno}</p>
+                  <p className="font-medium"><span className="font-semibold">Dirección:</span> {direccionAlumnoStr}</p>
                 </div>
+              </div>
+            </div>
+
+            <div className="p-4 sm:p-6 flex flex-col md:grid md:grid-cols-2 gap-6 bg-green-50">
+              <div className="space-y-2">
+                <h3 className="font-semibold text-gray-700 flex items-center gap-2">
+                  <Phone className="w-5 h-5 text-green-700" />
+                  Datos del Responsable
+                </h3>
+      
+                <div className="mt-2 space-y-2">
+                  <p className="font-medium"><span className="font-semibold">Nombre:</span> {responsable.nombre} {responsable.apellido}</p>
+                  <p className="font-medium"><span className="font-semibold">DNI:</span> {responsable.dni}</p>
+                  <p className="font-medium"><span className="font-semibold">Email:</span> {responsable.correoElectronico}</p>
+                  <p className="font-medium"><span className="font-semibold">Teléfono:</span> {responsable.telefono}</p>
+                  <p className="font-medium"><span className="font-semibold">Dirección:</span> {direccionResponsableStr}</p>
+                </div>
+
               </div>
             </div>
           </div>
