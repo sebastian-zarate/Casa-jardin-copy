@@ -32,10 +32,30 @@ const misSolicitudes: React.FC = () => {
       setUser(usuario);
       setSolicitudes(solicitudes);
 
-      const data = solicitudes.map((solicitud: any) => ({
-        codigo: solicitud.id,
-        estado: solicitud.leida ? "Revisada" : "No Leída",
-      }));
+      const data = solicitudes.map((solicitud: any) => {
+        let estado = "No Leída";
+      
+        if (solicitud.leida) {
+          //si todos los cursos de la soli fueron aceptados
+          const allAccepted = solicitud.cursoSolicitud.every((curso: any) => curso.estado);
+          //si todos los cursos de la soli fueron rechazados
+          const allRejected = solicitud.cursoSolicitud.every((curso: any) => !curso.estado);
+          //si algun curso de la soli fue aceptado
+          const partiallyAccepted = solicitud.cursoSolicitud.some((curso: any) => curso.estado);
+      
+          if (allAccepted) {
+            estado = "Aceptada";
+          } else if (allRejected) {
+            estado = "Rechazada";
+          } else if (partiallyAccepted) {
+            estado = "Parcialmente Aprobada";
+          }
+        }
+        return {
+          codigo: solicitud.id,
+          estado: estado,
+        };
+      });
       console.log(data);
       setColumnData(data);
       if (!usuario) return;

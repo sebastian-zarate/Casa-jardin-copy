@@ -31,7 +31,7 @@ export const createColumns= (
         header: 'Estado',
     },
     {
-        header: 'Acciones',
+        header: 'Ver Detalles',
         id: 'acciones',
         cell: ({ row }) => {
             const solicitud = row.original; //variable que contiene la fila actual

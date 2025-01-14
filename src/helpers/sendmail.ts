@@ -27,3 +27,18 @@ export const sendEmailCustom = async (email: string, titulo?: string, texto?: st
   }
   return response
 };
+
+export const signupEmail = async (email: string): Promise<Response> => {
+  const response = await fetch("/api/sendMailsignup", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ receptor: email }),
+  });
+  
+  if (!response.ok) {
+    throw new Error("Error sending email");
+  }
+  return response
+}
