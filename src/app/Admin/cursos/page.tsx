@@ -4,12 +4,10 @@ import React, { useEffect, useState } from "react";
 import Navigate from "../../../components/Admin/navigate/page";
 
 
-import { updateCurso, getCursos, deleteCurso, createCurso, } from "../../../services/cursos";
-import Image from "next/image";
-import DeleteIcon from "../../../../public/Images/DeleteIcon.png";
-import EditIcon from "../../../../public/Images/EditIcon.png";
+import { updateCurso,  getCursosCout, deleteCurso, createCurso, } from "../../../services/cursos";
+
 import Background from "../../../../public/Images/Background.jpeg";
-import ButtonAdd from "../../../../public/Images/Button.png";
+
 //imagen default si el curso no tiene imagen
 import NoImage from "../../../../public/Images/default-no-image.png";
 import { getImages_talleresAdmin } from "@/services/repoImage";
@@ -19,7 +17,7 @@ import { useRouter } from "next/navigation";
 import Loader from "@/components/Loaders/loadingSave/page";
 //para subir imagenes:
 import { handleUploadCursoImage, handleDeleteCursoImage, mapearImagenes } from "@/helpers/repoImages";
-import { Trash2 } from "lucide-react";
+import { Calendar, Pencil, Plus, Search, Trash2, Users } from "lucide-react";
 import { validateCursoDetails, validateFechaInicioModificacion, validateFechaInicio } from "@/helpers/validaciones";
 const Cursos: React.FC = () => {
   // Estado para almacenar la lista de cursos
@@ -36,6 +34,7 @@ const Cursos: React.FC = () => {
       edadMaxima: number;
       imagen: string | null;
       imageUrl?: string;
+      cantidadParticipantes: number;
     }[]
   >([]);
   // Estado para almacenar el ID del curso seleccionado
@@ -49,6 +48,8 @@ const Cursos: React.FC = () => {
     edadMinima: number;
     edadMaxima: number;
     imagen: string | null;
+    cantidadParticipantes: number;
+    
   }>({
     nombre: "",
     descripcion: "",
@@ -57,6 +58,8 @@ const Cursos: React.FC = () => {
     edadMinima: 0,
     edadMaxima: 0,
     imagen: null,
+    cantidadParticipantes: 0,
+   
   });
   // Estado para almacenar mensajes de error
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -65,6 +68,9 @@ const Cursos: React.FC = () => {
   const [downloadurls, setDownloadurls] = useState<any[]>([]);
   // Estado para almacenar si todos los cursos están seleccionados
   const [allCursosChecked, setAllCursosChecked] = useState<boolean>(false);
+
+  // Estado para almacenar el término de búsqueda
+  const [searchTerm, setSearchTerm] = useState<string>("");
 
   // Efecto para obtener la lista de cursos al montar el componente
   const [cursoAEliminar, setCursoAEliminar] = useState<{
@@ -83,6 +89,17 @@ const Cursos: React.FC = () => {
 
   //boolean para saber si estan cargando los cursos
   const [loading, setLoading] = useState<boolean>(true);
+// Estado para almacenar los detalles del curso seleccionado
+  const [cursoDetails2, setCursoDetails2] = useState({
+    nombre: "",
+    descripcion: "",
+    edadMinima: "",
+    edadMaxima: "",
+    fechaInicio: null,
+    fechaInicioAnterior: null, // Fecha inicial previamente guardada
+    fechaFin: null,
+  });
+  
 
   //region useEffect
   const router = useRouter();
@@ -119,6 +136,7 @@ const Cursos: React.FC = () => {
           edadMinima: selectedCurso.edadMinima,
           edadMaxima: selectedCurso.edadMaxima,
           imagen: selectedCurso.imagen,
+          cantidadParticipantes: selectedCurso.cantidadParticipantes,
         }); // Actualiza los detalles del curso
       }
     } else if (selectedCursoId === -1) {
@@ -131,6 +149,7 @@ const Cursos: React.FC = () => {
         edadMinima: 0,
         edadMaxima: 0,
         imagen: null,
+        cantidadParticipantes: 0,
       });
     }
   }, [selectedCursoId, cursos]); // Efecto para actualizar los detalles del curso seleccionado cuando cambia el curso o el ID del curso
@@ -147,9 +166,9 @@ const Cursos: React.FC = () => {
   // Función para obtener la lista de cursos
   async function fetchCursos() {
     try {
-      let curs = await getCursos(); // Obtén la lista de cursos
+      let curs = await  getCursosCout(); // Obtén la lista de cursos
       curs.sort((a, b) => a.nombre.localeCompare(b.nombre)); // Ordena los cursos por nombre
-      setCursos(curs.map(curso => ({ ...curso, visible: true, selected: false }))); // Actualiza el estado con la lista de cursos
+      setCursos(curs.map(curso => ({ ...curso, visible: true, selected: false, cantidadParticipantes: curso.cantidadAlumnos }))); // Actualiza el estado con la lista de cursos
     } catch (error) {
 
     } finally {
@@ -226,7 +245,16 @@ const Cursos: React.FC = () => {
       });
     }
   };
-
+// Función para obtener los detalles del curso seleccionado
+// Función para obtener los detalles del curso seleccionado
+useEffect(() => {
+  if (selectedCursoId !== -1) {
+    setCursoDetails((prev) => ({
+      ...prev,
+      fechaInicioAnterior: new Date(prev.fechaInicio),
+    }));
+  }
+}, [selectedCursoId]);
 
 
    // Función para manejar el guardado de cambios en el curso
@@ -272,6 +300,7 @@ const Cursos: React.FC = () => {
           edadMinima: 0,
           edadMaxima: 0,
           imagen: null,
+          cantidadParticipantes: 0,
         });
         setSelectedFile(null); // Limpiar archivo seleccionado
         setImagesLoaded(false); // Recargar las imágenes
@@ -321,7 +350,7 @@ const Cursos: React.FC = () => {
     const validationError = validateCursoDetails(trimmedCursoDetails); // Llama a la función de validación con los detalles recortados
     const validationErrorFechaInicio = validateFechaInicio(trimmedCursoDetails.fechaInicio);
     if (validationError || validationErrorFechaInicio) {
-      setErrorMessage(validationError); // Muestra el mensaje de error si hay un error
+      setErrorMessage(validationError || validationErrorFechaInicio); // Muestra el mensaje de error si hay un error
       return;
     }
 
@@ -333,6 +362,7 @@ const Cursos: React.FC = () => {
         setErrorMessage(response); // Muestra el mensaje de error si no se puede crear
         return;
       }
+      
 
       // Si se sube una imagen, se maneja la subida de la imagen
       if (selectedFile && trimmedCursoDetails.imagen) {
@@ -352,6 +382,7 @@ const Cursos: React.FC = () => {
         edadMinima: 0,
         edadMaxima: 0,
         imagen: null,
+        cantidadParticipantes: 0,
       });
       setSelectedFile(null); // Limpiar archivo seleccionado
       setImagesLoaded(false); // Recargar las imágenes
@@ -362,8 +393,17 @@ const Cursos: React.FC = () => {
     }
   }
 
+  const [filteredCursos, setFilteredCursos] = useState(cursos);
 
-
+  useEffect(() => {
+    setFilteredCursos(
+      cursos.filter(curso =>
+        curso.nombre.toLowerCase().includes(searchTerm) ||
+        curso.descripcion.toLowerCase().includes(searchTerm)
+      )
+    );
+  }, [searchTerm, cursos]);
+  
 
 
   //region return
@@ -377,18 +417,7 @@ const Cursos: React.FC = () => {
       }}
     >
       <Navigate />
-      <div className="relative w-full">
-      {/* Fondo Fijo */}
-      <div className="fixed inset-0 z-[-1]">
-      <Image
-      src={Background}
-      alt="Background"
-      layout="fill"
-      objectFit="cover"
-      quality={80}
-      priority={true}
-      />
-      </div>
+      
       {cursoAEliminar && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative">
@@ -422,103 +451,133 @@ const Cursos: React.FC = () => {
         </div>
       )}
 
-      {/* Contenedor Principal */}
-      <div className="relative mt-8 flex justify-center z-10">
-      <div className="border p-4 max-w-[96vh] w-11/12 sm:w-2/3 md:w-4/5 lg:w-2/3 h-[62vh] bg-slate-50 overflow-y-auto rounded-lg">
-      {/* Encabezado */}
-      <div className="flex flex-col items-center z-10 p-2">
-        <h1 className="text-2xl sm:text-2xl bg-slate-50 uppercase">Talleres</h1>
+{/* Contenedor Principal */}
+<div className="relative z-10">
+  <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    {/* Encabezado */}
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+      <div>
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Talleres</h1>
+        <p className="mt-1 text-sm text-gray-500">
+          Gestiona los talleres y sus participantes
+        </p>
+      </div>
+      <button
+        onClick={() => setSelectedCursoId(-1)}
+        className="w-full sm:w-auto flex items-center justify-center gap-2 bg-indigo-600 text-white px-4 py-2.5 rounded-lg hover:bg-indigo-700 transition-colors shadow-sm"
+      >
+        <Plus className="w-5 h-5" />
+        <span>Nuevo Taller</span>
+      </button>
+    </div>
+
+    {/* Barra de búsqueda */}
+    <div className="mb-6 flex flex-col sm:flex-row gap-4">
+      <div className="relative flex-1">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+        <input
+          type="text"
+          placeholder="Buscar por nombre, descripción..."
+          className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value.toLowerCase())}
+        />
+      </div>
+    </div>
+
+    {/* Contenedor de talleres */}
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      {/* Encabezado de tabla */}
+      <div className="hidden sm:grid grid-cols-12 bg-gray-50 py-4 px-6 border-b border-gray-200 text-xs font-medium text-gray-500 uppercase tracking-wider">
+        <div className="col-span-5">Taller</div>
+        <div className="col-span-4">Descripción</div>
+        <div className="col-span-2 text-center">Participantes</div>
+        <div className="col-span-1 text-center">Acciones</div>
       </div>
 
-      {/* Contenido */}
-      <div className="flex flex-col space-y-4 bg-white"></div>
-        {/* Contenido */}
-        <div className="flex flex-col space-y-4 bg-white">
-          <div className="relative overflow-x-auto shadow-lg sm:rounded-lg">
-            <div className="flex justify-between items-center bg-white p-4">
-              {/* Acciones y Búsqueda */}
-              <button onClick={() => setSelectedCursoId(-1)} className="px-2 w-10 h-10">
-          <Image src={ButtonAdd} alt="Agregar Taller" />
-              </button>
-              <div className="relative w-80">
-          <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-            <svg className="w-4 h-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-              <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"></path>
-            </svg>
+      {filteredCursos.length === 0 ? (
+        // Mensaje de lista vacía
+        <div className="py-12 px-6 text-center">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 mb-4">
+            <Calendar className="w-6 h-6 text-gray-400" />
           </div>
-          <input
-            type="text"
-            placeholder="Buscar..."
-            className="block p-2 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-full bg-gray-100 focus:ring-blue-500 focus:border-blue-500"
-            onChange={(e) => {
-              const searchTerm = e.target.value.toLowerCase();
-              setCursos(cursos.map(curso => ({
-                ...curso,
-                visible: curso.nombre.toLowerCase().includes(searchTerm) || curso.descripcion.toLowerCase().includes(searchTerm)
-              })));
-            }}
-          />
+          <h3 className="text-sm font-medium text-gray-900 mb-1">No hay talleres</h3>
+          <p className="text-sm text-gray-500">
+            Comienza creando tu primer taller
+          </p>
+        </div>
+      ) : (
+        filteredCursos.map((talleres: any) => (
+          // Tarjetas responsivas
+          <div
+            key={talleres.id}
+            className="flex flex-col sm:grid sm:grid-cols-12 items-center sm:items-start py-4 px-6 border-b border-gray-100 hover:bg-gray-50 transition-colors"
+          >
+            {/* Imagen y Nombre */}
+            <div className="flex items-center gap-4 sm:col-span-5 mb-4 sm:mb-0">
+              <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                <img
+                  src={talleres.imageUrl || NoImage.src}
+                  alt={talleres.nombre}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div>
+                <h3 className="font-medium text-gray-900">{talleres.nombre}</h3>
+                <div className="flex items-center gap-2 text-sm text-gray-500">
+                  <Calendar className="w-4 h-4" />
+                  <span>
+                    {talleres.fechaInicio &&
+                      new Date(talleres.fechaInicio).toLocaleDateString('es-ES', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric',
+                      })}
+                  </span>
+                </div>
               </div>
             </div>
 
-            {/* Tabla */}
-            <table className="w-full text-sm text-left text-gray-500">
-              <thead className="text-xs text-gray-700 uppercase bg-gray-100">
-          <tr>
-            <th scope="col" className="p-4"></th>
-            <th scope="col" className="px-6 py-3">Nombre</th>
-            <th scope="col" className="px-6 py-3">Descripción</th>
-            <th scope="col" className="px-6 py-3">Acción</th>
-          </tr>
-              </thead>
-              <tbody>
-          {cursos.filter(curso => curso.visible !== false).map((curso) => (
-            <tr className="bg-white border-b hover:bg-gray-50" key={curso.id}>
-              <td className="w-4 p-4">
-                <div className="flex items-center">
-            <div className="text-base font-semibold text-gray-700">{curso.nombre}</div>
-                </div>
-              </td>
-              <th scope="row" className="flex items-center px-6 py-4 text-gray-900 whitespace-nowrap">
-                <Image
-            src={curso.imageUrl || NoImage}
-            alt={`${curso.nombre} `}
-            width={70}
-            height={100}
-            objectFit="cover"
-            className="w-20 h-25 rounded-full pointer-events-none"
-                />
-          
-              </th>
-              <td className="px-6 py-4">{curso.descripcion}</td>
-              <td className="px-6 py-4">
-                <div className="flex justify-around">
-            <button
-              onClick={() => {
-                setSelectedCursoId(curso.id);
-                setFechaInicioAnterior(curso.fechaInicio);
-              }}
-              className="px-2 w-10 h-10"
-            >
-              <Image src={EditIcon} alt="Editar Taller" />
-            </button>
-            <button
-                 onClick={() => setCursoAEliminar(curso)}
-              className="px-2 w-10 h-10"
-            >
-              <Image src={DeleteIcon} alt="Eliminar Taller" />
-            </button>
-                </div>
-              </td>
-            </tr>
-          ))}
-              </tbody>
-            </table>
+            {/* Descripción */}
+            <div className="sm:col-span-4 text-sm text-gray-600 line-clamp-2 mb-4 sm:mb-0">
+              {talleres.descripcion}
+            </div>
+
+            {/* Participantes */}
+            <div className="sm:col-span-2 flex items-center justify-center gap-1.5 mb-4 sm:mb-0">
+              <Users className="w-4 h-4 text-gray-400" />
+              <span className="text-sm">{talleres.cantidadParticipantes || 0}</span>
+            </div>
+
+            {/* Acciones */}
+            <div className="sm:col-span-1 flex justify-center gap-2">
+              <button
+                onClick={() => {
+                  setSelectedCursoId(talleres.id);
+                  setFechaInicioAnterior(talleres.fechaInicio);
+                }}
+                className="text-indigo-600 hover:text-indigo-900 p-1 hover:bg-indigo-50 rounded"
+                title="Editar taller"
+              >
+                <Pencil className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => setCursoAEliminar(talleres)}
+                className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded"
+                title="Eliminar taller"
+              >
+                <Trash2 className="w-5 h-5" />
+              </button>
+            </div>
           </div>
-        </div>
-        </div>
-      </div>
-      </div>
+        ))
+      )}
+    </div>
+  </div>
+</div>
+
+
+
 
       {selectedCursoId !== null && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
@@ -602,28 +661,34 @@ const Cursos: React.FC = () => {
             </div>
 
             <div className="mb-4">
-              <label htmlFor="fechaInicio" className="block">
-                Fecha de inicio del taller:
-              </label>
-              <input
-                type="date"
-                id="fechaInicio"
-                name="fechaInicio"
-                value={
-                  cursoDetails.fechaInicio && cursoDetails.fechaInicio instanceof Date && !isNaN(cursoDetails.fechaInicio.getTime())
-                    ? cursoDetails.fechaInicio.toISOString().split('T')[0]
-                    : ""
-                }
-                min={new Date()
-                  .toISOString()
-                  .split('T')[0]} // El mínimo es hoy
-                max={new Date(new Date().setFullYear(new Date().getFullYear() + 1))
-                  .toISOString()
-                  .split('T')[0]} // Hasta un año desde hoy
-                onChange={handleChange}
-                className="p-2 w-full border rounded"
-              />
-            </div>
+  <label htmlFor="fechaInicio" className="block">
+    Fecha de inicio del taller:
+  </label>
+  <input
+    type="date"
+    id="fechaInicio"
+    name="fechaInicio"
+    value={
+      cursoDetails.fechaInicio &&
+      cursoDetails.fechaInicio instanceof Date &&
+      !isNaN(cursoDetails.fechaInicio.getTime())
+        ? cursoDetails.fechaInicio.toISOString().split('T')[0]
+        : ""
+    }
+    // Ajusta el valor mínimo basado en si es edición o creación
+    min={
+      selectedCursoId !== -1 && fechaInicioAnterior
+        ? new Date(fechaInicioAnterior).toISOString().split('T')[0]
+        : new Date().toISOString().split('T')[0]
+    }
+    max={new Date(new Date().setFullYear(new Date().getFullYear() + 1))
+      .toISOString()
+      .split('T')[0]} // Hasta un año desde hoy
+    onChange={handleChange}
+    className="p-2 w-full border rounded"
+  />
+</div>
+
             <div className="mb-4">
               <label htmlFor="fechaFin" className="block">
                 Fecha de fin del taller:
@@ -675,7 +740,10 @@ const Cursos: React.FC = () => {
                 {isSaving ? <Loader /> : "Guardar"}
               </button>
               <button
-                onClick={() => setSelectedCursoId(null)}
+                onClick={() => {
+                  setSelectedCursoId(null);
+                  setErrorMessage(null);
+                }}
                 disabled={isSaving}
                 className="bg-gray-600 py-1 px-3 text-white rounded text-sm hover:bg-gray-700"
               >

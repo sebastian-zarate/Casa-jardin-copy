@@ -72,6 +72,41 @@ export async function getCursoByNombre(data: {
 export async function getCursos() {
     return prisma.curso.findMany()
 }
+// 
+
+// Listar Cursos
+/**
+ * Obtiene una lista de cursos con la cantidad de alumnos inscritos en cada curso.
+ * @returns {Promise<Array>} Una lista de cursos con sus datos y cantidad de alumnos.
+ */
+export async function getCursosCout() {
+    try {
+        // Consultar cursos junto con la cantidad de alumnos inscritos
+        const cursos = await prisma.curso.findMany({
+            include: {
+                _count: {
+                    select: { alum_cur: true } // Relación que cuenta los alumnos inscritos
+                }
+            }
+        });
+
+        // Mapear los resultados para estructurar la respuesta
+        return cursos.map(curso => ({
+            id: curso.id,
+            nombre: curso.nombre,
+            descripcion: curso.descripcion,
+            edadMinima: curso.edadMinima,
+            edadMaxima: curso.edadMaxima,
+            fechaInicio: curso.fechaInicio,
+            fechaFin: curso.fechaFin,
+            imagen: curso.imagen,
+            cantidadAlumnos: curso._count.alum_cur // Usar camelCase para claves
+        }));
+    } catch (error) {
+        console.error("Error al obtener los cursos:", error);
+        throw new Error("No se pudieron obtener los cursos.");
+    }
+}
 
 
 //Obtener un Curso por ID
@@ -136,6 +171,23 @@ export async function deleteCurso(id: number): Promise<{ success: boolean, messa
                 })
             }
         }
+        if (profesor_curso) {
+            return { success: false, message: "El Curso seleccionado tiene un profesor asignado y no puede ser eliminado." };
+        }
+        if (alumno_curso) {
+            return { success: false, message: "El Curso seleccionado tiene un alumno asignado y no puede ser eliminado." };
+        }
+        // SI EL curso tiene una solicitud de inscripcion no se puede eliminar
+        const solicitud = await prisma.cursoSolicitud.findFirst({
+            where: {
+                cursoId: id
+            }
+        })
+        if (solicitud) {
+            return { success: false, message: "El Curso seleccionado tiene una solicitud de inscripción y no puede ser eliminado." };
+        }
+        
+
         // Eliminar el curso
         await prisma.curso.delete({
             where: {
