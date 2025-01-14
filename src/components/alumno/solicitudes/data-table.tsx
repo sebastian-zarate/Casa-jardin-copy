@@ -1,7 +1,13 @@
 "use client"
 import React, { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import {
   ColumnDef,
   flexRender,
@@ -19,20 +25,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
 }
 
-//para manejar el filtro
 const ESTADOS = {
   "all": "Todos",
   "Aceptada": "Aceptada",
@@ -41,13 +39,12 @@ const ESTADOS = {
   "No Leída": "No Leída",
 } as const
 
-
 export function DataTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-  const [selectedFilter, setSelectedFilter] = useState<string>("all")
+  const [selectedFilter, setSelectedFilter] = useState<string>("Todos")
   
   const table = useReactTable({
     data,
@@ -79,43 +76,33 @@ export function DataTable<TData, TValue>({
   return (
     <div className="rounded-md border">
       <div className="flex items-center gap-4 p-4 border-b-2 border-slate-200">
-              <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium">Filtrar por estado:</span>
-                  <Select value={selectedFilter} onValueChange={handleFilterChange}>
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Seleccionar estado" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(ESTADOS).map(([value, label]) => (
-                        <SelectItem key={value} value={value}>
-                          <span className={value !== "all" ? colores[value] : ""}>
-                            {label}
-                          </span>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                {selectedFilter !== "all" && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleFilterChange("all")}
-                    className="ml-2"
-                  >
-                    Limpiar filtro
-                  </Button>
-                )}
-        <div className="flex-1 max-w-sm">
-          <Input
-            placeholder="Buscar por nombre..."
-            value={(table.getColumn("alumno")?.getFilterValue() as string) ?? ""}
-            onChange={(event) =>
-              table.getColumn("alumno")?.setFilterValue(event.target.value)
-            }
-            className="max-w-sm"
-          />
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium">Filtrar por estado:</span>
+          <Select value={selectedFilter} onValueChange={handleFilterChange}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Seleccionar estado" />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(ESTADOS).map(([value, label]) => (
+                <SelectItem key={value} value={value}>
+                  <span className={value !== "all" ? colores[value] : ""}>
+                    {label}
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
+        {selectedFilter !== "all" && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleFilterChange("all")}
+            className="ml-2"
+          >
+            Limpiar filtro
+          </Button>
+        )}
       </div>
       <Table>
         <TableHeader>

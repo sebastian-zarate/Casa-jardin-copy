@@ -52,7 +52,6 @@ export default function Navigate() {
       <div className="hidden md:flex ml-auto space-x-4 py-2 text-white">
        
         <NavLink href="/profesional/cronogramap/listar">Calendario</NavLink>
-        <NavLink href="/profesional/principal">Principal</NavLink> 
         <NavLink href="/profesional/Cuenta">Mi Perfil</NavLink>
         <NavLink onClick={logout}>Salir</NavLink>
       </div>
@@ -82,8 +81,6 @@ export default function Navigate() {
           <NavLink href="/profesional/Cuenta">Mi Perfil</NavLink>
           <div className="border-t w-full"></div>
           <NavLink href="/profesional/cronogramap/listar">Calendario</NavLink>
-          <div className="border-t w-full"></div>
-          <NavLink href="/profesional/principal">Principal</NavLink>
           <div className="border-t w-full"></div>
           <NavLink onClick={logout}>Salir</NavLink>
         </div>
