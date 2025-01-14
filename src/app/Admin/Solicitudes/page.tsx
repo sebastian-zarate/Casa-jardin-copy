@@ -1,7 +1,6 @@
 "use client"
 import Image from "next/image";
 import { useEffect, useState } from "react";
-//import Background from "../../../../public/Images/Background.jpeg"
 import Navigate from "@/components/Admin/navigate/page";
 
 import { SolicitudMayor } from "@/services/Solicitud/SolicitudMayor";
@@ -127,7 +126,6 @@ const solicitudPage: React.FC = () => {
           //esto se utiliza para las columnas de la tabla
           id: solicitud.id,
           leida: solicitud.leida,
-          enEspera: solicitud.enEspera,
         });
 
         //esto ya es para para los datos de las solicitudes 

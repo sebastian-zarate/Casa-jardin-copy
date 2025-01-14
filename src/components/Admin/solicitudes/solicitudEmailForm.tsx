@@ -2,6 +2,7 @@ import React, {useState } from 'react';
 import { X, Send, ChevronDown, ChevronUp, Wand2, Loader2 } from 'lucide-react';
 import { updateSolicitud } from '@/services/Solicitud/Solicitud';
 import { createAlumno_Curso } from '@/services/alumno_curso';
+import { updateCursoSolicitud } from '@/services/curso_solicitud';
 import { sendEmailCustom } from '@/helpers/sendmail';
 
 interface SolicitudEmailFormProps {
@@ -119,7 +120,7 @@ saludos cordiales, Casa Jardín`);
 
   const handleRechazar = async (solicitudId: number) => {
     try {
-      await updateSolicitud(solicitudId, { leida: true, enEspera: true });
+      await updateSolicitud(solicitudId, {leida: true,});
       const response = await sendEmailCustom(soliAlumno.alumno.email, title, body);
       
       if (response.ok) {
@@ -137,15 +138,18 @@ saludos cordiales, Casa Jardín`);
     }
   };
   
-  const handleAceptarSolicitud = async (solicitudId: number, idAlumno: number, cursos: number[]) => {
+  const handleAceptarSolicitud = async (solicitudId: number, idAlumno: number, cursosSeleccionados: number[]) => {
     try {
-      await updateSolicitud(solicitudId, { leida: true, enEspera: true });
-      for (let curso of cursos) {
+      await updateSolicitud(solicitudId, { leida: true,});
+      for (let curso of cursosSeleccionados) {
         await createAlumno_Curso({
           "alumnoId": idAlumno,
           "cursoId": (curso),
         });
+        //pone true a los cursos seleccionados
+        await updateCursoSolicitud(curso, { estado: true });
       }
+      
       const response = await sendEmailCustom(soliAlumno.alumno.email, title, body);
       
       if (response.ok) {
@@ -167,7 +171,7 @@ saludos cordiales, Casa Jardín`);
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
         <div className={`p-4 border-b flex justify-between items-center ${aceptar ? 'bg-sky-600' : 'bg-red-600'}`}>
-          <h2 className="text-xl font-semibold text-gray-800">Manejo de Solicitud</h2>
+          <h2 className="text-xl font-semibold text-white">Manejo de Solicitud</h2>
           <button
             onClick={onClose}
             className="text-white hover:text-gray-700 transition-colors"
