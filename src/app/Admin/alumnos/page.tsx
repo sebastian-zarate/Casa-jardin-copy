@@ -25,8 +25,14 @@ import { hashPassword } from "@/helpers/hashPassword";
 import { createResponsable, deleteResponsable, deleteResponsableByAlumnoId, getAllResponsables, getDireccionResponsableByAlumnoId, updateResponsable } from "@/services/responsable";
 import { validateApellido, validateDireccion, validateDni, validateEmail, validateFechaNacimiento, validateNombre, validatePasswordComplexity, validatePhoneNumber } from "@/helpers/validaciones";
 import Loader from "@/components/Loaders/loadingSave/page";
-import { Trash2, UserRoundPlus, UserRoundX } from "lucide-react";
+import { Mail, Pencil, Phone, Plus, Search, Trash2, UserRoundPlus, UserRoundX, Users, } from "lucide-react";
 // #endregion
+
+// Function to check if a person is an adult based on their birth date
+const isAdult = (birthDate: string): boolean => {
+    const age = new Date().getFullYear() - new Date(birthDate).getFullYear();
+    return age >= 18;
+};
 
 const Alumnos: React.FC = () => {
     // #region UseStates
@@ -847,168 +853,209 @@ const Alumnos: React.FC = () => {
             }}
         >
             <Navigate />
-            <div className="relative w-full">
-                {/* Fondo Fijo */}
-                <div className="fixed inset-0 z-[-1]">
-                    <Image
-                        src={Background}
-                        alt="Background"
-                        layout="fill"
-                        objectFit="cover"
-                        quality={80}
-                        priority={true}
-                    />
-                </div>
 
 
 
 
 
-                {AlumnoAEliminar && (
-                    <div className="fixed inset-0 z-20 flex items-center justify-center bg-black bg-opacity-50">
-                        <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative">
-                            {errorMessage && <div style={{ color: "red" }}>{errorMessage}</div>}
 
-                            <h2 className="text-lg mb-4">Confirmar Eliminación</h2>
-                            <p>
-                                ¿Estás seguro de que deseas eliminar a:{" "}
-                                <strong>{AlumnoAEliminar.nombre}</strong>?
-                            </p>
-                            <div className="flex justify-end space-x-4 mt-4">
-                                <button
-                                    onClick={() => {
-                                        handleEliminarAlumno(AlumnoAEliminar.id);
-                                    }}
-                                    disabled={isDeleting}
-                                    className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800"
-                                >
-                                    {isDeleting ? "Eliminando..." : "Confirmar Eliminación"}
-                                </button>
-                                <button
-                                    onClick={() => setAlumnoAEliminar(null)}
-                                    disabled={isDeleting}
-                                    className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800"
-                                >
-                                    Cancelar
-                                </button>
-                            </div>
+            {AlumnoAEliminar && (
+                <div className="fixed inset-0 z-20 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative">
+                        {errorMessage && <div style={{ color: "red" }}>{errorMessage}</div>}
+
+                        <h2 className="text-lg mb-4">Confirmar Eliminación</h2>
+                        <p>
+                            ¿Estás seguro de que deseas eliminar a:{" "}
+                            <strong>{AlumnoAEliminar.nombre}</strong>?
+                        </p>
+                        <div className="flex justify-end space-x-4 mt-4">
+                            <button
+                                onClick={() => {
+                                    handleEliminarAlumno(AlumnoAEliminar.id);
+                                }}
+                                disabled={isDeleting}
+                                className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800"
+                            >
+                                {isDeleting ? "Eliminando..." : "Confirmar Eliminación"}
+                            </button>
+                            <button
+                                onClick={() => setAlumnoAEliminar(null)}
+                                disabled={isDeleting}
+                                className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800"
+                            >
+                                Cancelar
+                            </button>
                         </div>
                     </div>
-                )}
-                {/* Contenedor Principal */}
-                <div className="relative mt-8 flex justify-center z-10">
-                    <div className="border p-4 max-w-[96vh] w-11/12 sm:w-2/3 md:w-4/5 lg:w-2/3 h-[62vh] bg-slate-50 overflow-y-auto rounded-lg">
-                        {/* Encabezado */}
-                        <div className="flex flex-col items-center z-10 p-2">
-                            <h1 className="text-2xl sm:text-2xl bg-slate-50 uppercase">Alumnos</h1>
-                        </div>
-                        <div className="flex flex-col space-y-4 bg-white">
-                            <div className="relative overflow-x-auto shadow-lg sm:rounded-lg">
-                                <div className="flex justify-around px-auto bg-white p-2">
-                                    <div className="flex justify-center space-x-4">
-                                        <button onClick={() => { setSelectedAlumno(-1); setObAlumno(null); setMayor(true) }} className="px-2 w-10 h-10 flex flex-col items-center">
-                                            <UserRoundPlus />
-                                            <span>Mayor</span>
-                                        </button>
-                                        <button onClick={() => { setSelectedAlumno(-2); setObAlumno(null); setMayor(false) }} className="px-2 w-10 h-10 flex flex-col items-center">
-                                            <UserRoundPlus />
-                                            <span>Menor</span>
-                                        </button>
+                </div>
+            )}
 
+            {/* Contenido Principal */}
+            <div className="relative z-10">
+                <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+                        <div>
+                            <h1 className="text-3xl font-bold text-gray-900">Alumnos</h1>
+                            <p className="mt-1 text-sm text-gray-500">
+                                Gestiona los alumnos del sistema
+                            </p>
+                        </div>
+                        <div className="flex items-center gap-4">
+
+                            <button
+                                onClick={() => setSelectedAlumno(-1)}
+                                className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2.5 rounded-lg hover:bg-indigo-700 transition-colors shadow-sm"
+                            >
+                                <Plus className="w-5 h-5" />
+                                <span>Nuevo alumno menor</span>
+                            </button>
+                            <button className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2.5 rounded-lg hover:bg-indigo-700 transition-colors shadow-sm"
+                                onClick={() => setSelectedAlumno(-2)}>
+                                <Plus className="w-5 h-5" /> <span> Nuevo alumno mayor
+                                </span>
+                            </button>
+
+                        </div>
+                    </div>
+
+                    <div className="mb-6">
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                            <input
+                                type="text"
+                                placeholder="Buscar por nombre.."
+                                className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                value={alumnoAbuscar}
+                                onChange={handleSearchChange}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                        <div className="grid grid-cols-12 bg-gray-50 py-4 px-6 border-b border-gray-200 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <div className="col-span-2">CÓDIGO</div>
+                            <div className="col-span-4">NOMBRE</div>
+                            <div className="col-span-3">CONTACTO</div>
+                            <div className="col-span-2">MAYORÍA DE EDAD</div>
+                            <div className="col-span-1 text-center">ACCIÓN</div>
+                        </div>
+
+                        {alumnos.length === 0 ? (
+                            <div className="py-12 px-6 text-center">
+                                <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 mb-4">
+                                    <Users className="w-6 h-6 text-gray-400" />
+                                </div>
+                                <h3 className="text-sm font-medium text-gray-900 mb-1">No hay alumnos registrados</h3>
+                                <p className="text-sm text-gray-500">
+                                    Comienza agregando tu primer alumno
+                                </p>
+                            </div>
+                        ) : (
+                            alumnos.sort((a, b) => a.id - b.id).map((alumno) => (
+                                <div
+                                    key={alumno.id}
+                                    className="grid grid-cols-12 items-center py-4 px-6 border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                                >
+                                    <div className="col-span-2">
+                                        <span className="text-sm font-medium text-gray-900">#{alumno.id}</span>
                                     </div>
-                                    {/* Barra de búsqueda */}
-                                    <div className="flex items-center justify-between flex-column flex-wrap md:flex-row space-y-4 md:space-y-0 pb-4">
-                                      
-                                        <label htmlFor="table-search" className="sr-only">Buscar</label>
-                                        <div className="relative">
-                                            <div className="absolute inset-y-0 right-0 rtl:inset-r-0 start-0 flex items-center ps-3 pointer-events-none">
-                                                <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-                                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
-                                                </svg>
-                                            </div>
-                                            <input type="text"
-                                                placeholder="Buscar..."
-                                                value={alumnoAbuscar}
-                                                onChange={handleSearchChange}
-                                                className="block p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-100 focus:ring-blue-500 focus:border-blue-500"
-                                            />
+                                    <div className="col-span-4 flex items-center gap-3">
+
+
+                                        <div>
+                                            <h3 className="font-medium text-gray-900">{alumno.nombre} {alumno.apellido}</h3>
+                                            <p className="text-sm text-gray-500">DNI: {alumno.dni}</p>
                                         </div>
                                     </div>
-                                </div>
-                                <table className="w-full text-sm text-left rtl:text-right text-gray-500">
-                                    <thead className="text-xs text-gray-700 uppercase bg-gray-100">
-                                        <tr>
-                                            <th scope="col" className="p-4 text-center">
-                                                <div className="flex items-center justify-center">
-                                                    Codigo
-                                                </div>
-                                            </th>
-                                           
-                                            <th scope="col" className="px-5 py-3">
-                                                Nombre
-                                            </th>
+                                    <div className="col-span-3">
+                                        <div className="flex flex-col gap-1">
+                                            <span className="inline-flex items-center gap-1.5 text-sm text-gray-600">
+                                                <Mail className="w-4 h-4 text-gray-400" />
+                                                {alumno.email}
+                                            </span>
+                                            <span className="inline-flex items-center gap-1.5 text-sm text-gray-600">
+                                                <Phone className="w-4 h-4 text-gray-400" />
+                                                {alumno.telefono}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="col-span-2">
+                                        {new Date().getFullYear() - new Date(alumno.fechaNacimiento).getFullYear() >= 18 ? (
+                                            <span className="inline-flex items-center gap-1 px-2.5 py-1 text-sm font-medium bg-blue-50 text-blue-700 rounded-full">
+                                                <Users className="w-4 h-4" />
+                                                Mayor
+                                            </span>
+                                        ) : (
+                                            <span className="inline-flex items-center gap-1 px-2.5 py-1 text-sm font-medium bg-amber-50 text-amber-700 rounded-full">
+                                                <Users className="w-4 h-4" />
+                                                Menor
+                                            </span>
+                                        )}
+                                    </div>
+                                    <div className="col-span-1 flex justify-center gap-2">
+                                    <button
+    onClick={() => {
+        // Calcular si el alumno es mayor de edad
+        const isAdultValue = isAdult(alumno.fechaNacimiento);
 
-                                            <th scope="col" className="px-4 py-3">
-                                                Mayoría de edad
-                                            </th>
-                                            <th scope="col" className="px-4 py-3">
-                                                Acción
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {alumnos.map((alumno, index) => (
-                                            <tr className="bg-white border-b hover:bg-gray-50" key={index}>
-                                                <td className="w-4 p-4">
-                                                <td className="px-5 py-3 text-black">
-                                                    <div className="flex items-center text-black">
-                                                        <span>{alumno.id}</span>
-                                                    </div>
-                                                </td>
-                                                </td>
-                                                <th scope="row" className="flex flex-col items-start px-6 py-4 text-gray-900 whitespace-nowrap">
-                                                    <div className="ps-3 min-w-64 max-w-96">
-                                                        {alumno.nombre} {alumno.apellido}
-                                                    </div>
-                                                    <div className="ps-3 min-w-64 max-w-96 text-xs">
-                                                        {alumno.email}
-                                                    </div>
-                                                </th>
-                                                <td className="px-6 py-4">
-                                                    {new Date().getFullYear() - new Date(alumno.fechaNacimiento).getFullYear() >= 18 ? "Mayor" : "Menor"}
-                                                </td>
-                                                <td className="px-6 py-4 flex space-x-4">
-                                                    <button
-                                                        onClick={() => {
-                                                            setSelectedAlumno(alumno);
-                                                            setObAlumno(alumno);
-                                                        }}
-                                                        className="font-medium text-blue-600 hover:underline"
-                                                    >
-                                                      <Image src={EditIcon} alt="Editar" width={24} height={24} />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => setAlumnoAEliminar(alumno)}
-                                                        className="font-medium text-red-600 hover:underline"
-                                                    >
-                                                        <Image src={DeleteIcon} alt="Eliminar" width={24} height={24} />
-                                                    </button>
-          
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
+        // Establecer el alumno seleccionado (para edición o nuevo)
+        setSelectedAlumno(isAdultValue ? -2 : alumno);
+        setObAlumno(alumno);
+        setMayor(isAdultValue);
+
+        // Formatear la fecha de nacimiento del alumno
+        const formattedDate = alumno.fechaNacimiento
+            ? new Date(alumno.fechaNacimiento).toISOString().split('T')[0]
+            : "";
+
+        // Configurar los detalles del alumno seleccionado
+        const details = {
+            id: alumno.id || "",
+            nombre: alumno.nombre || "",
+            apellido: alumno.apellido || "",
+            dni: alumno.dni || "",
+            telefono: alumno.telefono || "",
+            email: alumno.email || "",
+            password: "", // Se deja vacío por seguridad
+            fechaNacimiento: formattedDate,
+            direccionId: alumno.direccionId || "",
+        };
+
+        // Establecer los detalles en el estado
+        setAlumnoDetails(details);
+
+        // Crear una copia de los detalles para futuras referencias
+        setAlumnoDetailsCopia({ ...details });
+    }}
+    className="text-indigo-600 hover:text-indigo-900 p-1 hover:bg-indigo-50 rounded"
+    title="Editar alumno"
+>
+                                            <Image src={EditIcon} alt="Editar" width={24} height={24} />
+                                        </button>
+                                        <button
+                                            onClick={() => setAlumnoAEliminar(alumno)}
+                                            className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded"
+                                            title="Eliminar alumno"
+                                        >
+                                            <Trash2 className="w-5 h-5" />
+                                        </button>
+                                    </div>
+                                </div>
+                            ))
+                        )}
                     </div>
                 </div>
+
+
+
+
                 {/* Modal */}
                 {selectedAlumno !== null && (
                     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-20">
                         <div ref={scrollRef} className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative" style={{ height: '70vh', overflow: "auto" }}>
                             <h2 className="text-2xl font-bold mb-4">
-                                {selectedAlumno === -1 ? "Nuevo Alumno" : "Editar Alumno"}
+                                {selectedAlumno === -1 ? "Nuevo Alumno menor" : selectedAlumno === -2 ? "Nuevo Alumno mayor" : "Editar Alumno"}
                             </h2>
                             {errorMessage && (
                                 <div className="mb-4 text-red-600">
@@ -1060,46 +1107,46 @@ const Alumnos: React.FC = () => {
                                 />
                             </div>
                             <div className="mb-4">
-                                            <label htmlFor="dni" className="block">DNI:</label>
-                                            <input
-                                                type="text" // Cambiado a "text" para mayor control
-                                                id="dni"
-                                                name="dni"
-                                                placeholder="Ingrese el DNI"
-                                                value={alumnoDetails.dni || ''} // Asegurar un valor por defecto como cadena vacía
-                                                maxLength={8} // Limitar a 8 caracteres
-                                                onChange={(e) => {
-                                                    const value = e.target.value.replace(/\D/g, ""); // Eliminar cualquier caracter no numérico
-                                                    const formattedValue = value
+                                <label htmlFor="dni" className="block">DNI:</label>
+                                <input
+                                    type="text" // Cambiado a "text" para mayor control
+                                    id="dni"
+                                    name="dni"
+                                    placeholder="Ingrese el DNI"
+                                    value={alumnoDetails.dni || ''} // Asegurar un valor por defecto como cadena vacía
+                                    maxLength={8} // Limitar a 8 caracteres
+                                    onChange={(e) => {
+                                        const value = e.target.value.replace(/\D/g, ""); // Eliminar cualquier caracter no numérico
+                                        const formattedValue = value
 
-                                                    setAlumnoDetails({ ...alumnoDetails, dni: formattedValue }); // Actualizar el estado
-                                                }}
-                                                className="p-2 w-full border rounded"
-                                            />
-                                        </div>
-                                        
-                            {selectedAlumno === -2 || ((selectedAlumno !== -2) && mayor === true) && (
-                            
-                            <div className="mb-4">
-                                <label htmlFor="telefono" className="block">Teléfono:</label>
-                                <div className="flex items-center">
-                                    <span className="p-2 bg-gray-200 rounded-l">+54</span>
-                                    <input
-                                        type="text"
-                                        id="telefono"
-                                        name="telefono"
-                                        placeholder="Ingrese el número de teléfono"
-                                        maxLength={10} // Limitar a 10 dígitos
-                                        value={alumnoDetails.telefono || ''} // Asegurar un valor inicial válido
-                                        onChange={(e) => {
-                                            const value = e.target.value.replace(/\D/g, ""); // Eliminar caracteres no numéricos
-                                            setAlumnoDetails({ ...alumnoDetails, telefono: value }); // Actualizar el estado
-                                        }}
-                                        className="p-2 w-full border rounded-r"
-                                    />
-                                </div>
-                                
+                                        setAlumnoDetails({ ...alumnoDetails, dni: formattedValue }); // Actualizar el estado
+                                    }}
+                                    className="p-2 w-full border rounded"
+                                />
                             </div>
+
+                            {selectedAlumno === -2 || ((selectedAlumno !== -2) && mayor === true) && (
+
+                                <div className="mb-4">
+                                    <label htmlFor="telefono" className="block">Teléfono:</label>
+                                    <div className="flex items-center">
+                                        <span className="p-2 bg-gray-200 rounded-l">+54</span>
+                                        <input
+                                            type="text"
+                                            id="telefono"
+                                            name="telefono"
+                                            placeholder="Ingrese el número de teléfono"
+                                            maxLength={10} // Limitar a 10 dígitos
+                                            value={alumnoDetails.telefono || ''} // Asegurar un valor inicial válido
+                                            onChange={(e) => {
+                                                const value = e.target.value.replace(/\D/g, ""); // Eliminar caracteres no numéricos
+                                                setAlumnoDetails({ ...alumnoDetails, telefono: value }); // Actualizar el estado
+                                            }}
+                                            className="p-2 w-full border rounded-r"
+                                        />
+                                    </div>
+
+                                </div>
                             )}
                             <div className="flex-col flex mb-4">
                                 <label htmlFor="fechaNacimiento">Fecha de Nacimiento</label>
@@ -1110,13 +1157,14 @@ const Alumnos: React.FC = () => {
                                     className="border rounded"
                                     value={alumnoDetails.fechaNacimiento}
                                     onChange={handleChange}
-                                    min={mayor === false ?
-                                        new Date(new Date().setFullYear(new Date().getFullYear() - 17)).toISOString().split('T')[0] :
-                                        new Date(new Date().setFullYear(new Date().getFullYear() - 100)).toISOString().split('T')[0]
+                                    min={selectedAlumno === -2 ?
+                                        new Date(new Date().setFullYear(new Date().getFullYear() - 100)).toISOString().split('T')[0] :
+                                        new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0]
                                     }
-                                    max={mayor === true ?
+                                    max={selectedAlumno === -2 ?
                                         new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0] :
                                         new Date(new Date().setFullYear(new Date().getFullYear() - 3)).toISOString().split('T')[0]
+
                                     }
                                     required
                                 />
@@ -1163,7 +1211,7 @@ const Alumnos: React.FC = () => {
                                             <input
                                                 type="text"
                                                 id="provincia"
-                                                name="provincia"
+                                                name="provinciaName"
                                                 maxLength={55}
                                                 pattern='[A-Za-z ]+'
                                                 value={String(provinciaName)}
@@ -1222,7 +1270,7 @@ const Alumnos: React.FC = () => {
                                 }
                             </>
                             }
-                            {mayor !== true && (
+                            {selectedAlumno !== -2 && (
                                 <>
                                     <div>
                                         <h1 className=" w-full mt-8 mb-3 font-semibold underline">Datos del responsable</h1>
@@ -1290,7 +1338,7 @@ const Alumnos: React.FC = () => {
                                                     className="p-2 w-full border rounded-r"
                                                 />
                                             </div>
-                                            
+
                                         </div>
                                         <div className="mb-4">
                                             <label htmlFor="emailR" className="block">Email:</label>
@@ -1393,7 +1441,11 @@ const Alumnos: React.FC = () => {
                             </div>
                             <div className="flex justify-end space-x-4">
                                 <button
-                                    onClick={selectedAlumno === -1 || selectedAlumno === -2 ? handleCreateAlumno : handleSaveChanges}
+                                    onClick={() => {
+                                        (selectedAlumno === -1 || selectedAlumno === -2) && !mayor ? handleCreateAlumno() : handleSaveChanges()
+                                    }}
+
+
                                     className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800"
                                     disabled={isSaving}
                                 >

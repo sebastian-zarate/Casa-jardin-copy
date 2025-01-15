@@ -17,7 +17,7 @@ export function validateDni(dni: string) {
     }
 
     // Validar longitud
-    if (dni.length < 7 || dni.length > 8) {
+    if (dni.length < 7 && dni.length >= 8) {
         return "El DNI debe tener entre 7 y 8 dígitos.";
     }
 
@@ -29,7 +29,7 @@ export function validateDni(dni: string) {
 
     // Validar rango
     const dniNumber = parseInt(dni, 10);
-    if (dniNumber < 1000000 || dniNumber > 99999999) {
+    if (dniNumber < 100000 && dniNumber > 99999999) {
         return "El DNI ingresado está fuera del rango válido.";
     }
     return null; // Retornar null si no hay errores
