@@ -12,6 +12,7 @@ import { Horario } from "../cronograma/horario";
 import DeleteIcon from "../../../../public/Images/DeleteIcon.png";
 import ButtonAdd from "../../../../public/Images/Button.png";
 import But_aside from "@/components/but_aside/page";
+import { Building2, Clock, Pencil, Plus, Search, Trash2 } from "lucide-react";
 
 
 // Define the Aula interface para definir la estructura de los datos de aula
@@ -32,6 +33,10 @@ const Aulas: React.FC = () => {
     const [selectedAulaNombre, setSelectedAulaNombre] = useState(""); // Estado para el nombre del aula
     // modificar aula
     const [selectedAulaIdModificar, setSelectedAulaIdModificar] = useState<number | null>(null); // Añadir estado para el ID del aula seleccionada
+    const [searchTerm, setSearchTerm] = useState(""); // Para el texto del buscador
+    const [filteredAulas, setFilteredAulas] = useState(aulas); // Para las aulas visibles
+
+
     // Define the fetchAulas function to get the list of aulas
     const fetchAulas = async () => {
         try {
@@ -41,7 +46,14 @@ const Aulas: React.FC = () => {
             console.error("Error al obtener las aulas:", error);
         }
     };
-
+    const handleSearch = (e: { target: { value: string; }; }) => {
+        const term = e.target.value.toLowerCase();
+        setSearchTerm(term);
+        const filtered = aulas.filter((aula) =>
+            aula.nombre.toLowerCase().includes(term)
+        );
+        setFilteredAulas(filtered);
+    };
     // función para obtener las aulas
     useEffect(() => {
         fetchAulas();
@@ -129,6 +141,16 @@ const Aulas: React.FC = () => {
             showError("Error al modificar el aula");
         }
     };
+    
+
+    useEffect(() => {
+        // Actualiza los salones visibles cada vez que cambia el término de búsqueda
+        const results = aulas.filter((aula) =>
+            aula.nombre.toLowerCase().includes(searchTerm)
+        );
+        setFilteredAulas(results);
+    }, [searchTerm, aulas]);
+ 
 
     return (
         <main
@@ -139,110 +161,119 @@ const Aulas: React.FC = () => {
         >
             <Navigate />
 
-            <div className="relative w-full">
-                {/* Fondo Fijo */}
-                <div className="fixed inset-0 z-[-1]">
-                    <Image
-                        src={Background}
-                        alt="Background"
-                        layout="fill"
-                        objectFit="cover"
-                        quality={80}
-                        priority
-                    />
-                </div>
 
-                {/* Contenedor Principal */}
-                <div className="relative mt-8 flex justify-center">
-                    <div className="border p-4 max-w-[96vh] w-11/12 sm:w-2/3 md:w-4/5 lg:w-2/3 h-[62vh] bg-slate-50 overflow-y-auto rounded-lg">
-                        <div className="flex flex-col items-center p-2">
-                            <h1 className="text-2xl uppercase">Salones</h1>
-                        </div>
+               
 
-                        <div className="flex flex-col space-y-4 bg-white">
-                            <div className="relative overflow-x-auto shadow-lg sm:rounded-lg mb-4">
-                                {/* Barra de acciones */}
-                                <div className="flex justify-around bg-white p-2 mb-4">
-                                    <button
-                                        onClick={() => setSelectedAulaIdCrear(-1)}
-                                        className="px-2 w-10 h-10"
-                                    >
-                                        <Image src={ButtonAdd} alt="Agregar Salón" />
-                                    </button>
-                                    <input
-                                        type="text"
-                                        placeholder="Buscar..."
-                                        className="block p-2 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-100 focus:ring-blue-500 focus:border-blue-500"
-                                        onChange={(e) => {
-                                            const searchTerm = e.target.value.toLowerCase();
-                                            setAulas(
-                                                aulas.map((aula) => ({
-                                                    ...aula,
-                                                    visible: aula.nombre.toLowerCase().includes(searchTerm),
-                                                }))
-                                            );
-                                        }}
-                                    />
-                                </div>
-
-                                {/* Tabla de salones */}
-                                <table className="w-full text-sm text-left text-gray-500 mb-4">
-                                    <thead className="text-xs text-gray-700 uppercase bg-gray-100">
-                                        <tr>
-                                            <th className="px-6 py-3">Nombre</th>
-                                            <th className="px-6 py-3">Acción</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {aulas.filter((aula) => aula.visible).map((aula) => (
-                                            <tr
-                                                className="bg-white border-b hover:bg-gray-50"
-                                                key={aula.id}
-                                            >
-                                                <td className="px-6 py-4 text-gray-900">
-                                                    <div className="text-base font-semibold">{aula.nombre}</div>
-                                                </td>
-                                                <td className="px-6 py-4 space-y-2">
-                                                    
-                                                    <div className="flex items-center space-x-4">
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                setSelectedAulaIdModificar(aula.id);
-                                                                setAulaDetails({ nombre: aula.nombre }); // Inicializa el campo de entrada con el nombre del aula
-                                                            }}
-                                                            className="font-medium text-blue-600 hover:underline flex items-center"
-                                                        >
-                                                            <Image src={EditIcon} alt="Editar" width={24} height={24} className="mr-1" />
-                                                        </button>
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                setSelectedAulaIdEliminar(aula.id);
-                                                            }}
-                                                            className="font-medium text-red-600 hover:underline flex items-center"
-                                                        >
-                                                            <Image src={DeleteIcon} alt="Eliminar" width={24} height={24} className="mr-1" />
-                                                        </button>
-                                                    </div>
-                                                    <div>
-                                                        <button
-                                                            onClick={() => setSelectedAulaId(aula.id)}
-                                                            className="font-medium text-blue-600 hover:underline border border-blue-600 rounded px-2 py-0.75 hover:bg-blue-600 hover:text-white transition"
-                                                        >
-                                                            Ver Horario
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
+            <div className="relative z-10">
+        <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+                <div>
+                    <h1 className="text-3xl font-bold text-gray-900">SALONES</h1>
+                    <div className="flex items-center gap-2 mt-2">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 text-sm font-medium bg-indigo-50 text-indigo-700 rounded-full">
+                            <Building2 className="w-4 h-4" />
+                            Salón
+                        </span>
                     </div>
                 </div>
+                <button
+                    onClick={() => setSelectedAulaIdCrear(-1)}
+                    className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2.5 rounded-lg hover:bg-indigo-700 transition-colors shadow-sm"
+                >
+                    <Plus className="w-5 h-5" />
+                    <span>Nuevo Salón</span>
+                </button>
+            </div>
+            <div className="mb-6">
+                <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <input
+                        type="text"
+                        placeholder="Buscar por nombre..."
+                        className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value.toLowerCase())}
+                    />
+                </div>
+            </div>
 
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div className="grid grid-cols-12 bg-gray-50 py-4 px-6 border-b border-gray-200 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <div className="col-span-8">NOMBRE</div>
+                    <div className="col-span-4 text-center">ACCIÓN</div>
+                </div>
+
+                {filteredAulas.length === 0 ? (
+                    <div className="py-12 px-6 text-center">
+                        <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 mb-4">
+                            <Building2 className="w-6 h-6 text-gray-400" />
+                        </div>
+                        <h3 className="text-sm font-medium text-gray-900 mb-1">No hay salones registrados</h3>
+                        <p className="text-sm text-gray-500">
+                            Comienza agregando un salón
+                        </p>
+                    </div>
+                ) : (
+                    filteredAulas
+                        .slice() // Crea una copia del arreglo para evitar modificar el original
+                        .sort((a, b) => a.nombre.localeCompare(b.nombre)) // Ordena alfabéticamente por el atributo nombre
+                        .map((salon) => (
+                            <div
+                                key={salon.id}
+                                className="grid grid-cols-12 items-center py-4 px-6 border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                            >
+                                <div className="col-span-8">
+                                    <div className="flex items-center gap-3">
+                                        <div className="flex-shrink-0">
+                                            <Building2 className="w-5 h-5 text-gray-400" />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-medium text-gray-900">
+                                                {salon.nombre}
+                                            </h3>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="col-span-4 flex justify-center gap-2">
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setSelectedAulaIdModificar(salon.id);
+                                            setAulaDetails({ nombre: salon.nombre }); // Inicializa el campo de entrada con el nombre del aula
+                                        }}
+                                        className="text-indigo-600 hover:text-indigo-900 p-1 hover:bg-indigo-50 rounded"
+                                        title="Editar salón"
+                                    >
+                                        <Pencil className="w-5 h-5" />
+                                    </button>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setSelectedAulaIdEliminar(salon.id);
+                                        }}
+                                        className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded"
+                                        title="Eliminar salón"
+                                    >
+                                        <Trash2 className="w-5 h-5" />
+                                    </button>
+                                    <button
+                                        className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-indigo-700 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors"
+                                        title="Ver horarios"
+                                        onClick={() => setSelectedAulaId(salon.id)}
+                                    >
+                                        <Clock className="w-5 h-5" />
+                                        Ver Horario
+                                    </button>
+                                </div>
+                            </div>
+                        ))
+                )}
+            </div>
+        </div>
+    
+                    
+                                
+                
                 {/* Componente Horario */}
                 {selectedAulaId && (
                     <div className="fixed top-0 left-0 right-0 bottom-0 bg-white shadow-lg overflow-auto">
@@ -312,7 +343,7 @@ const Aulas: React.FC = () => {
                             )}
                             <div className="mb-3">
                                 <label htmlFor="nombre" className="block text-sm">
-                                    Nuevo nombre de {selectedAulaNombre}:
+                                    Nuevo nombre de {aulaDetails.nombre}:
                                 </label>
                                 <input
                                     type="text"

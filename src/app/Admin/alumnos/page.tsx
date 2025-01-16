@@ -160,21 +160,7 @@ const Alumnos: React.FC = () => {
         }
     }, [errorMessage])
 
-    /*     useEffect(() => {
-            if(!nacionalidadName && !provinciaName && !localidadName && !calle && !numero ){
-                setLoadingDireccion(true);
-            }
-            if(!nacionalidadNameResp && !provinciaNameResp && !localidadNameResp && !calleResp && !numeroResp){
-                setLoadingDireccionResp(true);
-            }
-            if(nacionalidadName && provinciaName && localidadName && calle && numero ){
-                setLoadingDireccion(false);
-            }
-            if(nacionalidadNameResp && provinciaNameResp && localidadNameResp && calleResp && numeroResp){
-                setLoadingDireccionResp(false);
-            }
     
-        }, []); */
     useEffect(() => {
         if (obAlumno) {
             /*             console.log("permitirDireccion", permitirDireccion);
@@ -302,7 +288,7 @@ const Alumnos: React.FC = () => {
     //region solo considera repetidos
     async function createUbicacion() {
         // Obtener la localidad asociada a la dirección
-        //console.log("Antes de crear la ubicacion", (localidadName), calle, numero, provinciaName, nacionalidadName);
+     
         const nacionalidad = await addPais({ nombre: String(nacionalidadName) });
         const prov = await addProvincias({ nombre: String(provinciaName), nacionalidadId: Number(nacionalidad?.id) });
 
@@ -320,14 +306,10 @@ const Alumnos: React.FC = () => {
 
     async function getUbicacion(userUpdate: any) {
         // Obtener la dirección del usuario por su ID
-        //console.log("SI DIRECCIONID ES FALSE:", Number(userUpdate?.direccionId));
+        
         setLoadingDireccion(true);
         const direccion = await getDireccionCompleta(userUpdate?.direccionId);
-        /* console.log("DIRECCION", direccion);
-  console.log("LOCALIDAD", direccion?.localidad);
-  console.log("PROVINCIA", direccion?.localidad?.provincia);
-  console.log("PAIS", direccion?.localidad?.provincia?.nacionalidad); */
-        //console.log("NACIONALIDAD", nacionalidad);
+   
         // Actualizar los estados con los datos obtenidos
         setLocalidadName(String(direccion?.localidad?.nombre));
         setProvinciaName(String(direccion?.localidad?.provincia?.nombre));
@@ -475,6 +457,8 @@ const Alumnos: React.FC = () => {
     async function handleSaveChanges() {
         setIsSaving(true);
         const validationError = await validatealumnoDetails();
+        console.log(alumnoDetails);
+        console.log(" no psas");
 
         if (validationError) {
 
@@ -492,8 +476,7 @@ const Alumnos: React.FC = () => {
                 const { direccion, direccionResp } = await createUbicacion();
                 //---------------------------------------------------------------SI ES MENOR-------------------------------------------------------------------------------------------
                 if (mayor === false) {
-                    //console.log("fecha 1", new Date(alumnoDetails.fechaNacimiento));
-                    // console.log("fecha 2", (alumnoDetails.fechaNacimiento));
+            
                     const newAlumno = await updateAlumno(alumnoDetails?.id || 0, {
                         nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
                         dni: (alumnoDetails.dni), email: alumnoDetails.email,
@@ -731,7 +714,7 @@ const Alumnos: React.FC = () => {
                 }
 
             } catch (error) {
-                console.error("Error al crear el profesional", error);
+                console.error("Error al crear el alumno", error);
             }
         }
         //region no agrega direcc
@@ -782,7 +765,7 @@ const Alumnos: React.FC = () => {
                 }
 
             } catch (error) {
-                console.error("Error al crear el profesional", error);
+                console.error("Error al crear el alumno", error);
             }
         }
     }
@@ -904,14 +887,14 @@ const Alumnos: React.FC = () => {
                         <div className="flex items-center gap-4">
 
                             <button
-                                onClick={() => setSelectedAlumno(-1)}
+                                onClick={() => setSelectedAlumno(-2)}
                                 className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2.5 rounded-lg hover:bg-indigo-700 transition-colors shadow-sm"
                             >
                                 <Plus className="w-5 h-5" />
                                 <span>Nuevo alumno menor</span>
                             </button>
                             <button className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2.5 rounded-lg hover:bg-indigo-700 transition-colors shadow-sm"
-                                onClick={() => setSelectedAlumno(-2)}>
+                                onClick={() => setSelectedAlumno(-1)}>
                                 <Plus className="w-5 h-5" /> <span> Nuevo alumno mayor
                                 </span>
                             </button>
@@ -948,7 +931,7 @@ const Alumnos: React.FC = () => {
                                 </div>
                                 <h3 className="text-sm font-medium text-gray-900 mb-1">No hay alumnos registrados</h3>
                                 <p className="text-sm text-gray-500">
-                                    Comienza agregando tu primer alumno
+                                    Comienza agregando un alumno
                                 </p>
                             </div>
                         ) : (
@@ -958,7 +941,7 @@ const Alumnos: React.FC = () => {
                                     className="grid grid-cols-12 items-center py-4 px-6 border-b border-gray-100 hover:bg-gray-50 transition-colors"
                                 >
                                     <div className="col-span-2">
-                                        <span className="text-sm font-medium text-gray-900">#{alumno.id}</span>
+                                        <span className="text-sm font-medium text-gray-900">{alumno.id}</span>
                                     </div>
                                     <div className="col-span-4 flex items-center gap-3">
 
@@ -1000,7 +983,7 @@ const Alumnos: React.FC = () => {
         const isAdultValue = isAdult(alumno.fechaNacimiento);
 
         // Establecer el alumno seleccionado (para edición o nuevo)
-        setSelectedAlumno(isAdultValue ? -2 : alumno);
+        setSelectedAlumno(isAdultValue ? -1 : alumno);
         setObAlumno(alumno);
         setMayor(isAdultValue);
 
@@ -1010,23 +993,23 @@ const Alumnos: React.FC = () => {
             : "";
 
         // Configurar los detalles del alumno seleccionado
-        const details = {
-            id: alumno.id || "",
-            nombre: alumno.nombre || "",
-            apellido: alumno.apellido || "",
-            dni: alumno.dni || "",
-            telefono: alumno.telefono || "",
-            email: alumno.email || "",
-            password: "", // Se deja vacío por seguridad
+        const alumnoDetails = {
+            id: alumno.id,
+            nombre: alumno.nombre,
+            apellido: alumno.apellido,
+            email: alumno.email,
+            dni: alumno.dni,
+            telefono: alumno.telefono,
             fechaNacimiento: formattedDate,
-            direccionId: alumno.direccionId || "",
+            password: "",
         };
+        
 
         // Establecer los detalles en el estado
-        setAlumnoDetails(details);
+        setAlumnoDetails(alumnoDetails);
 
         // Crear una copia de los detalles para futuras referencias
-        setAlumnoDetailsCopia({ ...details });
+        setAlumnoDetailsCopia({ ...alumnoDetails });
     }}
     className="text-indigo-600 hover:text-indigo-900 p-1 hover:bg-indigo-50 rounded"
     title="Editar alumno"
@@ -1055,7 +1038,7 @@ const Alumnos: React.FC = () => {
                     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-20">
                         <div ref={scrollRef} className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative" style={{ height: '70vh', overflow: "auto" }}>
                             <h2 className="text-2xl font-bold mb-4">
-                                {selectedAlumno === -1 ? "Nuevo Alumno menor" : selectedAlumno === -2 ? "Nuevo Alumno mayor" : "Editar Alumno"}
+                                {selectedAlumno === -2 ? "Nuevo Alumno menor" : selectedAlumno === -1 ? "Nuevo Alumno mayor" : "Editar Alumno"}
                             </h2>
                             {errorMessage && (
                                 <div className="mb-4 text-red-600">
@@ -1097,7 +1080,7 @@ const Alumnos: React.FC = () => {
                                     type="email"
                                     id="email"
                                     name="email"
-                                    placeholder={selectedAlumno === -2 ? "Si no tiene email, el mismo debe ser del responsable" : "Ingrese email del alumno"}
+                                    placeholder={selectedAlumno === -1 ? "Si no tiene email, el mismo debe ser del responsable" : "Ingrese email del alumno"}
                                     pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$"
                                     max={75}
                                     value={alumnoDetails.email}
@@ -1124,10 +1107,7 @@ const Alumnos: React.FC = () => {
                                     className="p-2 w-full border rounded"
                                 />
                             </div>
-
-                            {selectedAlumno === -2 || ((selectedAlumno !== -2) && mayor === true) && (
-
-                                <div className="mb-4">
+                            <div className="mb-4">
                                     <label htmlFor="telefono" className="block">Teléfono:</label>
                                     <div className="flex items-center">
                                         <span className="p-2 bg-gray-200 rounded-l">+54</span>
@@ -1147,7 +1127,7 @@ const Alumnos: React.FC = () => {
                                     </div>
 
                                 </div>
-                            )}
+
                             <div className="flex-col flex mb-4">
                                 <label htmlFor="fechaNacimiento">Fecha de Nacimiento</label>
                                 <input
@@ -1157,7 +1137,7 @@ const Alumnos: React.FC = () => {
                                     className="border rounded"
                                     value={alumnoDetails.fechaNacimiento}
                                     onChange={handleChange}
-                                    min={selectedAlumno === -2 ?
+                                    min={selectedAlumno === -1 ?
                                         new Date(new Date().setFullYear(new Date().getFullYear() - 100)).toISOString().split('T')[0] :
                                         new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0]
                                     }
@@ -1175,7 +1155,7 @@ const Alumnos: React.FC = () => {
                                     type="password"
                                     id="password"
                                     name="password"
-                                    placeholder={(selectedAlumno === -1 || selectedAlumno === -2) ? "" : "Si desea cambiar la contraseña, ingresela aquí"}
+                                    placeholder={(selectedAlumno === -2 || selectedAlumno === -1) ? "" : "Si desea cambiar la contraseña, ingresela aquí"}
                                     value={alumnoDetails.password}
                                     onChange={handleChange}
                                     maxLength={50}
@@ -1270,7 +1250,7 @@ const Alumnos: React.FC = () => {
                                 }
                             </>
                             }
-                            {selectedAlumno !== -2 && (
+                            {selectedAlumno !== -1 && (
                                 <>
                                     <div>
                                         <h1 className=" w-full mt-8 mb-3 font-semibold underline">Datos del responsable</h1>
