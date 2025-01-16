@@ -160,7 +160,7 @@ const Alumnos: React.FC = () => {
         }
     }, [errorMessage])
 
-    
+
     useEffect(() => {
         if (obAlumno) {
             /*             console.log("permitirDireccion", permitirDireccion);
@@ -288,7 +288,7 @@ const Alumnos: React.FC = () => {
     //region solo considera repetidos
     async function createUbicacion() {
         // Obtener la localidad asociada a la dirección
-     
+
         const nacionalidad = await addPais({ nombre: String(nacionalidadName) });
         const prov = await addProvincias({ nombre: String(provinciaName), nacionalidadId: Number(nacionalidad?.id) });
 
@@ -306,10 +306,10 @@ const Alumnos: React.FC = () => {
 
     async function getUbicacion(userUpdate: any) {
         // Obtener la dirección del usuario por su ID
-        
+
         setLoadingDireccion(true);
         const direccion = await getDireccionCompleta(userUpdate?.direccionId);
-   
+
         // Actualizar los estados con los datos obtenidos
         setLocalidadName(String(direccion?.localidad?.nombre));
         setProvinciaName(String(direccion?.localidad?.provincia?.nombre));
@@ -476,7 +476,7 @@ const Alumnos: React.FC = () => {
                 const { direccion, direccionResp } = await createUbicacion();
                 //---------------------------------------------------------------SI ES MENOR-------------------------------------------------------------------------------------------
                 if (mayor === false) {
-            
+
                     const newAlumno = await updateAlumno(alumnoDetails?.id || 0, {
                         nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
                         dni: (alumnoDetails.dni), email: alumnoDetails.email,
@@ -957,10 +957,12 @@ const Alumnos: React.FC = () => {
                                                 <Mail className="w-4 h-4 text-gray-400" />
                                                 {alumno.email}
                                             </span>
-                                            <span className="inline-flex items-center gap-1.5 text-sm text-gray-600">
-                                                <Phone className="w-4 h-4 text-gray-400" />
-                                                {alumno.telefono}
-                                            </span>
+                                            {alumno.telefono && (
+                                                <span className="inline-flex items-center gap-1.5 text-sm text-gray-600">
+                                                    <Phone className="w-4 h-4 text-gray-400" />
+                                                    +54 {alumno.telefono}
+                                                </span>
+                                            )}
                                         </div>
                                     </div>
                                     <div className="col-span-2">
@@ -977,44 +979,44 @@ const Alumnos: React.FC = () => {
                                         )}
                                     </div>
                                     <div className="col-span-1 flex justify-center gap-2">
-                                    <button
-    onClick={() => {
-        // Calcular si el alumno es mayor de edad
-        const isAdultValue = isAdult(alumno.fechaNacimiento);
+                                        <button
+                                            onClick={() => {
+                                                // Calcular si el alumno es mayor de edad
+                                                const isAdultValue = isAdult(alumno.fechaNacimiento);
 
-        // Establecer el alumno seleccionado (para edición o nuevo)
-        setSelectedAlumno(isAdultValue ? -1 : alumno);
-        setObAlumno(alumno);
-        setMayor(isAdultValue);
+                                                // Establecer el alumno seleccionado (para edición o nuevo)
+                                                setSelectedAlumno(isAdultValue ? -1 : alumno);
+                                                setObAlumno(alumno);
+                                                setMayor(isAdultValue);
 
-        // Formatear la fecha de nacimiento del alumno
-        const formattedDate = alumno.fechaNacimiento
-            ? new Date(alumno.fechaNacimiento).toISOString().split('T')[0]
-            : "";
+                                                // Formatear la fecha de nacimiento del alumno
+                                                const formattedDate = alumno.fechaNacimiento
+                                                    ? new Date(alumno.fechaNacimiento).toISOString().split('T')[0]
+                                                    : "";
 
-        // Configurar los detalles del alumno seleccionado
-        const alumnoDetails = {
-            id: alumno.id,
-            nombre: alumno.nombre,
-            apellido: alumno.apellido,
-            email: alumno.email,
-            dni: alumno.dni,
-            telefono: alumno.telefono,
-            fechaNacimiento: formattedDate,
-            password: "",
-        };
-        
+                                                // Configurar los detalles del alumno seleccionado
+                                                const alumnoDetails = {
+                                                    id: alumno.id,
+                                                    nombre: alumno.nombre,
+                                                    apellido: alumno.apellido,
+                                                    email: alumno.email,
+                                                    dni: alumno.dni,
+                                                    telefono: alumno.telefono,
+                                                    fechaNacimiento: formattedDate,
+                                                    password: "",
+                                                };
 
-        // Establecer los detalles en el estado
-        setAlumnoDetails(alumnoDetails);
 
-        // Crear una copia de los detalles para futuras referencias
-        setAlumnoDetailsCopia({ ...alumnoDetails });
-    }}
-    className="text-indigo-600 hover:text-indigo-900 p-1 hover:bg-indigo-50 rounded"
-    title="Editar alumno"
->
-                                            <Image src={EditIcon} alt="Editar" width={24} height={24} />
+                                                // Establecer los detalles en el estado
+                                                setAlumnoDetails(alumnoDetails);
+
+                                                // Crear una copia de los detalles para futuras referencias
+                                                setAlumnoDetailsCopia({ ...alumnoDetails });
+                                            }}
+                                            className="text-indigo-600 hover:text-indigo-900 p-1 hover:bg-indigo-50 rounded"
+                                            title="Editar salón"
+                                        >
+                                            <Pencil className="w-5 h-5" />
                                         </button>
                                         <button
                                             onClick={() => setAlumnoAEliminar(alumno)}
@@ -1108,25 +1110,25 @@ const Alumnos: React.FC = () => {
                                 />
                             </div>
                             <div className="mb-4">
-                                    <label htmlFor="telefono" className="block">Teléfono:</label>
-                                    <div className="flex items-center">
-                                        <span className="p-2 bg-gray-200 rounded-l">+54</span>
-                                        <input
-                                            type="text"
-                                            id="telefono"
-                                            name="telefono"
-                                            placeholder="Ingrese el número de teléfono"
-                                            maxLength={10} // Limitar a 10 dígitos
-                                            value={alumnoDetails.telefono || ''} // Asegurar un valor inicial válido
-                                            onChange={(e) => {
-                                                const value = e.target.value.replace(/\D/g, ""); // Eliminar caracteres no numéricos
-                                                setAlumnoDetails({ ...alumnoDetails, telefono: value }); // Actualizar el estado
-                                            }}
-                                            className="p-2 w-full border rounded-r"
-                                        />
-                                    </div>
-
+                                <label htmlFor="telefono" className="block">Teléfono:</label>
+                                <div className="flex items-center">
+                                    <span className="p-2 bg-gray-200 rounded-l">+54</span>
+                                    <input
+                                        type="text"
+                                        id="telefono"
+                                        name="telefono"
+                                        placeholder="Ingrese el número de teléfono"
+                                        maxLength={10} // Limitar a 10 dígitos
+                                        value={alumnoDetails.telefono || ''} // Asegurar un valor inicial válido
+                                        onChange={(e) => {
+                                            const value = e.target.value.replace(/\D/g, ""); // Eliminar caracteres no numéricos
+                                            setAlumnoDetails({ ...alumnoDetails, telefono: value }); // Actualizar el estado
+                                        }}
+                                        className="p-2 w-full border rounded-r"
+                                    />
                                 </div>
+
+                            </div>
 
                             <div className="flex-col flex mb-4">
                                 <label htmlFor="fechaNacimiento">Fecha de Nacimiento</label>
@@ -1433,7 +1435,10 @@ const Alumnos: React.FC = () => {
                                 </button>
                                 <button
                                     disabled={isSaving}
-                                    onClick={() => { setSelectedAlumno(null); handleCancel_init() }}
+                                    onClick={() => {
+                                        setSelectedAlumno(null); handleCancel_init()
+                                        setErrorMessage("")
+                                    }}
                                     className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800">
                                     Cancelar
                                 </button>

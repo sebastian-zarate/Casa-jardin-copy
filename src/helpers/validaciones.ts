@@ -292,34 +292,41 @@ export function validateCursoDetails(details: {
   
     return null;
   }
-  
+  // validar la fecha de inicio de un curso
   export function validateFechaInicio(fechaInicio: Date | undefined) {
     if (!fechaInicio) return "La fecha de inicio no puede estar vacía.";
   
     
     return null;
   }
-  // validar la fecha de inicio de un curso con fecha fin 
-    export function validateFechaInicioalta(fechaInicio: Date | undefined, fechaFin: Date) {
-
+// validar la fecha de inicio de un curso con fecha fin 
+export function validateFechaInicioalta(fechaInicio: Date | undefined, fechaFin: Date) {
     if (!fechaInicio) return "La fecha de inicio no puede estar vacía.";
     if (fechaInicio < new Date()) return "La fecha de inicio no puede ser menor a la fecha actual.";
     if (fechaInicio >= fechaFin) return "La fecha de inicio debe ser anterior a la fecha de fin.";
+
+    const diffDays = Math.ceil(
+        Math.abs(fechaFin.getTime() - fechaInicio.getTime()) / (1000 * 60 * 60 * 24)
+    );
+    if (diffDays > 365) return "El curso no puede tener una vigencia mayor a un año.";
+
     return null;
-    }
-  
-  export function validateFechaInicioModificacion(
-    fechaInicio: Date | undefined,
-    fechaInicioAnterior: Date | undefined
-  ) {
+}
+
+// validar la fecha de fin de un curso con fecha inicio
+export function validateFechaInicioModificacion(
+    fechaInicio: Date ,
+    fechaInicioAnterior: Date,
+    fechaFin: Date
+) {
     const error = validateFechaInicio(fechaInicio);
     if (error) return error;
-  
-    if (fechaInicio && fechaInicioAnterior && fechaInicio <= fechaInicioAnterior) {
-      return "La fecha de inicio debe ser mayor a la fecha de inicio anterior.";
-    }
-  
+
+    const diffDays = Math.ceil(
+        Math.abs(fechaFin.getTime() - fechaInicio.getTime()) / (1000 * 60 * 60 * 24)
+    );
+    if (diffDays > 365) return "El curso no puede tener una vigencia mayor a un año.";
+
+
     return null;
-  }
-  
-  
+}

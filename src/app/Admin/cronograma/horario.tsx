@@ -319,7 +319,10 @@ if (error) {
             ))}
         </tbody>
       </table>
-
+             {/* Aclaración sobre materias repetidas */}
+  <div className="mt-4 text-gray-600 text-sm ">
+    Nota:  Nota: El sistema valida que una misma materia no esté asignada en el mismo día y hora en otros cronogramas. Sin embargo, es posible asignar al mismo profesor diferentes cursos en el mismo horario y día.
+  </div>
       {/* Mensaje de error adicional, si lo hay */}
       {error && <div className="text-red-500 mt-4">{error}</div>}
 

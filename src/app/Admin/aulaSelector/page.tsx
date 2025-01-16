@@ -169,12 +169,9 @@ const Aulas: React.FC = () => {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900">SALONES</h1>
-                    <div className="flex items-center gap-2 mt-2">
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 text-sm font-medium bg-indigo-50 text-indigo-700 rounded-full">
-                            <Building2 className="w-4 h-4" />
-                            Salón
-                        </span>
-                    </div>
+                    <p className="mt-1 text-sm text-gray-500">
+                     Gestiona los salones del sistema
+                    </p>
                 </div>
                 <button
                     onClick={() => setSelectedAulaIdCrear(-1)}

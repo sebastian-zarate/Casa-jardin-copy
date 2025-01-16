@@ -77,3 +77,12 @@ export async function getCantProfesionalesActivos() {
   return   cantProf
   
 }
+
+export async function deleteProfesional_Curso(idProfesional: number, idCurso: number) { 
+  return await prisma.profesional_Curso.deleteMany({
+    where: {
+      profesionalId: idProfesional,
+      cursoId: idCurso,
+    },
+  });
+}
