@@ -159,6 +159,29 @@ export function validateNombre(nombre: string) {
 
     return null; // Sin errores
 }
+// validacion de el responsable de un alumno
+export function validateNombreRespon(nombre: string) {
+
+    if (!nombre) {
+        return "El nombre del responsble no puede estar vacío"; // Prioridad: Verificar que no esté vacío primero
+    }
+    if (/\d/.test(nombre)) {
+        return "El nombre del responsable no debe contener números"; // Detectar números
+    }
+    if (!caracEspeciales.test(nombre)) {
+        return "El nombre del responsable no puede contener caracteres especiales"; // Verificar caracteres válidos
+    }
+    if (nombre.length < 2) {
+        return "El nombre del responsable debe tener al menos 2 caracteres"; // Validar longitud mínima
+    }
+    // Validar longitud máxima
+    if (nombre.length > 50) {
+        return "El nombre del responsable no puede tener más de 50 caracteres.";
+    }
+
+    return null; // Sin errores
+}
+
 
 export function validateApellido(apellido: string) {
     
@@ -326,7 +349,8 @@ export function validateFechaInicioModificacion(
         Math.abs(fechaFin.getTime() - fechaInicio.getTime()) / (1000 * 60 * 60 * 24)
     );
     if (diffDays > 365) return "El curso no puede tener una vigencia mayor a un año.";
-
+  
+    if (fechaInicio < fechaInicioAnterior) return "La fecha de inicio no puede ser menor a la fecha de inicio anterior.";
 
     return null;
 }

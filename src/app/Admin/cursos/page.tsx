@@ -670,30 +670,30 @@ const Cursos: React.FC = () => {
 
             <div className="mb-4">
               <label htmlFor="fechaInicio" className="block">
-                Fecha de inicio del taller:
+              Fecha de inicio del taller:
               </label>
               <input
-                type="date"
-                id="fechaInicio"
-                name="fechaInicio"
-                value={
-                  cursoDetails.fechaInicio &&
-                    cursoDetails.fechaInicio instanceof Date &&
-                    !isNaN(cursoDetails.fechaInicio.getTime())
-                    ? cursoDetails.fechaInicio.toISOString().split('T')[0]
-                    : ""
-                }
-                // Ajusta el valor mínimo basado en si es edición o creación
-                min={
-                  selectedCursoId !== -1 && fechaInicioAnterior
-                    ? new Date(fechaInicioAnterior).toISOString().split('T')[0]
-                    : new Date().toISOString().split('T')[0]
-                }
-                max={new Date(new Date().setFullYear(new Date().getFullYear() + 1))
-                  .toISOString()
-                  .split('T')[0]} // Hasta un año desde hoy
-                onChange={handleChange}
-                className="p-2 w-full border rounded"
+              type="date"
+              id="fechaInicio"
+              name="fechaInicio"
+              value={
+                cursoDetails.fechaInicio &&
+                cursoDetails.fechaInicio instanceof Date &&
+                !isNaN(cursoDetails.fechaInicio.getTime())
+                ? cursoDetails.fechaInicio.toISOString().split('T')[0]
+                : ""
+              }
+              // Ajusta el valor mínimo basado en si es edición o creación
+              min={
+                selectedCursoId !== -1 && fechaInicioAnterior
+                ? new Date(fechaInicioAnterior).toISOString().split('T')[0]
+                : new Date().toISOString().split('T')[0]
+              }
+              max={new Date(new Date().setFullYear(new Date().getFullYear() + 1))
+                .toISOString()
+                .split('T')[0]} // Hasta un año desde hoy
+              onChange={handleChange}
+              className="p-2 w-full border rounded"
               />
             </div>
 

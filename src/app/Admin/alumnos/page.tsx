@@ -985,7 +985,7 @@ const Alumnos: React.FC = () => {
                                                 const isAdultValue = isAdult(alumno.fechaNacimiento);
 
                                                 // Establecer el alumno seleccionado (para edición o nuevo)
-                                                setSelectedAlumno(isAdultValue ? -1 : alumno);
+                                                setSelectedAlumno( alumno);
                                                 setObAlumno(alumno);
                                                 setMayor(isAdultValue);
 
