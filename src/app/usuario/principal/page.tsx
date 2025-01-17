@@ -102,5 +102,6 @@ const Principal: React.FC = () => {
         <But_aside />
       </div>
     </main>
-        
+  )
+}  
 export default withAuthUser(Principal);
