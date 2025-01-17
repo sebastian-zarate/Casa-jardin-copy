@@ -71,8 +71,8 @@ model Profesional {
   apellido     String
   especialidad String
   email        String    @unique
-  password     String    @unique
-  telefono     String    @unique
+  password     String    //le saque el unique ya que puede haber profesionales con la misma contraseña
+  telefono     String    
   imagen      String?
  
   prof_cur Profesional_Curso[]
@@ -112,7 +112,7 @@ model Alumno {
   nombre   String
   apellido String
   dni      Int?   @unique
-  telefono String?   @unique
+  telefono String?   //le saque el unique por que daba problemas
 
   direccionId Int?  
   direccion   Direccion? @relation(fields: [direccionId], references: [id]) // Relación de uno a muchos
@@ -254,7 +254,7 @@ model Responsable {
   nombre String
   apellido String
   dni Int @unique
-  telefono String @unique
+  telefono String //tambien aca da problemas el unique
   email String @unique
   direccionId Int?  
   direccion   Direccion? @relation(fields: [direccionId], references: [id]) // Relación de uno a muchos
