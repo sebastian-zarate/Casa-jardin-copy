@@ -236,3 +236,22 @@ export async function getCursosActivos(){
     const fechaHoy = new Date();
     return cursos.filter(curso => curso.fechaInicio <= fechaHoy && curso.fechaFin >= fechaHoy);
 }
+
+// Obtener cursos en los que está inscrito un usuario
+export async function getCursosInscriptos(userId: number) {
+    const fechaHoy = new Date();
+    // Obtener los cursos en los que está inscrito el usuario
+    const cursosInscriptos = await prisma.alumno_Curso.findMany({
+        where: {
+            alumnoId: userId, // Usar el ID del usuario para filtrar
+        },
+        include: {
+            curso: true, // Incluir la información del curso
+        },
+    });
+
+    // Filtrar los cursos activos en la fecha actual
+    return cursosInscriptos
+        .map((inscripcion) => inscripcion.curso) // Extraer los datos del curso
+        .filter((curso) => curso.fechaInicio <= fechaHoy && curso.fechaFin >= fechaHoy);
+}

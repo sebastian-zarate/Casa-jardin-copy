@@ -7,10 +7,16 @@ const Button = () => {
       <button 
         className="Btn" 
         onClick={() => {
+          try{
           window.open(
             "https://www.google.com/maps?q=Padre+Becher+991,+Crespo",
             "_blank"
           );
+        } catch(error){
+          console.error("Error al abrir Google Maps:", error);
+          
+
+          }
         }}
       >
         <div className="sign">
