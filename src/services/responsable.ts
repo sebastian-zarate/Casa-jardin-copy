@@ -62,7 +62,7 @@ export async function createResponsable(data: {
     alumnoId: data.alumnoId,
     nombre: data.nombre.trim(),
     apellido: data.apellido.trim(),
-    dni: data.dni,
+    dni: Number(data.dni),
     telefono: data.telefono.trim(),
     email: data.email.trim(),
     direccionId: data?.direccionId,
@@ -95,16 +95,30 @@ export async function updateResponsable(idAlumno: number, data: {
     alumnoId: data.alumnoId,
     nombre: data.nombre.trim(),
     apellido: data.apellido.trim(),
-    dni: data.dni,
+    dni: Number(data.dni),
     telefono: data.telefono.trim(),
     email: data.email.trim(),
     direccionId: data?.direccionId,
   };
+
+  // buscar si existe responsable
+  const responsable = await getResponsableByAlumnoId(idAlumno);
+  if(!responsable) 
+  {
+    // si no existe, se crea
+    return await prisma.responsable.create({
+      data: responsableTrim,
+    });
+
+  } else {
+    // si existe, se actualiza
+    return await prisma.responsable.update({
+      where: { alumnoId: idAlumno },
+      data: responsableTrim,
+    });
+  }
   
-  return await prisma.responsable.update({
-    where: { alumnoId: idAlumno },
-    data: responsableTrim,
-  });
+
 }
 
 //eliminar responsable

@@ -23,7 +23,7 @@ import withAuth from "../../../components/Admin/adminAuth";
 import PasswordComponent from "@/components/Password/page";
 import { hashPassword } from "@/helpers/hashPassword";
 import { createResponsable, deleteResponsable, deleteResponsableByAlumnoId, getAllResponsables, getDireccionResponsableByAlumnoId, updateResponsable } from "@/services/responsable";
-import { validateApellido, validateDireccion, validateDni, validateEmail, validateFechaNacimiento, validateNombre, validatePasswordComplexity, validatePhoneNumber } from "@/helpers/validaciones";
+import { validateApellido, validateDireccion, validateDni, validateEmail, validateFechaNacimiento, validateNombre, validatePasswordComplexity, validatePhoneNumber, validateNombreRespon } from "@/helpers/validaciones";
 import Loader from "@/components/Loaders/loadingSave/page";
 import { Mail, Pencil, Phone, Plus, Search, Trash2, UserRoundPlus, UserRoundX, Users, } from "lucide-react";
 // #endregion
@@ -42,6 +42,7 @@ const Alumnos: React.FC = () => {
     const [alumnoAbuscar, setAlumnoAbuscar] = useState<string>("");
     const [habilitarAlumnosBuscados, setHabilitarAlumnosBuscados] = useState<boolean>(true);
     const [selectedAlumno, setSelectedAlumno] = useState<any>(null);
+    const [alumnoSeleccionado, setAlumnoSeleccionado] = useState<any>(null);
 
     const [obAlumno, setObAlumno] = useState<any>(null);
 
@@ -377,7 +378,7 @@ const Alumnos: React.FC = () => {
             }
 
 
-            if (selectedAlumno === -1 || selectedAlumno === -2 || password.length > 0) {
+            if (selectedAlumno === -1 || selectedAlumno === -1 || password.length > 0) {
                 resultValidate = validatePasswordComplexity(password);
                 if (resultValidate) return resultValidate;
             }
@@ -388,38 +389,35 @@ const Alumnos: React.FC = () => {
             if (resultValidate) return resultValidate
         }
 
-        if (responsableDetails && mayor === false) {
-            resultValidate = validateNombre(nombreR);
-            if (resultValidate) return resultValidate;
-
-            resultValidate = validateApellido(apellidoR);
+        if (responsableDetails && mayor === false && selectedAlumno === -1 && selectedAlumno === -4) {
+            resultValidate = validateNombreRespon(nombreR, apellidoR);
             if (resultValidate) return resultValidate;
 
             resultValidate = validateEmail(EmailR);
             if (resultValidate) return resultValidate;
             if (EmailR !== responsableDetailsCopia.email) {
-                const estado = await emailExists(EmailR)
-                if (estado) {
-                    return "El email del responsable ya está registrado.";
-                }
+            const estado = await emailExists(EmailR)
+            if (estado) {
+                return "El email del responsable ya está registrado.";
+            }
             }
             if (permitirDireccionResp) {
-                resultValidate = validateDireccion(nacionalidadNameResp, provinciaNameResp, localidadNameResp, String(calleResp), Number(numeroResp));
-                if (resultValidate) return resultValidate
+            resultValidate = validateDireccion(nacionalidadNameResp, provinciaNameResp, localidadNameResp, String(calleResp), Number(numeroResp));
+            if (resultValidate) return resultValidate
             }
             //el Dni no puede estar vacio
             resultValidate = validateDni(String(dniR));
             if (resultValidate) return resultValidate;
             if (dniR !== responsableDetailsCopia.dni) {
-                const estado = await dniExists(dniR)
-                if (estado) {
-                    return "El dni del responsable ya está registrado.";
-                }
+            const estado = await dniExists(dniR)
+            if (estado) {
+                return "El dni del responsable ya está registrado.";
+            }
             }
             //el teléfono puede estar vacio
             if (telefonoR && typeof (telefonoR) === "number") {
-                resultValidate = validatePhoneNumber(String(telefonoR));
-                if (resultValidate) return resultValidate;
+            resultValidate = validatePhoneNumber(String(telefonoR));
+            if (resultValidate) return resultValidate;
             }
         }
         // if (!/\d/.test(fechaNacimiento)) return ("La fecha de nacimiento es obligatoria");
@@ -556,8 +554,7 @@ const Alumnos: React.FC = () => {
                     });
                     //---------------------------------------------------------------SI ES MENOR-------------------------------------------------------------------------------------------
                     if (mayor === false) {
-                        // console.log("fecha 1", new Date(alumnoDetails.fechaNacimiento));
-                        //console.log("fecha 2", (alumnoDetails.fechaNacimiento));
+                      
                         const newAlumno = await updateAlumno(alumnoDetails?.id || 0, {
                             nombre: alumnoDetails.nombre, apellido: alumnoDetails.apellido,
                             dni: (alumnoDetails.dni), email: alumnoDetails.email,
@@ -830,217 +827,214 @@ const Alumnos: React.FC = () => {
         <main
             className="relative bg-cover bg-center"
             style={{
-                backgroundImage: `url(${Background})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
+            backgroundImage: `url(${Background})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
             }}
         >
             <Navigate />
 
-
-
-
-
-
             {AlumnoAEliminar && (
-                <div className="fixed inset-0 z-20 flex items-center justify-center bg-black bg-opacity-50">
-                    <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative">
-                        {errorMessage && <div style={{ color: "red" }}>{errorMessage}</div>}
+            <div className="fixed inset-0 z-20 flex items-center justify-center bg-black bg-opacity-50">
+                <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative">
+                {errorMessage && <div style={{ color: "red" }}>{errorMessage}</div>}
 
-                        <h2 className="text-lg mb-4">Confirmar Eliminación</h2>
-                        <p>
-                            ¿Estás seguro de que deseas eliminar a:{" "}
-                            <strong>{AlumnoAEliminar.nombre}</strong>?
-                        </p>
-                        <div className="flex justify-end space-x-4 mt-4">
+                <h2 className="text-lg mb-4">Confirmar Eliminación</h2>
+                <p>
+                    ¿Estás seguro de que deseas eliminar a:{" "}
+                    <strong>{AlumnoAEliminar.nombre}</strong>?
+                </p>
+                <div className="flex justify-end space-x-4 mt-4">
+                    <button
+                    onClick={() => {
+                        handleEliminarAlumno(AlumnoAEliminar.id);
+                    }}
+                    disabled={isDeleting}
+                    className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800"
+                    >
+                    {isDeleting ? "Eliminando..." : "Confirmar Eliminación"}
+                    </button>
+                    <button
+                    onClick={() => setAlumnoAEliminar(null)}
+                    disabled={isDeleting}
+                    className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800"
+                    >
+                    Cancelar
+                    </button>
+                </div>
+                </div>
+            </div>
+            )}
+{/* Contenido Principal */}
+<div className="relative z-10">
+    <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        {/* Título y Descripción */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+            <div>
+                <h1 className="text-3xl font-bold text-gray-900">Alumnos</h1>
+                <p className="mt-1 text-sm text-gray-500">
+                    Gestiona los alumnos del sistema
+                </p>
+            </div>
+            {/* Botones */}
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+                <button
+                    onClick={() => setSelectedAlumno(-2)}
+                    className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2.5 rounded-lg hover:bg-indigo-700 transition-colors shadow-sm w-full sm:w-auto"
+                >
+                    <Plus className="w-5 h-5" />
+                    <span>Nuevo alumno menor</span>
+                </button>
+                <button
+                    onClick={() => setSelectedAlumno(-1)}
+                    className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2.5 rounded-lg hover:bg-indigo-700 transition-colors shadow-sm w-full sm:w-auto"
+                >
+                    <Plus className="w-5 h-5" />
+                    <span>Nuevo alumno mayor</span>
+                </button>
+            </div>
+        </div>
+
+        {/* Barra de Búsqueda */}
+        <div className="mb-6">
+            <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                    type="text"
+                    placeholder="Buscar por nombre.."
+                    className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    value={alumnoAbuscar}
+                    onChange={handleSearchChange}
+                />
+            </div>
+        </div>
+
+        {/* Tabla de Alumnos */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="grid grid-cols-1 sm:grid-cols-12 bg-gray-50 py-4 px-6 border-b border-gray-200 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <div className="hidden sm:block col-span-2">CÓDIGO</div>
+                <div className="col-span-4">NOMBRE</div>
+                <div className="col-span-3">CONTACTO</div>
+                <div className="hidden sm:block col-span-2">MAYORÍA DE EDAD</div>
+                <div className="col-span-1 text-center">ACCIÓN</div>
+            </div>
+
+            {alumnos.length === 0 ? (
+                <div className="py-12 px-6 text-center">
+                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 mb-4">
+                        <Users className="w-6 h-6 text-gray-400" />
+                    </div>
+                    <h3 className="text-sm font-medium text-gray-900 mb-1">No hay alumnos registrados</h3>
+                    <p className="text-sm text-gray-500">
+                        Comienza agregando un alumno
+                    </p>
+                </div>
+            ) : (
+                alumnos.sort((a, b) => a.id - b.id).map((alumno) => (
+                    <div
+                        key={alumno.id}
+                        className="grid grid-cols-1 sm:grid-cols-12 items-center py-4 px-6 border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                    >
+                        <div className="col-span-1 sm:col-span-2">
+                            <span className="text-sm font-medium text-gray-900">{alumno.id}</span>
+                        </div>
+                        <div className="col-span-1 sm:col-span-4 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                            <div>
+                                <h3 className="font-medium text-gray-900">{alumno.nombre} {alumno.apellido}</h3>
+                                <p className="text-sm text-gray-500">DNI: {alumno.dni}</p>
+                            </div>
+                        </div>
+                        <div className="col-span-1 sm:col-span-3">
+                            <div className="flex flex-col gap-1">
+                                <span className="inline-flex items-center gap-1.5 text-sm text-gray-600">
+                                    <Mail className="w-4 h-4 text-gray-400" />
+                                    {alumno.email}
+                                </span>
+                                {alumno.telefono && (
+                                    <span className="inline-flex items-center gap-1.5 text-sm text-gray-600">
+                                        <Phone className="w-4 h-4 text-gray-400" />
+                                        +54 {alumno.telefono}
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                        <div className="hidden sm:block col-span-2">
+                            {new Date().getFullYear() - new Date(alumno.fechaNacimiento).getFullYear() >= 18 ? (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 text-sm font-medium bg-blue-50 text-blue-700 rounded-full">
+                                    <Users className="w-4 h-4" />
+                                    Mayor
+                                </span>
+                            ) : (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 text-sm font-medium bg-amber-50 text-amber-700 rounded-full">
+                                    <Users className="w-4 h-4" />
+                                    Menor
+                                </span>
+                            )}
+                        </div>
+                        <div className="col-span-1 flex justify-center gap-2">
                             <button
                                 onClick={() => {
-                                    handleEliminarAlumno(AlumnoAEliminar.id);
+                                    // Calcular si el alumno es mayor de edad
+                                    const isAdultValue = isAdult(alumno.fechaNacimiento);
+
+                                    // Establecer el alumno seleccionado (para edición o nuevo)
+                                    if (isAdultValue) setAlumnoSeleccionado(-3);
+                                    else if (!isAdultValue) setAlumnoSeleccionado(-4);
+                                    setSelectedAlumno( alumno);
+                                    setObAlumno(alumno);
+                                    setMayor(isAdultValue);
+
+                                    // Formatear la fecha de nacimiento del alumno
+                                    const formattedDate = alumno.fechaNacimiento
+                                        ? new Date(alumno.fechaNacimiento).toISOString().split('T')[0]
+                                        : "";
+
+                                    // Configurar los detalles del alumno seleccionado
+                                    const alumnoDetails = {
+                                        id: alumno.id,
+                                        nombre: alumno.nombre,
+                                        apellido: alumno.apellido,
+                                        email: alumno.email,
+                                        dni: alumno.dni,
+                                        telefono: alumno.telefono,
+                                        fechaNacimiento: formattedDate,
+                                        password: "",
+                                    };
+
+
+                                    // Establecer los detalles en el estado
+                                    setAlumnoDetails(alumnoDetails);
+
+                                    // Crear una copia de los detalles para futuras referencias
+                                    setAlumnoDetailsCopia({ ...alumnoDetails });
                                 }}
-                                disabled={isDeleting}
-                                className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800"
+                                className="text-indigo-600 hover:text-indigo-900 p-1 hover:bg-indigo-50 rounded"
                             >
-                                {isDeleting ? "Eliminando..." : "Confirmar Eliminación"}
+                                <Pencil className="w-5 h-5" />
                             </button>
                             <button
-                                onClick={() => setAlumnoAEliminar(null)}
-                                disabled={isDeleting}
-                                className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800"
+                                onClick={() => setAlumnoAEliminar(alumno)}
+                                className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded"
                             >
-                                Cancelar
+                                <Trash2 className="w-5 h-5" />
                             </button>
                         </div>
                     </div>
-                </div>
+                ))
             )}
-
-            {/* Contenido Principal */}
-            <div className="relative z-10">
-                <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-                        <div>
-                            <h1 className="text-3xl font-bold text-gray-900">Alumnos</h1>
-                            <p className="mt-1 text-sm text-gray-500">
-                                Gestiona los alumnos del sistema
-                            </p>
-                        </div>
-                        <div className="flex items-center gap-4">
-
-                            <button
-                                onClick={() => setSelectedAlumno(-2)}
-                                className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2.5 rounded-lg hover:bg-indigo-700 transition-colors shadow-sm"
-                            >
-                                <Plus className="w-5 h-5" />
-                                <span>Nuevo alumno menor</span>
-                            </button>
-                            <button className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2.5 rounded-lg hover:bg-indigo-700 transition-colors shadow-sm"
-                                onClick={() => setSelectedAlumno(-1)}>
-                                <Plus className="w-5 h-5" /> <span> Nuevo alumno mayor
-                                </span>
-                            </button>
-
-                        </div>
-                    </div>
-
-                    <div className="mb-6">
-                        <div className="relative">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                            <input
-                                type="text"
-                                placeholder="Buscar por nombre.."
-                                className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                value={alumnoAbuscar}
-                                onChange={handleSearchChange}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                        <div className="grid grid-cols-12 bg-gray-50 py-4 px-6 border-b border-gray-200 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <div className="col-span-2">CÓDIGO</div>
-                            <div className="col-span-4">NOMBRE</div>
-                            <div className="col-span-3">CONTACTO</div>
-                            <div className="col-span-2">MAYORÍA DE EDAD</div>
-                            <div className="col-span-1 text-center">ACCIÓN</div>
-                        </div>
-
-                        {alumnos.length === 0 ? (
-                            <div className="py-12 px-6 text-center">
-                                <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 mb-4">
-                                    <Users className="w-6 h-6 text-gray-400" />
-                                </div>
-                                <h3 className="text-sm font-medium text-gray-900 mb-1">No hay alumnos registrados</h3>
-                                <p className="text-sm text-gray-500">
-                                    Comienza agregando un alumno
-                                </p>
-                            </div>
-                        ) : (
-                            alumnos.sort((a, b) => a.id - b.id).map((alumno) => (
-                                <div
-                                    key={alumno.id}
-                                    className="grid grid-cols-12 items-center py-4 px-6 border-b border-gray-100 hover:bg-gray-50 transition-colors"
-                                >
-                                    <div className="col-span-2">
-                                        <span className="text-sm font-medium text-gray-900">{alumno.id}</span>
-                                    </div>
-                                    <div className="col-span-4 flex items-center gap-3">
+        </div>
+    </div>
 
 
-                                        <div>
-                                            <h3 className="font-medium text-gray-900">{alumno.nombre} {alumno.apellido}</h3>
-                                            <p className="text-sm text-gray-500">DNI: {alumno.dni}</p>
-                                        </div>
-                                    </div>
-                                    <div className="col-span-3">
-                                        <div className="flex flex-col gap-1">
-                                            <span className="inline-flex items-center gap-1.5 text-sm text-gray-600">
-                                                <Mail className="w-4 h-4 text-gray-400" />
-                                                {alumno.email}
-                                            </span>
-                                            {alumno.telefono && (
-                                                <span className="inline-flex items-center gap-1.5 text-sm text-gray-600">
-                                                    <Phone className="w-4 h-4 text-gray-400" />
-                                                    +54 {alumno.telefono}
-                                                </span>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div className="col-span-2">
-                                        {new Date().getFullYear() - new Date(alumno.fechaNacimiento).getFullYear() >= 18 ? (
-                                            <span className="inline-flex items-center gap-1 px-2.5 py-1 text-sm font-medium bg-blue-50 text-blue-700 rounded-full">
-                                                <Users className="w-4 h-4" />
-                                                Mayor
-                                            </span>
-                                        ) : (
-                                            <span className="inline-flex items-center gap-1 px-2.5 py-1 text-sm font-medium bg-amber-50 text-amber-700 rounded-full">
-                                                <Users className="w-4 h-4" />
-                                                Menor
-                                            </span>
-                                        )}
-                                    </div>
-                                    <div className="col-span-1 flex justify-center gap-2">
-                                        <button
-                                            onClick={() => {
-                                                // Calcular si el alumno es mayor de edad
-                                                const isAdultValue = isAdult(alumno.fechaNacimiento);
-
-                                                // Establecer el alumno seleccionado (para edición o nuevo)
-                                                setSelectedAlumno( alumno);
-                                                setObAlumno(alumno);
-                                                setMayor(isAdultValue);
-
-                                                // Formatear la fecha de nacimiento del alumno
-                                                const formattedDate = alumno.fechaNacimiento
-                                                    ? new Date(alumno.fechaNacimiento).toISOString().split('T')[0]
-                                                    : "";
-
-                                                // Configurar los detalles del alumno seleccionado
-                                                const alumnoDetails = {
-                                                    id: alumno.id,
-                                                    nombre: alumno.nombre,
-                                                    apellido: alumno.apellido,
-                                                    email: alumno.email,
-                                                    dni: alumno.dni,
-                                                    telefono: alumno.telefono,
-                                                    fechaNacimiento: formattedDate,
-                                                    password: "",
-                                                };
-
-
-                                                // Establecer los detalles en el estado
-                                                setAlumnoDetails(alumnoDetails);
-
-                                                // Crear una copia de los detalles para futuras referencias
-                                                setAlumnoDetailsCopia({ ...alumnoDetails });
-                                            }}
-                                            className="text-indigo-600 hover:text-indigo-900 p-1 hover:bg-indigo-50 rounded"
-                                            title="Editar salón"
-                                        >
-                                            <Pencil className="w-5 h-5" />
-                                        </button>
-                                        <button
-                                            onClick={() => setAlumnoAEliminar(alumno)}
-                                            className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded"
-                                            title="Eliminar alumno"
-                                        >
-                                            <Trash2 className="w-5 h-5" />
-                                        </button>
-                                    </div>
-                                </div>
-                            ))
-                        )}
-                    </div>
-                </div>
-
-
+    
 
 
                 {/* Modal */}
-                {selectedAlumno !== null && (
+                {(selectedAlumno !== null && selectedAlumno !== undefined) && (
                     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-20">
                         <div ref={scrollRef} className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative" style={{ height: '70vh', overflow: "auto" }}>
                             <h2 className="text-2xl font-bold mb-4">
-                                {selectedAlumno === -2 ? "Nuevo Alumno menor" : selectedAlumno === -1 ? "Nuevo Alumno mayor" : "Editar Alumno"}
+                                {selectedAlumno === -2 ? "Nuevo Alumno menor" : selectedAlumno === -1 ? "Nuevo Alumno mayor" : alumnoSeleccionado === -3 ? "Editar Alumno mayor" : alumnoSeleccionado === -4 ? "Editar Alumno menor" : null}
                             </h2>
                             {errorMessage && (
                                 <div className="mb-4 text-red-600">
@@ -1139,15 +1133,20 @@ const Alumnos: React.FC = () => {
                                     className="border rounded"
                                     value={alumnoDetails.fechaNacimiento}
                                     onChange={handleChange}
-                                    min={selectedAlumno === -1 ?
-                                        new Date(new Date().setFullYear(new Date().getFullYear() - 100)).toISOString().split('T')[0] :
-                                        new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0]
+                                    min={
+                                        selectedAlumno === -2
+                                            ? new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0]
+                                            : new Date(new Date().setFullYear(new Date().getFullYear() - 100)).toISOString().split('T')[0]
                                     }
-                                    max={selectedAlumno === -2 ?
-                                        new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0] :
-                                        new Date(new Date().setFullYear(new Date().getFullYear() - 3)).toISOString().split('T')[0]
+                                    max={
+                                        selectedAlumno === -2
+                                            ? new Date(new Date().setFullYear(new Date().getFullYear() - 3)).toISOString().split('T')[0]
+                                            : new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0]
+                                    }
 
-                                    }
+                                        
+                                        
+                                    
                                     required
                                 />
                             </div>
@@ -1252,7 +1251,7 @@ const Alumnos: React.FC = () => {
                                 }
                             </>
                             }
-                            {selectedAlumno !== -1 && (
+                            {selectedAlumno !== -1 && alumnoSeleccionado !== -3 && (
                                 <>
                                     <div>
                                         <h1 className=" w-full mt-8 mb-3 font-semibold underline">Datos del responsable</h1>
@@ -1446,6 +1445,9 @@ const Alumnos: React.FC = () => {
                         </div>
                     </div>
                 )}
+                {/* este metodo quiero qque sea par al madficacion de alumno mayor */}
+
+
             </div>
 
         </main>

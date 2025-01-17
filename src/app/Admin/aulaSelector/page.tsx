@@ -225,13 +225,13 @@ const Aulas: React.FC = () => {
                                             <Building2 className="w-5 h-5 text-gray-400" />
                                         </div>
                                         <div>
-                                            <h3 className="font-medium text-gray-900">
+                                            <h3 className="font-medium text-gray-900 text-sm sm:text-base">
                                                 {salon.nombre}
                                             </h3>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="col-span-4 flex justify-center gap-2">
+                                <div className="col-span-4 flex justify-center gap-2 flex-wrap">
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();
@@ -262,7 +262,26 @@ const Aulas: React.FC = () => {
                                         Ver Horario
                                     </button>
                                 </div>
-                            </div>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setSelectedAulaIdEliminar(salon.id);
+                                        }}
+                                        className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded"
+                                        title="Eliminar salón"
+                                    >
+                                        <Trash2 className="w-5 h-5" />
+                                    </button>
+                                    <button
+                                        className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-indigo-700 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors"
+                                        title="Ver horarios"
+                                        onClick={() => setSelectedAulaId(salon.id)}
+                                    >
+                                        <Clock className="w-5 h-5" />
+                                        Ver Horario
+                                    </button>
+                                </div>
+                       
                         ))
                 )}
             </div>

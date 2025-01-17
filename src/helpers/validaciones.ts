@@ -160,7 +160,7 @@ export function validateNombre(nombre: string) {
     return null; // Sin errores
 }
 // validacion de el responsable de un alumno
-export function validateNombreRespon(nombre: string) {
+export function validateNombreRespon(nombre: string, apellido: string) {
 
     if (!nombre) {
         return "El nombre del responsble no puede estar vacío"; // Prioridad: Verificar que no esté vacío primero
@@ -178,6 +178,25 @@ export function validateNombreRespon(nombre: string) {
     if (nombre.length > 50) {
         return "El nombre del responsable no puede tener más de 50 caracteres.";
     }
+    // valida los apellido del responsable
+    if (!apellido) {
+        return "El apellido del responsable no puede estar vacío"; // Prioridad: Verificar que no esté vacío primero
+    }
+    if (/\d/.test(apellido)) {
+        return "El apellido del responsable no debe contener números"; // Detectar números
+    }
+    if (!caracEspeciales.test(apellido)) {
+        return "El apellido del responsable no puede contener caracteres especiales"; // Verificar caracteres válidos
+    }
+    if (apellido.length < 2) {
+        return "El apellido del responsable debe tener al menos 2 caracteres"; // Validar longitud mínima
+    }
+    // Validar longitud máxima
+    if (apellido.length > 50) {
+        return "El apellido del responsable no puede tener más de 50 caracteres.";
+    }
+
+    
 
     return null; // Sin errores
 }
