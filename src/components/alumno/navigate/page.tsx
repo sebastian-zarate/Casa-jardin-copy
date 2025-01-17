@@ -54,7 +54,8 @@ export default function Navigate() {
         <NavLink href="/usuario/principal">Principal</NavLink>
         <NavLink href="/usuario/Cuenta">Mi Cuenta</NavLink>
         <NavLink href="/usuario/Cronograma">Calendario</NavLink>
-        <NavLink href="/usuario/Solicitud/Inscripcion">Solicitud de Inscripción</NavLink>
+        <NavLink href="/usuario/Solicitud/Inscripcion">Inscripción</NavLink>
+        <NavLink href="/usuario/misSolicitudes">Mis Solicitudes</NavLink>
         <NavLink onClick={logout}>Salir</NavLink>
       </div>
   
@@ -81,16 +82,17 @@ export default function Navigate() {
       {/* Menú desplegable cuando el menú hamburguesa está abierto */}
       {menuOpen && (
         <div
-          className="md:hidden fixed top-16 left-0 w-full bg-red-500 text-white flex flex-col items-center space-y-4 py-4 max-h-[70vh] overflow-y-auto z-50 shadow-lg"
+          className="md:hidden fixed top-16 left-0 w-full bg-sky-600 text-white flex flex-col items-center space-y-4 py-4 max-h-[70vh] overflow-y-auto z-50 shadow-lg"
         >
-          <div className="border-t w-full"></div>
-          <NavLink href="/usuario/principal">Principal</NavLink>
+          
           <div className="border-t w-full"></div>
           <NavLink href="/usuario/Cuenta">Mi Cuenta</NavLink>
           <div className="border-t w-full"></div>
           <NavLink href="/usuario/Cronograma">Calendario</NavLink>
           <div className="border-t w-full"></div>
-          <NavLink href="/usuario/Solicitud/Inscripcion">Solicitud de Inscripción</NavLink>
+          <NavLink href="/usuario/Solicitud/Inscripcion">Inscripción</NavLink>
+          <div className="border-t w-full"></div>
+          <NavLink href="/usuario/misSolicitudes">Mis Solicitudes</NavLink>
           <div className="border-t w-full"></div>
           <NavLink onClick={logout}>Salir</NavLink>
         </div>

@@ -13,16 +13,12 @@ import ButtonAdd from "../../../../public/Images/Button.png";
 import NoImage from "../../../../public/Images/default-no-image.png";
 import { getImagesUser } from "@/services/repoImage";
 
-import { addDireccion, getDireccionById, getDireccionCompleta, updateDireccionById } from "@/services/ubicacion/direccion";
-import { addProvincias, getProvinciasById, getProvinciasByName, updateProvinciaById } from "@/services/ubicacion/provincia";
-import { addLocalidad, getLocalidadById, getLocalidadByName, Localidad, updateLocalidad } from "@/services/ubicacion/localidad";
+;
 import Talleres from "@/components/talleres/page";
-import { createProfesional_Curso, getCursosByIdProfesional } from "@/services/profesional_curso";
-import { Curso, getCursoById } from "@/services/cursos";
-import { addPais, getPaisById } from "@/services/ubicacion/pais";
+import { createProfesional_Curso, deleteProfesional_Curso } from "@/services/profesional_curso";
+
 import withAuth from "../../../components/Admin/adminAuth";
-import PasswordComponent from "@/components/Password/page";
-import { hashPassword } from "@/helpers/hashPassword";
+
 //para subir imagenes:
 import { handleUploadProfesionalImage, handleDeleteProfesionalImage, mapearImagenes } from "@/helpers/repoImages";
 
@@ -30,7 +26,7 @@ import { validateApellido, validateDireccion, validateDni, validateEmail, valida
 import { dniExists, emailExists } from "@/services/Alumno";
 import Background from "../../../../public/Images/Background.jpeg"
 import Loader from "@/components/Loaders/loadingSave/page";
-import { Trash2, UserRoundPlus, UserRoundX } from "lucide-react";
+import { Briefcase, Mail, Pencil, Phone, Plus, Search, Trash2,  } from "lucide-react";
 // #endregion
 
 const Profesionales = () => {
@@ -95,6 +91,7 @@ const Profesionales = () => {
         if (profesionales.length > 0 && !imagesLoaded) {
             fetchImages();
         }
+
     }, [profesionales]);
 
     useEffect(() => {
@@ -104,18 +101,7 @@ const Profesionales = () => {
             }, 5000);
         }
     }, [errorMessage])
-    /*     useEffect(() => {
-            if (obProfesional && obProfesional.direccionId) {
-                getUbicacion(obProfesional);
-            } else if (obProfesional && obProfesional.direccionId === null) {
-                setNacionalidadName("");
-                setProvinciaName("");
-                setLocalidadName("");
-                setcalle("");
-                setNumero(0);
-                setCursosElegido([]);
-            }
-        }, [obProfesional]); */
+  
     useEffect(() => {
         if ((errorMessage.length > 0) && scrollRef.current) {
             scrollRef.current.scrollTop = 0;
@@ -166,46 +152,14 @@ const Profesionales = () => {
     async function fetchProfesionales() {
         try {
             const data = await getProfesionales();
-            /*             data.map(async (profesional) => {
-                            const cursos = await getCursosByIdProfesional(profesional.id);
-                            setCursosElegido(prevCursosElegido => [...prevCursosElegido, { id: profesional.id, cursos: cursos }]);
-                            console.log("Fetching cursos", cursos);
-                        }); */
-            //console.log(data);
+          
             setProfesionales(data);
             setProfesionalesListaCompleta(data);
         } catch (error) {
             console.error("Imposible obetener Profesionales", error);
         }
     }
-    /*     async function getUbicacion(userUpdate: any) {
-            // Obtener la dirección del usuario por su ID
-            //console.log("SI DIRECCIONID ES FALSE:", Number(userUpdate?.direccionId));
-            const direccion = await getDireccionCompleta(userUpdate?.direccionId);
-    
-            setLocalidadName(String(direccion?.localidad?.nombre));
-            setProvinciaName(String(direccion?.localidad?.provincia?.nombre));
-            setNacionalidadName(String(direccion?.localidad?.provincia?.nacionalidad?.nombre));
-            setNumero(Number(direccion?.numero));
-            setcalle(String(direccion?.calle));
-            return direccion
-        } */
-
-
-    //region solo considera repetidos
-    /*     async function createUbicacion() {
-            // Obtener la localidad asociada a la dirección
-            console.log("Antes de crear la ubicacion", (localidadName), calle, numero, provinciaName, nacionalidadName);
-            const nacionalidad = await addPais({ nombre: String(nacionalidadName) });
-            const prov = await addProvincias({ nombre: String(provinciaName), nacionalidadId: Number(nacionalidad?.id) });
-    
-            const localidad = await addLocalidad({ nombre: String(localidadName), provinciaId: Number(prov?.id) });
-            console.log("LOCALIDAD", localidad);
-            const direccion = await addDireccion({ calle: String(calle), numero: Number(numero), localidadId: Number(localidad?.id) });
-            console.log("DIRECCION", direccion);
-            return direccion;
-        } */
-    // #region Métodos
+   
 
     function setVariablesState() {
         /*         setNacionalidadName("");
@@ -282,6 +236,10 @@ const Profesionales = () => {
                         `Profesional: ${profesional.id}, Image URL: ${profesional.imageUrl}`
                     );
                 }
+                else {
+                    console.log("error");
+                }
+
             });
         }
     };
@@ -456,172 +414,175 @@ const Profesionales = () => {
         setProfesionales(filteredProf);
     };
     // #endregion
-
+    // elimiar un curso de la lista del profesional en la tabla intermedia
+    async function handleDeleteCurso(profesional: any, curso: any) {
+        try {
+            await deleteProfesional_Curso(profesional.id, curso.id);
+            fetchProfesionales();
+        } catch (error) {
+            console.error("Error al eliminar el curso", error);
+        }
+    }
 
     // #region Return
     return (
-        <main className="relative  bg-cover bg-center"
+        <main className="relative bg-cover bg-center min-h-screen"
             style={{
-                backgroundImage: `url(${Background})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
+            backgroundImage: `url(${Background})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
             }}
         >
             <Navigate />
-            <div className="relative  w-full">
-                {/* Background */}
-                <div className="fixed inset-0 z-[-1]">
-                    <Image src={Background} alt="Background" layout="fill" objectFit="cover" quality={80} priority={true} />
+
+            {ProfesionalAEliminar.length === 1 && (
+            <div className="fixed inset-0 z-20 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative">
+            {errorMessage && <div style={{ color: "red" }}>{errorMessage}</div>}
+
+            <h2 className="text-lg mb-4">Confirmar Eliminación</h2>
+            <p>
+                ¿Estás seguro de que deseas eliminar al profesional {ProfesionalAEliminar[0]?.nombre + " " + ProfesionalAEliminar[0]?.apellido}?
+            </p>
+            <div className="flex justify-end space-x-4 mt-4">
+                <button
+                onClick={() => {
+                handleEliminarProfesional(ProfesionalAEliminar);
+                }}
+                disabled={isDeleting}
+                className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800"
+                >
+                {isDeleting ? "Eliminando..." : "Confirmar Eliminación"}
+                </button>
+                <button
+                onClick={() => {
+                setProfesionalAEliminar([]);
+                setErrorMessage("");
+                }}
+                disabled={isDeleting}
+                className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800"
+                >
+                Cancelar
+                </button>
+            </div>
+            </div>
+            </div>
+            )}
+
+            {/* Contenido Principal */}
+            <div className="relative z-10">
+            <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-900">PROFESIONALES</h1>
+                        <p className="mt-1 text-sm text-gray-500">
+                            Gestiona los profesionales del sistema
+                        </p>
+                    </div>
+                    <button 
+                        onClick={() => { setSelectedProfesional(-1); setObProfesional(null) }}
+                        className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2.5 rounded-lg hover:bg-indigo-700 transition-colors shadow-sm"
+                    >
+                        <Plus className="w-5 h-5" />
+                        <span>Nuevo Profesional</span>
+                    </button>
                 </div>
 
-                {ProfesionalAEliminar.length === 1 && (
-                    <div className="fixed inset-0 z-20 flex items-center justify-center bg-black bg-opacity-50">
-                        <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative">
-                            {errorMessage && <div style={{ color: "red" }}>{errorMessage}</div>}
-
-                            <h2 className="text-lg mb-4">Confirmar Eliminación</h2>
-                            <p>
-                                ¿Estás seguro de que deseas eliminar al profesional {ProfesionalAEliminar[0]?.nombre + " " + ProfesionalAEliminar[0]?.apellido}?
-                            </p>
-                            <div className="flex justify-end space-x-4 mt-4">
-                                <button
-                                    onClick={() => {
-                                        handleEliminarProfesional(ProfesionalAEliminar);
-                                    }}
-                                    disabled={isDeleting}
-                                    className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800"
-                                >
-                                    {isDeleting ? "Eliminando..." : "Confirmar Eliminación"}
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        setProfesionalAEliminar([]);
-                                        setErrorMessage("");
-                                    }}
-                                    disabled={isDeleting}
-                                    className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800"
-                                >
-                                    Cancelar
-                                </button>
-                            </div>
-                        </div>
+                <div className="mb-6">
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                        <input
+                            type="text"
+                            placeholder="Buscar por nombre..."
+                            className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                            value={profesionalAbuscar}
+                            onChange={handleSearchChange}
+                        />
                     </div>
-                )}
-                    
-                {/* Contenedor Principal */}
-                <div className="relative mt-8 flex justify-center z-10">
-                    <div className="border p-4 max-w-[96vh] w-11/12 sm:w-2/3 md:w-4/5 lg:w-2/3 h-[62vh] bg-slate-50  overflow-y-auto rounded-lg">
-                        {/* Encabezado */}
-                        <div className=" flex flex-col items-center z-10 p-2">
-                            <h1 className="text-2xl sm:text-2xl bg-slate-50   uppercase">profesionales</h1>
-                        </div>
-                        <div className="flex flex-col space-y-4 bg-white">
+                </div>
 
-                            <div className="relative overflow-x-auto  shadow-lg sm:rounded-lg">
-                                <div className=" flex justify-around px-auto bg-white p-2">
-                                    <div className="flex justify-around ">
-                                        <button onClick={() => { setSelectedProfesional(-1); setObProfesional(null) }} className="px-2 w-10 h-10">
-                                            <UserRoundPlus />
-                                        </button>
-                                        
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div className="grid grid-cols-12 bg-gray-50 py-4 px-6 border-b border-gray-200 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <div className="col-span-2">CÓDIGO</div>
+                        <div className="col-span-3">NOMBRE</div>
+                        <div className="col-span-5">CONTACTO</div>
+                        <div className="col-span-2 text-center">ACCIÓN</div>
+                    </div>
+
+                    {profesionales.length === 0 ? (
+                        <div className="py-12 px-6 text-center">
+                            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 mb-4">
+                                <Briefcase className="w-6 h-6 text-gray-400" />
+                            </div>
+                            <h3 className="text-sm font-medium text-gray-900 mb-1">No hay profesionales registrados</h3>
+                            <p className="text-sm text-gray-500">
+                                Comienza agregando un profesional
+                            </p>
+                        </div>
+                    ) : (
+                        profesionales
+                            .sort((a, b) => a.id - b.id)
+                            .map((profesional) => (
+                                <div 
+                                    key={profesional.id} 
+                                    className="grid grid-cols-12 items-center py-4 px-6 border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                                >
+                                    <div className="col-span-12 sm:col-span-2">
+                                        <span className="text-sm font-medium text-gray-900">{profesional.id}</span>
                                     </div>
-                                    {/* Barra de búsqueda */}
-                                    <div className="flex items-center justify-between flex-column flex-wrap md:flex-row space-y-4 md:space-y-0 pb-4 ">
-                                        <label htmlFor="table-search" className="sr-only">Buscar</label>
-                                        <div className="relative">
-                                            <div className="absolute inset-y-0 right-0 rtl:inset-r-0 start-0 flex items-center ps-3 pointer-events-none">
-                                                <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-                                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
-                                                </svg>
-                                            </div>
-                                            <input type="text"
-                                                placeholder="Buscar..."
-                                                value={profesionalAbuscar}
-                                                onChange={handleSearchChange}
-                                                className="block p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-100 focus:ring-blue-500 focus:border-blue-500 "
+                                    <div className="col-span-12 sm:col-span-4 flex items-center gap-3">
+                                        <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                                            <img
+                                                src={imageUrls[profesional.id] || NoImage}
+                                                onError={(e) => { e.currentTarget.src = NoImage.src; }}
+                                                alt={profesional.nombre}
+                                                className="w-full h-full object-cover"
                                             />
                                         </div>
+                                        <div>
+                                            <h3 className="font-medium text-gray-900">
+                                                {profesional.nombre} {profesional.apellido}
+                                            </h3>
+                                        </div>
                                     </div>
-
+                                    <div className="col-span-12 sm:col-span-4">
+                                        <div className="flex flex-col gap-1">
+                                            <span className="inline-flex items-center gap-1.5 text-sm text-gray-600">
+                                                <Mail className="w-4 h-4 text-gray-400" />
+                                                {profesional.email}
+                                            </span>
+                                            {profesional.telefono && (
+                                                <span className="inline-flex items-center gap-1.5 text-sm text-gray-600">
+                                                    <Phone className="w-4 h-4 text-gray-400" />
+                                                    +54 {profesional.telefono}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="col-span-12 sm:col-span-2 flex justify-center gap-2">
+                                        <button 
+                                            onClick={() => {
+                                                setSelectedProfesional(profesional);
+                                                setObProfesional(profesional);
+                                            }}
+                                            className="text-indigo-600 hover:text-indigo-900 p-1 hover:bg-indigo-50 rounded"
+                                            title="Editar profesional"
+                                        >
+                                            <Pencil className="w-5 h-5" />
+                                        </button>
+                                        <button 
+                                            onClick={() => setProfesionalAEliminar([profesional])}
+                                            className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded"
+                                            title="Eliminar profesional"
+                                        >
+                                            <Trash2 className="w-5 h-5" />
+                                        </button>
+                                    </div>
                                 </div>
-                                <table className="w-full text-sm text-left rtl:text-right text-gray-500 ">
-                                    <thead className="text-xs text-gray-700 uppercase bg-gray-100">
-                                        <tr>
-                                            <th scope="col" className="p-4 text-center">
-                                                <div className="flex items-center justify-center">
-                                                    Codigo
-                                                </div>
-                                            </th>
-                                            <th scope="col" className="px-5 py-3">
-                                                Nombre
-                                            </th>
-                                            <th scope="col" className="px-4 py-3">
-                                                Especialidad
-                                            </th>
-                                            <th scope="col" className="px-4 py-3">
-                                                Acción
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {
-                                            profesionales.map((profesional, index) => (
-                                                <tr className="bg-white border-b   hover:bg-gray-50 ">
-                                                    <td className="">
-                                                       
-                                                            <div className="flex items-center text-black justify-center">
-                                                                {profesional.id}
-                                                            </div>
-                                                       
-                                                    </td>
-                                                    <th scope="row" className="flex items-center px-6 py-4 text-gray-900 whitespace-nowrap ">
-                                                        <Image
-                                                            src={imageUrls[profesional.id] || NoImage}
-                                                            alt={`${profesional.nombre} ${profesional.apellido}`}
-
-                                                            width={70}
-                                                            height={90}
-
-                                                        
-
-                                                        />
-                                                        <div className="ps-3 min-w-64 max-w-96">
-                                                            <div className="text-base font-semibold">{profesional.nombre + " " + profesional.apellido}</div>
-                                                            <div className="font-normal text-gray-500 ">{profesional.email}</div>
-                                                        </div>
-                                                    </th>
-                                                    <td className="px-6 py-4">
-                                                        {profesional.especialidad}
-                                                    </td>
-                                                    <td className="px-6 py-4">
-                                                        <button
-                                                            onClick={() => {
-                                                                setSelectedProfesional(profesional);
-                                                                setObProfesional(profesional);
-                                                            }}
-                                                            className="font-medium text-blue-600 hover:underline"
-                                                        >
-                                                            <Image src={EditIcon} alt="Editar" width={24} height={24} />
-                                                        </button>
-                                                        <button
-                                                            onClick={() => {
-                                                                setProfesionalAEliminar([profesional]);
-                                                            }}
-                                                            className="font-medium justify-center text-red-600 hover:underline ml-2"
-                                                        >
-                                                            <Image src={DeleteIcon} alt="Eliminar" width={25} height={26} />
-                                                        </button>
-
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                    </tbody>
-                                </table>
-                            </div>
-
-                        </div>
-                    </div>
+                            ))
+                    )}
                 </div>
+            </div>
 
                 {/* Modal */}
             </div>

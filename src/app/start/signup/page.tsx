@@ -1,13 +1,16 @@
 "use client";
 import Image from 'next/image';
-import BackgroundLibrary from '../../../../public/Images/BookShell.jpg';
-import ImageSignup from '../../../../public/Images/ImageSignup.jpg';
 import Logo from '../../../../public/Images/LogoCasaJardin.png';
-import TituloCasaJardin from '../../../../public/Images/TituloCasaJardin.png';
 import { useState, useEffect } from "react";
 import { createAlumno, emailExists } from "../../../services/Alumno";
 import { validateApellido, validateEmail, validateNombre, validatePasswordComplexity } from '@/helpers/validaciones';
 import Loader from '@/components/Loaders/loadingSave/page';
+
+import SignupEmail from '@/components/start/SignupEmail';
+/*emailPage props: {email: string;
+  setCorrecto: React.Dispatch<React.SetStateAction<boolean>>;
+  correcto: boolean;
+  setVerificarEmail: React.Dispatch<React.SetStateAction<boolean>>;}*/ 
 
 function Signup() {
     // Se crean los estados para los campos del formulario de registro
@@ -22,90 +25,99 @@ function Signup() {
     const edadMinima = new Date(Hoy.getFullYear() - 3, Hoy.getMonth(), Hoy.getDate());
     const edadMaxima = new Date(Hoy.getFullYear() - 100, Hoy.getMonth(), Hoy.getDate());
 
-    const [error, setError] = useState("");
+    const [errors, setErrors] = useState<string[]>([]);
     const [isSaving, setIsSaving] = useState(false);
+    const [showEmailVerification, setShowEmailVerification] = useState(false);
+    const [isEmailVerified, setIsEmailVerified] = useState(false);
+
     // en para los errores de registro se muestra un mensaje de error por 5 segundos
     // 
-    useEffect(() => {
-        if (error) {
-            const intervalId = setInterval(() => setError(""), 5000);
-            return () => clearInterval(intervalId);
-        }
-    }, [error]);
-
-
-
 
     // en esta funsion se valida el formulario de registro 
     // para que los datos sean correctos
     //region validateForm
     const validateForm = async (trimmedData: { nombre: string; apellido: string; email: string; password: string; fechaNacimiento: Date | undefined; }) => {
+        const errors: string[] = [];
+    
         const estado = await emailExists(email)
         if (estado) {
-          return "El email ya está registrado.";
+            errors.push("El email ya está registrado.");
         }
-        
+    
         let validateInput;
         validateInput = validateNombre(nombre);
-        if (typeof(validateInput) === "string") return validateInput;
+        if (typeof(validateInput) === "string") errors.push(validateInput);
     
         validateInput = validateApellido(apellido);
-        if (validateInput) return validateInput;
+        if (validateInput) errors.push(validateInput);
     
         validateInput = validateEmail(email);
-        if (validateInput) return validateInput;
-     
+        if (validateInput) errors.push(validateInput);
     
-        if (validateInput) return validateInput;
+        if (validateInput) errors.push(validateInput);
     
         validateInput = validatePasswordComplexity(password);
-        if (validateInput) return validateInput;
+        if (validateInput) errors.push(validateInput);
         // fecha de nacimiento
        
        
-        if(password !== confirmPassword) return "Las contraseñas no coinciden";
+        if(password !== confirmPassword) errors.push("Las contraseñas no coinciden");
     
-        return "";
+        return errors;
     
     
       };
     // en esta funsion se envian los datos del formulario de registro
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
-        setIsSaving(true)
-        // Recortar espacios en blanco de cada campo antes de validar o enviar los datos
+        setIsSaving(true);
+        
         const trimmedData = {
-          nombre: nombre.trim(),
-          apellido: apellido.trim(),
-          email: email.trim(),
-          password: password.trim(),
-          fechaNacimiento: fechaNacimiento ? new Date(fechaNacimiento) : undefined,
+            nombre: nombre.trim(),
+            apellido: apellido.trim(),
+            email: email.trim(),
+            password: password.trim(),
+            fechaNacimiento: fechaNacimiento ? new Date(fechaNacimiento) : undefined,
         };
-      
-        // Llamar a la función validateForm
-        const validationError = await validateForm(trimmedData);
-        // Si hay un error en la validación se muestra el mensaje de error
-        if (validationError) {
-            setIsSaving(false)
-          setError(validationError);
-          return;
+        
+        const validationErrors = await validateForm(trimmedData);
+        if (validationErrors.length > 0) {
+            setErrors(validationErrors);
+            setIsSaving(false);
+            return;
         }
-      
-        // Enviar los datos recortados al servidor
-        try {
-          const response = await createAlumno(trimmedData);
-          if (typeof response === "string") {
-            setError(response);
-          } else {
-            // Si el usuario se registró correctamente se redirige a la página de login
-            window.location.href = "/start/login";
-          }
-        } catch (err) {
-          // En caso de error se muestra un mensaje de error
-          setError("Error al registrar el usuario");
-        }
-      };
+        
+        setErrors([]);
+        setShowEmailVerification(true);
+    };
 
+
+    useEffect(() => {
+        const createUser = async () => {
+            if (isEmailVerified) {
+                try {
+                    const trimmedData = {
+                        nombre: nombre.trim(),
+                        apellido: apellido.trim(),
+                        email: email.trim(),
+                        password: password.trim(),
+                        fechaNacimiento: fechaNacimiento ? new Date(fechaNacimiento) : undefined,
+                    };
+                    const response = await createAlumno(trimmedData);
+                    if (typeof response === "string") {
+                        setErrors([response]);
+                    } else {
+                        window.location.href = "/start/login";
+                    }
+                } catch (err) {
+                    setErrors(["Error al registrar el usuario"]);
+                }
+                setIsSaving(false);
+            }
+        };
+
+        createUser();
+    }, [isEmailVerified]);
 
     // se muestra el formulario de registro
     //region return
@@ -148,11 +160,13 @@ function Signup() {
                             Registrate a Casa Jardín
                         </h1>
                         <div className="flex justify-center mb-6">
-                            <Image src={Logo} alt="Logo Casa Jardin" width={150} height={150} />
+                            <Image src={Logo || "/placeholder.svg"} alt="Logo Casa Jardin" width={150} height={150} />
                         </div>
-                        {(
+                        {errors.length > 0 && (
                             <div className="mb-4 text-red-600 mx-16">
-                                <p>{error}</p>
+                                {errors.map((error, index) => (
+                                    <p key={index}>{error}</p>
+                                ))}
                             </div>
                         )}
                         <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -291,6 +305,14 @@ function Signup() {
                             <span className="w-1/5 border-b dark:border-gray-600 md:w-1/4"></span>
                         </div>
                     </form>
+                    {showEmailVerification && (
+                        <SignupEmail
+                            email={email}
+                            setCorrecto={setIsEmailVerified}
+                            correcto={isEmailVerified}
+                            setVerificarEmail={setShowEmailVerification}
+                        />
+                    )}
                 </div>
             </div>
         </main>
@@ -300,3 +322,4 @@ function Signup() {
 }
 
 export default Signup;
+

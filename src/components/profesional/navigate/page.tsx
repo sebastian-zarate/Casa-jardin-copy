@@ -44,7 +44,7 @@ export default function Navigate() {
   }
 
   return (
-    <nav className="flex justify-between items-center w-full p-3 bg-red-500">
+    <nav className="flex justify-between items-center w-full p-3 bg-sky-600">
       <div className="flex items-center cursor-pointer" onClick={()=> window.location.href = "/profesional/Inicio"}>
         <Image src={Logo} alt="Logo Casa Jardin" width={50} height={50} draggable="false"/>
         <h1 className="ml-2 text-white">Casa Jardín</h1>
@@ -52,7 +52,6 @@ export default function Navigate() {
       <div className="hidden md:flex ml-auto space-x-4 py-2 text-white">
        
         <NavLink href="/profesional/cronogramap/listar">Calendario</NavLink>
-        <NavLink href="/profesional/principal">Principal</NavLink> 
         <NavLink href="/profesional/Cuenta">Mi Perfil</NavLink>
         <NavLink onClick={logout}>Salir</NavLink>
       </div>
@@ -76,14 +75,12 @@ export default function Navigate() {
       </div>
       {menuOpen && (
         <div
-          className="md:hidden fixed top-16 left-0 w-full bg-red-500 text-white flex flex-col items-center space-y-4 py-4 max-h-[70vh] overflow-y-auto z-50 shadow-lg"
+          className="md:hidden fixed top-16 left-0 w-full bg-sky-600 text-white flex flex-col items-center space-y-4 py-4 max-h-[70vh] overflow-y-auto z-50 shadow-lg"
         >
             <div className="border-t w-full"></div>
           <NavLink href="/profesional/Cuenta">Mi Perfil</NavLink>
           <div className="border-t w-full"></div>
           <NavLink href="/profesional/cronogramap/listar">Calendario</NavLink>
-          <div className="border-t w-full"></div>
-          <NavLink href="/profesional/principal">Principal</NavLink>
           <div className="border-t w-full"></div>
           <NavLink onClick={logout}>Salir</NavLink>
         </div>

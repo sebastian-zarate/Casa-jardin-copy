@@ -434,7 +434,6 @@ const Cuenta: React.FC = () => {
                     <label className="block text-gray-700 font-bold mb-2">Nombre:</label>
                     <p className="p-2 border rounded bg-gray-100">{user?.nombre} {user?.apellido}</p>
                 </div>
-
                 <div className="mb-4">
                     <label className="block text-gray-700 font-bold mb-2">DNI:</label>
                     <p className="p-2 border rounded bg-gray-100">{user?.dni || "DNI no cargado"}</p>
@@ -750,8 +749,7 @@ const Cuenta: React.FC = () => {
                 </div>
             )}
             <div
-                className="fixed bottom-0 py-2 border-t w-full z-30"
-                style={{ background: "#EF4444" }}
+                className="fixed bottom-0 bg-sky-600 py-2 border-t w-full z-10"
             >
                 <But_aside />
             </div>
