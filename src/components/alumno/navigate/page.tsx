@@ -42,19 +42,25 @@ export default function Navigate() {
   }
 
   return (
-    <nav className="flex justify-between items-center w-full p-3 bg-sky-600">
-      <div className="flex items-center cursor-pointer" onClick={()=> window.location.href = "/usuario/principal"}>
-        <Image src={Logo} alt="Logo Casa Jardin" width={50} height={50} draggable="false"/>
-        <h1 className="ml-2 text-white">Casa Jardín</h1>
+    <nav className="fixed top-0 left-0 w-full z-10 h-[64px] bg-red-500 shadow-md flex items-center px-4">
+      {/* Logo e inicio */}
+      <div className="flex items-center cursor-pointer" onClick={() => (window.location.href = "/usuario/Inicio")}>
+        <Image src={Logo} alt="Logo Casa Jardin" width={50} height={50} draggable="false" />
+        <h1 className="ml-2 text-white font-semibold text-lg">Casa Jardín</h1>
       </div>
-      <div className="hidden md:flex ml-auto space-x-4 py-2 text-white">
+  
+      {/* Links de navegación en pantallas medianas o grandes */}
+      <div className="hidden md:flex ml-auto space-x-6 py-2 text-white">
+        <NavLink href="/usuario/principal">Principal</NavLink>
         <NavLink href="/usuario/Cuenta">Mi Cuenta</NavLink>
         <NavLink href="/usuario/Cronograma">Calendario</NavLink>
         <NavLink href="/usuario/Solicitud/Inscripcion">Inscripción</NavLink>
         <NavLink href="/usuario/misSolicitudes">Mis Solicitudes</NavLink>
         <NavLink onClick={logout}>Salir</NavLink>
       </div>
-      <div className="md:hidden flex items-center">
+  
+      {/* Menú hamburguesa en pantallas pequeñas */}
+      <div className="md:hidden flex ml-auto">
         <button onClick={() => setMenuOpen(!menuOpen)} className="text-white focus:outline-none">
           <svg
             className="w-6 h-6"
@@ -72,6 +78,8 @@ export default function Navigate() {
           </svg>
         </button>
       </div>
+  
+      {/* Menú desplegable cuando el menú hamburguesa está abierto */}
       {menuOpen && (
         <div
           className="md:hidden fixed top-16 left-0 w-full bg-sky-600 text-white flex flex-col items-center space-y-4 py-4 max-h-[70vh] overflow-y-auto z-50 shadow-lg"

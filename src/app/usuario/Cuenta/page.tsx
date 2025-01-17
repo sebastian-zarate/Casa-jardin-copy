@@ -1,16 +1,16 @@
 "use client"
-import React, { useRef, useState, useEffect, use } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import Background from "../../../../public/Images/Background.jpeg";
 import But_aside from "../../../components/but_aside/page";
 import Image from "next/image";
 import Navigate from "../../../components/alumno/navigate/page";
-import { dniExists, emailExists, getAlumnoByCookie, getAlumnoByEmail, updateAlumno } from '@/services/Alumno';
-import { addDireccion, getDireccionById, getDireccionCompleta, updateDireccionById } from '@/services/ubicacion/direccion';
-import { addProvincias, getProvinciasById, updateProvinciaById } from '@/services/ubicacion/provincia';
-import { addLocalidad, getLocalidadById, getLocalidadesByProvinciaId, updateLocalidad } from '@/services/ubicacion/localidad';
-import { addPais, getPaisById } from '@/services/ubicacion/pais';
-import { createAlumno_Curso, getalumnos_cursoByIdAlumno, getCursosByIdAlumno } from '@/services/alumno_curso';
-import { Curso, getCursoById } from '@/services/cursos';
+import { dniExists, emailExists, updateAlumno } from '@/services/Alumno';
+import { addDireccion, getDireccionCompleta, updateDireccionById } from '@/services/ubicacion/direccion';
+import { addProvincias, updateProvinciaById } from '@/services/ubicacion/provincia';
+import { addLocalidad, updateLocalidad } from '@/services/ubicacion/localidad';
+import { addPais } from '@/services/ubicacion/pais';
+import { getCursosByIdAlumno } from '@/services/alumno_curso';
+import { Curso } from '@/services/cursos';
 import withAuthUser from "../../../components/alumno/userAuth";
 import { useRouter } from 'next/navigation';
 import { autorizarUser, fetchUserData } from '@/helpers/cookies';
@@ -99,7 +99,6 @@ const Cuenta: React.FC = () => {
 
     const [loadingDireccion, setLoadingDireccion] = useState<boolean>(false);
     const [permitirDireccion, setPermitirDireccion] = useState<boolean>(false);
-    const [AlumnoAEliminar, setAlumnoAEliminar] = useState<any>(null);
     const [isDeleting, setIsDeleting] = useState<boolean>(false);
     const [isSaving, setIsSaving] = useState<boolean>(false);
     //endregion
@@ -246,6 +245,7 @@ const Cuenta: React.FC = () => {
     //region validate
     async function validatealumnoDetails() {
         const { nombre, apellido, email, telefono, dni } = alumnoDetails || {};
+        console.log("alumno details", alumnoDetails);
         /*         if (JSON.stringify(alumnoDetails) === JSON.stringify(alumnoDetailsCopia)) {
                     return;
                 } */
@@ -281,7 +281,8 @@ const Cuenta: React.FC = () => {
                     }
                 }
             }
-            if (telefono) {
+            //ya que el telefono es opcional, si es mayor de edad
+            if (telefono && mayoriaEdad) {
                 resultValidate = validatePhoneNumber(telefono.toString());
                 if (resultValidate) return resultValidate;
             }
@@ -291,17 +292,13 @@ const Cuenta: React.FC = () => {
             resultValidate = validateDireccion(nacionalidadName, provinciaName, localidadName, String(calle), Number(numero));
             if (resultValidate) return resultValidate
         }
+        console.log("resultvalidate", resultValidate);
         let validateInput = validateFechaNacimiento(new Date(alumnoDetails.fechaNacimiento));
         if (validateInput) return validateInput;
+
+        
     }
 
-    function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-        const { name, value } = e.target;
-        setAlumnoDetails(prevDetails => ({
-            ...prevDetails,
-            [name]: (value)
-        }));
-    }
     async function handleSaveChanges() {
         // Validar los detalles del alumno antes de continuar
         const validationError = await validatealumnoDetails();
@@ -310,25 +307,30 @@ const Cuenta: React.FC = () => {
             return;
         }
 
+        console.log("flag 1 save changes");
         // Crear un objeto con los campos necesarios, eliminando espacios al inicio y al final
         const trimmedAlumnoDetails = {
             nombre: alumnoDetails.nombre.trim(),
             apellido: alumnoDetails.apellido.trim(),
             email: alumnoDetails.email.trim(),
             telefono: alumnoDetails.telefono?.toString().trim(),
-            dni: (alumnoDetails.dni),
+            dni: Number(alumnoDetails.dni), //era un string...
             fechaNacimiento: new Date(alumnoDetails.fechaNacimiento),
 
         };
 
+        console.log("flag 1.1 save changes - trimmedAlumnoDetails:", trimmedAlumnoDetails);
         setIsSaving(true);
         
-        if (JSON.stringify(alumnoDetails) !== JSON.stringify(alumnoDetailsCopia)) {
+        //si los datos son iguales no se hace nada (estaba mal el condicional)
+        if (JSON.stringify(alumnoDetails) === JSON.stringify(alumnoDetailsCopia)) {
+            console.log("flag 1a save changes - insde json if");
             setIsSaving(false);
             return 
         }
         // Validar campos requeridos después de aplicar .trim()
         if (!trimmedAlumnoDetails.nombre || !trimmedAlumnoDetails.apellido || !trimmedAlumnoDetails.email) {
+            console.log("flag 1b save changes - inside big if");
             setErrorMessage('Los campos Nombre, Apellido y Correo no pueden estar vacíos.');
             return;
         }
@@ -336,18 +338,28 @@ const Cuenta: React.FC = () => {
         let newAlumno;
 
         try {
+            console.log("flag 2 save changes - inside try");
             //region cargar datos con direcc
             if (permitirDireccion) {
+                console.log("flag 3 save changes - inside permitirDireccion");
+                // Validar si el usuario tiene una dirección asociada
+                console.log("condicional de direccion:", !alumnoDetails.direccionId);
                 if (!alumnoDetails.direccionId) {
                     // Crear ubicación si no existe dirección asociada
+                    console.log("flag 3a save changes - inside permitirDireccion -!direccionId");
                     const { direccion } = await createUbicacion();
 
+                    console.log("flag 3a1 - direccion:", direccion);
                     newAlumno = await updateAlumno((alumnoDetails?.id), {
                         ...trimmedAlumnoDetails,
                         direccionId: (direccion?.id),
                     });
+                    console.log("falg 3a2 - new alumno:", newAlumno);
 
-                } else {
+                } 
+                //se entra si  tiene una direccion asociada
+                else {
+                    console.log("flag 3b save changes - else de existe direccion asosciada");
                     // Actualizar detalles relacionados con la dirección, localidad y provincia
                     const { direccion } = await getUbicacion(alumnoDetails);
 
@@ -367,6 +379,7 @@ const Cuenta: React.FC = () => {
                         nacionalidadId: Number(direccion?.localidad?.provincia?.nacionalidad?.id),
                     };
 
+                    console.log("flag 4 - guardar cambios")
                     await updateDireccionById(Number(direccion?.id), trimmedDireccionDetails);
                     await updateLocalidad(Number(direccion?.localidad?.id), trimmedLocalidadDetails);
                     await updateProvinciaById(Number(direccion?.localidad?.provincia?.id), trimmedProvinciaDetails);
@@ -375,14 +388,19 @@ const Cuenta: React.FC = () => {
                         ...trimmedAlumnoDetails,
                         direccionId: (direccion?.id),
                     });
+
+                    console.log("falg 5a - new alumno:", newAlumno);
                 }
             }
             //region no cargar datos con direcc
             else {
-                newAlumno = await updateAlumno(Number(alumnoDetails?.id), {
+                newAlumno = await updateAlumno(Number(alumnoDetails.id), {
                     ...trimmedAlumnoDetails,
                 });
+                console.log("falg 20 - new alumno:", newAlumno);
             }
+
+            console.log(" flag 5 - new alumno si no entro al else:", newAlumno);
             // Refrescar datos y cerrar la interfaz de edición
             setOpenBox(0);
             getUser();
@@ -391,74 +409,95 @@ const Cuenta: React.FC = () => {
         } catch (error) {
             setErrorMessage("Ha ocurrido un error al guardar los cambios.");
         }
-
-        console.log("Resultado final:", newAlumno);
+        console.log("final flag - Resultado final:", newAlumno);
     }
 
     //endregion
 
     return (
-        <main className=''>
-            <Image src={Background} alt="Background" layout="fill" objectFit="cover" quality={20} priority={true} />
-            <div className="fixed justify-between w-full z-10" >
-                <Navigate />
-            </div>
+    <main className="relative min-h-screen overflow-auto">
+        <div className='absolute inset-0 -z-10'>
+        <Image src={Background} alt="Background" layout="fill" objectFit="cover" quality={20} priority={true} />
+        </div>
+    {/* Barra de navegación fija */}
+        <div className="fixed bg-red-500 justify-between w-full p-4 z-10">
+            <Navigate />
+        </div>
 
-            <div className='absolute mt-20 top-5 '>
+    {/* Contenido desplazable */}
+    <div className="pt-20 px-4 pb-40">
+        <h1 className="flex my-10 items-center justify-center font-bold text-3xl">Datos del Estudiante</h1>
+        <div className="flex justify-center w-full">
+            <div className="mx-auto bg-gray-100 rounded-lg shadow-md px-8 py-6 grid grid-cols-1 md:grid-cols-2 gap-x-12 w-full max-w-4xl">
+                {/* Información del usuario */}
+                <div className="mb-4">
+                    <label className="block text-gray-700 font-bold mb-2">Nombre:</label>
+                    <p className="p-2 border rounded bg-gray-100">{user?.nombre} {user?.apellido}</p>
+                </div>
+                <div className="mb-4">
+                    <label className="block text-gray-700 font-bold mb-2">DNI:</label>
+                    <p className="p-2 border rounded bg-gray-100">{user?.dni || "DNI no cargado"}</p>
+                </div>
 
-                <h1 className='flex my-20 mt-15 items-center justify-center  font-bold text-3xl'>Datos del Estudiante</h1>
-                <div className='flex  justify-center w-screen'>
-                    <div className=" mx-auto bg-gray-100 rounded-lg shadow-md px-8 py-6 grid grid-cols-2 gap-x-12 w-8/12">
-                        <div className="mb-4">
-                            <label className="block text-gray-700 font-bold mb-2">Nombre:</label>
-                            <p className="p-2 border rounded bg-gray-100">{user?.nombre} {user?.apellido}</p>
-                        </div>
+                <div className="mb-4">
+                    <label className="block text-gray-700 font-bold mb-2">Talleres:</label>
+                    {cursos?.length !== 0 ? (
+                        <p className="p-2 border rounded bg-gray-100" style={{ height: '10vh', overflow: "auto" }}>
+                            {cursos?.map((curso) => curso.nombre).join(", ")}
+                        </p>
+                    ) : <p className="p-2 border rounded bg-gray-100">Talleres no cargados</p>}
+                </div>
 
-                        <div className="mb-4">
-                            <label className="block text-gray-700 font-bold mb-2">DNI:</label>
-                            <p className="p-2 border rounded bg-gray-100">{user?.dni ? user?.dni : "DNI no cargado"}</p>
-                        </div>
+                <div className="mb-4">
+                    <label className="block text-gray-700 font-bold mb-2">Domicilio:</label>
+                    <p className="p-2 border rounded bg-gray-100">
+                        {nacionalidadName || "-"}, {provinciaName || "-"},
+                        {localidadName || "-"}, {calle || "-"} {numero || "-"}
+                    </p>
+                </div>
 
-                        <div className="mb-4">
-                            <label className="block text-gray-700 font-bold mb-2">Talleres:</label>
-                            {cursos?.length !== 0 ? (
-                                <p className="p-2 border rounded bg-gray-100" style={{ height: '10vh', overflow: "auto" }}> {cursos?.map((curso) => curso.nombre).join(", ")}</p>
-                            ) : <p className="p-2 border rounded bg-gray-100">Talleres no cargados</p>}
-                        </div>
-
-                        <div className="mb-4">
-                            <label className="block text-gray-700 font-bold mb-2">Domicilio:</label>
-                            <p className="p-2 border rounded bg-gray-100">{nacionalidadName ? nacionalidadName : "-"}, {provinciaName ? provinciaName : "-"}, {localidadName ? localidadName : "-"}, {calle ? calle : "-"} {numero ? numero : "-"}</p>
-                        </div>
-
-                        {mayoriaEdad && <div className="mb-4">
-                            <label className="block text-gray-700 font-bold mb-2">Teléfono:</label>
-                            <p className="p-2 border rounded bg-gray-100">{user?.telefono ? user?.telefono : "Teléfono no cargado"}</p>
-                        </div>}
-
-                        <div className="mb-4">
-                            <label className="block text-gray-700 font-bold mb-2">Email:</label>
-                            <p className="p-2 border rounded bg-gray-100">{user?.email}</p>
-                        </div>
-                        <div className="mb-4">
-                            <label className="block text-gray-700 font-bold mb-2">Fecha de Nacimiento:</label>
-                            <p className="p-2 border rounded bg-gray-100">{user?.fechaNacimiento ? new Date(user.fechaNacimiento).toLocaleDateString('es-ES', { timeZone: 'UTC', day: '2-digit', month: '2-digit', year: '2-digit' }) : ''}</p>
-                        </div>
-
+                {mayoriaEdad && (
+                    <div className="mb-4">
+                        <label className="block text-gray-700 font-bold mb-2">Teléfono:</label>
+                        <p className="p-2 border rounded bg-gray-100">
+                            {user?.telefono || "Teléfono no cargado"}
+                        </p>
                     </div>
+                )}
+
+                <div className="mb-4">
+                    <label className="block text-gray-700 font-bold mb-2">Email:</label>
+                    <p className="p-2 border rounded bg-gray-100">{user?.email}</p>
                 </div>
-                <div className="flex items-center justify-center mt-5">
-                    <button
-                        className='bg-red-500 py-2 px-10 text-white rounded hover:bg-red-700'
-                        onClick={() => { setOpenBox(1); console.log(openBox); getUser() }}>
-                        Editar
-                    </button>
+
+                <div className="mb-4">
+                    <label className="block text-gray-700 font-bold mb-2">Fecha de Nacimiento:</label>
+                    <p className="p-2 border rounded bg-gray-100">
+                        {user?.fechaNacimiento ? new Date(user.fechaNacimiento).toLocaleDateString('es-ES', {
+                            timeZone: 'UTC',
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: '2-digit',
+                        }) : ''}
+                    </p>
                 </div>
             </div>
+        </div>
+
+        {/* Botón Editar */}
+        <div className="flex items-center justify-center mt-5">
+            <button
+                className="bg-red-500 py-2 px-10 text-white rounded hover:bg-red-700"
+                onClick={() => { setOpenBox(1); console.log(openBox); getUser(); }}
+            >
+                Editar
+            </button>
+        </div>
+    </div>  
 
 
             {openBox === 1 && (
-                <div className="fixed inset-0 flex items-center w-600 justify-center bg-black bg-opacity-50">
+                <div className="fixed inset-0 flex items-center w-600 justify-center bg-black bg-opacity-50 z-50">
                     <div ref={scrollRef} className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative" style={{ height: '70vh', overflow: "auto" }}>
                         <h2 className="text-2xl font-bold mb-4">
                             Datos del Estudiante
@@ -478,7 +517,7 @@ const Cuenta: React.FC = () => {
                                 placeholder='Ej: Juan'
                                 maxLength={50}
                                 value={alumnoDetails.nombre}
-                                onChange={handleChange}
+                                onChange={(e) => setAlumnoDetails({ ...alumnoDetails, nombre: e.target.value })}
                                 className="p-2 w-full border rounded"
                                 required
                             />
@@ -493,7 +532,7 @@ const Cuenta: React.FC = () => {
                                 placeholder='Ej: Pérez'
                                 maxLength={50}
                                 value={(alumnoDetails.apellido)}
-                                onChange={handleChange}
+                                onChange={(e) => setAlumnoDetails({ ...alumnoDetails, apellido: e.target.value })}
                                 className="p-2 w-full border rounded"
                                 required
                             />
@@ -511,7 +550,7 @@ const Cuenta: React.FC = () => {
                                 onChange={(e) => {
                                     const regex = /^[0-9]*$/; // Permite solo números
                                     if (regex.test(e.target.value)) {
-                                        handleChange(e); // Actualiza solo si es un número válido
+                                        setAlumnoDetails({ ...alumnoDetails, dni: Number(e.target.value) }); // Actualiza solo si es un número válido
                                     }
                                 }}
                                 required
@@ -526,7 +565,7 @@ const Cuenta: React.FC = () => {
                                 id="email"
                                 name="email"
                                 value={(alumnoDetails.email)}
-                                onChange={handleChange}
+                                onChange={(e) => setAlumnoDetails({ ...alumnoDetails, email: e.target.value })}
                                 className="p-2 w-full border rounded"
                                 required
                             />
@@ -551,12 +590,7 @@ const Cuenta: React.FC = () => {
                                     placeholder="Ej: 03431234567"
 
                                     value={alumnoDetails.telefono}
-                                    onChange={(e) => {
-                                        const regex = /^[0-9]*$/; // Permite solo números
-                                        if (regex.test(e.target.value)) {
-                                            handleChange(e); // Actualiza solo si es válido
-                                        }
-                                    }}
+                                    onChange={(e) => setAlumnoDetails({ ...alumnoDetails, telefono: Number(e.target.value) })}
                                     maxLength={11} // Limita el número total de caracteres
                                     className="p-2 w-full border rounded"
                                 />
@@ -577,7 +611,7 @@ const Cuenta: React.FC = () => {
                                 max={new Date(new Date().setFullYear(new Date().getFullYear() - 2))
                                     .toISOString()
                                     .split('T')[0]} // Hace 2 años desde hoy
-                                onChange={handleChange}
+                                onChange={(e) => setAlumnoDetails({ ...alumnoDetails, fechaNacimiento: e.target.value })}
                                 required
                             />
                         </div>
@@ -602,7 +636,13 @@ const Cuenta: React.FC = () => {
                                             maxLength={35}
                                             value={String(nacionalidadName)}
                                             placeholder="Ingrese el país donde vive"
-                                            onChange={(e) => setNacionalidadName(e.target.value)}
+                                            onChange={(e) => {
+                                                if (/^[A-Za-zÀ-ÿ\s]*$/.test(e.target.value)) {
+                                                    setNacionalidadName(e.target.value);
+                                                } else {
+                                                    alert("Solo se permiten letras y espacios.");
+                                                }
+                                            }}
                                             className="p-2 w-full border rounded"
                                         />
                                     </div>
@@ -616,7 +656,13 @@ const Cuenta: React.FC = () => {
                                             pattern='[A-Za-z ]+'
                                             value={String(provinciaName)}
                                             placeholder="Ingrese la provincia donde vive"
-                                            onChange={(e) => setProvinciaName(e.target.value)}
+                                            onChange={(e) => {
+                                                if (/^[A-Za-zÀ-ÿ\s]*$/.test(e.target.value)) {
+                                                    setProvinciaName(e.target.value);
+                                                } else {
+                                                    setErrorMessage("Solo se permiten letras y espacios.");
+                                                }
+                                            }}
                                             className="p-2 w-full border rounded"
                                         />
                                     </div>
@@ -629,7 +675,13 @@ const Cuenta: React.FC = () => {
                                             pattern='[A-Za-z ]+'
                                             value={String(localidadName)}
                                             placeholder="Ingrese la localidad donde vive"
-                                            onChange={(e) => setLocalidadName(e.target.value)}
+                                            onChange={(e) => {
+                                                if (/^[A-Za-zÀ-ÿ\s]*$/.test(e.target.value)) {
+                                                    setLocalidadName(e.target.value);
+                                                } else {
+                                                    setErrorMessage("Solo se permiten letras y espacios.");
+                                                }
+                                            }}
                                             className="p-2 w-full border rounded"
                                         />
                                     </div>
@@ -653,7 +705,7 @@ const Cuenta: React.FC = () => {
                                             type="number"
                                             id="numero"
                                             name="numero"
-                                            maxLength={5}
+                                            max={99999}
                                             placeholder="Ingrese el número de su calle"
                                             value={numero ? Number(numero) : ""}
                                             onChange={(e) => setNumero(Number(e.target.value))}
