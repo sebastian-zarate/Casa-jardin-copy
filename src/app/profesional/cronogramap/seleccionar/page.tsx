@@ -11,6 +11,8 @@ import Background from "../../../../../public/Images/Background.jpeg";
 import DeleteIcon from "../../../../../public/Images/DeleteIcon.png";
 import ButtonAdd from "../../../../public/Images/Button.png";
 import HorarioProfesional from "../modificar/HorarioProfesional";
+import { Search } from "lucide-react";
+import { Input } from "postcss";
 
 // Define the Aula interface para definir la estructura de los datos de aula
 interface Aula {
@@ -22,7 +24,7 @@ const AulasProfecional: React.FC = () => {
     const [aulas, setAulas] = useState<Aula[]>([]);
     const [selectedAulaId, setSelectedAulaId] = useState<number | null>(null); // Añadir estado para el ID del aula seleccionada
     const[selectedProfesionalId, setSelectedProfesionalId] = useState<number | null>(null);
-    
+    const [searchTerm, setSearchTerm] = useState("");
     const fetchAulas = async () => {
         try {
             const response: Aula[] = await getAulas();
@@ -50,67 +52,83 @@ const AulasProfecional: React.FC = () => {
     const handleSelectAula = (id: number) => {
         setSelectedAulaId(id);
     };
+    const filteredAulas = aulas
+    .filter((aula) => aula.nombre.toLowerCase().includes(searchTerm.toLowerCase()))
+    .sort((a, b) => a.nombre.localeCompare(b.nombre));
    
     return (
-        <main className="relative min-h-screen w-screen  " style={{ fontFamily: "Cursive" }}>
+        <main className="relative min-h-screen w-full">
             <Navigate />
+
             <div className="fixed inset-0 z-[-1]">
-                <Image src={Background} alt="Background" layout="fill" objectFit="cover" quality={80} priority={true} />
+                <Image 
+                    src={Background} 
+                    alt="Background" 
+                    layout="fill" 
+                    objectFit="cover" 
+                    quality={80} 
+                    priority={true} 
+                    className="w-full h-full object-cover"
+                />
             </div>
 
-            {/* Muestra el título de la página */}
-            <h1 className="absolute top-40 left-60 mb-5 sm:left-40 mb-5 text-2xl sm:text-3xl bg-white rounded-lg p-2">Selecciona un salón</h1>
+            <div className="relative z-10 container mx-auto px-4 py-8">
+                <h1 className="text-4xl font-bold text-center mb-8 text-white bg-black bg-opacity-50 p-4 rounded-lg">
+                    Selecciona un salón
+                </h1>
 
-            {/* Muestra la lista de aulas */}
-            <div
-        className="top-60 border p-1 absolute left-40 h-[calc(80vh-15rem)] overflow-y-auto"
-        style={{ background: "#D9D9D9" }}
-      >                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 my-4">
-                    {aulas.map((aula) => (
-                        <button
-                            key={aula.id}
-                            onClick={() => handleSelectAula(aula.id)} // Añadir onClick para seleccionar el aula
-                            className="border p-4 mx-2 relative w-47 h-47 justify-center items-center"
-                        >
-                            <div className="relative w-30 h-20">
-                                <Image
-                                    src={Background}
-                                    alt="Background Image"
-                                    objectFit="cover"
-                                    className="w-full h-full"
-                                    layout="fill"
-                                />
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation(); // Previene la propagación del evento para que no seleccione el aula
-                                    }}
-                                    className="absolute top-0 right-0 text-red-600 font-bold"
-                                >
-                        
-                                </button>
-                            </div>
-                            <h3 className="flex bottom-0 text-black z-1">
-                                {aula.nombre}
-                            </h3>
-                        </button>
-
-                    ))}
-
+                {/* Search Bar */}
+                <div className="max-w-2xl mx-auto mb-8">
+                    <div className="relative">
+                        <input
+                            type="text"
+                            placeholder="Buscar salón..."
+                            value={searchTerm}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2 text-lg border rounded-lg"
+                        />
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                    </div>
                 </div>
-               
-                
-            </div>
-  
 
-            {/* Componente Horario con el ID del aula seleccionada */}
+                {/* Classroom List */}
+                <div className="bg-white bg-opacity-90 rounded-lg shadow-xl p-6 max-h-[60vh] overflow-y-auto">
+                    {filteredAulas.length > 0 ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                            {filteredAulas.map((aula) => (
+                                <div key={aula.id} className="border rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300">
+                                    <div className="relative w-full h-40">
+                                        <button
+                                            className="relative w-full h-full"
+                                            onClick={() => handleSelectAula(aula.id)}
+                                        >
+                                            <Image
+                                                src={Background}
+                                                alt="Background Image"
+                                                objectFit="cover"
+                                                className="w-full h-full"
+                                                layout="fill"
+                                            />
+                                        </button>
+                                    </div>
+                                    <div className="p-4">
+                                        <h3 className="text-lg font-semibold text-center mb-2">{aula.nombre}</h3>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <p className="text-center text-gray-500 text-lg">No se encontraron aulas.</p>
+                    )}
+                </div>
+            </div>
+
+            {/* Componente Horario */}
             {selectedAulaId && selectedProfesionalId !== null && (
-                <div className="fixed top-0 left-0 right-0 bottom-0 bg-white  shadow-lg overflow-auto">
+                <div className="fixed inset-0 bg-white shadow-lg overflow-auto z-10">
                     <HorarioProfesional idAula={selectedAulaId} idProfesional={selectedProfesionalId} />
                 </div>
             )}
-         
-
-
         </main>
     );
 

@@ -18,27 +18,27 @@ export async function getDireccionResponsableByAlumnoId(alumnoId: number) {
       alumnoId: alumnoId,
     },
     include: {
-    direccion: {
-      select: {
-        calle: true,
-        numero: true,
-        localidad: {
-          select: {
-            nombre: true,
-            provincia: {
-              select: {
-                nombre: true,
-                nacionalidad: {
-                  select: {
-                    nombre: true,
+      direccion: {
+        select: {
+          calle: true,
+          numero: true,
+          localidad: {
+            select: {
+              nombre: true,
+              provincia: {
+                select: {
+                  nombre: true,
+                  nacionalidad: {
+                    select: {
+                      nombre: true,
+                    },
                   },
                 },
               },
             },
           },
         },
-      },
-    }
+      }
     }
   })
 }
@@ -46,7 +46,7 @@ export async function getDireccionResponsableByAlumnoId(alumnoId: number) {
 
 //obtener todos los responsables
 export async function getAllResponsables() {
-   return await prisma.responsable.findMany();
+  return await prisma.responsable.findMany();
 }
 //crear responsable
 export async function createResponsable(data: {
@@ -62,13 +62,13 @@ export async function createResponsable(data: {
     alumnoId: data.alumnoId,
     nombre: data.nombre.trim(),
     apellido: data.apellido.trim(),
-    dni: data.dni,
+    dni: Number(data.dni),
     telefono: data.telefono.trim(),
     email: data.email.trim(),
     direccionId: data?.direccionId,
   };
   const responsable = await getResponsableByAlumnoId(responsableTrim.alumnoId);
-  if(responsable) {
+  if (responsable) {
     console.log("existe responsable", responsable)
     return await prisma.responsable.update({
       where: { alumnoId: responsableTrim.alumnoId },
@@ -95,16 +95,29 @@ export async function updateResponsable(idAlumno: number, data: {
     alumnoId: data.alumnoId,
     nombre: data.nombre.trim(),
     apellido: data.apellido.trim(),
-    dni: data.dni,
+    dni: Number(data.dni),
     telefono: data.telefono.trim(),
     email: data.email.trim(),
     direccionId: data?.direccionId,
   };
-  
-  return await prisma.responsable.update({
-    where: { alumnoId: idAlumno },
-    data: responsableTrim,
-  });
+
+  // buscar si existe responsable
+  const responsable = await getResponsableByAlumnoId(idAlumno);
+  if (!responsable) {
+    // si no existe, se crea
+    return await prisma.responsable.create({
+      data: responsableTrim,
+    });
+
+  } else {
+    // si existe, se actualiza
+    return await prisma.responsable.update({
+      where: { alumnoId: idAlumno },
+      data: responsableTrim,
+    });
+  }
+
+
 }
 
 //eliminar responsable
@@ -117,7 +130,7 @@ export async function deleteResponsable(id: number) {
 // borrar responsable por id de alumno
 export async function deleteResponsableByAlumnoId(alumnoId: number) {
   const responsable = await getResponsableByAlumnoId(alumnoId);
-  if(!responsable) return "No posee responsable el alumno"
+  if (!responsable) return "No posee responsable el alumno"
   return await prisma.responsable.delete({
     where: { id: responsable.id },
   });

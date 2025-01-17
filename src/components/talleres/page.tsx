@@ -1,6 +1,6 @@
 
 import { Curso, getCursoById, getCursos } from '@/services/cursos';
-import { getCursosByIdProfesional } from '@/services/profesional_curso';
+import { getCursosByIdProfesional, deleteProfesional_Curso } from '@/services/profesional_curso';
 import React, { useState, useEffect } from 'react';
 import withAuth from '../Admin/adminAuth';
 import { deleteAlumno_Curso, getCursosByIdAlumno } from '@/services/alumno_curso';
@@ -24,7 +24,8 @@ const Talleres: React.FC<cursosProps> = ({ cursosElegido, setCursosElegido, user
         const handleCursos = async () => {
             try {
                 const cur = await getCursos();
-                setCursos(cur);
+                const sortedCursos = cur.sort((a: { nombre: string }, b: { nombre: string }) => a.nombre.localeCompare(b.nombre));
+                setCursos(sortedCursos);
                 let cursosInscritos;
                 if (crearEstado !== -1 && crearEstado !== -2) {
                     if (user.rolId === 2) {
@@ -32,7 +33,6 @@ const Talleres: React.FC<cursosProps> = ({ cursosElegido, setCursosElegido, user
                         console.log(cursosInscritos);
                         setCursosIns(cursosInscritos);
                         setLoadinCursos(false);
-
                     }
                     if (user.rolId === 3) {
                         cursosInscritos = await getCursosByIdProfesional(user.id);
@@ -40,9 +40,8 @@ const Talleres: React.FC<cursosProps> = ({ cursosElegido, setCursosElegido, user
                         setLoadinCursos(false);
                     }
                 }
-
             } catch (error) {
-                console.error('Error al obtener los curos:', error);
+                console.error('Error al obtener los cursos:', error);
             }
         };
         if (cursos.length === 0) {
@@ -84,7 +83,7 @@ const Talleres: React.FC<cursosProps> = ({ cursosElegido, setCursosElegido, user
     const handleDelete = async (cursoId: number) => {
         setIsDeleting(true);
         const alumnCursDelet = await deleteAlumno_Curso(user.id, cursoId);
-        console.log("alumnoCurso borrado", alumnCursDelet);
+        const profCursDelet = await deleteProfesional_Curso(user.id, cursoId);
         const updatedCursosIns = cursosIns.filter((curso: { id: number }) => curso.id !== cursoId);
         setCursosIns(updatedCursosIns);
         setIsDeleting(false);
@@ -100,19 +99,20 @@ const Talleres: React.FC<cursosProps> = ({ cursosElegido, setCursosElegido, user
                         <div className='absolute w-full left-1/2 -translate-x-5'>
                             <Loader />
                         </div>
-
                     </>
                 }
-                {!loadinCursos && (crearEstado !== -1 && crearEstado !== -2) && cursosIns.map((curso: { nombre: string, id: number }, index: number) => (
-                    <React.Fragment key={index}>
-                        <div className='flex justify-between py-2 px-5 m-1 bg-slate-400 text-black  rounded' key={index} >
-                            <h1 className='text-black'>{curso.nombre}</h1>
-                            <button onClick={() => setCursoAEliminar(curso)}>
-                                <SquareX className='w-5 h-5  hover:text-red-500' />
-                            </button>
-                        </div>
-                    </React.Fragment>
-                ))}
+                {!loadinCursos && (crearEstado !== -1 && crearEstado !== -2) && cursosIns
+                    .sort((a, b) => a.nombre.localeCompare(b.nombre))
+                    .map((curso: { nombre: string, id: number }, index: number) => (
+                        <React.Fragment key={index}>
+                            <div className='flex justify-between py-2 px-5 m-1 bg-slate-400 text-black rounded' key={index}>
+                                <h1 className='text-black'>{curso.nombre}</h1>
+                                <button onClick={() => setCursoAEliminar(curso)}>
+                                    <SquareX className='w-5 h-5 hover:text-red-500' />
+                                </button>
+                            </div>
+                        </React.Fragment>
+                    ))}
             </div>
             {cursoAEliminar && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
