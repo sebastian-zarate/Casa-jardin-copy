@@ -780,7 +780,7 @@ const Cuenta: React.FC = () => {
                     </div>
                 )}
             </main>
-            <footer className="bg-sky-600 py-2 border-t w-full">
+            <footer className="bg-sky-600 border-t w-full">
                 <But_aside />
             </footer>
         </div>

@@ -116,7 +116,7 @@ const MisCursos = () => {
           <div className="flex flex-wrap w-full mb-20">
             <div className="lg:w-1/2 w-full mb-6 lg:mb-0">
               <h1 className="sm:text-3xl text-2xl font-medium title-font mb-2 text-gray-900">
-                Bienvenido de regreso, {userName}
+                Tus Talleres
               </h1>
               <div className="h-1 w-20 bg-indigo-500 rounded"></div>
             </div>
@@ -127,7 +127,7 @@ const MisCursos = () => {
               <Loader />
             </div>
           ) : cursos.length === 0 ? (
-            <p className="text-center text-gray-500">No hay cursos disponibles.</p>
+            <p className="text-center text-gray-500">No estás inscripto a ningún curso aún.</p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 my-4">
               {cursos.map((curso) => (
@@ -139,8 +139,7 @@ const MisCursos = () => {
       </main>
 
       <footer
-        className="fixed pt-1 bottom-0 border-t w-full opacity-90"
-        style={{ background: "#EF4444" }}
+        className="pt-1 bottom-0 border-t w-full opacity-90 bg-sky-600"
       >
         <But_aside />
       </footer>
