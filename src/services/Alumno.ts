@@ -386,6 +386,37 @@ export async function verifyAlumnoCurso(alumnoId: number){
     return false;
 }
 
+export async function updateAlumnoCuenta(alumnoId: number, data: {
+  dni?: number | null;
+  telefono?: string | null;
+  direccionId?: number;
+}) {
+  // Trim the data if needed
+  const alumnoTrim = {
+    dni: data.dni,
+    telefono: data.telefono?.trim() ?? undefined,
+    direccionId: data.direccionId,
+  };
+
+  // Verificar si el alumno existe
+  const alumno = await prisma.alumno.findUnique({ where: { id: alumnoId } });
+  if (!alumno) {
+    return "El alumno no existe.";
+  }
+
+  // Actualizar el alumno usando solo los campos que cambian
+  const updateData: any = {};
+  if (alumnoTrim.dni !== undefined) updateData.dni = alumnoTrim.dni;
+  if (alumnoTrim.telefono !== undefined) updateData.telefono = alumnoTrim.telefono;
+  if (alumnoTrim.direccionId !== undefined) updateData.direccionId = alumnoTrim.direccionId;
+
+  console.log("Actualizando alumno cuenta", updateData);
+  return await prisma.alumno.update({
+    where: { id: alumnoId },
+    data: updateData,
+  });
+}
+
 
 
 

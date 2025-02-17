@@ -1,789 +1,398 @@
 "use client"
-import React, { useRef, useState, useEffect } from 'react';
-import Background from "../../../../public/Images/Background.jpeg";
+import React, {useState, useEffect } from 'react';
+import Background from "../../../../public/Images/BackgroundSolicitudes.jpg";
 import But_aside from "../../../components/but_aside/page";
-import Image from "next/image";
 import Navigate from "../../../components/alumno/navigate/page";
-import { dniExists, emailExists, updateAlumno } from '@/services/Alumno';
-import { addDireccion, getDireccionCompleta, updateDireccionById } from '@/services/ubicacion/direccion';
-import { addProvincias, updateProvinciaById } from '@/services/ubicacion/provincia';
-import { addLocalidad, updateLocalidad } from '@/services/ubicacion/localidad';
-import { addPais } from '@/services/ubicacion/pais';
-import { getCursosByIdAlumno } from '@/services/alumno_curso';
-import { Curso } from '@/services/cursos';
 import withAuthUser from "../../../components/alumno/userAuth";
 import { useRouter } from 'next/navigation';
 import { autorizarUser, fetchUserData } from '@/helpers/cookies';
-import PasswordComponent from '@/components/Password/page';
-import { validateApellido, validateFechaNacimiento, validateDireccion, validateDni, validateEmail, validateNombre, validatePhoneNumber } from '@/helpers/validaciones';
-import Loader from '@/components/Loaders/loadingSave/page';
+import Loader from '@/components/Loaders/loader/loader';
+//helper de direccion
+import { getDireccionSimple } from '@/helpers/direccion';
+//helper para calcular edad
+import { calcularEdad } from '@/helpers/fechas';
+//para formulario de alumno
+import AlumnoForm from '@/components/formularios/alumnoForm';
+//para formulario del responable
+import ResponsableForm from '@/components/formularios/responsableForm';
+import { getResponsableByAlumnoId } from '@/services/responsable';
+import { AlertCircle, CheckCircle, Smile, User2 } from 'lucide-react';
+
 type Usuario = {
     id: number;
+    direccion?: Direccion;
     nombre: string;
     apellido: string;
     dni: number | null;
     telefono: string | null;
     email: string;
-    /*     password: string; */
     direccionId: number;
     fechaNacimiento: string;
     rolId: number;
 };
 
+type Direccion = {
+    pais: string;
+    provincia: string;
+    localidad: string;
+    calle: string;
+    numero: number;
+}
+
+type Responsable = {
+    id: number;
+    alumnoId: number;
+    nombre: string;
+    apellido: string;
+    dni: number;
+    telefono: string;
+    email: string;
+    direccionId: number | null
+    direccion?: Direccion;
+}
+
 const Cuenta: React.FC = () => {
     //region UseStates
-    // Estado para asegurar cambios, inicialmente 0
-    const [openBox, setOpenBox] = useState<number>(0);
-
-    // Estado para almacenar mensajes de error, inicialmente vacío
-    const [errorMessage, setErrorMessage] = useState<string>("");
-
-    // Referencia para el contenedor de desplazamiento
-    const scrollRef = useRef<HTMLDivElement>(null);
-
-    // Estado para almacenar los datos del usuario, inicialmente nulo
-    const [user, setUser] = useState<Usuario | null>();
-
-    // Estado para almacenar los detalles del curso, inicialmente vacío
-    const [alumnoDetails, setAlumnoDetails] = useState<{
-        id: number; nombre: string; apellido: string; dni: number | null;
-        telefono: string | null; email: string; fechaNacimiento: string; direccionId?: number; rolId?: number;
-    }>({
-        id: user?.id || 0,
-        nombre: user?.nombre || '',
-        apellido: user?.apellido || '',
-        dni: user?.dni || null,
-        telefono: user?.telefono || null,
-        email: user?.email || '',
-        fechaNacimiento: user?.fechaNacimiento ? new Date(user.fechaNacimiento).toISOString().split('T')[0] : '',
-        direccionId: user?.direccionId || 0,
-        rolId: user?.rolId || 0
-    });
-    const [alumnoDetailsCopia, setAlumnoDetailsCopia] = useState<{
-        id: number; nombre: string; apellido: string; dni: number | null;
-        telefono: string | null; email: string; fechaNacimiento: string; direccionId?: number; rolId?: number;
-    }>({
-        id: user?.id || 0,
-        nombre: user?.nombre || '',
-        apellido: user?.apellido || '',
-        dni: user?.dni || null,
-        telefono: user?.telefono || null,
-        email: user?.email || '',
-        fechaNacimiento: user?.fechaNacimiento ? new Date(user.fechaNacimiento).toISOString().split('T')[0] : '',
-        direccionId: user?.direccionId || 0,
-        rolId: user?.rolId || 0
-    });
     
-    const [nacionalidadName, setNacionalidadName] = useState<string>();
-    // Estado para almacenar el ID de la provincia, inicialmente nulo
-    const [provinciaName, setProvinciaName] = useState<string>();
+    // Estado para almacenar los datos del usuario, inicialmente nulo
+    const [user, setUser] = useState<Usuario>();
 
-    // Estado para almacenar el ID de la localidad, inicialmente nulo
-    const [localidadName, setLocalidadName] = useState<string>();
-
-    // Estado para almacenar la calle, inicialmente nulo
-    const [calle, setcalle] = useState<string | null>();
-
-    // Estado para almacenar el número de la dirección, inicialmente nulo
-    const [numero, setNumero] = useState<number | null>();
-
-    //para obtener user by email
-
-    const [habilitarCambioContraseña, setHabilitarCambioContraseña] = useState<boolean>(false);
-    const [correcto, setCorrecto] = useState<boolean>(false);
-
-    //listas de cursos
-    const [cursos, setCursos] = useState<Curso[]>()
-
+    //para saber si es mayor de edad, si es menor debe cargar responsable
     const [mayoriaEdad, setMayoriaEdad] = useState<boolean>(false);
 
-    const [loadingDireccion, setLoadingDireccion] = useState<boolean>(false);
-    const [permitirDireccion, setPermitirDireccion] = useState<boolean>(false);
-    const [isDeleting, setIsDeleting] = useState<boolean>(false);
-    const [isSaving, setIsSaving] = useState<boolean>(false);
+    //estados de carga
+    const [loading, setLoading] = useState<boolean>(false);
+    const [editarUser, setEditarUser] = useState<boolean>(false); //para abrir el formulario de user
+    const [cambiosUser, setCambiosUser] = useState<boolean>(false); //si hay cambios, para despues volver a fetchearlo
+    const [editarResponsable, setEditarResponsable] = useState<boolean>(false);  //para abrir el formulario de responsable
+    const [cambiosResponsable, setCambiosResponsable] = useState<boolean>(false); //si hay cambios, para despues volver a fetchearlo
+    
+    //para cargar el responsable
+    const [responsable, setResponsable] = useState<Responsable | null>(null);
     //endregion
 
-    //region UseEffects
-    // Función para obtener los datos del usuario
-
     const router = useRouter();
-    useEffect(() => {
-        if (user && !alumnoDetails.email) {
-            getUser()
-
-        }
-
-    }, [user]);
+    
+    //region UseEffects
     // Para cambiar al usuario de página si no está logeado
     useEffect(() => {
+        setLoading(true);
         authorizeAndFetchData();
-    }, [router]);
+    }, []);
 
+    // Función para obtener los datos del usuario
     const authorizeAndFetchData = async () => {
-        console.time("authorizeAndFetchData");
         // Primero verifico que el user esté logeado
-        console.log("router", router);
         await autorizarUser(router);
         // Una vez autorizado obtengo los datos del user y seteo el email
         const user = await fetchUserData();
         //console.log("user", user);
         setUser(user)
         if (!user) return;
-        const edad = calculaEdad(new Date(user.fechaNacimiento));
+        console.log("flag user", user);
+        const edad = calcularEdad(user.fechaNacimiento);
+        console.log("flag edad", edad);
         if (edad >= 18) setMayoriaEdad(true);
-        else setMayoriaEdad(false);
+        //si es menor traigo los datos de su responsable
+        else {
+            console.log("menor de edad");
+            setMayoriaEdad(false);
+            const r = await getResponsableByAlumnoId(user.id);
+            console.log("responsable", responsable);
+            if(r && r.direccionId){
+                const direccion = await getDireccionSimple(r.direccionId);
+                setResponsable({...r, direccion: direccion});
+            }
+            else{setResponsable(r);}
+        }
+        //cargar direccion en user
+        if(user.direccionId){
+            const direccion = await getDireccionSimple(user.direccionId);
+            setUser({...user, direccion: direccion});
+        }
         console.log("---------> edad", edad)
         console.log("mayoria edad:", mayoriaEdad);
-        let talleres = await getCursosByIdAlumno(Number(user?.id));
-        setCursos([])
-        talleres.map((curso) => {
-            setCursos(prev => (prev ? [...prev, curso] : [curso]));
-        })
-        //console.timeEnd("authorizeAndFetchData");
+        setLoading(false);
     };
+
+    // Para actualizar los datos del usuario y del responsable si hubieron cambios
     useEffect(() => {
-        if ((errorMessage.length > 0) && scrollRef.current) {
-            scrollRef.current.scrollTop = 0;
-        }
-    }, [errorMessage]);
+        //si hay cambios en el usuario
+        if(cambiosUser) onUserUpdate();
+    }, [cambiosUser]);
 
     useEffect(() => {
-        if (errorMessage != null) {
-            setInterval(() => {
-                setErrorMessage("")
-            }, 10000);
-        }
-    }, [errorMessage]);
-    useEffect(() => {
-        if (user) {
-            /*             console.log("permitirDireccion", permitirDireccion);
-                        console.log("loadingDireccion", loadingDireccion); */
-            if ((!nacionalidadName && !provinciaName && !localidadName && !calle && !numero && user?.direccionId) && permitirDireccion) {
-                console.log("obAlumno111", user);
-                getUbicacion(user);
-            }
-
-        }
-
-        if (!user) {
-            setNacionalidadName("");
-            setProvinciaName("");
-            setLocalidadName("");
-            setcalle("");
-            setNumero(null);
-            setLoadingDireccion(false)
-        }
-    }, [user, permitirDireccion]);
+        //si hay cambios en el responsable
+        if(cambiosResponsable) onResponsableUpdate();
+    }, [cambiosResponsable]);
     //endregion
 
     //region Funciones
-
-
-    async function createUbicacion() {
-        const nacionalidad = await addPais({ nombre: String(nacionalidadName) });
-        const prov = await addProvincias({ nombre: String(provinciaName), nacionalidadId: Number(nacionalidad?.id) });
-        const localidad = await addLocalidad({ nombre: String(localidadName), provinciaId: Number(prov?.id) });
-
-        const direccion = await addDireccion({ calle: String(calle), numero: Number(numero), localidadId: Number(localidad?.id) });
-        return { direccion, nacionalidad };
-    }
-    async function getUbicacion(userUpdate: any) {
-        // Obtener la dirección del usuario por su ID
-        //console.log("SI DIRECCIONID ES FALSE:", Number(userUpdate?.direccionId));
-        setLoadingDireccion(true);
-        const direccion = await getDireccionCompleta(userUpdate?.direccionId);
-
-        //console.log("NACIONALIDAD", nacionalidad);
-        // Actualizar los estados con los datos obtenidos
-        setLocalidadName(String(direccion?.localidad?.nombre));
-        setProvinciaName(String(direccion?.localidad?.provincia?.nombre));
-        setNacionalidadName(String(direccion?.localidad?.provincia?.nacionalidad?.nombre));
-        setNumero(direccion?.numero);
-        setcalle(direccion?.calle);
-        setLoadingDireccion(false);
-        return { direccion };
-    }
-    async function getUser() {
-        console.log(user?.nombre);
-        const userUpdate: Usuario = {
-            id: user?.id || 0,
-            nombre: user?.nombre || '',
-            apellido: user?.apellido || '',
-            dni: user?.dni ?? null,
-            telefono: user?.telefono ?? null,
-            email: user?.email || '',
-            fechaNacimiento: user?.fechaNacimiento ? new Date(user.fechaNacimiento).toISOString().split('T')[0] : '',
-            direccionId: user?.direccionId || 0,
-            rolId: user?.rolId || 0
-        };
-    
-        if (!userUpdate.direccionId) {
-            setNacionalidadName("");
-            setProvinciaName("");
-            setLocalidadName("");
-            setcalle("");
-            setNumero(null);
-        } else if (userUpdate.direccionId) {
-            getUbicacion(userUpdate);
+    const onUserUpdate = async () => {
+        setLoading(true);
+        if(!user) return
+        const u = await fetchUserData();
+        setUser(u);
+        if(u.direccionId){
+            const direccion = await getDireccionSimple(u.direccionId);
+            setUser({...u, direccion: direccion});
         }
-    
-        setAlumnoDetails({
-            id: userUpdate.id,
-            nombre: userUpdate.nombre,
-            apellido: userUpdate.apellido,
-            dni: userUpdate.dni,
-            telefono: userUpdate.telefono,
-            fechaNacimiento: userUpdate.fechaNacimiento,
-            email: userUpdate.email,
-            direccionId: userUpdate.direccionId,
-            rolId: userUpdate.rolId
-        });
-    
-        setAlumnoDetailsCopia({
-            id: userUpdate.id,
-            nombre: userUpdate.nombre,
-            apellido: userUpdate.apellido,
-            dni: userUpdate.dni,
-            telefono: userUpdate.telefono,
-            fechaNacimiento: userUpdate.fechaNacimiento,
-            email: userUpdate.email,
-            direccionId: userUpdate.direccionId,
-            rolId: userUpdate.rolId
-        });
-    
-        console.log("userUpdate", userUpdate);
-        console.log("alumnoDetails", alumnoDetails);
-        setUser(userUpdate);
-        //setOpenBox(!openBox)
-    
-        //CARGAR TODAS LAS DIRECCIONES
+        setCambiosUser(false);
+        setLoading(false);
     }
 
-    function calculaEdad(birthDate: Date) {
-        const today = new Date();
-        let edad = today.getFullYear() - birthDate.getFullYear();
-        const monthDifference = today.getMonth() - birthDate.getMonth();
-        if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
-            edad--;
-        }
-        return edad;
-    }
-    //region validate
-    async function validatealumnoDetails() {
-        const { nombre, apellido, email, telefono, dni } = alumnoDetails || {};
-        console.log("alumno details", alumnoDetails);
-        /*         if (JSON.stringify(alumnoDetails) === JSON.stringify(alumnoDetailsCopia)) {
-                    return;
-                } */
-
-
-        //validar que el nombre sea de al menos 2 caracteres y no contenga números
-        let resultValidate;
-        if (alumnoDetails) {
-            resultValidate = validateNombre(nombre);
-            if (resultValidate) return resultValidate;
-
-            resultValidate = validateApellido(apellido);
-            if (resultValidate) return resultValidate;
-
-            resultValidate = validateEmail(email);
-            if (resultValidate) return resultValidate;
-            if (email !== alumnoDetailsCopia?.email) {
-                const estado = await emailExists(email)
-                if (estado) {
-                    return "El email ya está registrado.";
-                }
-                if (resultValidate) return resultValidate;
+    const onResponsableUpdate = async () => {
+        setLoading(true);
+        if(!user) return 
+        const r = await getResponsableByAlumnoId(user.id);
+            console.log("responsable", responsable);
+            if(!r) return
+            if(r.direccionId){
+                const direccion = await getDireccionSimple(r.direccionId);
+                setResponsable({...r, direccion: direccion});
             }
-
-
-            if (dni && typeof (dni) === "number") {
-                resultValidate = validateDni(String(dni));
-                if (resultValidate) return resultValidate;
-                if (dni !== alumnoDetailsCopia?.dni) {
-                    const estado = await dniExists(dni);
-                    if (estado) {
-                        return "El dni ya está registrado.";
-                    }
-                }
-            }
-            //ya que el telefono es opcional, si es mayor de edad
-            if (telefono && mayoriaEdad) {
-                resultValidate = validatePhoneNumber(telefono.toString());
-                if (resultValidate) return resultValidate;
-            }
-
-        }
-        if (permitirDireccion) {
-            resultValidate = validateDireccion(nacionalidadName, provinciaName, localidadName, String(calle), Number(numero));
-            if (resultValidate) return resultValidate
-        }
-        console.log("resultvalidate", resultValidate);
-        let validateInput = validateFechaNacimiento(new Date(alumnoDetails.fechaNacimiento));
-        if (validateInput) return validateInput;
-
-        
+            else{setResponsable(r);}
+        //
+        setCambiosResponsable(false);
+        setLoading(false);
     }
-
-    async function handleSaveChanges() {
-        // Validar los detalles del alumno antes de continuar
-        const validationError = await validatealumnoDetails();
-        if (validationError) {
-            setErrorMessage(validationError);
-            return;
-        }
-
-        console.log("flag 1 save changes");
-        // Crear un objeto con los campos necesarios, eliminando espacios al inicio y al final
-        const trimmedAlumnoDetails = {
-            nombre: alumnoDetails.nombre.trim(),
-            apellido: alumnoDetails.apellido.trim(),
-            email: alumnoDetails.email.trim(),
-            telefono: alumnoDetails.telefono?.toString().trim(),
-            dni: alumnoDetails.dni, //puede ser null
-            fechaNacimiento: new Date(alumnoDetails.fechaNacimiento),
-
-        };
-
-        console.log("flag 1.1 save changes - trimmedAlumnoDetails:", trimmedAlumnoDetails);
-        setIsSaving(true);
-        
-        //si los datos son iguales no se hace nada (estaba mal el condicional) y si no hay cambios en la direccion
-        if (JSON.stringify(alumnoDetails) === JSON.stringify(alumnoDetailsCopia) && !permitirDireccion) {
-            console.log("flag 1a save changes - insde json if");
-            setIsSaving(false);
-            return 
-        }
-        // Validar campos requeridos después de aplicar .trim()
-        if (!trimmedAlumnoDetails.nombre || !trimmedAlumnoDetails.apellido || !trimmedAlumnoDetails.email) {
-            console.log("flag 1b save changes - inside big if");
-            setErrorMessage('Los campos Nombre, Apellido y Correo no pueden estar vacíos.');
-            return;
-        }
-
-        let newAlumno;
-
-        try {
-            console.log("flag 2 save changes - inside try");
-            //region cargar datos con direcc
-            if (permitirDireccion) {
-                console.log("flag 3 save changes - inside permitirDireccion");
-                // Validar si el usuario tiene una dirección asociada
-                console.log("condicional de direccion:", !alumnoDetails.direccionId);
-                if (!alumnoDetails.direccionId) {
-                    // Crear ubicación si no existe dirección asociada
-                    console.log("flag 3a save changes - inside permitirDireccion -!direccionId");
-                    const { direccion } = await createUbicacion();
-
-                    console.log("flag 3a1 - direccion:", direccion);
-                    newAlumno = await updateAlumno((alumnoDetails?.id), {
-                        ...trimmedAlumnoDetails,
-                        direccionId: (direccion?.id),
-                    });
-                    console.log("falg 3a2 - new alumno:", newAlumno);
-
-                } 
-                //se entra si  tiene una direccion asociada
-                else {
-                    console.log("flag 3b save changes - else de existe direccion asosciada");
-                    // Actualizar detalles relacionados con la dirección, localidad y provincia
-                    const { direccion } = await getUbicacion(alumnoDetails);
-
-                    const trimmedDireccionDetails = {
-                        calle: String(calle).trim(),
-                        numero: Number(numero),
-                        localidadId: Number(direccion?.localidad?.id),
-                    };
-
-                    const trimmedLocalidadDetails = {
-                        nombre: String(localidadName).trim(),
-                        provinciaId: Number(direccion?.localidad?.provincia?.id),
-                    };
-
-                    const trimmedProvinciaDetails = {
-                        nombre: String(provinciaName).trim(),
-                        nacionalidadId: Number(direccion?.localidad?.provincia?.nacionalidad?.id),
-                    };
-
-                    console.log("flag 4 - guardar cambios")
-                    await updateDireccionById(Number(direccion?.id), trimmedDireccionDetails);
-                    await updateLocalidad(Number(direccion?.localidad?.id), trimmedLocalidadDetails);
-                    await updateProvinciaById(Number(direccion?.localidad?.provincia?.id), trimmedProvinciaDetails);
-
-                    newAlumno = await updateAlumno(Number(alumnoDetails?.id), {
-                        ...trimmedAlumnoDetails,
-                        direccionId: (direccion?.id),
-                    });
-
-                    console.log("falg 5a - new alumno:", newAlumno);
-                }
-            }
-            //region no cargar datos con direcc
-            else {
-                newAlumno = await updateAlumno(Number(alumnoDetails.id), {
-                    ...trimmedAlumnoDetails,
-                });
-                console.log("falg 20 - new alumno:", newAlumno);
-            }
-
-            console.log(" flag 5 - new alumno si no entro al else:", newAlumno);
-            // Refrescar datos y cerrar la interfaz de edición
-            setOpenBox(0);
-            getUser();
-            setIsSaving(false);
-            authorizeAndFetchData();
-        } catch (error) {
-            setErrorMessage("Ha ocurrido un error al guardar los cambios.");
-            setIsSaving(false);
-        }
-        console.log("final flag - Resultado final:", newAlumno);
-    }
-
     //endregion
 
-    return (
-        <div className="flex flex-col min-h-screen">
-            <main className="flex-grow relative overflow-auto">
-                <div className='absolute inset-0 -z-10'>
-                    <Image src={Background} alt="Background" layout="fill" objectFit="cover" quality={20} priority={true} />
-                </div>
-                {/* Barra de navegación fija */}
-                <div className="fixed justify-between w-full z-10">
-                    <Navigate />
-                </div>
-    
-                {/* Contenido desplazable */}
-                <div className="pt-20 px-4 pb-40">
-                    <h1 className="flex my-10 items-center justify-center font-bold text-3xl">Datos del Estudiante</h1>
-                    <div className="flex justify-center w-full">
-                        <div className="mx-auto bg-gray-100 rounded-lg shadow-md px-8 py-6 grid grid-cols-1 md:grid-cols-2 gap-x-12 w-full max-w-4xl">
-                            {/* Información del usuario */}
-                            <div className="mb-4">
-                                <label className="block text-gray-700 font-bold mb-2">Nombre:</label>
-                                <p className="p-2 border rounded bg-gray-100">{user?.nombre} {user?.apellido}</p>
-                            </div>
-                            <div className="mb-4">
-                                <label className="block text-gray-700 font-bold mb-2">DNI:</label>
-                                <p className="p-2 border rounded bg-gray-100">{user?.dni || "DNI no cargado"}</p>
-                            </div>
-    
-                            <div className="mb-4">
-                                <label className="block text-gray-700 font-bold mb-2">Talleres:</label>
-                                {cursos?.length !== 0 ? (
-                                    <p className="p-2 border rounded bg-gray-100" style={{ height: '10vh', overflow: "auto" }}>
-                                        {cursos?.map((curso) => curso.nombre).join(", ")}
-                                    </p>
-                                ) : <p className="p-2 border rounded bg-gray-100">Talleres no cargados</p>}
-                            </div>
-    
-                            <div className="mb-4">
-                                <label className="block text-gray-700 font-bold mb-2">Domicilio:</label>
-                                <p className="p-2 border rounded bg-gray-100">
-                                    {nacionalidadName || "-"}, {provinciaName || "-"},
-                                    {localidadName || "-"}, {calle || "-"} {numero || "-"}
-                                </p>
-                            </div>
-    
-                            {mayoriaEdad && (
-                                <div className="mb-4">
-                                    <label className="block text-gray-700 font-bold mb-2">Teléfono:</label>
-                                    <p className="p-2 border rounded bg-gray-100">
-                                        {user?.telefono || "Teléfono no cargado"}
-                                    </p>
-                                </div>
-                            )}
-    
-                            <div className="mb-4">
-                                <label className="block text-gray-700 font-bold mb-2">Email:</label>
-                                <p className="p-2 border rounded bg-gray-100">{user?.email}</p>
-                            </div>
-    
-                            <div className="mb-4">
-                                <label className="block text-gray-700 font-bold mb-2">Fecha de Nacimiento:</label>
-                                <p className="p-2 border rounded bg-gray-100">
-                                    {user?.fechaNacimiento ? new Date(user.fechaNacimiento).toLocaleDateString('es-ES', {
-                                        timeZone: 'UTC',
-                                        day: '2-digit',
-                                        month: '2-digit',
-                                        year: '2-digit',
-                                    }) : ''}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-    
-                    {/* Botón Editar */}
-                    <div className="flex items-center justify-center mt-5">
-                        <button
-                            className="bg-red-500 py-2 px-10 text-white rounded hover:bg-red-700"
-                            onClick={() => { setOpenBox(1); console.log(openBox); getUser(); }}
-                        >
-                            Editar
-                        </button>
-                    </div>
-                </div>  
-    
-    
-                {openBox === 1 && (
-                    <div className="fixed inset-0 flex items-center w-600 justify-center bg-black bg-opacity-50 z-50">
-                        <div ref={scrollRef} className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative" style={{ height: '70vh', overflow: "auto" }}>
-                            <h2 className="text-2xl font-bold mb-4">
-                                Datos del Estudiante
-                            </h2>
-                            {errorMessage && (
-                                <div className="mb-4 text-red-600">
-                                    {errorMessage}
-                                </div>
-                            )}
-                            <div className="mb-4">
-                                <label htmlFor="nombre" >Nombre:</label>
-                                <input
-                                    type="text"
-                                    id="nombre"
-                                    name="nombre"
-                                    pattern='[A-Za-zÀ-ÿ ]+'
-                                    placeholder='Ej: Juan'
-                                    maxLength={50}
-                                    value={alumnoDetails.nombre}
-                                    onChange={(e) => setAlumnoDetails({ ...alumnoDetails, nombre: e.target.value })}
-                                    className="p-2 w-full border rounded"
-                                    required
-                                />
-                            </div>
-                            <div className="mb-4">
-                                <label htmlFor="apellido" className="block">Apellido:</label>
-                                <input
-                                    type="text"
-                                    id="apellido"
-                                    name="apellido"
-                                    pattern='[A-Za-zÀ-ÿ ]+'
-                                    placeholder='Ej: Pérez'
-                                    maxLength={50}
-                                    value={(alumnoDetails.apellido)}
-                                    onChange={(e) => setAlumnoDetails({ ...alumnoDetails, apellido: e.target.value })}
-                                    className="p-2 w-full border rounded"
-                                    required
-                                />
-                            </div>
-                            <div className="mb-4">
-                                <label htmlFor="dni" className="block">DNI:</label>
-                                <input
-                                    type="text"
-                                    id="dni"
-                                    name="dni"
-                                    pattern="[0-9]*"
-                                    placeholder="Ingrese su DNI sin puntos ni espacios"
-                                    maxLength={8} // Limita el máximo de caracteres a 8
-                                    value={alumnoDetails.dni !== null ? String(alumnoDetails.dni) : ''}
-                                    onChange={(e) => {
-                                        const regex = /^[0-9]*$/; // Permite solo números
-                                        if (regex.test(e.target.value)) {
-                                            setAlumnoDetails({ ...alumnoDetails, dni: e.target.value === '' ? null : Number(e.target.value) }); // Actualiza solo si es un número válido
-                                        }
-                                    }}
-                                    required
-                                    className="p-2 w-full border rounded"
-                                />
-                            </div>
-    
-                            <div className="mb-4">
-                                <label htmlFor="email" className="block">Email:</label>
-                                <input
-                                    type="text"
-                                    id="email"
-                                    name="email"
-                                    value={(alumnoDetails.email)}
-                                    onChange={(e) => setAlumnoDetails({ ...alumnoDetails, email: e.target.value })}
-                                    className="p-2 w-full border rounded"
-                                    required
-                                />
-                            </div>
-                            {/*                       <div className="mb-4">
-                                <label htmlFor="imagen" className="block">Imagen:</label>
-                                <input
-                                    type="file"
-                                    id="imagen"
-                                    name="imagen"
-                                    className="p-2 w-full border rounded"
-                                />
-                            </div> */}
-                            {mayoriaEdad && (
-                                <div className="mb-4">
-                                    <label htmlFor="telefono" className="block">Teléfono:</label>
-                                    <div className="flex">
-                                        <h3 className="p-2">+54</h3>
-                                        <input
-                                            type="text"
-                                            id="telefono"
-                                            name="telefono"
-                                            placeholder="Ej: 03431234567"
-                                            value={alumnoDetails.telefono ?? ''}
-                                            onChange={(e) => setAlumnoDetails({ 
-                                                ...alumnoDetails, 
-                                                telefono: e.target.value === '' ? null : e.target.value 
-                                            })}
-                                            maxLength={11} // Limita el número total de caracteres
-                                            className="p-2 w-full border rounded"
-                                        />
-                                    </div>
-                            </div>)
-                            }
-                            <div className="flex-col flex mb-4">
-                                <label htmlFor="fechaNacimiento">Fecha de Nacimiento</label>
-                                <input
-                                    id="fechaNacimiento"
-                                    type="date"
-                                    name="fechaNacimiento"
-                                    className="border rounded"
-                                    value={alumnoDetails.fechaNacimiento}
-                                    min={new Date(new Date().setFullYear(new Date().getFullYear() - 100))
-                                        .toISOString()
-                                        .split('T')[0]} // Hace 100 años desde hoy
-                                    max={new Date(new Date().setFullYear(new Date().getFullYear() - 2))
-                                        .toISOString()
-                                        .split('T')[0]} // Hace 2 años desde hoy
-                                    onChange={(e) => setAlumnoDetails({ ...alumnoDetails, fechaNacimiento: e.target.value })}
-                                    required
-                                />
-                            </div>
-    
-                            <button
-                                onClick={() => { setPermitirDireccion(!permitirDireccion); }}
-                                className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800"
-                            >
-                                Desea cargar su dirección ?
-                            </button>
-                            {permitirDireccion && <>
-                                {loadingDireccion && <p className="text-red-600">Cargando su ubicación...</p>}
-                                {!loadingDireccion &&
-                                    <>
-                                        <div className="mb-4">
-                                            <label htmlFor="pais" className="block">País:</label>
-                                            <input
-                                                type="text"
-                                                id="pais"
-                                                name="pais"
-                                                pattern='[A-Za-z ]+'
-                                                maxLength={35}
-                                                value={String(nacionalidadName)}
-                                                placeholder="Ingrese el país donde vive"
-                                                onChange={(e) => {
-                                                    if (/^[A-Za-zÀ-ÿ\s]*$/.test(e.target.value)) {
-                                                        setNacionalidadName(e.target.value);
-                                                    } else {
-                                                        alert("Solo se permiten letras y espacios.");
-                                                    }
-                                                }}
-                                                className="p-2 w-full border rounded"
-                                            />
-                                        </div>
-                                        <div className="mb-4">
-                                            <label htmlFor="provincia" className="block">Provincia:</label>
-                                            <input
-                                                type="text"
-                                                id="provincia"
-                                                name="provincia"
-                                                maxLength={55}
-                                                pattern='[A-Za-z ]+'
-                                                value={String(provinciaName)}
-                                                placeholder="Ingrese la provincia donde vive"
-                                                onChange={(e) => {
-                                                    if (/^[A-Za-zÀ-ÿ\s]*$/.test(e.target.value)) {
-                                                        setProvinciaName(e.target.value);
-                                                    } else {
-                                                        setErrorMessage("Solo se permiten letras y espacios.");
-                                                    }
-                                                }}
-                                                className="p-2 w-full border rounded"
-                                            />
-                                        </div>
-                                        <div className="mb-4">
-                                            <label htmlFor="localidad" className="block">Localidad:</label>
-                                            <input
-                                                type="text"
-                                                name="localidad"
-                                                maxLength={35}
-                                                pattern='[A-Za-z ]+'
-                                                value={String(localidadName)}
-                                                placeholder="Ingrese la localidad donde vive"
-                                                onChange={(e) => {
-                                                    if (/^[A-Za-zÀ-ÿ\s]*$/.test(e.target.value)) {
-                                                        setLocalidadName(e.target.value);
-                                                    } else {
-                                                        setErrorMessage("Solo se permiten letras y espacios.");
-                                                    }
-                                                }}
-                                                className="p-2 w-full border rounded"
-                                            />
-                                        </div>
-                                        <div className="mb-4">
-                                            <label htmlFor="calle" className="block">Calle:</label>
-                                            <input
-                                                type="text"
-                                                id="calle"
-                                                name="calle"
-                                                maxLength={75}
-                                                pattern='[A-Za-z ]+'
-                                                value={String(calle)}
-                                                placeholder="Ingrese el nombre de su calle"
-                                                onChange={(e) => setcalle(e.target.value)}
-                                                className="p-2 w-full border rounded"
-                                            />
-                                        </div>
-                                        <div className="mb-4">
-                                            <label htmlFor="numero" className="block">Número:</label>
-                                            <input
-                                                type="number"
-                                                id="numero"
-                                                name="numero"
-                                                max={99999}
-                                                placeholder="Ingrese el número de su calle"
-                                                value={numero ? Number(numero) : ""}
-                                                onChange={(e) => setNumero(Number(e.target.value))}
-                                                className="p-2 w-full border rounded"
-                                            />
-                                        </div>
-                                    </>
-                                }
-                            </>
-                            }
-    
-                            <div>
-                                <button
-                                    className="py-2  text-black font-bold rounded hover:underline"
-                                    onClick={() => setHabilitarCambioContraseña(!habilitarCambioContraseña)}
-                                >
-                                    Cambiar contraseña
-                                </button>
-                                {habilitarCambioContraseña && <div className=' absolute bg-slate-100 rounded-md shadow-md px-2 left-1/2 top-1/2 tranform -translate-x-1/2 -translate-y-1/2'>
-                                    <button className='absolute top-2 right-2' onClick={() => setHabilitarCambioContraseña(false)}>X</button>
-                                    <PasswordComponent setCorrecto={setCorrecto} correcto={correcto} />
-                                </div>}
-                            </div>
-                            <div className="flex justify-end space-x-4">
-                                <button
-                                    onClick={() => { handleSaveChanges(); console.log("openBox", openBox) }}
-                                    className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800"
-                                    disabled={isSaving}
-                                >
-                                    {isSaving ? <Loader /> : "Guardar"}
-                                </button>
-                                <button
-                                    onClick={() => { setOpenBox(0); console.log(openBox); setPermitirDireccion(false); getUser() }}
-                                    className="bg-gray-700 py-2 px-5 text-white rounded hover:bg-gray-800"
-                                    disabled={isSaving}
-                                >
-                                    Cancelar
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-            </main>
-            <footer className="bg-sky-600 border-t w-full">
-                <But_aside />
-            </footer>
+// Helpers para obtener los campos vacíos y mostrarlos en la alerta
+const getEmptyUserFields = (user: Usuario, mayoriaEdad: boolean) => {
+  const emptyFields = []
+  if (!user?.nombre) emptyFields.push("Nombre")
+  if (!user?.apellido) emptyFields.push("Apellido")
+  if (!user?.email) emptyFields.push("Email")
+  if (!user?.fechaNacimiento) emptyFields.push("Fecha de Nacimiento")
+  if (!user?.dni) emptyFields.push("DNI")
+  if (mayoriaEdad && !user?.telefono) emptyFields.push("Teléfono")
+  if (
+    !user?.direccion?.pais ||
+    !user?.direccion?.provincia ||
+    !user?.direccion?.localidad ||
+    !user?.direccion?.calle ||
+    !user?.direccion?.numero
+  )
+    emptyFields.push("Dirección completa")
+  return emptyFields
+}
+
+const getEmptyResponsableFields = (responsable: Responsable | undefined | null) => {
+  const emptyFields = []
+  if(mayoriaEdad) return []
+  if(!responsable) return ["No hay responsable cargado"]
+  if (!responsable?.nombre) emptyFields.push("Nombre del Responsable")
+  if (!responsable?.apellido) emptyFields.push("Apellido del Responsable")
+  if (!responsable?.dni) emptyFields.push("DNI del Responsable")
+  if (!responsable?.email) emptyFields.push("Email del Responsable")
+  if (!responsable?.telefono) emptyFields.push("Teléfono del Responsable")
+  if (
+    !responsable?.direccion?.pais ||
+    !responsable?.direccion?.provincia ||
+    !responsable?.direccion?.localidad ||
+    !responsable?.direccion?.calle ||
+    !responsable?.direccion?.numero
+  )
+    emptyFields.push("Dirección completa del Responsable")
+  return emptyFields
+}
+
+//forma de mostrar los campos vacios
+const userEmptyFields = user ? getEmptyUserFields(user, mayoriaEdad) : []
+const responsableEmptyFields = getEmptyResponsableFields(responsable)
+//esta es la lista que se usa dentro del return
+const allEmptyFields = [...userEmptyFields, ...responsableEmptyFields]
+
+//region Return
+  return (
+    <div className="flex flex-col min-h-screen">
+      <main
+        className="flex-grow relative overflow-auto bg-cover bg-center"
+        style={{ backgroundImage: `url(${Background.src})` }}
+      >
+        <div className="absolute inset-0 -z-10 bg-gradient-to-br from-sky-50 to-gray-100" />
+        <div className="fixed justify-between w-full z-10">
+          <Navigate />
         </div>
-    );
+
+        {/* Datos */}
+        <div className="pt-24 px-4 pb-40 max-w-7xl mx-auto">
+          <h1 className="text-3xl font-bold text-gray-900 text-center mb-8">Datos del Estudiante</h1>
+
+          {/* Alertas */}
+          {(allEmptyFields.length > 0 && !loading) && (
+            <div className="mb-8 px-6 py-4 bg-amber-50 border border-amber-200 rounded-lg">
+              <div className="flex items-start gap-2 text-amber-800">
+                <AlertCircle className="w-5 h-5 mt-0.5" />
+                <div>
+                  <p className="font-medium">Debes completar  los siguentes datos para poder inscribirte a un taller:</p>
+                  <ul className="list-disc list-inside mt-2">
+                    {allEmptyFields.map((field, index) => (
+                      <li key={index} className="text-sm">
+                        {field}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
+          {(allEmptyFields.length === 0 && !loading) && (
+            <div className="mb-8 px-6 py-4 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-start gap-2 text-green-800">
+                <CheckCircle className="w-5 h-5 mt-0.5" />
+                <div>
+                  <p className="font-medium">Ya puedes inscribirte en los talleres!</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {loading ? (
+            <div className="flex flex-col items-center justify-center h-64 space-y-4">
+              <Loader />
+              <p className="text-gray-600 font-medium">Cargando datos del estudiante...</p>
+            </div>
+          ) : (
+            <div className={`grid gap-8 ${mayoriaEdad ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-2'}`}>
+              {/* Datos del alumno */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden h-fit">
+                <div className="px-6 py-4 bg-gradient-to-r from-green-600 to-green-700 flex justify-between items-center">
+                  <h2 className="text-xl font-semibold text-white flex items-center">
+                    <Smile className="w-6 h-6 inline-block mr-2" />
+                    Información Personal
+                  </h2>
+                  <button
+                    onClick={() => setEditarUser(true)}
+                    className="inline-flex items-center px-4 py-2 rounded-lg bg-white/10 text-white font-medium hover:bg-white/20 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-1 focus:ring-offset-green-600"
+                  >
+                    Editar Mis Datos
+                  </button>
+                </div>
+                <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-1">
+                        <label className="text-sm font-medium text-gray-500">Nombre</label>
+                        <p className="text-gray-900">{user?.nombre ? user.nombre : "-"}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-sm font-medium text-gray-500">Apellido</label>
+                        <p className="text-gray-900">{user?.apellido ? user.apellido : "-"}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-sm font-medium text-gray-500">Email</label>
+                        <p className="text-gray-900">{user?.email ? user.email : "-"}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-sm font-medium text-gray-500">Fecha de Nacimiento</label>
+                        <p className="text-gray-900">{user?.fechaNacimiento?.split('T')[0] ? user.fechaNacimiento.split('T')[0] : "-"}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-sm font-medium text-gray-500">DNI</label>
+                        <p className="text-gray-900">{user?.dni ? user.email : "-"}</p>
+                      </div>
+                      {mayoriaEdad && (
+                        <div className="space-y-1">
+                          <label className="text-sm font-medium text-gray-500">Teléfono</label>
+                          <p className="text-gray-900">{user?.telefono ? user.telefono : "-"}</p>
+                        </div>
+                      )}
+                      <div className="space-y-1">
+                        <label className="text-sm font-medium text-gray-500">Dirección</label>
+                        <p className="text-gray-900">
+                          {user?.direccion?.pais ? `${user.direccion.pais}, ` : "-"}
+                          {user?.direccion?.provincia ? `${user.direccion.provincia}, ` : "-"}
+                          {user?.direccion?.localidad ? `${user.direccion.localidad}, ` : "-"}
+                          {user?.direccion?.calle ? `${user.direccion.calle}, ` : "-"}
+                          {user?.direccion?.numero || "-"}
+                        </p>
+                      </div>
+                </div>
+              </div>
+
+              {/* Datos del responsable */}
+              {!mayoriaEdad && (
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden h-fit">
+                  <div className="px-6 py-4 bg-gradient-to-r from-yellow-600 to-yellow-700 flex justify-between items-center">
+                    <h2 className="text-xl font-semibold text-white flex items-center">
+                      <User2 className="w-6 h-6 inline-block mr-2" />
+                      Información del Responsable
+                    </h2>
+                    <button
+                      onClick={() => setEditarResponsable(true)}
+                      className="inline-flex items-center px-4 py-2 rounded-lg bg-white/10 text-white font-medium hover:bg-white/20 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-1 focus:ring-offset-yellow-600"
+                    >
+                      Editar Responsable
+                    </button>
+                  </div>
+                  <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-1">
+                        <label className="text-sm font-medium text-gray-500">Nombre</label>
+                        <p className="text-gray-900">{responsable?.nombre ? responsable.nombre : "-"}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-sm font-medium text-gray-500">Apellido</label>
+                        <p className="text-gray-900">{responsable?.apellido ? responsable.apellido : "-"}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-sm font-medium text-gray-500">DNI</label>
+                        <p className="text-gray-900">{responsable?.dni ? responsable.dni : "-"}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-sm font-medium text-gray-500">Email</label>
+                        <p className="text-gray-900">{responsable?.email ? responsable.email : "-"}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-sm font-medium text-gray-500">Teléfono</label>
+                        <p className="text-gray-900">{responsable?.telefono ? responsable.telefono : "-"}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-sm font-medium text-gray-500">Dirección</label>
+                        <p className="text-gray-900">
+                          {responsable?.direccion?.pais ? `${responsable.direccion.pais}, ` : "-"}
+                          {responsable?.direccion?.provincia ? `${responsable.direccion.provincia}, ` : "-"}
+                          {responsable?.direccion?.localidad ? `${responsable.direccion.localidad}, ` : "-"}
+                          {responsable?.direccion?.calle ? `${responsable.direccion.calle}, ` : "-"}
+                          {responsable?.direccion?.numero || "-"}
+                        </p>
+                      </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Formularios */}
+        {editarUser && user && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg max-w-2xl w-full p-6">
+              <h3 className="text-xl font-semibold mb-4">Editar Información</h3>
+              <AlumnoForm alumno={user} setEditar={setEditarUser} setChanged={setCambiosUser} mayor={mayoriaEdad} />
+            </div>
+          </div>
+        )}
+
+        {editarResponsable && !mayoriaEdad && user && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg max-w-2xl w-full p-6">
+              <h3 className="text-xl font-semibold mb-4"> {responsable ? "Editar Responsable" : "Cargar Responsable"}</h3>
+              <ResponsableForm
+                responsable={responsable}
+                setEditar={setEditarResponsable}
+                setChanged={setCambiosResponsable}
+                alumnoId={user.id}
+              />
+            </div>
+          </div>
+        )}
+      </main>
+
+      <footer className="bg-sky-600 border-t w-full p-4 text-white">
+        <But_aside />
+      </footer>
+    </div>
+  )
 }
 export default withAuthUser(Cuenta);
+//endregion

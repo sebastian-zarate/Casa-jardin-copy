@@ -43,7 +43,6 @@ export async function getDireccionResponsableByAlumnoId(alumnoId: number) {
   })
 }
 
-
 //obtener todos los responsables
 export async function getAllResponsables() {
   return await prisma.responsable.findMany();
@@ -103,13 +102,16 @@ export async function updateResponsable(idAlumno: number, data: {
 
   // buscar si existe responsable
   const responsable = await getResponsableByAlumnoId(idAlumno);
+  console.log("responsable result", responsable)
   if (!responsable) {
+    console.log("no existe responsable (crear)")
     // si no existe, se crea
     return await prisma.responsable.create({
       data: responsableTrim,
     });
 
   } else {
+    console.log("existe responsable (actualizar)")
     // si existe, se actualiza
     return await prisma.responsable.update({
       where: { alumnoId: idAlumno },
