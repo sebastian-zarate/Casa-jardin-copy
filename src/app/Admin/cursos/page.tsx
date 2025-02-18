@@ -17,7 +17,7 @@ import { useRouter } from "next/navigation";
 import Loader from "@/components/Loaders/loadingSave/page";
 //para subir imagenes:
 import { handleUploadCursoImage, handleDeleteCursoImage, mapearImagenes } from "@/helpers/repoImages";
-import { Calendar, Pencil, Plus, Search, Trash2, Users } from "lucide-react";
+import { Calendar, FileText, Pencil, Plus, Search, Trash2, Users } from "lucide-react";
 import { validateCursoDetails, validateFechaInicioModificacion, validateFechaInicio } from "@/helpers/validaciones";
 const Cursos: React.FC = () => {
   // Estado para almacenar la lista de cursos
@@ -589,7 +589,7 @@ const Cursos: React.FC = () => {
 
       {selectedCursoId !== null && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white p-4 rounded-lg shadow-lg w-full max-w-md relative max-h-full overflow-y-auto">
+          <div className="bg-white p-4 rounded-lg shadow-lg w-full max-w-md relative max-h-full overflow-y-auto ">
             <h2 className="text-xl font-semibold mb-3">
               {selectedCursoId === -1 ? "Crear Taller" : "Editar Taller"}
             </h2>
@@ -598,7 +598,8 @@ const Cursos: React.FC = () => {
             )}
             <div className="mb-3">
               <label htmlFor="nombre" className="block text-sm font-medium">
-                Nombre:
+               
+              <FileText className="w-4 h-4 inline-block mr-2" /> Nombre:
               </label>
               <input
                 type="text"
