@@ -21,7 +21,7 @@ type Direccion = {
     calle: string
     numero: number
 }
-
+// Helper para agregar una dirección desde los formularios de alumno o responsable
 export async function direccionHelper(direccionData: DireccionSchemaType | undefined) {
     if(direccionData) {
       const nacionalidad = await addPais({nombre: direccionData.pais})

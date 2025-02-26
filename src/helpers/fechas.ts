@@ -15,6 +15,23 @@ export function dateTimeToString(dateTime: any): string {
     return date.toISOString().split('T')[0];
 }
 
+export function stringToDateTime(dateString: string): Date {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+        throw new Error("Invalid date format");
+    }
+    return date;
+}
+
+//sirve para los inputs de tipo date
+export const formDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
 //obtener edad de un alumno en base a su fecha de nacimiento
 export function calcularEdad(fechaNacimiento: any) {
     fechaNacimiento = dateTimeToDate(fechaNacimiento);
