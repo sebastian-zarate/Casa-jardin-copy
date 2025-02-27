@@ -6,7 +6,7 @@ import Navigate from "../../../components/Admin/navigate/page"; // Ajusta la rut
 import Image from "next/image";
 import Background from "../../../../public/Images/BackgroundSolicitudes.jpg"; // Ajusta la ruta según tu estructura de carpetas
 import withAuth from "../../../components/Admin/adminAuth";
-import { getCantCursosActivos, getCursos } from "@/services/cursos";
+import { getCantCursosActivos, getCursos,  } from "@/services/cursos";
 import { getSolicitudes } from "@/services/Solicitud/Solicitud";
 import { getCantAlumnosInscriptos } from "@/services/alumno_curso";
 import { getCantProfesionalesActivos } from "@/services/profesional_curso";

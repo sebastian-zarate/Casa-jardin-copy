@@ -5,7 +5,7 @@ import Navigate from "../../../components/Admin/navigate/page";
 
 
 import { updateCurso, getCursosCout, deleteCurso, createCurso, } from "../../../services/cursos";
-
+import { getAlumnosByIdCurso } from "../../../services/alumno_curso";
 import Background from "../../../../public/Images/Background.jpeg";
 
 //imagen default si el curso no tiene imagen
@@ -14,11 +14,12 @@ import { getImages_talleresAdmin } from "@/services/repoImage";
 import withAuth from "../../../components/Admin/adminAuth";
 import { autorizarAdmin } from "@/helpers/cookies";
 import { useRouter } from "next/navigation";
-import Loader from "@/components/Loaders/loadingSave/page";
+import Loader from "@/components/Loaders/loadingTalleres/page";
 //para subir imagenes:
 import { handleUploadCursoImage, handleDeleteCursoImage, mapearImagenes } from "@/helpers/repoImages";
-import { Calendar, FileText, Pencil, Plus, Search, Trash2, Users } from "lucide-react";
+import { Calendar, FileText, ImageIcon, Pencil, Plus, Search, Trash2, Users } from "lucide-react";
 import { validateCursoDetails, validateFechaInicioModificacion, validateFechaInicio } from "@/helpers/validaciones";
+import Talleres from "@/components/talleres/page";
 const Cursos: React.FC = () => {
   // Estado para almacenar la lista de cursos
   const [cursos, setCursos] = useState<
@@ -39,6 +40,8 @@ const Cursos: React.FC = () => {
   >([]);
   // Estado para almacenar el ID del curso seleccionado
   const [selectedCursoId, setSelectedCursoId] = useState<number | null>(null);
+  // selacioanr curso para mostar los alumnos que tiene inscriptos
+  const [selectedCursoIdAlumnos, setSelectedCursoIdAlumnos] = useState<number | null>(null);
   // Estado para almacenar los detalles del curso seleccionado
   const [cursoDetails, setCursoDetails] = useState<{
     nombre: string;
@@ -87,6 +90,7 @@ const Cursos: React.FC = () => {
   const [imagesLoaded, setImagesLoaded] = useState<boolean>(false);
   const [fechaInicioAnterior, setFechaInicioAnterior] = useState<Date | null>(null);
 
+
   //boolean para saber si estan cargando los cursos
   const [loading, setLoading] = useState<boolean>(true);
   // Estado para almacenar los detalles del curso seleccionado
@@ -99,6 +103,9 @@ const Cursos: React.FC = () => {
     fechaInicioAnterior: null, // Fecha inicial previamente guardada
     fechaFin: null,
   });
+
+  // Estado para almacenar la lista de alumnos
+  const [alumnos, setAlumnos] = useState<any[]>([]);
 
 
   //region useEffect
@@ -272,7 +279,7 @@ const Cursos: React.FC = () => {
       return;
     }
     // Validar que la fecha de inicio no sea anterior a la fecha actual
-    const validationErrorFechaInicio = fechaInicioAnterior 
+    const validationErrorFechaInicio = fechaInicioAnterior
       ? validateFechaInicioModificacion(trimmedCursoDetails.fechaInicio, fechaInicioAnterior, trimmedCursoDetails.fechaFin)
       : null;
 
@@ -412,6 +419,21 @@ const Cursos: React.FC = () => {
     );
   }, [searchTerm, cursos]);
 
+  // Función para obtener los alumnos inscriptos en un curso
+  async function fetchAlumnosByIdCurso(id: number) {
+    try {
+      setLoading(true);
+      const alumnos = await getAlumnosByIdCurso(id);
+      setAlumnos(alumnos); // Actualiza el estado con la lista de alumnos
+    }
+    catch (error) {
+      console.error("No se pudo obtener los alumnos inscriptos en el curso", error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+
 
 
   //region return
@@ -431,6 +453,7 @@ const Cursos: React.FC = () => {
           <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative">
             {errorMessage && <div style={{ color: "red" }}>{errorMessage}</div>}
             <h2 className="text-lg mb-4">Confirmar Eliminación</h2>
+
             <p>
               ¿Estás seguro de que deseas eliminar el taller:{" "}
               <strong>{cursoAEliminar.nombre}</strong>?
@@ -536,11 +559,11 @@ const Cursos: React.FC = () => {
                         <Calendar className="w-4 h-4" />
                         <span>
                           {talleres.fechaInicio &&
-                          new Date(new Date(talleres.fechaInicio).setDate(new Date(talleres.fechaInicio).getDate() +1)).toLocaleDateString('es-ES', {
-                            day: 'numeric',
-                            month: 'short',
-                            year: 'numeric',
-                          })}
+                            new Date(new Date(talleres.fechaInicio).setDate(new Date(talleres.fechaInicio).getDate() + 1)).toLocaleDateString('es-ES', {
+                              day: 'numeric',
+                              month: 'short',
+                              year: 'numeric',
+                            })}
                         </span>
                       </div>
                     </div>
@@ -552,9 +575,18 @@ const Cursos: React.FC = () => {
                   </div>
 
                   {/* Participantes */}
+
                   <div className="sm:col-span-2 flex items-center justify-center gap-1.5 mb-4 sm:mb-0">
-                    <Users className="w-4 h-4 text-gray-400" />
-                    <span className="text-sm">{talleres.cantidadParticipantes || 0}</span>
+                    <button
+                      onClick={async () => {
+                        fetchAlumnosByIdCurso(talleres.id);
+                        setSelectedCursoIdAlumnos(talleres.id);
+                      }}
+                      className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-800"
+                    >
+                      <Users className="w-4 h-4 text-gray-400" />
+                      <span>{talleres.cantidadParticipantes || 0}</span>
+                    </button>
                   </div>
 
                   {/* Acciones */}
@@ -583,186 +615,282 @@ const Cursos: React.FC = () => {
           </div>
         </div>
       </div>
-
-
-
-
-      {selectedCursoId !== null && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white p-4 rounded-lg shadow-lg w-full max-w-md relative max-h-full overflow-y-auto ">
-            <h2 className="text-xl font-semibold mb-3">
-              {selectedCursoId === -1 ? "Crear Taller" : "Editar Taller"}
-            </h2>
-            {errorMessage && (
-              <div className="mb-3 text-red-600 text-sm">{errorMessage}</div>
-            )}
-            <div className="mb-3">
-              <label htmlFor="nombre" className="block text-sm font-medium">
-               
-              <FileText className="w-4 h-4 inline-block mr-2" /> Nombre:
-              </label>
-              <input
-                type="text"
-                id="nombre"
-                name="nombre"
-                placeholder="Nombre del taller"
-                maxLength={50}
-                value={cursoDetails.nombre}
-                onChange={handleChange}
-                className="p-1 w-full border rounded text-sm"
-              />
+      {
+        loading && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+            <div className="bg-white p-4 rounded-lg shadow-lg">
+              <Loader />
             </div>
-            <div className="mb-3">
-              <label htmlFor="descripcion" className="block text-sm font-medium">
-                Descripción:
-              </label>
-              <input
-                type="text"
-                id="descripcion"
-                name="descripcion"
-                placeholder="Descripción del taller"
-                value={cursoDetails.descripcion}
-                onChange={handleChange}
-                className="p-1 w-full border rounded text-sm"
-              />
-            </div>
-            <div className="mb-3">
-              <label htmlFor="edadMinima" className="block text-sm font-medium">
-                Edad mínima:
-              </label>
-              <input
-                type="text"
-                id="edadMinima"
-                name="edadMinima"
-                pattern="[0-9]+"
-                placeholder="Ingrese la edad mínima"
-                maxLength={2} // Limita a dos dígitos (si es necesario)
-                value={cursoDetails.edadMinima}
-                onChange={(e) => {
-                  const regex = /^[0-9]*$/; // Permite solo números
-                  if (regex.test(e.target.value)) {
-                    handleChange(e); // Actualiza solo si es un número válido
-                  }
-                }}
-                className="p-2 w-full border rounded text-sm"
-              />
-            </div>
+          </div>
+        )
+      }
 
-            <div className="mb-3">
-              <label htmlFor="edadMaxima" className="block text-sm font-medium">
-                Edad máxima:
-              </label>
-              <input
-                type="text"
-                id="edadMaxima"
-                name="edadMaxima"
-                placeholder="Ingrese la edad máxima"
-                maxLength={2} // Limita la entrada a dos dígitos
-                value={cursoDetails.edadMaxima}
-                onChange={(e) => {
-                  const regex = /^[0-9]*$/; // Solo permite números
-                  if (regex.test(e.target.value)) {
-                    handleChange(e); // Actualiza solo si el valor es válido
-                  }
-                }}
-                className="p-1 w-full border rounded text-sm"
-              />
-            </div>
 
-            <div className="mb-4">
-              <label htmlFor="fechaInicio" className="block">
-              Fecha de inicio del taller:
-              </label>
-              <input
-              type="date"
-              id="fechaInicio"
-              name="fechaInicio"
-              value={
-                cursoDetails.fechaInicio &&
-                cursoDetails.fechaInicio instanceof Date &&
-                !isNaN(cursoDetails.fechaInicio.getTime())
-                ? cursoDetails.fechaInicio.toISOString().split('T')[0]
-                : ""
-              }
-              // Ajusta el valor mínimo basado en si es edición o creación
-              min={
-                selectedCursoId !== -1 && fechaInicioAnterior
-                ? new Date(fechaInicioAnterior).toISOString().split('T')[0]
-                : new Date().toISOString().split('T')[0]
-              }
-              max={new Date(new Date().setFullYear(new Date().getFullYear() + 1))
-                .toISOString()
-                .split('T')[0]} // Hasta un año desde hoy
-              onChange={handleChange}
-              className="p-2 w-full border rounded"
-              />
-            </div>
+      {/* Formulario responsivo para mostrar los alumnos del curso seleccionado */}
+      {selectedCursoIdAlumnos !== null && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4">
+          <div className="bg-white  rounded-lg shadow-xl w-full max-w-3xl relative max-h-[80vh] overflow-y-auto">
+            <div className="bg-blue-700 p-6  flex justify-between items-center">
+              <h2 className="text-lg md:text-xl font-semibold text-white">
+                Alumnos del Curso: {cursos.find(curso => curso.id === selectedCursoIdAlumnos)?.nombre}
+              </h2>
 
-            <div className="mb-4">
-              <label htmlFor="fechaFin" className="block">
-                Fecha de fin del taller:
-              </label>
-              <input
-                type="date"
-                id="fechaFin"
-                name="fechaFin"
-                value={
-                  cursoDetails.fechaFin && cursoDetails.fechaFin instanceof Date && !isNaN(cursoDetails.fechaFin.getTime())
-                    ? cursoDetails.fechaFin.toISOString().split('T')[0]
-                    : ""
-                }
-                min={new Date(new Date().setFullYear(new Date().getMonth() + 1))
-                  .toISOString()
-                  .split('T')[0]} // Hasta un mes desde hoy
-                max={new Date(new Date().setFullYear(new Date().getFullYear() + 1))
-                  .toISOString()
-                  .split('T')[0]} // Hasta un año desde hoy
-                onChange={handleChange}
-                className="p-2 w-full border rounded"
-              />
             </div>
-
-            <div className="mb-3">
-              <label htmlFor="imagen" className="block text-sm font-medium">
-                Imagen:
-              </label>
-              <input
-                type="file"
-                id="imagen"
-                name="imagen"
-                accept=".png, .jpg, .jpeg, .avif"
-                onChange={onFileChange}
-                className="p-1 w-full border rounded text-sm"
-              />
-              {uploadError && (
-                <div className="text-red-600 text-xs">{uploadError}</div>
+            <div className="mb-4 p-6 overflow-x-auto">
+              {loading ? (
+                <div className="flex justify-center items-center py-4">
+                  <Loader />
+                </div>
+              ) : (
+                <table className="w-full border-collapse bg-white text-sm md:text-base">
+                  <thead className="bg-gray-200">
+                    <tr>
+                      <th className="py-2 px-3 border-b border-gray-300 text-left">Código</th>
+                      <th className="py-2 px-3 border-b border-gray-300 text-left">Nombre</th>
+                      <th className="py-2 px-3 border-b border-gray-300 text-left">Apellido</th>
+                      <th className="py-2 px-3 border-b border-gray-300 text-left">Email</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {alumnos.length === 0 ? (
+                      <tr>
+                        <td colSpan={4} className="py-4 px-3 text-center text-gray-600">
+                          No hay alumnos registrados en este curso.
+                        </td>
+                      </tr>
+                    ) : (
+                      alumnos.map((alumno) => (
+                        <tr key={alumno.id} className="odd:bg-gray-100 hover:bg-gray-50">
+                          <td className="py-2 px-3 border-b border-gray-300">{alumno.id}</td>
+                          <td className="py-2 px-3 border-b border-gray-300">{alumno.nombre}</td>
+                          <td className="py-2 px-3 border-b border-gray-300">{alumno.apellido}</td>
+                          <td className="py-2 px-3 border-b border-gray-300">{alumno.email}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
               )}
             </div>
-            <div className="flex justify-end space-x-2">
+            <div className="flex justify-end p-6">
               <button
-                onClick={
-                  selectedCursoId === -1 ? handleCreateCurso : handleSaveChanges
-                }
-                className="bg-red-600 py-1 px-3 text-white rounded text-sm hover:bg-red-700"
-                disabled={isSaving}
+                onClick={() => setSelectedCursoIdAlumnos(null)}
+                className="bg-gray-600 py-2 px-6 text-white rounded-lg text-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
               >
-                {isSaving ? <Loader /> : "Guardar"}
-              </button>
-              <button
-                onClick={() => {
-                  setSelectedCursoId(null);
-                  setErrorMessage(null);
-                }}
-                disabled={isSaving}
-                className="bg-gray-600 py-1 px-3 text-white rounded text-sm hover:bg-gray-700"
-              >
-                Cancelar
+                Cerrar
               </button>
             </div>
           </div>
         </div>
       )}
 
+      {selectedCursoId !== null && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 ">
+          <div className="bg-white  rounded-lg shadow-lg w-full max-w-2xl relative max-h-full overflow-y-auto">
+        
+            <div className="bg-blue-700 p-4 rounded-t-lg mb-3">
+              <h2 className="text-xl font-semibold mb-3 text-white">
+                {selectedCursoId === -1 ? "Crear Taller" : "Editar Taller"}
+              </h2>
+            </div>  
+            <div className="p-4">
+            {errorMessage && (
+              <div className="mb-4 text-red-600 text-sm">{errorMessage}</div>
+            )}
+            <div className="mb-4">
+              <label htmlFor="nombre" className="block text-sm font-medium mb-3">
+                <FileText className="w-4 h-4 inline-block mr-2" />Nombre:
+              </label>
+              <input
+                type="text"
+                id="nombre"
+                name="nombre"
+                placeholder=" Nombre del taller"
+                maxLength={50}
+                value={cursoDetails.nombre}
+                onChange={handleChange}
+                className="p-1 w-full border rounded text-sm"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-3">
+                <span className="flex items-center">
+                  <FileText className="w-4 h-4 mr-2" />
+                  Descripción
+
+                </span>
+              </label>
+              <textarea
+                rows={5}
+                placeholder=" Descripción del taller"
+                value={cursoDetails.descripcion}
+                onChange={(e) => setCursoDetails({ ...cursoDetails, descripcion: e.target.value })}
+                className="p-1 w-full border rounded text-sm"
+              />
+            </div>
+            <div className="mb-4 flex gap-4">
+              <div className="flex-1">
+                <label htmlFor="edadMinima" className="block text-sm font-medium mb-3">
+                  <Users className="w-4 h-4 inline-block mr-2" />
+                  Edad mínima:
+                </label>
+                <input
+                  type="text"
+                  id="edadMinima"
+                  name="edadMinima"
+                  pattern="[0-9]+"
+                  placeholder="Ingrese la edad mínima"
+                  maxLength={2}
+                  value={cursoDetails.edadMinima}
+                  onChange={(e) => {
+                    const regex = /^[0-9]*$/;
+                    if (regex.test(e.target.value)) {
+                      handleChange(e);
+                    }
+                  }}
+                  className="p-1 w-full border rounded text-sm"
+                />
+              </div>
+
+              <div className="flex-1">
+                <label htmlFor="edadMaxima" className="block text-sm font-medium mb-3">
+                  <Users className="w-4 h-4 inline-block mr-2" />
+                  Edad máxima:
+                </label>
+                <input
+                  type="text"
+                  id="edadMaxima"
+                  name="edadMaxima"
+                  placeholder="Ingrese la edad máxima"
+                  maxLength={2}
+                  value={cursoDetails.edadMaxima}
+                  onChange={(e) => {
+                    const regex = /^[0-9]*$/;
+                    if (regex.test(e.target.value)) {
+                      handleChange(e);
+                    }
+                  }}
+                  className="p-1 w-full border rounded text-sm"
+                />
+              </div>
+            </div>
+
+
+            <div className="mb-4 flex gap-4">
+              <div className="flex-1">
+                <label htmlFor="fechaInicio" className="block">
+                  <Calendar className="w-4 h-4 inline-block mr-2" />
+                  Fecha de inicio del taller:
+                </label>
+                <input
+                  type="date"
+                  id="fechaInicio"
+                  name="fechaInicio"
+                  value={
+                    cursoDetails.fechaInicio &&
+                      cursoDetails.fechaInicio instanceof Date &&
+                      !isNaN(cursoDetails.fechaInicio.getTime())
+                      ? cursoDetails.fechaInicio.toISOString().split('T')[0]
+                      : ""
+                  }
+                  min={
+                    selectedCursoId !== -1 && fechaInicioAnterior
+                      ? new Date(fechaInicioAnterior).toISOString().split('T')[0]
+                      : new Date().toISOString().split('T')[0]
+                  }
+                  max={new Date(new Date().setFullYear(new Date().getFullYear() + 1))
+                    .toISOString()
+                    .split('T')[0]}
+                  onChange={handleChange}
+                  className="p-2 w-full border rounded"
+                />
+              </div>
+
+              <div className="flex-1">
+                <label htmlFor="fechaFin" className="block">
+                  <Calendar className="w-4 h-4 inline-block mr-2" />
+                  Fecha de fin del taller:
+                </label>
+                <input
+                  type="date"
+                  id="fechaFin"
+                  name="fechaFin"
+                  value={
+                    cursoDetails.fechaFin && cursoDetails.fechaFin instanceof Date && !isNaN(cursoDetails.fechaFin.getTime())
+                      ? cursoDetails.fechaFin.toISOString().split('T')[0]
+                      : ""
+                  }
+                  min={new Date(new Date().setFullYear(new Date().getMonth() + 1))
+                    .toISOString()
+                    .split('T')[0]}
+                  max={new Date(new Date().setFullYear(new Date().getFullYear() + 1))
+                    .toISOString()
+                    .split('T')[0]}
+                  onChange={handleChange}
+                  className="p-2 w-full border rounded"
+                />
+              </div>
+            </div>
+            <div className="mb-4">
+              <span className="flex items-center ">
+                <ImageIcon className="w-4 h-4 mr-2" />
+                Imagen
+
+              </span>
+              <div
+                className={`mt-1 flex flex-col items-center justify-center px-6 pt-5 pb-6 border-2 border-dashed rounded-md ${uploadError ? "border-red-500" : "border-gray-300"
+                  }`}
+              >
+                <div className="space-y-1 text-center">
+                  <ImageIcon className="mx-auto h-12 w-12 text-gray-400" />
+                  <div className="flex flex-col sm:flex-row items-center text-sm text-gray-600">
+                    <label
+                      htmlFor="file-upload"
+                      className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
+                    >
+                      <span>Subir archivo</span>
+                      <input
+                        id="file-upload"
+                        name="file-upload"
+                        type="file"
+                        className="sr-only"
+                        accept=".png, .jpg, .jpeg, .avif"
+                        onChange={onFileChange}
+                      />
+                    </label>
+                    <p className="pl-1">o arrastrar y soltar</p>
+                  </div>
+                  <p className="text-xs text-gray-500">PNG, JPG, JPEG, AVIF hasta 10MB</p>
+                </div>
+              </div>
+
+             
+              <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2 mt-4">
+                <button
+                  onClick={() => {
+                    setSelectedCursoId(null);
+                    setErrorMessage(null);
+                  }}
+                  disabled={isSaving}
+                  className="bg-gray-600 py-2 px-4 text-white rounded text-sm hover:bg-gray-700 disabled:opacity-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={selectedCursoId === -1 ? handleCreateCurso : handleSaveChanges}
+                  className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                  disabled={isSaving}
+                >
+                  {isSaving ? <Loader /> : "Guardar"}
+                </button>
+              </div>
+            </div>
+          </div>
+          </div>
+        </div>
+
+
+      )}
     </main>
   );
 };

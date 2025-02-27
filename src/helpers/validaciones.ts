@@ -2,12 +2,12 @@ import { emailExists } from "@/services/Alumno";
 
 
 
-export  const caracEspeciales = /^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/; // Expresión regular correcta para validar nombres y apellidos
+export const caracEspeciales = /^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/; // Expresión regular correcta para validar nombres y apellidos
 export function validateDni(dni: string) {
     //console.log("dni",dni);
 
     dni = dni.trim(); // Eliminar espacios en blanco
-    if(dni == null){
+    if (dni == null) {
         return "El DNI no puede estar vacío.";
     }
     // Validar que sea solo números
@@ -51,7 +51,7 @@ export function validateEmail(email: string) {
         return "El email no puede tener más de 99 caracteres.";
     }
 
-    
+
     return null; // Retornar null si no hay errores
 }
 
@@ -81,19 +81,19 @@ export function validatePasswordComplexity(password: string) {
 export function validateDireccion(pais?: string, provincia?: string, localidad?: string, calle?: string, numero?: number) {
     const caracEspeciales = /[!@#$%^&*(),.?":{}|<>]/;
     console.log(pais, provincia, localidad, calle, numero);
-    if(!pais){
+    if (!pais) {
         return "El país no puede estar vacío";
     }
-    if(!provincia){
+    if (!provincia) {
         return "La provincia no puede estar vacía";
     }
-    if(!localidad){
+    if (!localidad) {
         return "La localidad no puede estar vacía";
     }
-    if(!calle){
+    if (!calle) {
         return "La calle no puede estar vacía";
     }
-    if(!numero){
+    if (!numero) {
         return "El número de la dirección no puede estar vacío";
     }
     if (pais && /\d/.test(pais)) {
@@ -129,10 +129,10 @@ export function validateDireccion(pais?: string, provincia?: string, localidad?:
     if (provincia.length < 1) {
         return ("La provincia debe tener al menos 2 caracteres.");
     }
-    if (localidad.length < 1 ) {
+    if (localidad.length < 1) {
         return ("La localidad debe tener al menos 2 caracteres.");
     }
-    if (calle.length < 1 ) {
+    if (calle.length < 1) {
         return ("La calle debe tener al menos 2 caracteres.");
     }
     return null;
@@ -196,14 +196,14 @@ export function validateNombreRespon(nombre: string, apellido: string) {
         return "El apellido del responsable no puede tener más de 50 caracteres.";
     }
 
-    
+
 
     return null; // Sin errores
 }
 
 
 export function validateApellido(apellido: string) {
-    
+
 
     if (!apellido) {
         return "El apellido no puede estar vacío"; // Prioridad: Verificar que no esté vacío primero
@@ -266,7 +266,7 @@ export function validatePhoneNumber(phone: string) {
     }
 
     // Verificar formato con la expresión regular (solo números nacionales)
-   
+
 
     return null;
 }
@@ -306,41 +306,47 @@ export function validateCursoDetails(details: {
     fechaFin: Date;
     edadMinima: number;
     edadMaxima: number;
-  }) {
+}) {
     const { nombre, descripcion, fechaInicio, fechaFin, edadMinima, edadMaxima } = details;
-  
+
     if (nombre.length < 2 || nombre.length > 50) {
-      return "El nombre debe tener entre 2 y 50 caracteres.";
+        return "El nombre debe tener entre 2 y 50 caracteres.";
     }
-  
+
     const descripcionWords = descripcion.trim().split(/\s+/).length;
     if (descripcionWords < 5) return "La descripción debe tener al menos 5 palabras.";
     if (descripcionWords > 300) return "La descripción no puede exceder las 300 palabras.";
-  
+
     const regex = /^[a-zA-Z0-9À-ÿ\u00f1\u00d1\u00fc\u00dc\s.,:-]*$/;
     if (!regex.test(nombre)) return "El nombre contiene caracteres no permitidos.";
     if (!regex.test(descripcion)) return "La descripción contiene caracteres no permitidos.";
-  
-   
-  
+
+
+
     const diffDays = Math.ceil(
-      Math.abs(fechaFin.getTime() - fechaInicio.getTime()) / (1000 * 60 * 60 * 24)
+        Math.abs(fechaFin.getTime() - fechaInicio.getTime()) / (1000 * 60 * 60 * 24)
     );
     if (diffDays < 7) return "El rango de fechas no puede ser menor a 7 días.";
-  
-    if (edadMinima < 2) return "La edad mínima no puede ser menor a 2 años.";
-    if (edadMaxima > 99) return "La edad máxima no puede ser mayor a 99 años.";
-    if (edadMinima > edadMaxima) return "La edad mínima no puede ser mayor que la edad máxima.";
-  
+
+    const minEdad = Number(edadMinima);
+    const maxEdad = Number(edadMaxima);
+
+    if (isNaN(minEdad) || isNaN(maxEdad)) return "Las edades deben ser números válidos.";
+
+    if (minEdad < 2) return "La edad mínima no puede ser menor a 2 años.";
+    if (maxEdad > 99) return "La edad máxima no puede ser mayor a 99 años.";
+
+    if (minEdad >= maxEdad) return "La edad mínima no puede ser mayor que la edad máxima.";
+
     return null;
-  }
-  // validar la fecha de inicio de un curso
-  export function validateFechaInicio(fechaInicio: Date | undefined) {
+}
+// validar la fecha de inicio de un curso
+export function validateFechaInicio(fechaInicio: Date | undefined) {
     if (!fechaInicio) return "La fecha de inicio no puede estar vacía.";
-  
-    
+
+
     return null;
-  }
+}
 // validar la fecha de inicio de un curso con fecha fin 
 export function validateFechaInicioalta(fechaInicio: Date | undefined, fechaFin: Date) {
     if (!fechaInicio) return "La fecha de inicio no puede estar vacía.";
@@ -357,7 +363,7 @@ export function validateFechaInicioalta(fechaInicio: Date | undefined, fechaFin:
 
 // validar la fecha de fin de un curso con fecha inicio
 export function validateFechaInicioModificacion(
-    fechaInicio: Date ,
+    fechaInicio: Date,
     fechaInicioAnterior: Date,
     fechaFin: Date
 ) {
@@ -368,7 +374,7 @@ export function validateFechaInicioModificacion(
         Math.abs(fechaFin.getTime() - fechaInicio.getTime()) / (1000 * 60 * 60 * 24)
     );
     if (diffDays > 365) return "El curso no puede tener una vigencia mayor a un año.";
-  
+
     if (fechaInicio < fechaInicioAnterior) return "La fecha de inicio no puede ser menor a la fecha de inicio anterior.";
 
     return null;
