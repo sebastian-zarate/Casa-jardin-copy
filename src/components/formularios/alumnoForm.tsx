@@ -154,6 +154,7 @@ const AlumnoForm: React.FC<AlumnoProps> = (AlumnoProps) => {
               </CardTitle>
             </CardHeader>
             <CardContent className="grid grid-cols-2 gap-4 pt-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div>
                 <Label className="text-sm font-medium text-muted-foreground">Nombre</Label>
                 <p className="text-lg font-medium">{AlumnoProps.alumno?.nombre}</p>
@@ -170,6 +171,7 @@ const AlumnoForm: React.FC<AlumnoProps> = (AlumnoProps) => {
                 <Label className="text-sm font-medium text-muted-foreground">Fecha de Nacimiento</Label>
                 <p className="text-lg font-medium">{fecha(AlumnoProps.alumno?.fechaNacimiento)}</p>
               </div>
+            </div>
             </CardContent>
           </Card>
 
@@ -181,6 +183,7 @@ const AlumnoForm: React.FC<AlumnoProps> = (AlumnoProps) => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 pt-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div>
                 <Label htmlFor="dni">DNI</Label>
                 <Input id="dni" type="text" {...register("dni", { valueAsNumber: true })} className="mt-1" />
@@ -193,6 +196,7 @@ const AlumnoForm: React.FC<AlumnoProps> = (AlumnoProps) => {
                   {errors.telefono && <p className="text-destructive text-sm mt-1">{errors.telefono.message}</p>}
                 </div>
               )}
+            </div>
             </CardContent>
           </Card>
 

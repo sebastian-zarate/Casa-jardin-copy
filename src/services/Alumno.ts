@@ -80,8 +80,6 @@ export async function createAlumnoAdmin(data: {
   dni: number;
   fechaNacimiento: Date;
   mayoriaEdad?: boolean;
-  rolId: number;
-
 }) {
   const alumnoTrim = {
     nombre: data.nombre.trim(),
@@ -93,7 +91,7 @@ export async function createAlumnoAdmin(data: {
     dni:  Number(data.dni),
     fechaNacimiento: data.fechaNacimiento,
     mayoriaEdad: data?.mayoriaEdad,
-    rolId: data.rolId
+    rolId: 2
   }
   // Verificar si el email ya existe en la base de datos
   const existingAlumno = await emailExists(data.email.trim());

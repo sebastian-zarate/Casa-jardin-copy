@@ -9,7 +9,12 @@ export const direccionSchema = z.object({
   provincia: z.string().min(1, "La provincia es obligatoria"),
   localidad: z.string().min(1, "La localidad es obligatoria"),
   calle: z.string().min(1, "La calle es obligatoria"),
-  numero: z.coerce.number().min(1, "El número debe ser mayor a 0"),
+  numero: z
+    .number({
+      required_error: "El número es obligatorio",
+      invalid_type_error: "El número debe ser válido, solo se permiten números",
+    })
+    .min(1, { message: "El número debe ser mayor a 0" }),
 })
 
 export type DireccionSchemaType = z.infer<typeof direccionSchema>   

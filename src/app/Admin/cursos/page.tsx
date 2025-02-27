@@ -1,13 +1,8 @@
 "use client";
-
 import React, { useEffect, useState } from "react";
 import Navigate from "../../../components/Admin/navigate/page";
-
-
 import { updateCurso, getCursosCout, deleteCurso, createCurso, } from "../../../services/cursos";
-
 import Background from "../../../../public/Images/Background.jpeg";
-
 //imagen default si el curso no tiene imagen
 import NoImage from "../../../../public/Images/default-no-image.png";
 import { getImages_talleresAdmin } from "@/services/repoImage";

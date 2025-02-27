@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { updateAlumno } from "@/services/Alumno"
+import { updateAlumno, createAlumnoAdmin} from "@/services/Alumno"
 import { direccionHelper, direccionSchema } from "@/helpers/direccion"
 import { getDireccionCompleta } from "@/services/ubicacion/direccion"
 import React, {useState, useEffect} from "react"
@@ -16,6 +16,8 @@ import React, {useState, useEffect} from "react"
 import { ResponsableAdminForm, responsableSchema } from "./responsableAdminForm"
 import { getResponsableByAlumnoId, updateResponsable } from "@/services/responsable"
 import { formDate } from "@/helpers/fechas"
+import { DireccionAdminForm } from "./direccionAdminForm"
+import { dir } from "console"
 
 
 
@@ -37,11 +39,16 @@ const alumnoSchema = (mayor: boolean, nueva: boolean) => z.object({
     telefono: mayor ? z.string().min(1, { message: "Debe completar el teléfono" }).nullable().optional() : z.string().nullable().optional(),
   direccion: direccionSchema.optional(),
   //campos no modificables
-  id: z.number(),
+  id: z.number().optional(),
   nombre: z.string().min(1, { message: "Debe completar el nombre" }),
   apellido: z.string().min(1, { message: "Debe completar el apellido" }),
   email: z.string().email({ message: "Debe ser un email válido" }),
-  password: nueva ? z.string().min(8, { message: "La contraseña debe tener al menos 8 caracteres" }).regex(/(?=.*[0-9])/, {message: "Debe contener al menos un número"}) : z.string().optional().nullable(),
+  password: nueva ? 
+  z.string().min(8, { message: "La contraseña debe tener al menos 8 caracteres" })
+  .regex(/(?=.*[0-9])/, {message: "Debe contener al menos un número"}) 
+  : 
+  z.union([z.string().min(8, { message: "La contraseña debe tener al menos 8 caracteres" })
+    .regex(/(?=.*[0-9])/, {message: "Debe contener al menos un número"}), z.string().length(0)]),
   fechaNacimiento: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { message: "Debe ser una fecha válida" }),
   direccionId: z.number().optional().nullable(),
   responsable: responsableSchema.optional()
@@ -71,7 +78,7 @@ const AlumnoAdminForm: React.FC<FormProps> = (FormProps) => {
             methods.setValue("direccion", direccion);
           }
         }
-        if (FormProps.alumno && !FormProps.mayor) {
+        if (FormProps.alumno?.id && !FormProps.mayor) {
           const responsable = await fetchResponsable(FormProps.alumno.id);
           if (responsable) {
             methods.setValue("responsable", responsable);
@@ -176,7 +183,7 @@ const AlumnoAdminForm: React.FC<FormProps> = (FormProps) => {
     const direccion = await direccionHelper(data.direccion)
 
     //paso 2 actualizar alumno
-    if(FormProps.alumno){
+    if(FormProps.alumno?.id){
       //cambio el direccion id por los nuevos datos
       FormProps.alumno.direccionId = direccion?.id
       //actualizo el alumno
@@ -222,12 +229,49 @@ const AlumnoAdminForm: React.FC<FormProps> = (FormProps) => {
           dni: data.responsable?.dni,
           telefono: data.responsable?.telefono,
           email: data.responsable?.email,
-          direccionId: direccion?.id
+          direccionId: dirRes?.id
         })
         console.log("responsable actualizado: ", r)
       }
 
       FormProps.setChanged(true)
+    }
+    //crear alumno si no existe
+    else{
+      const newAlum = await createAlumnoAdmin({
+        nombre: data.nombre,
+        apellido: data.apellido,
+        email: data.email,
+        password: String(data.password),
+        fechaNacimiento: new Date(data.fechaNacimiento),
+        dni: Number(data.dni),
+        telefono: String(data.telefono),
+        direccionId: direccion?.id,
+      })
+
+      if(typeof newAlum !== "string"){
+        console.log("nuevo alumno: ", newAlum)
+        //crear el responsable 
+        if(!FormProps.mayor && data.responsable){
+          //paso 3.1 actualizar / crear direccion responsable
+          const dirRes = await direccionHelper(data.responsable.direccion)
+          data.responsable.direccionId = dirRes?.id
+
+          //paso 3.2 actualizar responsable
+          const r = await updateResponsable( newAlum.id,{
+            alumnoId: newAlum.id,
+            nombre: data.responsable?.nombre,
+            apellido: data.responsable?.apellido,
+            dni: data.responsable?.dni,
+            telefono: data.responsable?.telefono,
+            email: data.responsable?.email,
+            direccionId: dirRes?.id
+          })
+          console.log("responsable creado: ", r)
+        }
+        FormProps.setChanged(true)
+      }
+      
     }
 
     
@@ -309,7 +353,7 @@ const AlumnoAdminForm: React.FC<FormProps> = (FormProps) => {
              </CardTitle>
            </CardHeader>
            <CardContent className="pt-6">
-             <DireccionForm/>
+             <DireccionAdminForm fieldPath={"direccion"}/>
            </CardContent>
          </Card>
 

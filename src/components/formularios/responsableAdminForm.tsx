@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { DireccionForm } from "./direccionForm"
 import { direccionHelper, direccionSchema } from "@/helpers/direccion"
 import { updateResponsable } from "@/services/responsable"
+import { DireccionAdminForm } from "./direccionAdminForm"
 
 
 
@@ -92,7 +93,7 @@ export const ResponsableAdminForm: React.FC = () => {
                 <div>
                 </div>
             </div>
-            <DireccionForm />
+            <DireccionAdminForm fieldPath="responsable.direccion" />
         </div>
         
     )
