@@ -84,7 +84,6 @@ export async function deleteSolicitud(solicitudId: number) {
 //modificar solicitud
 export async function updateSolicitud(solicitudId: number, data: {
   leida?: boolean;
-  enEspera?: boolean;
 }) {
   return await prisma.solicitud.update({
     where: {
@@ -147,4 +146,114 @@ export async function getPersonasSoli2(dataMa: SolicitudMayor[], dataMe: Solicit
     return {mayores, menores};
 }
 
+//llamada que hace un join, devuelve toda la info que se quiere saber de una solicitud
+export async function getSolicitudCompleta(solicitudId: number) {
+  const solicitudConRelaciones = await prisma.solicitud.findUnique({
+    where: { id: solicitudId },
+    include: {
+      solicitudMayores: {
+        include: {
+          alumno: {
+            include: {
+              direccion: true, // Dirección relacionada con el alumno
+            },
+          }
+        },
+      },
+      solicitudMenores: {
+        include: {
+          alumno: {
+            include: {
+             direccion: true, // Dirección relacionada con el alumno
+              responsable: {
+                include: {
+                  direccion: true, // Dirección relacionada con el responsable
+                },
+              } 
+            },
+
+          },
+        },
+      },
+      cursoSolicitud: {
+        include: {
+          curso: true, // Cursos relacionados a la solicitud
+        },
+      },
+    },
+  });
+  return solicitudConRelaciones;
+}  
+
+//version para muchas solicitudes devuelve un array de solicitudes completas
+//son muuuchos datos
+export async function getSolicitudesCompletas() {
+  const solicitudesConRelaciones = await prisma.solicitud.findMany({
+    include: {
+      solicitudMayores: {
+        include: {
+          alumno: true, // Datos del alumno para mayores
+        },
+      },
+      solicitudMenores: {
+        include: {
+          alumno: {
+            include: {
+              //direccion: true, // Dirección relacionada con el alumno
+              responsable: {
+                include: {
+                  direccion: true, // Dirección relacionada con el responsable
+                },
+              }
+            },
+
+          },
+        },
+      },
+      cursoSolicitud: {
+        include: {
+          curso: true, // Cursos relacionados a la solicitud
+        },
+      },
+    },
+  });
+  return solicitudesConRelaciones;
+}  
+//devuelve las solicitudes completas de un alumno especifico
+export async function getSolicitudesCompletasByAlumno(alumnoId: number) {
+  const solicitudesConRelaciones = await prisma.solicitud.findMany({
+    where: {
+      OR: [
+        { solicitudMayores: { alumnoId: alumnoId }},
+        { solicitudMenores: { alumnoId: alumnoId }},
+      ],
+    },
+    include: {
+      solicitudMayores: {
+        include: {
+          alumno: true, // Datos del alumno para mayores
+        },
+      },
+      solicitudMenores: {
+        include: {
+          alumno: {
+            include: {
+              responsable: {
+                include: {
+                  direccion: true, // Dirección relacionada con el responsable
+                },
+              },
+            },
+          },
+        },
+      },
+      cursoSolicitud: {
+        include: {
+          curso: true, // Cursos relacionados a la solicitud
+        },
+      },
+    },
+  });
+  return solicitudesConRelaciones;
+}
 

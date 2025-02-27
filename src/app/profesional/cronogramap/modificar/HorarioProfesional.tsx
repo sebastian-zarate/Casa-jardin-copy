@@ -309,7 +309,10 @@ export default function HorarioProfesional({ idAula, idProfesional }: { idAula: 
                 ))}
             </tbody>
           </table>
-
+          {/* Aclaración sobre materias repetidas */}
+          <div className="mt-4 text-gray-600 text-sm ">
+            Nota: El sistema valida que una misma materia no esté asignada en el mismo día y hora en otros cronogramas. Sin embargo, es posible asignar al mismo profesor diferentes cursos en el mismo horario y día.
+          </div>
           {/* Mensaje de error adicional, si lo hay */}
           {error && <div className="text-red-500 mt-4">{error}</div>}
 
@@ -326,36 +329,38 @@ export default function HorarioProfesional({ idAula, idProfesional }: { idAula: 
         </div>
       </div>
 
-      {/* Modales */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 z-40 flex justify-center items-center">
-          <div className="bg-white p-4 rounded-lg shadow-lg max-w-md w-full z-50">
-            <h2 className="text-lg font-bold mb-4">Selecciona un curso</h2>
-            {errorMessage && <div className="text-red-700 px-4 py-2 rounded mb-4">{errorMessage}</div>}
-            <ul className="max-h-60 overflow-auto">
-              {loadingCursos ? (
-                <li>Cargando cursos...</li>
-              ) : (
-                cursos.map((curso) => (
-                  <li
-                    key={curso.id}
-                    className="p-2 hover:bg-gray-200 cursor-pointer"
-                    onClick={() => handleSelectCurso(curso.id)}
-                  >
-                    {curso.nombre}
-                  </li>
-                ))
-              )}
-            </ul>
-            <button
-              onClick={() => {
-                setIsModalOpen(false);
-                setErrorMessage(null);
-              }}
-              className="mt-4 bg-gray-500 text-white px-4 py-2 rounded"
+     { /* Modales */}
+        {isModalOpen && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 z-40 flex justify-center items-center">
+            <div className="bg-white p-4 rounded-lg shadow-lg max-w-md w-full z-50">
+          <h2 className="text-lg font-bold mb-4">Selecciona un curso</h2>
+          {errorMessage && <div className="text-red-700 px-4 py-2 rounded mb-4">{errorMessage}</div>}
+          <ul className="max-h-60 overflow-auto">
+            {loadingCursos ? (
+              <li>Cargando cursos...</li>
+            ) : cursos.length === 0 ? (
+              <li>No hay cursos vigentes.</li>
+            ) : (
+              cursos.map((curso) => (
+            <li
+              key={curso.id}
+              className="p-2 hover:bg-gray-200 cursor-pointer"
+              onClick={() => handleSelectCurso(curso.id)}
             >
-              Cancelar
-            </button>
+              {curso.nombre}
+            </li>
+              ))
+            )}
+          </ul>
+          <button
+            onClick={() => {
+              setIsModalOpen(false);
+              setErrorMessage(null);
+            }}
+            className="mt-4 bg-gray-500 text-white px-4 py-2 rounded"
+          >
+            Cancelar
+          </button>
           </div>
         </div>
       )}

@@ -36,7 +36,7 @@ const StyledWrapper = styled.div`
     position: relative;
     overflow: hidden;
     transition-duration: 0.3s;
-    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.199);
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
     background-color: #00d757;
   }
 
@@ -86,6 +86,9 @@ const StyledWrapper = styled.div`
   }
   .Btn:active {
     transform: translate(2px, 2px);
+
   }`;
+     
+  
 
 export default Button;

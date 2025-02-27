@@ -90,7 +90,7 @@ export async function createAlumnoAdmin(data: {
     password: data.password.trim(),
     telefono: data?.telefono?.trim(),
     direccionId: data?.direccionId,
-    dni: data.dni,
+    dni:  Number(data.dni),
     fechaNacimiento: data.fechaNacimiento,
     mayoriaEdad: data?.mayoriaEdad,
     rolId: data.rolId
@@ -150,8 +150,8 @@ export async function authenticateUser(email: string, password: string): Promise
 export async function updateAlumno(id: number, data: {
   nombre: string;
   apellido: string;
-  dni: number;
-  telefono?: string;
+  dni?: number | null;
+  telefono?: string | null;
   email: string;
   direccionId?: number;
   fechaNacimiento?: Date;
@@ -194,7 +194,7 @@ export async function updateAlumno(id: number, data: {
       id: id,
       nombre: alumnoTrim.nombre,
       apellido: alumnoTrim.apellido,
-      dni: (alumnoTrim.dni),
+      dni: alumnoTrim.dni,
       telefono: alumnoTrim.telefono,
       direccionId: alumnoTrim.direccionId,
       email: alumnoTrim.email,
@@ -209,7 +209,7 @@ export async function updateAlumno(id: number, data: {
     id: id,
     nombre: alumnoTrim.nombre,
     apellido: alumnoTrim.apellido,
-    dni: (alumnoTrim.dni),
+    dni: alumnoTrim.dni,
     telefono: alumnoTrim.telefono,
     direccionId: alumnoTrim.direccionId,
     email: alumnoTrim.email,

@@ -28,7 +28,7 @@ const withAuth = (WrappedComponent: React.ComponentType) => {
     if (loading) {
       return (
         <div className="fixed inset-0 flex items-center justify-center bg-white z-50">
-          {/* Aquí puedes agregar un spinner o un mensaje de carga */}
+       
         </div>
       );
     }
