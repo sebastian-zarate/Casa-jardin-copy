@@ -31,7 +31,10 @@ export const responsableSchema = z.object({
     .int()
     .min(1000000, { message: "DNI inválido, debe ser un número de 8 dígitos" })
     .max(999999999, { message: "DNI inválido, debe ser un número de 8 dígitos" }),
-  telefono: z.string().min(1, { message: "Debe completar el teléfono" }),
+  telefono: z
+  .string()
+  .min(1, { message: "Debe completar el teléfono" })
+  .regex(/^\d+$/, { message: "El teléfono solo debe contener números" }),
   email: z.string().min(1, { message: "Debe completar el email" }).email({ message: "Email inválido" }),
   alumnoId: z.number().optional(),
   direccionId: z.number().optional(),

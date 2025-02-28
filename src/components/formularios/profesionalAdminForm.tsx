@@ -28,7 +28,8 @@ const profesionalSchema = (nueva: boolean) => z.object({
     : 
     z.union([z.string().min(8, { message: "La contraseña debe tener al menos 8 caracteres" })
     .regex(/(?=.*[0-9])/, {message: "Debe contener al menos un número"}), z.string().length(0)]),
-    telefono: z.string().min(1, { message: "Debe completar el teléfono" }),
+    telefono: z.string().min(1, { message: "Debe completar el teléfono" })
+    .regex(/^\d+$/, { message: "El teléfono solo debe contener números" }),
     //url de la imagen del profesional
     imagen: z.any().nullable().optional(),
 })

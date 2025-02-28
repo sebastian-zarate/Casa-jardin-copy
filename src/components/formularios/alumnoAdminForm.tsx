@@ -17,7 +17,7 @@ import { ResponsableAdminForm, responsableSchema } from "./responsableAdminForm"
 import { getResponsableByAlumnoId, updateResponsable } from "@/services/responsable"
 import { formDate } from "@/helpers/fechas"
 import { DireccionAdminForm } from "./direccionAdminForm"
-import { dir } from "console"
+
 
 
 
@@ -36,7 +36,14 @@ const alumnoSchema = (mayor: boolean, nueva: boolean) => z.object({
       z.null(),
     ])
     .optional(),
-    telefono: mayor ? z.string().min(1, { message: "Debe completar el teléfono" }).nullable().optional() : z.string().nullable().optional(),
+    telefono: mayor 
+    ? z
+      .string()
+      .min(1, { message: "Debe completar el teléfono" })
+      .regex(/^\d+$/, { message: "El teléfono solo debe contener números" })
+      .nullable()
+      .optional() 
+    : z.string().nullable().optional(),
   direccion: direccionSchema.optional(),
   //campos no modificables
   id: z.number().optional(),
@@ -189,7 +196,7 @@ const AlumnoAdminForm: React.FC<FormProps> = (FormProps) => {
       //actualizo el alumno
 
       //si se cambia la contraseña
-      if(data.password){
+      if(data.password.length > 0){
       await updateAlumno(FormProps.alumno.id, {
         nombre: data.nombre,
         apellido: data.apellido,

@@ -27,7 +27,14 @@ const alumnoSchema = (mayor: boolean) => z.object({
       z.null(),
     ])
     .optional(),
-    telefono: mayor ? z.string().min(1, { message: "Debe completar el teléfono" }).nullable().optional() : z.string().nullable().optional(),
+    telefono: mayor 
+    ? z
+      .string()
+      .min(1, { message: "Debe completar el teléfono" })
+      .regex(/^\d+$/, { message: "El teléfono solo debe contener números" })
+      .nullable()
+      .optional()
+    : z.string().nullable().optional(),
   direccion: direccionSchema.optional(),
   //campos no modificables
   id: z.number(),

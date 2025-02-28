@@ -2,11 +2,11 @@
 // #region Imports
 import React, {useEffect, useState } from "react";
 import Navigate from "../../../components/Admin/navigate/page";
-import { Alumno, deleteAlumno, getAlumnos } from "../../../services/Alumno";
+import { deleteAlumno, getAlumnos } from "../../../services/Alumno";
 import Background from "../../../../public/Images/Background.jpeg"
 import withAuth from "../../../components/Admin/adminAuth";
 //ver que hago con esto....
-import { deleteResponsableByAlumnoId, getAllResponsables } from "@/services/responsable";
+import { deleteResponsableByAlumnoId } from "@/services/responsable";
 import { Mail, Pencil, Phone, Plus, Search, Trash2, Users, BookOpen} from "lucide-react";
 //formulario para agregar o actualizar alumnos
 import AlumnoAdminForm from "@/components/formularios/alumnoAdminForm";
@@ -34,6 +34,7 @@ type Usuario = {
     email: string;
     direccionId: number;
     fechaNacimiento: string;
+    password: string;
     rolId: number;
 };
 
@@ -131,8 +132,7 @@ const Alumnos: React.FC = () => {
         const searchTerm = e.target.value.toLowerCase();
         let filteredAlumnos = alumnosMostrados.filter(alumno =>
             alumno.nombre.toLowerCase().includes(searchTerm) ||
-            alumno.apellido.toLowerCase().includes(searchTerm)/*  ||
-            alumno.email.toLowerCase().includes(searchTerm) */
+            alumno.apellido.toLowerCase().includes(searchTerm)
         );
 
         setAlumnoAbuscar(e.target.value);
@@ -307,7 +307,7 @@ const Alumnos: React.FC = () => {
                                             <Pencil className="w-5 h-5" />
                                         </button>
                                         <button
-                                            onClick={() => {setAlumnoSelected(alumno); setEditarCursos(true); console.log("huhi", editarCursos, alumnoSelected)}}
+                                            onClick={() => {setAlumnoSelected(alumno); setEditarCursos(true); }}
                                             className="text-green-600 hover:text-green-900 p-1 hover:bg-green-50 rounded"
                                         >
                                             <BookOpen className="w-5 h-5" />
