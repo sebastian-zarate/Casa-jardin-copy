@@ -4,16 +4,17 @@ import React, { useEffect, useState } from "react";
 import Navigate from "../../../components/Admin/navigate/page";
 import { getCursosCout, deleteCurso } from "../../../services/cursos";
 import { getAlumnosByIdCurso } from "../../../services/alumno_curso";
+import Background from "../../../../public/Images/Background.jpeg";
 import NoImage from "../../../../public/Images/default-no-image.png";
 import { getImages_talleresAdmin } from "@/services/repoImage";
 import withAuth from "../../../components/Admin/adminAuth";
 import { autorizarAdmin } from "@/helpers/cookies";
 import { useRouter } from "next/navigation";
-
+import Loader from "@/components/Loaders/loadingTalleres/page";
 import { mapearImagenes } from "@/helpers/repoImages";
-import { Calendar, Pencil, Plus, Search, Trash2, Users,  } from "lucide-react";
-import CursoForm from "../../../components/formularios/CursoForm";
-import Loader from '@/components/Loaders/loader/loader';
+import {  Calendar, FileText,   Pencil,   Plus,   Search,   Trash2,   Users } from "lucide-react";
+import CursoForm from "./../../../components/formularios/CursoForm";
+
 const Cursos: React.FC = () => {
   // Estado para almacenar la lista de cursos
   const [cursos, setCursos] = useState<
@@ -197,11 +198,7 @@ const Cursos: React.FC = () => {
   return (
     <main
       className="relative bg-cover bg-center min-h-screen"
-      style={{
-
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }}
+      
     >
       <Navigate />
 
@@ -299,83 +296,93 @@ const Cursos: React.FC = () => {
                 Comienza creando un taller
               </p>
               </div>
+            ) : filteredCursos.length === 0 ? (
+              // Mensaje de lista vacía
+              <div className="py-12 px-6 text-center">
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 mb-4">
+                  <Calendar className="w-6 h-6 text-gray-400" />
+                </div>
+                <h3 className="text-sm font-medium text-gray-900 mb-1">No hay talleres</h3>
+                <p className="text-sm text-gray-500">
+                  Comienza creando un taller
+                </p>
+              </div>
             ) : (
               filteredCursos.map((talleres) => (
-              // Tarjetas responsivas
-              <div
-                key={talleres.id}
-                className="flex flex-col sm:grid sm:grid-cols-12 items-center sm:items-start py-4 px-6 border-b border-gray-100 hover:bg-gray-50 transition-colors"
-              >
-                {/* Imagen y Nombre */}
-                <div className="flex items-center gap-4 sm:col-span-5 mb-4 sm:mb-0">
-                <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
-                  <img
-                  src={talleres.imageUrl || NoImage.src}
-                  alt={talleres.nombre}
-                  className="w-full h-full object-cover"
-                  />
-                </div>
-                <div>
-                  <h3 className="font-medium text-gray-900">{talleres.nombre}</h3>
-                  <div className="flex items-center gap-2 text-sm text-gray-500">
-                  <Calendar className="w-4 h-4" />
-                  <span>
-                    {talleres.fechaInicio &&
-                    new Date(new Date(talleres.fechaInicio).setDate(new Date(talleres.fechaInicio).getDate() + 1)).toLocaleDateString('es-ES', {
-                      day: 'numeric',
-                      month: 'short',
-                      year: 'numeric',
-                    })}
-                  </span>
+                // Tarjetas responsivas
+                <div
+                  key={talleres.id}
+                  className="flex flex-col sm:grid sm:grid-cols-12 items-center sm:items-start py-4 px-6 border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                >
+                  {/* Imagen y Nombre */}
+                  <div className="flex items-center gap-4 sm:col-span-5 mb-4 sm:mb-0">
+                    <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                      <img
+                        src={talleres.imageUrl || NoImage.src}
+                        alt={talleres.nombre}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-gray-900">{talleres.nombre}</h3>
+                      <div className="flex items-center gap-2 text-sm text-gray-500">
+                        <Calendar className="w-4 h-4" />
+                        <span>
+                          {talleres.fechaInicio &&
+                            new Date(new Date(talleres.fechaInicio).setDate(new Date(talleres.fechaInicio).getDate() + 1)).toLocaleDateString('es-ES', {
+                              day: 'numeric',
+                              month: 'short',
+                              year: 'numeric',
+                            })}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Descripción */}
+                  <div className="sm:col-span-4 text-sm text-gray-600 line-clamp-2 mb-4 sm:mb-0">
+                    {talleres.descripcion}
+                  </div>
+
+                  {/* Participantes */}
+                  <div className="sm:col-span-2 flex items-center justify-center gap-1.5 mb-4 sm:mb-0">
+                    <button
+                      onClick={() => {
+                        fetchAlumnosByIdCurso(talleres.id);
+                        setSelectedCursoIdAlumnos(talleres.id);
+                      }}
+                      className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-800"
+                    >
+                      <Users className="w-4 h-4 text-gray-400" />
+                      <span>{talleres.cantidadParticipantes || 0}</span>
+                    </button>
+                  </div>
+
+                  {/* Acciones */}
+                  <div className="sm:col-span-1 flex justify-center gap-2">
+                    <button
+                      onClick={() => setSelectedCursoId(talleres.id)}
+                      className="text-indigo-600 hover:text-indigo-900 p-1 hover:bg-indigo-50 rounded"
+                      title="Editar taller"
+                    >
+                      <Pencil className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => setCursoAEliminar(talleres)}
+                      className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded"
+                      title="Eliminar taller"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
                   </div>
                 </div>
-                </div>
-
-                {/* Descripción */}
-                <div className="sm:col-span-4 text-sm text-gray-600 line-clamp-2 mb-4 sm:mb-0">
-                {talleres.descripcion}
-                </div>
-
-                {/* Participantes */}
-                <div className="sm:col-span-2 flex items-center justify-center gap-1.5 mb-4 sm:mb-0">
-                <button
-                  onClick={() => {
-                  fetchAlumnosByIdCurso(talleres.id);
-                  setSelectedCursoIdAlumnos(talleres.id);
-                  }}
-                  className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-800"
-                >
-                  <Users className="w-4 h-4 text-gray-400" />
-                  <span>{talleres.cantidadParticipantes || 0}</span>
-                </button>
-                </div>
-
-                {/* Acciones */}
-                <div className="sm:col-span-1 flex justify-center gap-2">
-                <button
-                  onClick={() => setSelectedCursoId(talleres.id)}
-                  className="text-indigo-600 hover:text-indigo-900 p-1 hover:bg-indigo-50 rounded"
-                  title="Editar taller"
-                >
-                  <Pencil className="w-5 h-5" />
-                </button>
-                <button
-                  onClick={() => setCursoAEliminar(talleres)}
-                  className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded"
-                  title="Eliminar taller"
-                >
-                  <Trash2 className="w-5 h-5" />
-                </button>
-                </div>
-              </div>
               ))
             )}
           </div>
         </div>
       </div>
 
-   
-
+     
       {/* Modal para mostrar los alumnos del curso seleccionado */}
       {selectedCursoIdAlumnos !== null && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4">

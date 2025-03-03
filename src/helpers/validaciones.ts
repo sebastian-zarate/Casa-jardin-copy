@@ -328,6 +328,7 @@ export function validateCursoDetails(details: {
     if (diffDays < 7) errors.fecha = "El rango de fechas no puede ser menor a 7 días.";
 
     if (edadMinima < 2) errors.edadMinima = "La edad mínima no puede ser menor a 2 años.";
+    if (edadMinima === 0) errors.edadMinima = "La edad mínima no puede ser 0 años.";
     if (edadMaxima > 99) errors.edadMaxima = "La edad máxima no puede ser mayor a 99 años.";
     if (edadMinima > edadMaxima) errors.edad = "La edad mínima no puede ser mayor que la edad máxima.";
 
