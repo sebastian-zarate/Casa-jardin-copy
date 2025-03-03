@@ -7,6 +7,7 @@ import { getAlumnoByCookie } from "../../../services/Alumno";
 import withAuthUser from "../../../components/alumno/userAuth";
 import Navigate from "../../../components/alumno/navigate/page";
 import Background from "../../../../public/Images/Background.jpeg";
+import Loader from "@/components/Loaders/loader/loader";
 interface Curso {
   id: number;
   nombre: string;
@@ -82,11 +83,11 @@ function Horario() {
   if (loading) {
     return (
       <main className=" flex-col items-center justify-center min-h-screen bg-gray-100">
-        <Navigate />
-        <div className="flex items-center justify-center h-screen">
-          <div className="text-xl font-bold">Cargando datos...</div>
-        </div>
-      </main>
+          <Navigate />
+          <div className="flex items-center justify-center h-screen">
+            <Loader />
+          </div>
+        </main>
     );
   }
 

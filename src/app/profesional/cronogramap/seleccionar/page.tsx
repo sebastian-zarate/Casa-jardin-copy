@@ -2,17 +2,16 @@
 
 import React, { useEffect, useState } from "react";
 import Navigate from "../../../../components/profesional/navigate/page";
-import But_aside from "../../../../components/but_aside/page";
+
 import { createAula, getAulas, getAulaByNombre, deleteAulas } from "../../../../services/aulas";
 import Image from "next/image";
 import { getProfesionalByCookie } from "../../../../services/profesional";
 import Background from "../../../../../public/Images/Background.jpeg";
 
-import DeleteIcon from "../../../../../public/Images/DeleteIcon.png";
-import ButtonAdd from "../../../../public/Images/Button.png";
+import Loader from '@/components/Loaders/loader/loader';
 import HorarioProfesional from "../modificar/HorarioProfesional";
 import { Search } from "lucide-react";
-import { Input } from "postcss";
+
 
 // Define the Aula interface para definir la estructura de los datos de aula
 interface Aula {
@@ -22,15 +21,14 @@ interface Aula {
 
 const AulasProfecional: React.FC = () => {
     const [aulas, setAulas] = useState<Aula[]>([]);
-    const [selectedAulaId, setSelectedAulaId] = useState<number | null>(null); // Añadir estado para el ID del aula seleccionada
-    const[selectedProfesionalId, setSelectedProfesionalId] = useState<number | null>(null);
+    const [selectedAulaId, setSelectedAulaId] = useState<number | null>(null);
+    const [selectedProfesionalId, setSelectedProfesionalId] = useState<number | null>(null);
     const [searchTerm, setSearchTerm] = useState("");
+
     const fetchAulas = async () => {
         try {
             const response: Aula[] = await getAulas();
-
             setAulas(response);
-
         } catch (error) {
             console.error("Error al obtener las aulas:", error);
         }
@@ -39,99 +37,88 @@ const AulasProfecional: React.FC = () => {
             if (response) {
                 setSelectedProfesionalId(response.id);
             }
-        }
-        catch (error) {
+        } catch (error) {
             console.error("Error al obtener el profesional:", error);
         }
     };
 
-    // función para obtener las aulas
     useEffect(() => {
         fetchAulas();
     }, []);
+
     const handleSelectAula = (id: number) => {
         setSelectedAulaId(id);
     };
+
     const filteredAulas = aulas
-    .filter((aula) => aula.nombre.toLowerCase().includes(searchTerm.toLowerCase()))
-    .sort((a, b) => a.nombre.localeCompare(b.nombre));
-   
+        .filter((aula) => aula.nombre.toLowerCase().includes(searchTerm.toLowerCase()))
+        .sort((a, b) => a.nombre.localeCompare(b.nombre));
+
     return (
-        <main className="relative min-h-screen w-full">
+        <div className="min-h-screen bg-gray-50">
+            {/* Header */}
             <Navigate />
+      
+            <header className="bg-white shadow-sm">
+                <div className="max-w-7xl mx-auto px-4 py-4">
+                    <h1 className="text-3xl font-bold text-gray-900">Selecciona un salón</h1>
+                </div>
+            </header>
 
-            <div className="fixed inset-0 z-[-1]">
-                <Image 
-                    src={Background} 
-                    alt="Background" 
-                    layout="fill" 
-                    objectFit="cover" 
-                    quality={80} 
-                    priority={true} 
-                    className="w-full h-full object-cover"
-                />
+            {/* Search Bar */}
+            <div className="max-w-7xl mx-auto px-4 mt-6">
+                <div className="relative">
+                    <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                    <input
+                        type="text"
+                        placeholder="Buscar salón..."
+                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
             </div>
 
-            <div className="relative z-10 container mx-auto px-4 py-8">
-                <h1 className="text-4xl font-bold text-center mb-8 text-white bg-black bg-opacity-50 p-4 rounded-lg">
-                    Selecciona un salón
-                </h1>
-
-                {/* Search Bar */}
-                <div className="max-w-2xl mx-auto mb-8">
-                    <div className="relative">
-                        <input
-                            type="text"
-                            placeholder="Buscar salón..."
-                            value={searchTerm}
-                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 text-lg border rounded-lg"
-                        />
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                    </div>
+            {/* Loader */}
+            {aulas.length === 0 ? (
+                <div className="flex justify-center items-center mt-8">
+                    <Loader />
                 </div>
-
-                {/* Classroom List */}
-                <div className="bg-white bg-opacity-90 rounded-lg shadow-xl p-6 max-h-[60vh] overflow-y-auto">
-                    {filteredAulas.length > 0 ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                            {filteredAulas.map((aula) => (
-                                <div key={aula.id} className="border rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300">
-                                    <div className="relative w-full h-40">
-                                        <button
-                                            className="relative w-full h-full"
-                                            onClick={() => handleSelectAula(aula.id)}
-                                        >
-                                            <Image
-                                                src={Background}
-                                                alt="Background Image"
-                                                objectFit="cover"
-                                                className="w-full h-full"
-                                                layout="fill"
-                                            />
-                                        </button>
-                                    </div>
-                                    <div className="p-4">
-                                        <h3 className="text-lg font-semibold text-center mb-2">{aula.nombre}</h3>
-                                    </div>
-                                </div>
-                            ))}
+            ) : (
+                <div className="max-w-7xl mx-auto px-4 mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-12">
+                    {filteredAulas.map((aula) => (
+                        <div
+                            key={aula.id}
+                            className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer"
+                            onClick={() => handleSelectAula(aula.id)}
+                        >
+                            <div className="relative w-full h-48">
+                                <Image
+                                    src={Background}
+                                    alt="Background Image"
+                                    layout="fill"
+                                    objectFit="cover"
+                                    className="w-full h-full"
+                                />
+                            </div>
+                            <div className="p-4">
+                                <h3 className="text-lg font-semibold text-gray-900 mb-2">{aula.nombre}</h3>
+                            </div>
                         </div>
-                    ) : (
-                        <p className="text-center text-gray-500 text-lg">No se encontraron aulas.</p>
-                    )}
+                    ))}
                 </div>
-            </div>
+            )}
 
-            {/* Componente Horario */}
+            {/* Modal */}
             {selectedAulaId && selectedProfesionalId !== null && (
                 <div className="fixed inset-0 bg-white shadow-lg overflow-auto z-10">
                     <HorarioProfesional idAula={selectedAulaId} idProfesional={selectedProfesionalId} />
                 </div>
             )}
-        </main>
-    );
+        </div>
 
+    );
 };
 
 export default AulasProfecional;
+

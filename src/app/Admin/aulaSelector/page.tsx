@@ -9,10 +9,9 @@ import withAuth from "../../../components/Admin/adminAuth";
 import Background from "../../../../public/Images/Background.jpeg";
 import { Horario } from "../cronograma/horario";
 
-import DeleteIcon from "../../../../public/Images/DeleteIcon.png";
-import ButtonAdd from "../../../../public/Images/Button.png";
-import But_aside from "@/components/but_aside/page";
-import { Building2, Clock, Pencil, Plus, Search, Trash2 } from "lucide-react";
+import Loadere from '@/components/Loaders/loader/loader';
+import { Building2, Clock, Pencil, Plus, Search, Trash2,NotebookPen, Loader } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 
 // Define the Aula interface para definir la estructura de los datos de aula
@@ -35,15 +34,18 @@ const Aulas: React.FC = () => {
     const [selectedAulaIdModificar, setSelectedAulaIdModificar] = useState<number | null>(null); // Añadir estado para el ID del aula seleccionada
     const [searchTerm, setSearchTerm] = useState(""); // Para el texto del buscador
     const [filteredAulas, setFilteredAulas] = useState(aulas); // Para las aulas visibles
-
+    const [loading, setLoading] = useState<boolean>(true);
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
     // Define the fetchAulas function to get the list of aulas
     const fetchAulas = async () => {
         try {
             const response = (await getAulas()).map(aula => ({ ...aula, visible: true })) as Aula[];
             setAulas(response);
+            setLoading(false);
         } catch (error) {
             console.error("Error al obtener las aulas:", error);
+            setLoading(false);
         }
     };
     const handleSearch = (e: { target: { value: string; }; }) => {
@@ -200,7 +202,11 @@ const Aulas: React.FC = () => {
                     <div className="col-span-4 text-center">ACCIÓN</div>
                 </div>
 
-                {filteredAulas.length === 0 ? (
+                {loading ? (
+              <div className="flex justify-center items-center py-12">
+              <Loadere />
+              </div>
+            ):aulas.length === 0 ? (
                     <div className="py-12 px-6 text-center">
                         <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 mb-4">
                             <Building2 className="w-6 h-6 text-gray-400" />
@@ -281,11 +287,12 @@ const Aulas: React.FC = () => {
                     </div>
                 )}
 
-                {/* Modales para Crear/Editar */}
-                {(selectedAulaIdCrear !== null || selectedAulaIdModificar) && (
+                {/* Modal para Crear/Editar */}
+                {(selectedAulaIdCrear !== null || selectedAulaIdModificar !== null) && (
                     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
                         <div className="bg-white p-4 rounded-lg shadow-lg w-full max-w-md relative max-h-screen overflow-y-auto">
-                            <h2 className="text-lg font-semibold mb-3">
+                            <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                                <NotebookPen className="w-5 h-5" />
                                 {selectedAulaIdCrear === -1 ? "Agregar Salón" : "Modificar Salón"}
                             </h2>
                             {errorMessage && (
@@ -295,7 +302,7 @@ const Aulas: React.FC = () => {
                                 <label htmlFor="nombre" className="block text-sm">
                                     {selectedAulaIdCrear === -1
                                         ? "Nombre de Salón:"
-                                        : `Nuevo nombre de ${selectedAulaNombre}:`}
+                                        : `Nuevo nombre de ${aulaDetails.nombre}:`}
                                 </label>
                                 <input
                                     type="text"
@@ -307,73 +314,32 @@ const Aulas: React.FC = () => {
                                     className="p-1 w-full border rounded text-sm"
                                 />
                             </div>
-                            <div className="flex justify-end space-x-2">
-                                <button
-                                    onClick={
-                                        selectedAulaIdCrear === -1
-                                            ? handleCreateAula
-                                            : () => selectedAulaIdModificar !== null && handleModificarAula(selectedAulaIdModificar)
-                                    }
-                                    className="bg-red-600 py-1 px-3 text-white rounded text-sm hover:bg-red-700"
-                                >
-                                    Guardar
-                                </button>
-                                <button
+                            <div className="flex justify-between px-6 pb-6">
+                                <Button
+                                    type="button"
                                     onClick={() => {
                                         setSelectedAulaIdCrear(null);
                                         setSelectedAulaIdModificar(null);
                                         setErrorMessage(null);
                                         setAulaDetails({ nombre: "" });
                                     }}
-                                    className="bg-gray-600 py-1 px-3 text-white rounded text-sm hover:bg-gray-700"
+                                    variant="destructive"
                                 >
                                     Cancelar
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {selectedAulaIdModificar && (
-                    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-                        <div className="bg-white p-4 rounded-lg shadow-lg w-full max-w-md relative max-h-screen overflow-y-auto">
-                            <h2 className="text-lg font-semibold mb-3">Modificar Salón</h2>
-                            {errorMessage && (
-                                <div className="mb-3 text-red-600 text-sm">{errorMessage}</div>
-                            )}
-                            <div className="mb-3">
-                                <label htmlFor="nombre" className="block text-sm">
-                                    Nuevo nombre de {aulaDetails.nombre}:
-                                </label>
-                                <input
-                                    type="text"
-                                    id="nombre"
-                                    value={aulaDetails.nombre} // Se usa aulaDetails.nombre como valor del input
-                                    onChange={(e) =>
-                                        setAulaDetails({ ...aulaDetails, nombre: e.target.value })
+                                </Button>
+                                <Button
+                                    type="submit"
+                                    disabled={isSubmitting}
+                                    className="bg-sky-600 hover:bg-sky-800 text-white"
+                                    onClick={
+                                        selectedAulaIdCrear === -1
+                                            ? handleCreateAula
+                                            : () => selectedAulaIdModificar !== null && handleModificarAula(selectedAulaIdModificar)
                                     }
-                                    className="p-1 w-full border rounded text-sm"
-                                />
-                            </div>
-                            <div className="flex justify-end space-x-2">
-                                <button
-                                    onClick={() => {
-                                        if (selectedAulaIdModificar) handleModificarAula(selectedAulaIdModificar);
-                                    }}
-                                    className="bg-red-600 py-1 px-3 text-white rounded text-sm hover:bg-red-700"
                                 >
-                                    Guardar Cambios
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        setSelectedAulaIdModificar(null);
-                                        setErrorMessage(null);
-                                        setAulaDetails({ nombre: "" }); // Limpia el estado al cerrar
-                                    }}
-                                    className="bg-gray-600 py-1 px-3 text-white rounded text-sm hover:bg-gray-700"
-                                >
-                                    Cancelar
-                                </button>
+                                    {isSubmitting ? <Loader className="mr-2 h-4 w-4 animate-spin" /> : null}
+                                    Guardar
+                                </Button>
                             </div>
                         </div>
                     </div>
@@ -392,6 +358,16 @@ const Aulas: React.FC = () => {
                             </div>
                            
                             <div className="flex justify-end space-x-2">
+
+                            <button
+                                    onClick={() => {
+                                        setSelectedAulaIdEliminar(null);
+                                        setErrorMessage(null);
+                                    }}
+                                    className="bg-gray-600 py-1 px-3 text-white rounded text-sm hover:bg-gray-700"
+                                >   
+                                    Cancelar    
+                                </button>
                                 <button
                                     onClick={() => {
                                         if (selectedAulaIdEliminar) {
@@ -404,15 +380,7 @@ const Aulas: React.FC = () => {
                                 >
                                     {isDeleting ? "Eliminando..." : "Confirmar Eliminación"}
                                 </button>
-                                <button
-                                    onClick={() => {
-                                        setSelectedAulaIdEliminar(null);
-                                        setErrorMessage(null);
-                                    }}
-                                    className="bg-gray-600 py-1 px-3 text-white rounded text-sm hover:bg-gray-700"
-                                >   
-                                    Cancelar    
-                                </button>
+                               
 
                             </div>
                     </div>
