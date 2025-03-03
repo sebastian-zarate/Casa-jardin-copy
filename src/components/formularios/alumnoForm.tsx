@@ -23,7 +23,8 @@ const alumnoSchema = (mayor: boolean) => z.object({
         })
         .int()
         .min(1000000, { message: "DNI inválido, debe ser un número de 8 dígitos" })
-        .max(999999999, { message: "DNI inválido, debe ser un número de 8 dígitos" }),
+        .max(99999999, { message: "DNI inválido, debe ser un número de 8 dígitos" }),
+        
       z.null(),
     ])
     .optional(),
@@ -199,7 +200,7 @@ const AlumnoForm: React.FC<AlumnoProps> = (AlumnoProps) => {
               {AlumnoProps.mayor && (
                 <div>
                   <Label htmlFor="telefono">Teléfono</Label>
-                  <Input id="telefono" type="text" {...register("telefono")} className="mt-1" />
+                  <Input id="telefono" maxLength={11} type="text" {...register("telefono")} className="mt-1" />
                   {errors.telefono && <p className="text-destructive text-sm mt-1">{errors.telefono.message}</p>}
                 </div>
               )}

@@ -306,70 +306,68 @@ export function validateCursoDetails(details: {
     fechaFin: Date;
     edadMinima: number;
     edadMaxima: number;
-  }) {
+}) {
     const { nombre, descripcion, fechaInicio, fechaFin, edadMinima, edadMaxima } = details;
-  
+    const errors: { [key: string]: string } = {};
+
     if (nombre.length < 2 || nombre.length > 50) {
-      return "El nombre debe tener entre 2 y 50 caracteres.";
+        errors.nombre = "El nombre debe tener entre 2 y 50 caracteres.";
     }
-  
+
     const descripcionWords = descripcion.trim().split(/\s+/).length;
-    if (descripcionWords < 5) return "La descripción debe tener al menos 5 palabras.";
-    if (descripcionWords > 300) return "La descripción no puede exceder las 300 palabras.";
-  
+    if (descripcionWords < 5) errors.descripcion = "La descripción debe tener al menos 5 palabras.";
+    if (descripcionWords > 300) errors.descripcion = "La descripción no puede exceder las 300 palabras.";
+
     const regex = /^[a-zA-Z0-9À-ÿ\u00f1\u00d1\u00fc\u00dc\s.,:-]*$/;
-    if (!regex.test(nombre)) return "El nombre contiene caracteres no permitidos.";
-    if (!regex.test(descripcion)) return "La descripción contiene caracteres no permitidos.";
-  
-   
-  
-    const diffDays = Math.ceil(
-      Math.abs(fechaFin.getTime() - fechaInicio.getTime()) / (1000 * 60 * 60 * 24)
-    );
-    if (diffDays < 7) return "El rango de fechas no puede ser menor a 7 días.";
-  
-    if (edadMinima < 2) return "La edad mínima no puede ser menor a 2 años.";
-    if (edadMaxima > 99) return "La edad máxima no puede ser mayor a 99 años.";
-    if (edadMinima > edadMaxima) return "La edad mínima no puede ser mayor que la edad máxima.";
-  
-    return null;
-  }
-  // validar la fecha de inicio de un curso
-  export function validateFechaInicio(fechaInicio: Date | undefined) {
-    if (!fechaInicio) return "La fecha de inicio no puede estar vacía.";
-  
-    
-    return null;
-  }
-// validar la fecha de inicio de un curso con fecha fin 
-export function validateFechaInicioalta(fechaInicio: Date | undefined, fechaFin: Date) {
-    if (!fechaInicio) return "La fecha de inicio no puede estar vacía.";
-    if (fechaInicio < new Date()) return "La fecha de inicio no puede ser menor a la fecha actual.";
-    if (fechaInicio >= fechaFin) return "La fecha de inicio debe ser anterior a la fecha de fin.";
+    if (!regex.test(nombre)) errors.nombre = "El nombre contiene caracteres no permitidos.";
+    if (!regex.test(descripcion)) errors.descripcion = "La descripción contiene caracteres no permitidos.";
 
     const diffDays = Math.ceil(
-        Math.abs(fechaFin.getTime() - fechaInicio.getTime()) / (1000 * 60 * 60 * 24)
+        Math.abs(fechaFin.getTime() - (fechaInicio?.getTime() || 0)) / (1000 * 60 * 60 * 24)
     );
-    if (diffDays > 365) return "El curso no puede tener una vigencia mayor a un año.";
+    if (diffDays < 7) errors.fecha = "El rango de fechas no puede ser menor a 7 días.";
 
-    return null;
+    if (edadMinima < 2) errors.edadMinima = "La edad mínima no puede ser menor a 2 años.";
+    if (edadMaxima > 99) errors.edadMaxima = "La edad máxima no puede ser mayor a 99 años.";
+    if (edadMinima > edadMaxima) errors.edad = "La edad mínima no puede ser mayor que la edad máxima.";
+
+    return errors;
 }
 
-// validar la fecha de fin de un curso con fecha inicio
+export function validateFechaInicio(fechaInicio: Date | undefined) {
+    const errors: { [key: string]: string } = {};
+    if (!fechaInicio) errors.fechaInicio = "La fecha de inicio no puede estar vacía.";
+    return errors;
+}
+
+export function validateFechaInicioalta(fechaInicio: Date | undefined, fechaFin: Date) {
+    const errors: { [key: string]: string } = {};
+    if (!fechaInicio) errors.fechaInicio = "La fecha de inicio no puede estar vacía.";
+    if (fechaInicio && fechaInicio < new Date()) errors.fechaInicio = "La fecha de inicio no puede ser menor a la fecha actual.";
+    if (fechaInicio && fechaInicio >= fechaFin) errors.fechaInicio = "La fecha de inicio debe ser anterior a la fecha de fin.";
+
+    const diffDays = Math.ceil(
+        Math.abs(fechaFin.getTime() - (fechaInicio?.getTime() || 0)) / (1000 * 60 * 60 * 24)
+    );
+    if (diffDays > 365) errors.fecha = "El curso no puede tener una vigencia mayor a un año.";
+
+    return errors;
+}
+
 export function validateFechaInicioModificacion(
-    fechaInicio: Date ,
+    fechaInicio: Date,
     fechaInicioAnterior: Date,
     fechaFin: Date
 ) {
-    const error = validateFechaInicio(fechaInicio);
-    if (error) return error;
+    const errors = validateFechaInicio(fechaInicio);
+    if (Object.keys(errors).length > 0) return errors;
 
     const diffDays = Math.ceil(
         Math.abs(fechaFin.getTime() - fechaInicio.getTime()) / (1000 * 60 * 60 * 24)
     );
-    if (diffDays > 365) return "El curso no puede tener una vigencia mayor a un año.";
-  
-    if (fechaInicio < fechaInicioAnterior) return "La fecha de inicio no puede ser menor a la fecha de inicio anterior.";
+    if (diffDays > 365) errors.fecha = "El curso no puede tener una vigencia mayor a un año.";
 
-    return null;
+    if (fechaInicio < fechaInicioAnterior) errors.fechaInicio = "La fecha de inicio no puede ser menor a la fecha de inicio anterior.";
+
+    return errors;
 }

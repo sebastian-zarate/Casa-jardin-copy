@@ -222,30 +222,16 @@ export async function getCursosByEdad(edad: number) {
     })
 }
 
-export async function getCantCursosActivos(){
-    const prof_curso = await getAllProfesionales_cursos();
-    const alum_curso = await getAllAlumnos_cursos();
-    const cursosActivos = new Set<number>();
-
-    const uniqueProfCursoIds = new Set<number>();
-    prof_curso.forEach(pc => {
-        if (!uniqueProfCursoIds.has(pc.cursoId)) {
-            uniqueProfCursoIds.add(pc.cursoId);
-            if (!cursosActivos.has(pc.cursoId)) {
-                cursosActivos.add(pc.cursoId);
+export async function getCantCursosActivos() {
+    const fechaHoy = new Date();
+    const cursosActivos = await prisma.curso.count({
+        where: {
+            fechaFin: {
+                gte: fechaHoy
             }
         }
     });
-    const uniqueAlumCursoIds = new Set<number>();
-    alum_curso.forEach(ac => {
-        if (!uniqueAlumCursoIds.has(ac.cursoId)) {
-            uniqueAlumCursoIds.add(ac.cursoId);
-            if (!cursosActivos.has(ac.cursoId)) {
-                cursosActivos.add(ac.cursoId);
-            }
-        }
-    });
-    return cursosActivos.size;
+    return cursosActivos;
 }
 // obtener los cursos que actualmente estan activos
 

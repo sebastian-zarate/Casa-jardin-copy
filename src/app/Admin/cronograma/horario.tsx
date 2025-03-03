@@ -13,6 +13,8 @@ import Navigate from "../../../components/Admin/navigate/page";
 import { getDias, getHoras } from "../../../services/dia";
 import { getAulaById } from "@/services/aulas";
 import withAuth from "../../../components/Admin/adminAuth";
+import { AlertCircle } from "lucide-react";
+import Loader from "@/components/Loaders/loader/loader";
 // Definimos una interfaz para los cursos para tipar correctamente los datos
 interface Curso {
   id: number;
@@ -236,11 +238,11 @@ export function Horario({ idAula }: { idAula: number }) {
   // Renderizado condicional para mostrar una pantalla de carga mientras los datos se cargan
   if (loading) {
     return (
-        <main className=" flex-col items-center justify-center min-h-screen bg-gray-100">
-    <Navigate />
-        <div className="flex items-center justify-center h-screen">
-            <div className="text-xl font-bold">Cargando datos...</div>
-        </div>
+      <main className=" flex-col items-center justify-center min-h-screen bg-gray-100">
+      <Navigate />
+      <div className="flex items-center justify-center h-screen">
+        <Loader />
+      </div>
     </main>
     );
 }
@@ -322,6 +324,20 @@ if (error) {
 
       {/* Mensaje de error adicional, si lo hay */}
       {error && <div className="text-red-500 mt-4">{error}</div>}
+
+      {/* Aclaración sobre materias repetidas - Contenedor mejorado */}
+                <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex items-start">
+                    <AlertCircle className="h-5 w-5 text-blue-500 mt-0.5 mr-3 flex-shrink-0" />
+                    <div>
+                      <h3 className="font-medium text-blue-800 mb-1">Información importante</h3>
+                      <p className="text-blue-700 text-sm">
+                        El sistema valida que una misma materia no esté asignada en el mismo día y hora en otros cronogramas. 
+                        Sin embargo, es posible asignar al mismo profesor diferentes cursos en el mismo horario y día.
+                      </p>
+                    </div>
+                  </div>
+                </div>
 
       {/* Botones de acción: Limpiar todo y Volver */}
       <div className="flex justify-between mt-4">

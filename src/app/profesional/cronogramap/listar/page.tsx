@@ -7,6 +7,7 @@ import { getDias, getHoras } from "../../../../services/dia";
 import { getProfesionalByCookie, getProfesionalById } from "../../../../services/profesional";
 import { get } from "http";
 import Navigate from "../../../../components/profesional/navigate/page";
+import Loader from '@/components/Loaders/loader/loader';
 
 interface Curso {
     id: number;
@@ -107,14 +108,14 @@ export default function Horario() {
     }, [isModalOpen]);
     //  panatalla de carga
     if (loading) {
-        return (
-            <main className=" flex-col items-center justify-center min-h-screen bg-gray-100">
-        <Navigate />
-            <div className="flex items-center justify-center h-screen">
-                <div className="text-xl font-bold">Cargando datos...</div>
-            </div>
+      return (
+        <main className=" flex-col items-center justify-center min-h-screen bg-gray-100">
+          <Navigate />
+          <div className="flex items-center justify-center h-screen">
+            <Loader />
+          </div>
         </main>
-        );
+      );
     }
 
     if (error) {
