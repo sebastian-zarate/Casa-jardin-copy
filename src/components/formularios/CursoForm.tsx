@@ -1,80 +1,97 @@
-"use client";
+"use client"
 
-import { date, string, z } from 'zod';
-import { useForm, FormProvider } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import React, { useState, useEffect } from 'react';
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, FileText, ImageIcon, Loader } from "lucide-react";
-import { updateCurso, createCurso } from "../../services/cursos";
-import { handleUploadCursoImage } from "@/helpers/repoImages";
-import { validateFechaInicioModificacion, validateFechaInicio, validateCursoDetails } from "@/helpers/validaciones";
-import { FileInput } from '@/components/ui/fileInput';
+import { z } from "zod"
+import { useForm, FormProvider } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import type React from "react"
+import { useState, useEffect } from "react"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Calendar, FileText, ImageIcon, Loader } from "lucide-react"
+import { updateCurso, createCurso } from "../../services/cursos"
+import { handleUploadCursoImage } from "@/helpers/repoImages"
+import { FileInput } from "@/components/ui/fileInput"
+import { formDate } from "@/helpers/fechas"
 
 // Schema de validación para cursos
-const cursoSchema = z.object({
-  id: z.number().optional(),
-  nombre: z.string().trim(),
-  descripcion: z.string().trim(),
-  fechaInicio: z.date(),
-  fechaFin: z.date(),
-  edadMinima: z.number().min(1),
-  edadMaxima: z.number().min(1),
-  imagen: z.any().nullable().optional(),
-  cantidadParticipantes: z.number().optional(),
-});
+const cursoSchema = z
+  .object({
+    id: z.number().optional(),
+    nombre: z
+      .string()
+      .min(2, { message: "Debe completar el nombre" })
+      .max(50, { message: "El nombre no puede tener más de 50 letras" })
+      .trim(),
+    descripcion: z
+      .string()
+      .trim()
+      .refine((value) => value.split(" ").filter((word) => word.length > 0).length >= 5, {
+        message: "La descripción debe contener al menos 5 palabras",
+      }),
+    fechaInicio: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { message: "Debe ser una fecha válida" }),
+    fechaFin: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { message: "Debe ser una fecha válida" }),
+    edadMinima: z.number({ message: "Inserte un número válido" }).min(1).optional(),
+    edadMaxima: z.number({ message: "Inserte un número válido" }).min(1).optional(),
+    imagen: z.any().nullable().optional(),
+    cantidadParticipantes: z.number().optional(),
+  })
+  .refine((data) => Number(data.edadMinima) < Number(data.edadMaxima), {
+    message: "La edad mínima debe ser menor que la edad máxima",
+    path: ["edadMinima"], // This will attach the error message to the edadMinima field
+  })
+  // Validación personalizada para la diferencia de fechas (minimo 7 días)
+  .refine((data) => {
+    const fechaInicio = new Date(data.fechaInicio);
+    const fechaFin = new Date(data.fechaFin);
+    const diffTime = Math.abs(fechaFin.getTime() - fechaInicio.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays >= 7;
+  }, {
+    message: "Debe haber al menos 7 días de diferencia entre la fecha de inicio y la fecha de fin",
+    path: ["fechaInicio"],
+  });
 
-export type CursoSchema = z.infer<typeof cursoSchema>;
+export type CursoSchema = z.infer<typeof cursoSchema>
 
 interface CursoFormProps {
-  selectedCursoId: number | null;
-  cursos: any[];
-  setCursos: React.Dispatch<React.SetStateAction<any[]>>;
-  setSelectedCursoId: React.Dispatch<React.SetStateAction<number | null>>;
-  fetchCursos: () => Promise<void>;
-  setImagesLoaded: React.Dispatch<React.SetStateAction<boolean>>;
+  selectedCursoId: number | null
+  cursos: any[]
+  setSelectedCursoId: React.Dispatch<React.SetStateAction<number | null>>
+  fetchCursos: () => Promise<void>
+  setImagesLoaded: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 const CursoForm: React.FC<CursoFormProps> = ({
   selectedCursoId,
   cursos,
-  setCursos,
   setSelectedCursoId,
   fetchCursos,
-  setImagesLoaded
+  setImagesLoaded,
 }) => {
-  const [imagePreview, setImagePreview] = useState<string>("");
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [uploadError, setUploadError] = useState<string | null>(null);
-  const [fechaInicioAnterior, setFechaInicioAnterior] = useState<Date | string | null>(null);
-  const [generalError, setGeneralError] = useState<string | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>("")
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [uploadError, setUploadError] = useState<string | null>(null)
+  const [generalError, setGeneralError] = useState<string | null>(null)
 
-  const selectedCurso = selectedCursoId !== null && selectedCursoId !== -1
-    ? cursos.find(curso => curso.id === selectedCursoId)
-    : null;
-    //para manejar los errores
-    // para luego hacer error.nombre y error.descripcion y asi sucesivamente
-    // para que se muestre en pantalla el error
-    // para que se muestre en pantalla el error
-    // para que se muestre en pantalla el error
-    // para que se muestre en pantalla el error
-    
+  const selectedCurso =
+    selectedCursoId !== null && selectedCursoId !== -1 ? cursos.find((curso) => curso.id === selectedCursoId) : null
+
   const methods = useForm<CursoSchema>({
     resolver: zodResolver(cursoSchema),
     defaultValues: {
       id: selectedCurso?.id,
       nombre: selectedCurso?.nombre || "",
       descripcion: selectedCurso?.descripcion || "",
-      fechaInicio: selectedCurso?.fechaInicio ? new Date(selectedCurso.fechaInicio) : new Date(),
-      edadMinima: selectedCurso?.edadMinima || 0,
-      edadMaxima: selectedCurso?.edadMaxima || 0,
+      fechaInicio: selectedCurso?.fechaInicio ? formDate(selectedCurso?.fechaInicio) : "",
+      fechaFin: selectedCurso?.fechaFin ? formDate(selectedCurso?.fechaFin) : "",
+      edadMinima: selectedCurso?.edadMinima || undefined,
+      edadMaxima: selectedCurso?.edadMaxima || undefined,
       imagen: selectedCurso?.imagen || null,
       cantidadParticipantes: selectedCurso?.cantidadParticipantes || 0,
-    }
-  });
+    },
+  })
 
   const {
     register,
@@ -82,147 +99,138 @@ const CursoForm: React.FC<CursoFormProps> = ({
     formState: { errors, isSubmitting },
     reset,
     setValue,
-    watch
-  } = methods;
+  } = methods
 
   useEffect(() => {
+    //si es un curso existente
     if (selectedCursoId !== null && selectedCursoId !== -1) {
-      const curso = cursos.find(c => c.id === selectedCursoId);
+      const curso = cursos.find((c) => c.id === selectedCursoId)
       if (curso) {
         reset({
           id: curso.id,
           nombre: curso.nombre,
           descripcion: curso.descripcion,
-          fechaInicio: new Date(curso.fechaInicio),
-          fechaFin: new Date(curso.fechaFin),
+          fechaInicio: curso.fechaInicio ? formDate(curso.fechaInicio) : "",
+          fechaFin: curso.fechaFin ? formDate(curso.fechaFin) : "",
           edadMinima: curso.edadMinima,
           edadMaxima: curso.edadMaxima,
           imagen: curso.imagen,
           cantidadParticipantes: curso.cantidadParticipantes,
-        });
-        setFechaInicioAnterior(new Date(curso.fechaInicio));
-        setImagePreview(curso.imageUrl || "");
+        })
+        setImagePreview(curso.imageUrl || "")
       }
-    } else if (selectedCursoId === -1) {
+    }
+    //si es un curso nuevo, resetea los valores del formulario
+    else if (selectedCursoId === -1) {
+      console.log("reset -1")
       reset({
         nombre: "",
         descripcion: "",
-        fechaInicio: new Date(),
-        fechaFin: new Date(),
-        edadMinima: 0,
-        edadMaxima: 0,
+        fechaInicio: "",
+        fechaFin: "",
+        edadMinima: undefined,
+        edadMaxima: undefined,
         imagen: null,
         cantidadParticipantes: 0,
-      });
-      setFechaInicioAnterior(null);
-      setImagePreview("");
+      })
+      setImagePreview("")
     }
-    setGeneralError(null);
-    setUploadError(null);
-  }, [selectedCursoId, cursos, reset]);
+    setGeneralError(null)
+    setUploadError(null)
+  }, [selectedCursoId, cursos, reset]) 
 
   const handleImageChange = (file: File | null) => {
     if (file) {
-      setImagePreview(URL.createObjectURL(file));
-      setSelectedFile(file);
-      const fileName = file.name.split('.').slice(0, -1).join('.') + '.' + file.name.split('.').pop();
-      setValue('imagen', fileName);
-      setUploadError(null);
+      setImagePreview(URL.createObjectURL(file))
+      setSelectedFile(file)
+      const fileName = file.name.split(".").slice(0, -1).join(".") + "." + file.name.split(".").pop()
+      setValue("imagen", fileName)
+      setUploadError(null)
     } else {
-      setImagePreview(selectedCurso?.imageUrl || "");
-      setSelectedFile(null);
+      setImagePreview(selectedCurso?.imageUrl || "")
+      setSelectedFile(null)
     }
-  };
+  }
 
   const handleUploadAndFetchImages = async (file: File | null, imageName: string) => {
-    const result = await handleUploadCursoImage(file, imageName);
+    const result = await handleUploadCursoImage(file, imageName)
     if (result.error) {
-      setUploadError(result.error);
-      return false;
+      setUploadError(result.error)
+      return false
     }
-    setImagesLoaded(false);
-    return true;
-  };
-
- 
+    setImagesLoaded(false)
+    return true
+  }
 
   const onSubmit = async (data: CursoSchema) => {
-   
-     
-      // Validar los datos del curso
-      const validationErrors: { [key: string]: string } = validateCursoDetails(data);
-      if (Object.keys(validationErrors).length > 0) {
-       
-        setValidationErrors(validationErrors);
-        return;
-         
-        
-      }
-      
-      // Validar fecha de inicio
-    if (selectedCursoId !== -1) {
-      const fechaInicioErrors: { [key: string]: string } = validateFechaInicioModificacion(data.fechaInicio, fechaInicioAnterior as Date, data.fechaFin);
-      if (Object.keys(fechaInicioErrors).length > 0) {
-      setValidationErrors(fechaInicioErrors);
-      return;
-      }
-    } else {
-      const fechaInicioErrors: { [key: string]: string } = validateFechaInicio(data.fechaInicio);
-      if (Object.keys(fechaInicioErrors).length > 0) {
-      setValidationErrors(fechaInicioErrors);
-      return;
-      }
+    // Crear o actualizar curso
+    const cursoPayload = {
+      nombre: data.nombre,
+      descripcion: data.descripcion,
+      fechaInicio: new Date(data.fechaInicio)
+      ,
+      fechaFin: new Date(data.fechaFin),
+      edadMinima: Number(data.edadMinima),
+      edadMaxima: Number(data.edadMaxima),
+      imagen: data.imagen || null,
     }
-      
 
-      // Crear o actualizar curso
-      const cursoPayload = { ...data, imagen: data.imagen || null };
-      const response = selectedCursoId === -1 
-        ? await createCurso(cursoPayload) 
-        : selectedCursoId !== null 
+    const response =
+      selectedCursoId === -1
+        ? await createCurso(cursoPayload)
+        : selectedCursoId !== null
           ? await updateCurso(selectedCursoId, cursoPayload)
-          : null;
+          : null
 
-      if (typeof response === "string") {
-        setGeneralError(response);
-        return;
-      }
-      try{
+    if (typeof response === "string") {
+      setGeneralError(response)
+      return
+    }
+    try {
       // Subir imagen si es necesario
       if (selectedFile && data.imagen) {
-        const imageUploaded = await handleUploadAndFetchImages(selectedFile, data.imagen);
-        if (!imageUploaded) return;
+        const imageUploaded = await handleUploadAndFetchImages(selectedFile, data.imagen)
+        if (!imageUploaded) return
       }
-  
+
       // Resetear estados y recargar cursos
-      await fetchCursos();
-      resetState();
-  
+      await fetchCursos()
+      resetState()
     } catch (error) {
-      console.error("Error al guardar el curso:", error);
-      setGeneralError("Error al guardar el curso. Inténtelo de nuevo.");
+      console.error("Error al guardar el curso:", error)
+      setGeneralError("Error al guardar el curso. Inténtelo de nuevo.")
     }
-  };
-  
+  }
+
   // Función auxiliar para asignar errores de validación
-  const setValidationErrors = (errors: Record<string, string>) => {
+  /* const setValidationErrors = (errors: Record<string, string>) => {
     Object.entries(errors).forEach(([key, message]) => {
-      methods.setError(key as keyof CursoSchema, { type: "manual", message });
-    });
-  };
-  
+      methods.setError(key as keyof CursoSchema, { type: "manual", message })
+    })
+  } */
+
   // Función auxiliar para resetear estados después de guardar
   const resetState = () => {
-    setSelectedCursoId(null);
-    setImagesLoaded(false);
-    reset();
-    setSelectedFile(null);
-    setGeneralError(null);
-    setUploadError(null);
-  };
-  
-  const handleCancel = () => resetState();
-  
+    setSelectedCursoId(null)
+    setImagesLoaded(false)
+    reset()
+    setSelectedFile(null)
+    setGeneralError(null)
+    setUploadError(null)
+  }
+
+  const handleCancel = async () => {
+    console.log("errors", errors)
+     // Log specific field values
+    console.log("Nombre:", methods.getValues("nombre"));
+    console.log("Descripción:", methods.getValues("descripcion"));
+    console.log("Fecha de Inicio:", methods.getValues("fechaInicio"));
+    console.log("Fecha de Fin:", methods.getValues("fechaFin"));
+    console.log("Edad Mínima:", methods.getValues("edadMinima"));
+    console.log("Edad Máxima:", methods.getValues("edadMaxima"));
+    
+    resetState()
+  }
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4">
@@ -239,6 +247,19 @@ const CursoForm: React.FC<CursoFormProps> = ({
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6 pt-6">
+              {/* Debug section - remove after debugging */}
+              {/*               {Object.keys(errors).length > 0 && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm mb-4">
+                  <p>Errores de validación:</p>
+                  <ul className="list-disc pl-5">
+                    {Object.entries(errors).map(([field, error]) => (
+                      <li key={field}>
+                        {field}: {error.message}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )} */}
               {generalError && (
                 <div className="p-3 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm">
                   {generalError}
@@ -259,9 +280,7 @@ const CursoForm: React.FC<CursoFormProps> = ({
                     {...register("nombre")}
                     className="mt-1"
                   />
-                  {errors.nombre && (
-                    <p className="text-destructive text-sm mt-1">{errors.nombre.message}</p>
-                  )}
+                  {errors.nombre && <p className="text-destructive text-sm mt-1">{errors.nombre.message}</p>}
                 </div>
 
                 <div>
@@ -276,9 +295,7 @@ const CursoForm: React.FC<CursoFormProps> = ({
                     {...register("descripcion")}
                     className="w-full p-2 border rounded-md mt-1"
                   />
-                  {errors.descripcion && (
-                    <p className="text-destructive text-sm mt-1">{errors.descripcion.message}</p>
-                  )}
+                  {errors.descripcion && <p className="text-destructive text-sm mt-1">{errors.descripcion.message}</p>}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -296,9 +313,7 @@ const CursoForm: React.FC<CursoFormProps> = ({
                       {...register("edadMinima", { valueAsNumber: true })}
                       className="mt-1"
                     />
-                    {errors.edadMinima && (
-                      <p className="text-destructive text-sm mt-1">{errors.edadMinima.message}</p>
-                    )}
+                    {errors.edadMinima && <p className="text-destructive text-sm mt-1">{errors.edadMinima.message}</p>}
                   </div>
 
                   <div>
@@ -315,75 +330,39 @@ const CursoForm: React.FC<CursoFormProps> = ({
                       {...register("edadMaxima", { valueAsNumber: true })}
                       className="mt-1"
                     />
-                    {errors.edadMaxima && (
-                      <p className="text-destructive text-sm mt-1">{errors.edadMaxima.message}</p>
-                    )}
+                    {errors.edadMaxima && <p className="text-destructive text-sm mt-1">{errors.edadMaxima.message}</p>}
                   </div>
                 </div>
                 <div className="mb-4 flex gap-4">
-            <div className="flex-1">
-              <label htmlFor="fechaInicio" className="block text-sm font-medium mb-2">
-                <Calendar className="w-4 h-4 inline-block mr-2" />
-                Fecha de inicio del taller:
-              </label>
-              <input
-                type="date"
-                id="fechaInicio"
-                name="fechaInicio"
-                value={
-                  watch('fechaInicio') &&
-                    watch('fechaInicio') instanceof Date &&
-                    !isNaN(watch('fechaInicio').getTime())
-                    ? watch('fechaInicio').toISOString().split('T')[0]
-                    : ""
-                }
-                min={
-                  selectedCursoId !== -1 && fechaInicioAnterior
-                    ? new Date(fechaInicioAnterior).toISOString().split('T')[0]
-                    : new Date().toISOString().split('T')[0]
-                }
-                max={new Date(new Date().setFullYear(new Date().getFullYear() + 1))
-                  .toISOString()
-                  .split('T')[0]}
-                onChange={(e) => setValue('fechaInicio', new Date(e.target.value))}
-                className={`p-2 w-full border rounded text-sm ${errors.fechaInicio ? 'border-red-500' : 'border-gray-300'}`}
-              />
-              {errors.fechaInicio && (
-                <p className="mt-1 text-sm text-red-600">{errors.fechaInicio.message}</p>
-              )}
-            </div>
-
-            <div className="flex-1">
-              <label htmlFor="fechaFin" className="block text-sm font-medium mb-2">
-                <Calendar className="w-4 h-4 inline-block mr-2" />
-                Fecha de fin del taller:
-              </label>
-              <input
-                type="date"
-                id="fechaFin"
-                name="fechaFin"
-                value={
-                  watch('fechaFin') && 
-                  watch('fechaFin') instanceof Date && 
-                  !isNaN(watch('fechaFin').getTime())
-                    ? watch('fechaFin').toISOString().split('T')[0]
-                    : ""
-                }
-                min={new Date(new Date().setFullYear(new Date().getMonth() + 1))
-                  .toISOString()
-                  .split('T')[0]}
-                max={new Date(new Date().setFullYear(new Date().getFullYear() + 1))
-                  .toISOString()
-                  .split('T')[0]}
-                onChange={(e) => setValue('fechaFin', new Date(e.target.value))}
-                className={`p-2 w-full border rounded text-sm ${errors.fechaFin ? 'border-red-500' : 'border-gray-300'}`}
-              />
-              {errors.fechaFin && (
-                <p className="mt-1 text-sm text-red-600">{errors.fechaFin.message}</p>
-              )}
-            </div>
-          </div>
-                
+                  <div className="flex-1">
+                    <label htmlFor="fechaInicio" className="block text-sm font-medium mb-2">
+                      <Calendar className="w-4 h-4 inline-block mr-2" />
+                      Fecha de inicio del taller:
+                    </label>
+                    <input
+                      type="date"
+                      id="fechaInicio"
+                      {...register("fechaInicio")}
+                      className="w-full p-2 border rounded-md"
+                    />
+                    {errors.fechaInicio && (
+                      <p className="text-destructive text-sm mt-1">{errors.fechaInicio.message}</p>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <label htmlFor="fechaFin" className="block text-sm font-medium mb-2">
+                      <Calendar className="w-4 h-4 inline-block mr-2" />
+                      Fecha de fin del taller:
+                    </label>
+                    <input
+                      type="date"
+                      id="fechaFin"
+                      {...register("fechaFin")}
+                      className="w-full p-2 border rounded-md"
+                    />
+                    {errors.fechaFin && <p className="text-destructive text-sm mt-1">{errors.fechaFin.message}</p>}
+                  </div>
+                </div>
 
                 <Label htmlFor="imagen" className="flex items-center gap-2">
                   <ImageIcon className="w-4 h-4" />
@@ -396,35 +375,26 @@ const CursoForm: React.FC<CursoFormProps> = ({
                   className="mt-1"
                   buttonText="Seleccionar imagen del taller"
                 />
-                {uploadError && (
-                  <p className="text-destructive text-sm mt-1">{uploadError}</p>
-                )}
+                {uploadError && <p className="text-destructive text-sm mt-1">{uploadError}</p>}
                 {selectedFile && (
-                  <p className="text-green-600 text-sm mt-1">
-                    Archivo seleccionado: {selectedFile.name}
-                  </p>
+                  <p className="text-green-600 text-sm mt-1">Archivo seleccionado: {selectedFile.name}</p>
                 )}
                 {imagePreview && !selectedFile && (
-                  <img src={imagePreview} alt="Imagen del taller" className="mt-4 w-full h-auto rounded-md" />
+                  <img
+                    src={imagePreview || "/placeholder.svg"}
+                    alt="Imagen del taller"
+                    className="mt-4 w-full h-auto rounded-md"
+                  />
                 )}
               </div>
             </CardContent>
           </Card>
 
           <div className="flex justify-between px-6 pb-6">
-            <Button
-              type="button"
-              onClick={handleCancel}
-              variant="destructive"
-              disabled={isSubmitting}
-            >
+            <Button type="button" onClick={handleCancel} variant="destructive" disabled={isSubmitting}>
               Cancelar
             </Button>
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white"
-            >
+            <Button type="submit" disabled={isSubmitting} className="bg-indigo-600 hover:bg-indigo-700 text-white">
               {isSubmitting ? (
                 <>
                   <Loader className="mr-2 h-4 w-4 animate-spin" />
@@ -438,7 +408,8 @@ const CursoForm: React.FC<CursoFormProps> = ({
         </form>
       </FormProvider>
     </div>
-  );
-};
+  )
+}
 
-export default CursoForm;
+export default CursoForm
+

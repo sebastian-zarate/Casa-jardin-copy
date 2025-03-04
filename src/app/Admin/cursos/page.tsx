@@ -445,7 +445,6 @@ const Cursos: React.FC = () => {
         <CursoForm 
           selectedCursoId={selectedCursoId}
           cursos={cursos}
-          setCursos={setCursos}
           setSelectedCursoId={setSelectedCursoId}
           fetchCursos={fetchCursos}
           setImagesLoaded={setImagesLoaded}
