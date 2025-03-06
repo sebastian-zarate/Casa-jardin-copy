@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import Navigate from "@/components/Admin/navigate/page";
-
+import withAuth from "@/components/Admin/adminAuth";
 import { SolicitudMayor } from "@/services/Solicitud/SolicitudMayor";
 import { deleteSolicitud, Solicitud, } from "@/services/Solicitud/Solicitud";
 import { SolicitudMenores } from "@/services/Solicitud/SolicitudMenor";
@@ -505,5 +505,4 @@ const solicitudPage: React.FC = () => {
     );
 };
 
-//export default withAuth(solicitudPage);
-export default (solicitudPage);
+export default withAuth(solicitudPage);
