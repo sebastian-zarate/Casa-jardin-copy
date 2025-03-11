@@ -5,8 +5,9 @@ import But_aside from "../../../components/but_aside/page";
 import { autorizarUser, fetchUserData } from "@/helpers/cookies";
 import withAuthUser from "../../../components/alumno/userAuth";
 import { useRouter } from "next/navigation";
-import { ChevronRight, Clipboard, Book, CalendarDays, UserCircle } from "lucide-react";
+import { ChevronRight, Clipboard, Book, CalendarDays, UserCircle, BookOpen } from "lucide-react";
 import Background from "../../../../public/Images/BackgroundSolicitudes.jpg";
+import { DashboardCard } from "@/components/varios/DashboardCard";
 
 const Principal: React.FC = () => {
   const [userName, setUserName] = useState<string>("");
@@ -24,6 +25,10 @@ const Principal: React.FC = () => {
     authorizeAndFetchData();
   }, [router]);
 
+  const handleNavigation = (route: string) => {
+    const basePath = "/usuario";
+    router.push(`${basePath}${route}`);
+  };
   return (
     <main
       className="flex flex-col min-h-screen bg-cover bg-center"
@@ -39,59 +44,41 @@ const Principal: React.FC = () => {
       {/* Contenido principal */}
       <div className="flex flex-col flex-grow bg-white/50 p-6">
         {/* Mensaje de bienvenida */}
-        <div className="mt-16 text-center">
+        <div className="mt-16 text-center mb-6">
           <h1 className="text-xl md:text-2xl lg:text-3xl font-semibold">
             Bienvenido de regreso, {userName}
           </h1>
         </div>
-
-        {/* Opciones principales */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mt-10">
-          {[
-            {
-              icon: UserCircle,
-              title: "Mi Cuenta",
-              description: "Accede a la información de tu cuenta.",
-              link: "/usuario/Cuenta",
-            },
-            {
-              icon: Book,
-              title: "Mis Cursos",
-              description: "Consulta los cursos en los que estás inscrito.",
-              link: "/usuario/Cursos",
-            },  
-            {
-              icon: CalendarDays,
-              title: "Calendario",
-              description: "Revisa las fechas importantes y actividades.",
-              link: "/usuario/Cronograma",
-            },
-            {
-              icon: Clipboard,
-              title: "Solicitud de Inscripción",
-              description: "Realiza nuevas solicitudes de inscripción.",
-              link: "/usuario/Solicitud/Inscripcion",
-            },
-          ].map((section, index) => (
-            <div
-              key={index}
-              className="flex flex-col gap-4 rounded-lg border bg-white p-6 shadow-md hover:shadow-lg transition-shadow"
-            >
-              <div className="flex items-center justify-center h-16 w-16 rounded-full bg-gray-100">
-                <section.icon className="w-8 h-8 text-gray-600" />
-              </div>
-              <h3 className="text-lg font-semibold">{section.title}</h3>
-              <p className="text-sm text-gray-600">{section.description}</p>
-              <a
-                href={section.link}
-                className="flex items-center gap-2 text-sm font-medium text-blue-600 hover:underline"
-              >
-                Ir a {section.title}
-                <ChevronRight className="w-4" />
-              </a>
-            </div>
-          ))}
-        </div>
+         <div className="px-[20%] grid gap-6 md:grid-cols-2 lg:grid-cols-2">
+          <DashboardCard
+            title="Mi Cuenta"
+            description="Accede a la información de tu cuenta."
+            icon={UserCircle}
+            onClick={() => handleNavigation("/Cuenta")}
+            gradient="bg-gradient-to-br from-violet-500 to-purple-600"
+          />
+          <DashboardCard
+            title="Mis Cursos"
+            description="Consulta los cursos en los que estás inscrito."
+            icon={BookOpen}
+            onClick={() => handleNavigation("/Cursos")}
+            gradient="bg-gradient-to-br from-green-500 to-lime-600"
+          />
+          <DashboardCard
+            title="Calendario"
+            description="Revisa las fechas importantes y actividades."
+            icon={CalendarDays}
+            onClick={() => handleNavigation("/Cronograma")}
+            gradient="bg-gradient-to-br from-yellow-500 to-amber-600"
+          />
+          <DashboardCard
+            title="Solicitud de Inscripción"
+            description="Realiza nuevas solicitudes de inscripción."
+            icon={Clipboard}
+            onClick={() => handleNavigation("/Solicitud/Inscripcion")}
+            gradient="bg-gradient-to-br from-blue-500 to-sky-600"
+          />
+         </div>
       </div>
 
       {/* Botón fijo en la parte inferior */}

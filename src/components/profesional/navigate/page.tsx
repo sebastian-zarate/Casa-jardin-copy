@@ -45,7 +45,7 @@ export default function Navigate() {
 
   return (
     <nav className="flex justify-between items-center w-full p-3 bg-sky-600">
-      <div className="flex items-center cursor-pointer" onClick={()=> window.location.href = "/profesional/Inicio"}>
+      <div className="flex items-center cursor-pointer" onClick={()=> window.location.href = "/profesional/principal"}>
         <Image src={Logo} alt="Logo Casa Jardin" width={50} height={50} draggable="false"/>
         <h1 className="ml-2 text-white">Casa Jardín</h1>
       </div>

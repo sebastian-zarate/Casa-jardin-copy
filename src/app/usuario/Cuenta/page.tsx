@@ -289,7 +289,7 @@ const allEmptyFields = [...userEmptyFields, ...responsableEmptyFields]
                       </div>
                       <div className="space-y-1">
                         <label className="text-sm font-medium text-gray-500">DNI</label>
-                        <p className="text-gray-900">{user?.dni ? user.email : "-"}</p>
+                        <p className="text-gray-900">{user?.dni ? user.dni : "-"}</p>
                       </div>
                       {mayoriaEdad && (
                         <div className="space-y-1">
