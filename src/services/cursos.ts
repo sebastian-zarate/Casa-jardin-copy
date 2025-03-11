@@ -323,3 +323,45 @@ export async function getCursosCout() {
     }
 }
 
+//metodo para obtener todos los dias y horarios en los que se dicta el curso
+export async function getCursoHorarios(cursoId: number) {
+    const horariosCurso = await prisma.curso.findUnique({
+        where: { id: cursoId }, // Reemplaza `cursoId` con el ID del curso
+        include: {
+        cronograma: {
+            include: {
+            diasHoras: {
+                include: {
+                dia: true, // Incluye el nombre del día
+                hora: true, // Incluye los detalles de las horas
+                },
+            },
+            },
+        },
+        },
+    });
+    
+    // Agrupar por día
+    /*
+        ejemplo de lo que devuelve: 
+        {
+            Lunes: ['08:00', '10:00'],
+            Martes: ['12:00']
+    */
+    const horariosAgrupados = horariosCurso?.cronograma.flatMap((cronograma) =>
+        cronograma.diasHoras.map((diaHora) => ({
+        dia: diaHora.dia.nombre,
+        hora: diaHora.hora.hora_inicio,
+        }))
+    ).reduce((acc: {[key: string]: string[]}, curr) => {
+        const { dia, hora} = curr;
+        acc[dia] = acc[dia] || [];
+        acc[dia].push(hora);
+        return acc;
+    }, {});
+    
+    console.log(horariosAgrupados);
+
+    return horariosAgrupados;
+}
+

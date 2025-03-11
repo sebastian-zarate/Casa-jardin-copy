@@ -122,7 +122,7 @@ const Talleres = () => {
             
         </main>
         <footer
-        className="fixed  pt-1 bottom-0  border-t w-full opacity-90 bg-sky-600"
+        className="pt-1 bottom-0  border-t w-full opacity-90 bg-sky-600"
     >
         <But_aside />
     </footer>
