@@ -23,6 +23,7 @@ export default function But_aside() {
           flexDirection: "column",
           alignItems: "center",
           textAlign: "center",
+          paddingBottom : "5px",
           marginRight: "30px", // Añadir margen derecho para separar del bloque de botones
         }}
       >
@@ -39,14 +40,20 @@ export default function But_aside() {
           gap: "25px", // Aumentar el valor de gap para más separación entre los botones
           //zIndex: 30, // Añadir z-index para que los botones estén por encima del contenido
           opacity: 0.9, // Añadir transparencia a los botones
+
         }}
         //className="z-30"
+
       >
         {/* Botón de WhatsApp */}
-        <Whatsapp />
+        <div className="z-30 min-h-1 min-w-1"> 
+          <Whatsapp />
+        </div>
 
         {/* Botón de Google Maps */}
-        <Maps />
+        <div className="z-30 min-h-1 min-w-1">
+          <Maps />
+        </div>
       </div>
     </aside>
   );
