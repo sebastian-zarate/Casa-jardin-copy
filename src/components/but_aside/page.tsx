@@ -10,7 +10,7 @@ export default function But_aside() {
       style={{
         display: "flex",
         alignItems: "center",
-        justifyContent: "space-between",
+        justifyContent: "center",
         color: "#FFFFFF",
         padding: "3px",
         borderRadius: "5px",
@@ -23,10 +23,11 @@ export default function But_aside() {
           flexDirection: "column",
           alignItems: "center",
           textAlign: "center",
+          marginRight: "30px", // Añadir margen derecho para separar del bloque de botones
         }}
       >
         <Image src={Logo} alt="Logo Casa Jardín" width={50} height={50} />
-        <h2 style={{ marginTop: "10px", fontSize: "14px", fontFamily: "Cursive" }}>
+        <h2 style={{ marginTop: "10px", fontSize: "14px"}}>
           Centro Educativo y Terapéutico "Casa Jardín"
         </h2>
       </div>
@@ -35,9 +36,11 @@ export default function But_aside() {
       <div
         style={{
           display: "flex",
-          gap: "15px",
+          gap: "25px", // Aumentar el valor de gap para más separación entre los botones
+          //zIndex: 30, // Añadir z-index para que los botones estén por encima del contenido
+          opacity: 0.9, // Añadir transparencia a los botones
         }}
-        className="z-30"
+        //className="z-30"
       >
         {/* Botón de WhatsApp */}
         <Whatsapp />

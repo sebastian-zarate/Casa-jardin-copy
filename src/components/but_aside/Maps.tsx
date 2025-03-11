@@ -7,10 +7,16 @@ const Button = () => {
       <button 
         className="Btn" 
         onClick={() => {
+          try{
           window.open(
             "https://www.google.com/maps?q=Padre+Becher+991,+Crespo",
             "_blank"
           );
+        } catch(error){
+          console.error("Error al abrir Google Maps:", error);
+          
+
+          }
         }}
       >
         <div className="sign">
@@ -38,7 +44,7 @@ const StyledWrapper = styled.div`
     overflow: hidden;
     transition-duration: 0.3s;
     box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.199);
-    background-color: #4285F4; /* Color de Google Maps */
+    background-color:rgb(36, 49, 70); /* Color de Google Maps */
   }
 
   .sign {

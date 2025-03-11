@@ -1,5 +1,5 @@
 "use client"; // Esta línea indica que este archivo debe ejecutarse en el cliente
-
+import Loader from '@/components/Loaders/loader/loader';
 import React, { useState, useEffect } from "react";
 
 // Importamos los servicios que utilizaremos para interactuar con la API
@@ -11,6 +11,7 @@ import { getCursosByIdProfesional, deleteCronogramaDiaHoraProfesional } from "..
 import { getDias, getHoras } from "../../../../services/dia";
 import { getAulaById } from "@/services/aulas";
 import Navigate from "../../../../components/profesional/navigate/page";
+import { AlertCircle } from 'lucide-react';
 // Definimos una interfaz para los cursos para tipar correctamente los datos
 type Curso = {
   id: number;
@@ -226,10 +227,10 @@ export default function HorarioProfesional({ idAula, idProfesional }: { idAula: 
   if (loading) {
     return (
       <main className=" flex-col items-center justify-center min-h-screen bg-gray-100">
-        <Navigate />
-        <div className="flex items-center justify-center h-screen">
-          <div className="text-xl font-bold">Cargando datos...</div>
-        </div>
+      <Navigate />
+      <div className="flex items-center justify-center h-screen">
+        <Loader />
+      </div>
       </main>
     );
   }
@@ -309,7 +310,19 @@ export default function HorarioProfesional({ idAula, idProfesional }: { idAula: 
                 ))}
             </tbody>
           </table>
-
+          {/* Aclaración sobre materias repetidas - Contenedor mejorado */}
+          <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-start">
+              <AlertCircle className="h-5 w-5 text-blue-500 mt-0.5 mr-3 flex-shrink-0" />
+              <div>
+                <h3 className="font-medium text-blue-800 mb-1">Información importante</h3>
+                <p className="text-blue-700 text-sm">
+                  El sistema valida que una misma materia no esté asignada en el mismo día y hora en otros cronogramas. 
+                  Sin embargo, es posible asignar al mismo profesor diferentes cursos en el mismo horario y día.
+                </p>
+              </div>
+            </div>
+          </div>
           {/* Mensaje de error adicional, si lo hay */}
           {error && <div className="text-red-500 mt-4">{error}</div>}
 
@@ -326,36 +339,38 @@ export default function HorarioProfesional({ idAula, idProfesional }: { idAula: 
         </div>
       </div>
 
-      {/* Modales */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 z-40 flex justify-center items-center">
-          <div className="bg-white p-4 rounded-lg shadow-lg max-w-md w-full z-50">
-            <h2 className="text-lg font-bold mb-4">Selecciona un curso</h2>
-            {errorMessage && <div className="text-red-700 px-4 py-2 rounded mb-4">{errorMessage}</div>}
-            <ul className="max-h-60 overflow-auto">
-              {loadingCursos ? (
-                <li>Cargando cursos...</li>
-              ) : (
-                cursos.map((curso) => (
-                  <li
-                    key={curso.id}
-                    className="p-2 hover:bg-gray-200 cursor-pointer"
-                    onClick={() => handleSelectCurso(curso.id)}
-                  >
-                    {curso.nombre}
-                  </li>
-                ))
-              )}
-            </ul>
-            <button
-              onClick={() => {
-                setIsModalOpen(false);
-                setErrorMessage(null);
-              }}
-              className="mt-4 bg-gray-500 text-white px-4 py-2 rounded"
+     { /* Modales */}
+        {isModalOpen && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 z-40 flex justify-center items-center">
+            <div className="bg-white p-4 rounded-lg shadow-lg max-w-md w-full z-50">
+          <h2 className="text-lg font-bold mb-4">Selecciona un curso</h2>
+          {errorMessage && <div className="text-red-700 px-4 py-2 rounded mb-4">{errorMessage}</div>}
+          <ul className="max-h-60 overflow-auto">
+            {loadingCursos ? (
+              <li>Cargando cursos...</li>
+            ) : cursos.length === 0 ? (
+              <li>No hay cursos vigentes.</li>
+            ) : (
+              cursos.map((curso) => (
+            <li
+              key={curso.id}
+              className="p-2 hover:bg-gray-200 cursor-pointer"
+              onClick={() => handleSelectCurso(curso.id)}
             >
-              Cancelar
-            </button>
+              {curso.nombre}
+            </li>
+              ))
+            )}
+          </ul>
+          <button
+            onClick={() => {
+              setIsModalOpen(false);
+              setErrorMessage(null);
+            }}
+            className="mt-4 bg-gray-500 text-white px-4 py-2 rounded"
+          >
+            Cancelar
+          </button>
           </div>
         </div>
       )}

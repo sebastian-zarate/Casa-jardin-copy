@@ -22,6 +22,20 @@ export async function getProfesionales() {
   return await prisma.profesional.findMany();
 }
 
+export async function getProfesionalesNoPassword() {
+  return await prisma.profesional.findMany({
+    select: {
+      id: true,
+      nombre: true,
+      apellido: true,
+      especialidad: true,
+      email: true,
+      telefono: true,
+      imagen: true,
+    }
+  });
+}
+
 export async function getProfesionalById(id: number) {
   return await prisma.profesional.findUnique({
     where: {

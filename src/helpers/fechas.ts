@@ -6,7 +6,7 @@ export function dateTimeToDate(dateTime: any): Date {
     }
     return new Date(date.toISOString().split('T')[0]);
 }
-
+//ejemplo de parametro 
 export function dateTimeToString(dateTime: any): string {
     const date = new Date(dateTime);
     if (isNaN(date.getTime())) {
@@ -14,6 +14,26 @@ export function dateTimeToString(dateTime: any): string {
     }
     return date.toISOString().split('T')[0];
 }
+
+export function stringToDateTime(dateString: string): Date {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+        throw new Error("Invalid date format");
+    }
+    return date;
+}
+
+//sirve para los inputs de tipo date
+//ejemplo de lo que recibe como parametro: 
+// "Sat Jul 15 2023 21:00:00 GMT-0300 (hora estándar de Argentina) "
+export const formDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    console.log(`input: ${dateString} | output: ${year}-${month}-${day}`)
+    return `${year}-${month}-${day}`;
+  }
 
 //obtener edad de un alumno en base a su fecha de nacimiento
 export function calcularEdad(fechaNacimiento: any) {

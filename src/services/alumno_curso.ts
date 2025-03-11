@@ -77,3 +77,23 @@ export async function deleteAlumno_Curso(idAlumno: number, idCurso: number) {
     where: { id: al_cur.id },
   });
 }
+
+
+//trae todos los alumnos que estan inscriptos en un curso en particular con su id, nombre y apellido y email
+export async function getAlumnosByIdCurso(idCurso: number) {
+  const alum_cur = await prisma.alumno_Curso.findMany({
+    where: {
+      cursoId: idCurso,
+    },
+  });
+  let arrayAlumnos: any[] = [];
+  for (const pc of alum_cur) {
+    const alumno = await prisma.alumno.findFirst({
+      where: {
+        id: pc.alumnoId,
+      },
+    });
+    arrayAlumnos.push(alumno);
+  }
+  return arrayAlumnos;
+}

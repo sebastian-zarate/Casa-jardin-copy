@@ -5,13 +5,16 @@ import Navigate from "../../../components/start/navigate/page";
 import But_aside from "../../../components/but_aside/page";
 import Image from "next/image";
 import Background from "../../../../public/Images/BackgroundSolicitudes.jpg";
-import { getCursos } from "@/services/cursos";
+import { getCursosActivos } from "@/services/cursos";
+import { getProfesionalesByCursoId } from "@/services/profesional_curso";
 //imagen default si el curso no tiene imagen
 import NoImage from "../../../../public/Images/default-no-image.png";
 import { getImages_talleresAdmin } from "@/services/repoImage";
 //para subir imagenes:
 import { mapearImagenes } from "@/helpers/repoImages";
 import Loader from "@/components/Loaders/loading/page";
+//componente para cada taller
+import TallerCard  from "@/components/start/tallerCard";
 // #endregion Imports
 
 const Talleres = () => {
@@ -20,6 +23,8 @@ const Talleres = () => {
     const [downloadurls, setDownloadurls] = useState<any[]>([]);
     const [imagesLoaded, setImagesLoaded] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
+    //para mapear los profesionales con sus respectivos cursos
+    const [profesionalesDict, setProfesionalesDict] = useState<{ [key: string]: any[] }>({});
 
     useEffect(() => {
         // Llamar a fetchImages después de que los cursos se hayan cargado
@@ -35,15 +40,26 @@ const Talleres = () => {
 
 
     async function fetchTalleres() {
-        const taller = await getCursos();
+        const taller = await getCursosActivos();
         console.log(taller);
         setCursos(taller);
+        fetchProfesionales(taller);
     }
+
+    // Método para obtener los profesionales de un curso
+    const fetchProfesionales = async (talleres: any[]) => {
+        const dict: { [key: string]: any[] } = {};
+        for (const taller of talleres) {
+            const profesionales = await getProfesionalesByCursoId(taller.id);
+            dict[taller.id] = profesionales;
+        }
+        setProfesionalesDict(dict);
+    };
+
     // Método para obtener las imagenes
     const fetchImages = async () => {
         const result = await getImages_talleresAdmin();
-        console.log(result.images, "LAS IMAGENESSSSS");
-        console.log(result.downloadurls, "LOS DOWNLOADURLS");
+    
         if (result.error) {
             setErrorMessage(result.error);
         } else {
@@ -72,15 +88,8 @@ const Talleres = () => {
         }
     };
     return (
-        <main className="relative min-h-screen  text-gray-600 body-font">
-            {/*             <Image
-                src={Background}
-                alt="Background"
-                layout="fill"
-                objectFit="cover"
-                quality={80}
-                priority={true}
-            /> */}
+        <>
+        <main className="relative min-h-screen pb-20 text-gray-600 body-font">
             <Navigate />
             <div className="fixed inset-0 z-[-1] h-full w-full">
                 <Image src={Background}
@@ -105,38 +114,19 @@ const Talleres = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 my-4">
 
                     {cursos.length !== 0 && cursos.map((curso) => (
-                        <div className=" p-4 ">
-                            <div className="bg-gray-100 p-6 rounded-lg min-h-96">
-                                <div className="relative h-40 w-full mb-6">
-                                    <Image
-                                        className="rounded object-cover object-center"
-                                        src={curso.imageUrl || NoImage}
-                                        alt="content"
-                                        layout="fill"
-                                        objectFit="cover"
-                                    />
-                                </div>
-                                <h2 className="text-lg text-gray-900 font-medium title-font mb-4">{curso.nombre}</h2>
-                                <p style={{ overflow: "auto" }} className="sm:h-[8vh] md:h-[8vh] lg:h-[8vh] xl:h-[10vh] leading-relaxed text-base">{curso.descripcion}</p>
-                            </div>
-                        </div>
+                        <TallerCard key={curso.id} taller={curso} profesionales={profesionalesDict[curso.id]}/>
                     ))}
-                    {/*                                     <Image
-                   src={curso.imageUrl || NoImage}
-                  alt="Background Image"
-                  objectFit="cover"
-                  className="w-full h-full"
-                  layout="fill"
-                /> */}
+                   
                 </div>
             </div>
-            <div
-                className="fixed  bottom-0 py-0.1 border-t w-full z-30"
-                style={{ opacity: 0.89, background: "#3f8df5" }}
-            >
-                <But_aside />
-            </div>
+            
         </main>
+        <footer
+        className="pt-1 bottom-0  border-t w-full opacity-90 bg-sky-600"
+    >
+        <But_aside />
+    </footer>
+    </>
     );
 };
 

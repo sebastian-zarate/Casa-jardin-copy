@@ -198,8 +198,7 @@ const Inicio = () => {
 
       {/* Botón de navegación adicional */}
       <div
-        className="fixed  bottom-0 py-0.1 border-t w-full z-30"
-        style={{ opacity: 0.89, background: "#3f8df5" }}
+        className="fixed  bottom-0 py-0.1 border-t w-full z-30 bg-sky-600 opacity-90"
       >
         <But_aside />
       </div>
