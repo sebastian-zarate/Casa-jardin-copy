@@ -30,6 +30,8 @@ const StyledWrapper = styled.div`
     justify-content: flex-start;
     width: 45px;
     height: 45px;
+    max-height: 50px;
+    max-width: 150px;
     border: none;
     border-radius: 50%;
     cursor: pointer;
@@ -63,6 +65,7 @@ const StyledWrapper = styled.div`
     color: white;
     font-size: 1.2em;
     font-weight: 600;
+    transition-duration: 0.3s;
     transition-duration: 0.3s;
   }
 

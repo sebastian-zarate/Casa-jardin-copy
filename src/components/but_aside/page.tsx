@@ -46,12 +46,12 @@ export default function But_aside() {
 
       >
         {/* Botón de WhatsApp */}
-        <div className="z-30 min-h-1 min-w-1"> 
+        <div > 
           <Whatsapp />
         </div>
 
         {/* Botón de Google Maps */}
-        <div className="z-30 min-h-1 min-w-1">
+        <div >
           <Maps />
         </div>
       </div>

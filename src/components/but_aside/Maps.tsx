@@ -4,23 +4,23 @@ import styled from 'styled-components';
 const Button = () => {
   return (
     <StyledWrapper>
-      <button 
-        className="Btn" 
+      <button
+        className="Btn"
         onClick={() => {
-          try{
-          window.open(
-            "https://www.google.com/maps?q=Padre+Becher+991,+Crespo",
-            "_blank"
-          );
-        } catch(error){
-          console.error("Error al abrir Google Maps:", error);
-          
+          try {
+            window.open(
+              "https://www.google.com/maps?q=Padre+Becher+991,+Crespo",
+              "_blank"
+            );
+          } catch (error) {
+            console.error("Error al abrir Google Maps:", error);
+
 
           }
         }}
       >
-        <div className="sign">
-          <svg className="socialSvg mapsSvg" viewBox="0 0 24 24">
+        <div className="sign w-2 h-2">
+          <svg className="socialSvg mapsSvg" viewBox="0 0 24 24" >
             <path d="M12 2C8.13 2 5 5.13 5 9c0 4.28 5.55 11.74 6.28 12.66.4.5 1.04.5 1.44 0C13.45 20.74 19 13.28 19 9c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z" />
           </svg>
         </div>
@@ -37,6 +37,8 @@ const StyledWrapper = styled.div`
     justify-content: flex-start;
     width: 45px;
     height: 45px;
+    max-height: 50px;
+    max-width: 150px;
     border: none;
     border-radius: 50%;
     cursor: pointer;
