@@ -3,6 +3,7 @@ import Logo from "../../../public/Images/LogoCasaJardin.png";
 import Image from "next/image";
 import Maps from "./Maps";
 import Whatsapp from "./Whatsapp";
+import Card from "./cards";
 
 export default function But_aside() {
   return (
@@ -47,13 +48,11 @@ export default function But_aside() {
       >
         {/* Botón de WhatsApp */}
         <div > 
-          <Whatsapp />
+          <Card />
         </div>
 
         {/* Botón de Google Maps */}
-        <div >
-          <Maps />
-        </div>
+
       </div>
     </aside>
   );

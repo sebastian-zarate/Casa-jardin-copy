@@ -43,7 +43,7 @@ const Nosotros = () => {
     }
   };
   return (
-    <main className="relative min-h-screen  overflow-hidden">
+    <main className="relative min-h-screen  overflow-hidden   flex flex-col">
       {/* Fondo */}
       <div className="fixed inset-0 pointer-events-none">
         <Image
@@ -72,14 +72,14 @@ const Nosotros = () => {
 
 
         {/* Contenedor de imágenes en rotación */}
-        <div className="   min-h-80 ">
+        <div className="   min-h-80 w-full md:w-1/2 lg:w-1/2 flex py-5 justify-center items-center">
           <RotatingImages images={downloadurls}/>
         </div>
       </div>
 
       {/* Pie de página fijo */}
       <div
-        className="fixed  bottom-0 py-0.1 border-t w-full z-30 bg-sky-600 opacity-90"
+        className=" bottom-0 py-0.1 border-t w-full z-30 bg-sky-600 opacity-90"
       >
         <But_aside />
       </div>

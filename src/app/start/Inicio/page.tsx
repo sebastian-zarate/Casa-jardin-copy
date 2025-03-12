@@ -187,18 +187,18 @@ const Inicio = () => {
       </div>
 
       {/* Recordatorio colocado arriba */}
-      <div className="w-full z-40 mb-20 translate-y-2 bg-yellow-100  text-yellow-700 p-4 text-center mt-4 shadow-md ">
+      <div className="w-full z-40  bg-yellow-100  text-yellow-700 p-4 text-center mt-4 shadow-md ">
         <p className="text-lg">
           Nota: Para aprovechar al máximo nuestra plataforma, recuerda{" "}
-          <span className="font-semibold">iniciar sesión</span> o{" "}
-          <span className="font-semibold">registrarte</span> utilizando el botón "Ingresar" en la parte superior derecha.
+          <a className="font-semibold hover:underline hover:cursor-pointer" href="/start/login">iniciar sesión</a> o{" "}
+          <a className="font-semibold hover:underline hover:cursor-pointer" href="/start/signup">registrarte</a> utilizando el botón "Ingresar" en la parte superior derecha.
         </p>
       </div>
 
 
       {/* Botón de navegación adicional */}
       <div
-        className="fixed  bottom-0 py-0.1 border-t w-full z-30 bg-sky-600 opacity-90"
+        className=" bottom-0 py-0.1 border-t w-full z-30 bg-sky-600 opacity-90"
       >
         <But_aside />
       </div>
