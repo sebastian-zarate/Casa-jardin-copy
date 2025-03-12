@@ -1,5 +1,5 @@
 import React from 'react';
-import styled from 'styled-components';
+import styled from 'styled-components/macro';
 
 const Card = () => {
     const handleWhatsAppClick = () => {
@@ -51,6 +51,7 @@ const Card = () => {
         </button>
       </div>
     </StyledWrapper>
+   
   );
 }
 
