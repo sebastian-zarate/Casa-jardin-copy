@@ -9,7 +9,7 @@ export const DireccionForm: React.FC = () => {
   const {
     register,
     formState: { errors },
-  } = useFormContext<{ direccion: DireccionSchemaType}>()
+  } = useFormContext<{ direccion: DireccionSchemaType }>()
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -39,7 +39,15 @@ export const DireccionForm: React.FC = () => {
       </div>
       <div>
         <Label htmlFor="numero">Número</Label>
-        <Input id="numero" type="number" {...register("direccion.numero")} className="mt-1" />
+        <Input
+          id="numero"
+          type="number"
+          {...register("direccion.numero", {
+            valueAsNumber: true,
+            setValueAs: (value) => (value === "" ? undefined : Number(value)),
+          })}
+          className="mt-1"
+        />
         {errors.direccion?.numero && <p className="text-destructive text-sm mt-1">{errors.direccion.numero.message}</p>}
       </div>
     </div>
