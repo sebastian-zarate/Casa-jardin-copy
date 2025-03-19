@@ -6,7 +6,7 @@ import But_aside from "../../../components/but_aside/page";
 import Image from "next/image";
 import childStartImage from "../../../../public/Images/childStarImage.jpg";
 import goalSectionStartImage from "../../../../public/Images/goalSectionStartImage.jpg";
-import { getImages_procesoInscrip, getImages_talleresAdmin } from "@/services/repoImage";
+import { getImages_procesoInscrip, get_rotatingImages } from "@/services/repoImage";
 import Logo from "../../../../public/Images/LogoCasaJardin.png";
 import Background from "../../../../public/Images/BackgroundSolicitudes.jpg";
 import { mapearImagenes } from "@/helpers/repoImages";
@@ -35,7 +35,7 @@ const RotatingImages: React.FC = () => {
   }, [images]);
 
   const fetchImages = async () => {
-    const result = await getImages_talleresAdmin();
+    const result = await get_rotatingImages();
     if (result.images) {
       setImages(result.images);
       setDownloadurls(result.downloadurls);
@@ -117,7 +117,7 @@ const Inicio = () => {
       </div>
 
       {/* Banner de imágenes */}
-      <div className="relative  z-30 mt-16"> {/* mt-16 para dar espacio al Navigate */}
+      <div className="relative  z-30 mt-20"> {/* mt-16 para dar espacio al Navigate */}
         <RotatingImages />
       </div>
 
