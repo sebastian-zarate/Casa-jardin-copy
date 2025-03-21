@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/varios/ui
 
 export default function TabbedContent() {
   return (
-    <Tabs defaultValue="tab1" className="w-full max-w-[500px]">
+    <Tabs defaultValue="tab1" className="w-full max-w-[600px]">
       <TabsList className="grid w-full grid-cols-3">
         <TabsTrigger value="tab1" className="text-lg">Misión</TabsTrigger>
         <TabsTrigger value="tab2" className="text-lg">Visión</TabsTrigger>
