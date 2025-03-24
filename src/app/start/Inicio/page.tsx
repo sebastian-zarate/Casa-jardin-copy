@@ -43,17 +43,19 @@ const RotatingImages: React.FC = () => {
   };
 
   return (
-    <div className="w-full h-60 flex items-center justify-center overflow-hidden">
+    <div className="w-full h-96 flex items-center justify-center overflow-hidden">
       {downloadurls.length > 0 && (
+      <div className="relative rounded-lg w-full lg:w-4/5 h-full">
         <Image
-          src={downloadurls[currentImageIndex]}
-          alt="Rotating Banner"
-          layout="fill"
-          objectFit="cover"
-          quality={80}
-          priority={true}
-          className="z-0"
+        src={downloadurls[currentImageIndex]}
+        alt="Rotating Banner"
+        layout="fill"
+        objectFit="cover"
+        quality={80}
+        priority={true}
+        className="z-0"
         />
+      </div>
       )}
     </div>
   );
@@ -116,7 +118,7 @@ const Inicio = () => {
       </div>
 
       {/* Banner de imágenes */}
-      <div className="relative  z-30 mt-20"> {/* mt-16 para dar espacio al Navigate */}
+      <div className="relative  z-30 mt-18 md:mt-20 lg:mt-20"> {/* mt-16 para dar espacio al Navigate */}
         <RotatingImages />
       </div>
 
