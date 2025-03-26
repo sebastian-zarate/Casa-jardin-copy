@@ -400,22 +400,24 @@ const CursoForm: React.FC<CursoFormProps> = ({
                       : ""
                     }
                     min={
-                      selectedCursoId !== -1
-                      ? new Date(new Date(watch('fechaInicio') || "").setDate(new Date(watch('fechaInicio') || "").getDate() + 7))
-                        .toISOString()
-                        .split('T')[0]
+                      watch('fechaInicio') &&
+                      !isNaN(new Date(watch('fechaInicio')).getTime())
+                      ? new Date(new Date(watch('fechaInicio')).setDate(new Date(watch('fechaInicio')).getDate() + 7))
+                      .toISOString()
+                      .split('T')[0]
                       : new Date(new Date().setDate(new Date().getDate() + 7))
-                        .toISOString()
-                        .split('T')[0]
+                      .toISOString()
+                      .split('T')[0]
                     }
                     max={
-                      selectedCursoId !== -1
-                      ? new Date(new Date(watch('fechaInicio') || "").setFullYear(new Date(watch('fechaInicio') || "").getFullYear() + 1))
-                        .toISOString()
-                        .split('T')[0]
+                      watch('fechaInicio') &&
+                      !isNaN(new Date(watch('fechaInicio')).getTime())
+                      ? new Date(new Date(watch('fechaInicio')).setFullYear(new Date(watch('fechaInicio')).getFullYear() + 1))
+                      .toISOString()
+                      .split('T')[0]
                       : new Date(new Date().setFullYear(new Date().getFullYear() + 1))
-                        .toISOString()
-                        .split('T')[0]
+                      .toISOString()
+                      .split('T')[0]
                     }
                     onChange={(e) => setValue('fechaFin', new Date(e.target.value).toISOString().split('T')[0])}
                     className={`p-2 w-full border rounded text-sm ${errors.fechaFin ? 'border-red-500' : 'border-gray-300'}`}
