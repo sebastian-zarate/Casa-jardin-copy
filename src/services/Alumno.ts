@@ -6,6 +6,7 @@ import { hashPassword, verifyPassword } from "../helpers/hashPassword";
 import { encrypt, getUserFromCookie } from "@/helpers/jwt";
 import { cookies } from "next/headers";
 import { getalumnos_cursoByIdAlumno } from "./alumno_curso";
+import { validatePasswordComplexity } from "@/helpers/validaciones";
 const prisma = new PrismaClient();
 
 // Definir el tipo Alumno
@@ -117,7 +118,7 @@ export async function createAlumnoAdmin(data: {
 
 
 // valida los datos del alumno para iniciar sesión
-export async function authenticateUser(email: string, password: string): Promise<number | null> {
+export async function authenticateUser(email: string, password: string): Promise<string | number> {
   const tables = ['alumno', 'administrador', 'profesional'] as const;
   type Table = typeof tables[number];
   
@@ -125,7 +126,10 @@ export async function authenticateUser(email: string, password: string): Promise
   const userResults = await Promise.all(
     tables.map((table) => (prisma[table as Table] as any).findUnique({ where: { email } }))
   );
-
+  /* console.log("server userResults", userResults) */
+  if (userResults.every((user) => user === null)) {
+    return "El usuario no se encuentra registrado"; // Si no se encuentra el usuario, retorna null
+  }
   // Busca el primer usuario que no sea null y verifique la contraseña
   for (const user of userResults) {
     if (user && await verifyPassword(password, user.password)) {
@@ -139,7 +143,7 @@ export async function authenticateUser(email: string, password: string): Promise
     }
   }
   
-  return null; // Devuelve null si no se encuentra usuario válido en ninguna tabla
+  return ""; // Devuelve null si no se encuentra usuario válido en ninguna tabla
 }
 
 
@@ -225,11 +229,16 @@ export async function changePassword(password:string, newPassword:string, email:
   console.log(password, newPassword, email);
   const alumno = await prisma.alumno.findUnique({ where: { email: email.trim()  } });
   if (!alumno) {
-    return "El alumno no existe.";
+    return  "El alumno no existe." ;
   }
   if (!await verifyPassword(password, alumno.password)) {
-    return "Contraseña incorrecta.";
+    return  "Contraseña incorrecta.";
   }
+  // verificar si la contraseña cumple con los requisitos
+  const verify = validatePasswordComplexity(newPassword.trim())
+  
+  if ( typeof verify === "string") {return verify};
+
   const hashedPassword = await hashPassword(newPassword.trim());
   console.log("Se guardó correctamente la contraseña");
   return await prisma.alumno.update({

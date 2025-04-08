@@ -72,13 +72,14 @@ function Login() {
         // Valida los datos del formulario
         if (validate()) {
             // Llama a la función `login` para verificar email y contraseña
-            const rolId = await authenticateUser(email, password);
-            if (rolId) {
 
-                redirectToRolePage(rolId, router);
+            const rolIdOrError = await authenticateUser(email, password);
+            console.log("emailerror", rolIdOrError);
+            if (typeof rolIdOrError != "string") {
+
+                redirectToRolePage(rolIdOrError, router);
             } else {
-
-                setErrors({ email: "Email o contraseña incorrectos." });
+                rolIdOrError == "" ? setErrors({password: "La contraseña es incorrecta"}) : setErrors({ email: "El email o la contraseña son incorrectos." });
                 setIsSaving(false);
             }
 
