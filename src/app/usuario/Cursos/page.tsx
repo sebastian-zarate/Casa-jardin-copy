@@ -76,7 +76,7 @@ const MisCursos = () => {
 
   if (loading) {
     return (
-      <main className="min-h-screen flex flex-col bg-cover bg-center" style={{ backgroundImage: `url(${Background.src})` }}>
+      <main className="min-h-screen flex flex-col bg-cover bg-center" /* style={{ backgroundImage: `url(${Background.src})` }} */>
         <Navigate />
         <div className="flex-grow flex min-h-[88vh] items-center justify-center bg-white/50">
           <div className="flex flex-col items-center gap-4">
@@ -99,16 +99,16 @@ const MisCursos = () => {
 
 
 
-        <div className="container min-h-[83vh] mb-16 px-5 py-14 mx-auto">
+        <div className="container bg-gray-100 min-h-[83vh] mb-16 px-5 py-14 mx-auto">
           <div className="fixed inset-0 z-[-1] h-full w-full">
-            <Image
+        {/*     <Image
               src={Background}
               alt="Background"
               layout="fill"
               objectFit="cover"
               quality={80}
               priority={true}
-            />
+            /> */}
           </div>
           <div className="fixed top-0 left-0 w-full z-20 bg-white shadow-md">
             <Navigate />
@@ -129,7 +129,7 @@ const MisCursos = () => {
           ) : cursos.length === 0 ? (
             <p className="text-center text-gray-500">No estás inscripto a ningún curso aún.</p>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 my-4">
+            <div className="grid bg-white shadow-lg rounded-md p-8 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 my-4">
               {cursos.map((curso) => (
                 <TallerCard key={curso.id} taller={curso} profesionales={curso.profesionales} />
               ))}

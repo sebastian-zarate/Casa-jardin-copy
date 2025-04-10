@@ -171,11 +171,11 @@ const AlumnoForm: React.FC<AlumnoProps> = (AlumnoProps) => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
                   <Label className="text-sm font-medium text-muted-foreground">Nombre</Label>
-                  <p className="text-lg font-medium">{AlumnoProps.alumno?.nombre}</p>
+                  <p className="text-lg font-medium overflow-auto">{AlumnoProps.alumno?.nombre}</p>
                 </div>
                 <div>
                   <Label className="text-sm font-medium text-muted-foreground">Apellido</Label>
-                  <p className="text-lg font-medium">{AlumnoProps.alumno?.apellido}</p>
+                  <p className="text-lg font-medium overflow-auto">{AlumnoProps.alumno?.apellido}</p>
                 </div>
                 <div>
                   <Label className="text-sm font-medium text-muted-foreground">Email</Label>

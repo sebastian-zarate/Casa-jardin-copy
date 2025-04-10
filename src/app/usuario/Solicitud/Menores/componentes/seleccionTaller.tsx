@@ -83,7 +83,7 @@ const SeleccionTaller: React.FC<Datos> = ({ setSelectedCursosId, selectedCursosI
     }
 
     return (
-        <div className="w-full max-w-7xl mx-auto px-4 py-12">
+        <div className="w-full max-w-7xl mx-auto px-4 py-2">
             <div className="text-center mb-12">
                 <h1 className="text-3xl font-bold text-gray-900 mb-4">
                     Elija los talleres de interés
