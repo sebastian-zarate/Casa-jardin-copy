@@ -208,7 +208,7 @@ const allEmptyFields = [...userEmptyFields, ...responsableEmptyFields]
   return (
     <div className="flex flex-col min-h-screen">
       <main
-        className="flex-grow min-h-[98vh] relative bg-gray-100 overflow-auto bg-cover bg-center"
+        className="flex-grow min-h-[98vh] relative bg-gray-50 overflow-auto bg-cover bg-center"
         /* style={{ backgroundImage: `url(${Background.src})` }} */
       >
         <div className="absolute inset-0 -z-10 bg-gradient-to-br from-sky-50 to-gray-100" />

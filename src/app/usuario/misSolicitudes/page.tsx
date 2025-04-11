@@ -101,7 +101,7 @@ const misSolicitudes: React.FC = () => {
               quality={80}
               priority={true}
             /> */}
-      <div className="flex-grow flex bg-white/50 p-4">
+      <div className="flex-grow flex bg-gray-50 p-4">
         <div className="container mx-auto flex flex-col">
           <h1 className="text-2xl font-semibold text-gray-800 mb-6 mt-14 text-center">
             Tus Solicitudes
