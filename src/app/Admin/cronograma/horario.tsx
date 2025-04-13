@@ -14,7 +14,7 @@ import { getDias, getHoras } from "../../../services/dia";
 import { getAulaById } from "@/services/aulas";
 import withAuth from "../../../components/Admin/adminAuth";
 import { AlertCircle } from "lucide-react";
-import Loader from "@/components/Loaders/loader/loader";
+import Loader from "@/components/Loaders/loadingTalleres/page";
 // Definimos una interfaz para los cursos para tipar correctamente los datos
 interface Curso {
   id: number;

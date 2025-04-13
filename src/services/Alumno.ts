@@ -274,6 +274,7 @@ export async function getAlumnos() {
   return await prisma.alumno.findMany();
 }
 
+
 export async function deleteAlumno(id: number) {
   console.log("Eliminando alumno", id);
   try{
