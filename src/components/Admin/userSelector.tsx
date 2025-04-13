@@ -316,7 +316,7 @@ export default function UserSelector(props: Props) {
                     </div>
 
                     {/* Resultados de la búsqueda */}
-                    <div className="mt-4 border rounded-lg">
+                    <div className="my-4  border rounded-lg">
                       <div className="max-h-64 overflow-y-auto divide-y">
                         {filteredPersonas.length > 0 ? (
                           filteredPersonas.map(persona => (

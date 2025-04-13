@@ -12,7 +12,7 @@ import { autorizarAdmin } from "@/helpers/cookies";
 import { useRouter } from "next/navigation";
 import Loader from "@/components/Loaders/loadingTalleres/page";
 import { mapearImagenes } from "@/helpers/repoImages";
-import { Calendar, FileText, Pencil, Plus, Search, Trash2, Users, UsersRound, X } from "lucide-react";
+import { Calendar, FileText, GraduationCap, Pencil, Plus, Search, Trash2, UserRound, Users, UsersRound, X } from "lucide-react";
 import CursoForm from "./../../../components/formularios/CursoForm";
 import { Alumno, getAlumnos } from "@/services/Alumno";
 import UserSelector from "@/components/Admin/userSelector";
@@ -381,7 +381,7 @@ const Cursos: React.FC = () => {
                       }}
                       className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-800"
                     >
-                      <Users className="w-4 h-4 text-gray-400" />
+                      <GraduationCap className="w-4 h-4 text-gray-400 hover:text-blue-600" />
                       <span>{talleres.cantidadAlumnos || 0}</span>
                     </button>
                     <button
@@ -393,7 +393,7 @@ const Cursos: React.FC = () => {
                       }}
                       className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-800"
                     >
-                      <UsersRound className="w-4 h-4 text-gray-400" />
+                      <UserRound className="w-4 h-4 text-gray-400 hover:text-blue-600" />
                       <span>{talleres.cantidadProfesionales || 0}</span>
                     </button>
                   </div>

@@ -299,21 +299,16 @@ export async function getCursosCout() {
         // Consultar cursos junto con la cantidad de alumnos inscritos
         const cursos = await prisma.curso.findMany({
             include: {
-                _count: {
-                    select: { alum_cur: true } // Relación que cuenta los alumnos inscritos
+            _count: {
+                select: { 
+                alum_cur: true, // Relación que cuenta los alumnos inscritos
+                prof_cur: true  // Relación que cuenta los profesores inscritos
                 }
             }
-        });
-        const cursosProf = await prisma.curso.findMany({
-            include: {
-                _count: {
-                    select: { prof_cur: true } // Relación que cuenta los profesionales inscritos
-                }
             }
         });
-        let cantidadProf: number;
-        cursosProf.map(curso =>{
-            cantidadProf =  curso._count.prof_cur})
+
+
         // Mapear los resultados para estructurar la respuesta
         return cursos.map(curso => ({
             id: curso.id,
@@ -324,7 +319,7 @@ export async function getCursosCout() {
             fechaInicio: curso.fechaInicio,
             fechaFin: curso.fechaFin,
             imagen: curso.imagen,
-            cantidadProfesionales: cantidadProf, // Usar camelCase para claves
+            cantidadProfesionales: curso._count.prof_cur, // Usar camelCase para claves
             cantidadAlumnos: curso._count.alum_cur // Usar camelCase para claves
         }));
     } catch (error) {
