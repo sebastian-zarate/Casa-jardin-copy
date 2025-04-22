@@ -9,7 +9,7 @@ import Navigate from "../../../components/alumno/navigate/page";
 import Background from "../../../../public/Images/Background.jpeg";
 import Loader from "@/components/Loaders/loader/loader";
 import But_aside from "@/components/but_aside/page";
-import { Calendar, Clock, MapPin, Users } from "lucide-react";
+import { Calendar, ChevronLeft, Clock, MapPin, Users } from "lucide-react";
 interface Curso {
   id: number;
   nombre: string;
@@ -88,7 +88,7 @@ function Horario() {
         <Navigate />
         <div className="flex flex-col items-center justify-center h-screen">
           <Loader />
-          <p className="text-gray-700">Cargando el cronograma</p>
+          <p className="text-gray-700">Cargando su cronograma semanal...</p>
         </div>
 
         <div className="w-full ">
@@ -113,8 +113,16 @@ function Horario() {
     );
   }
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-6">
-      <div className="max-w-[90rem] mx-auto">
+    <div className="min-h-screen ">
+      <Navigate />
+      <div className="max-w-[90rem] mx-auto p-6">
+        <button
+          onClick={() => window.location.href = "/usuario/principal"}
+          className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 hover:font-semibold transition-colors"
+        >
+          <ChevronLeft className="w-5 h-5" />
+          <span>Volver</span>
+        </button>
         {/* Header */}
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold text-indigo-900 flex items-center justify-center gap-2">
@@ -155,7 +163,7 @@ function Horario() {
                   className={`p-2 border-r border-indigo-100 relative group hover:bg-indigo-50 transition-colors ${colIndex >= 6 ? 'bg-gray-50' : ''
                     }`}
                 >
-                   {Array.isArray(content) && content.length > 0 ? (
+                  {Array.isArray(content) && content.length > 0 ? (
                     content.map((cursoCronograma, idx) => {
                       const [curso] = cursoCronograma.split("-");
                       return (
@@ -178,7 +186,7 @@ function Horario() {
                                 {aulaNombres[cursoCronograma] || "Aula no disponible"}
                               </span>
                             </div>
-              {/*               <div className="h-0 overflow-hidden group-hover/card:h-auto group-hover/card:mt-2 
+                            {/*               <div className="h-0 overflow-hidden group-hover/card:h-auto group-hover/card:mt-2 
                               transition-all duration-300">
 
                             </div> */}
@@ -200,15 +208,7 @@ function Horario() {
           ))}
         </div>
 
-        {/* Navigation */}
-        <div className="mt-6 flex justify-center">
-          <button
-            className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-md flex items-center gap-2"
-            onClick={() => window.history.back()}
-          >
-            Volver
-          </button>
-        </div>
+       
       </div>
     </div>
   );
