@@ -248,19 +248,7 @@ export default function HorarioProfesional({ idAula, idProfesional }: { idAula: 
       </main>
     );
   }
-  const limpiarTodoElCronograma = async () => {
-    try {
-      await deleteCronogramas(idAula);
-      setTabla(horas.map(() => Array(dias.length).fill("")));
-      setError(null);
-      setIsConfirmModalOpen(false);
-    } catch (error) {
-      console.error("Error al eliminar el cronograma:", error);
-      setError("Error al limpiar el cronograma. Intente nuevamente.");
-    }
-  };
 
-  //region Return
   return (
     <main className="flex flex-col min-h-screen bg-gray-50">
       <Navigate />
@@ -278,8 +266,7 @@ export default function HorarioProfesional({ idAula, idProfesional }: { idAula: 
             <div className="flex items-center gap-4 mb-4">
 
      
-              <h1 className="text-3xl w-full font-bold text-black flex items-center justify-center gap-2">
-                <Calendar className="w-8 h-8 text-black" />
+
                 Cronograma de {aulaNombre}
               </h1>
             </div>
@@ -349,12 +336,7 @@ export default function HorarioProfesional({ idAula, idProfesional }: { idAula: 
             {/* Actions */}
             <div className="p-6 bg-gray-50 border-t">
               <div className="flex justify-between items-center">
-                <button
-                  onClick={() => setIsConfirmModalOpen(true)}
-                  className="bg-red-100 text-red-700 px-4 py-2 rounded-lg hover:bg-red-200 transition-colors"
-                >
-                  Limpiar cronograma
-                </button>
+               
               </div>
             </div>
           </div>
@@ -429,14 +411,21 @@ export default function HorarioProfesional({ idAula, idProfesional }: { idAula: 
       {isDeleteModalOpen && deleteTarget && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
+          
             <div className="p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">
                 Confirmar eliminación
               </h2>
+              {errorMessage && (
+            <div className="mb-4 bg-red-50 text-red-700 p-3 rounded-lg">
+              {errorMessage}
+            </div>
+          )}
               <p className="text-gray-600">
                 ¿Estás seguro de que deseas eliminar este curso del cronograma?
               </p>
             </div>
+           
             <div className="border-t p-4 bg-gray-50 rounded-b-xl flex justify-end space-x-4">
               <button
                 onClick={() => {
@@ -458,36 +447,7 @@ export default function HorarioProfesional({ idAula, idProfesional }: { idAula: 
         </div>
       )}
 
-      {/* Clear All Confirmation Modal */}
-      {isConfirmModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
-            <div className="p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                Confirmar limpieza del cronograma
-              </h2>
-              <p className="text-gray-600">
-                ¿Estás seguro de que deseas eliminar todo el cronograma de {aulaNombre}?
-                Esta acción no se puede deshacer.
-              </p>
-            </div>
-            <div className="border-t p-4 bg-gray-50 rounded-b-xl flex justify-end space-x-4">
-              <button
-                onClick={() => setIsConfirmModalOpen(false)}
-                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={limpiarTodoElCronograma}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-              >
-                Confirmar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+     
     </main>
   );
 }

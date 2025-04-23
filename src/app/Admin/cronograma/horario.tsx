@@ -433,5 +433,3 @@ export function Horario({ idAula }: { idAula: number }) {
     </main>
   );
 }
-
-/* export default withAuth(Horario); */

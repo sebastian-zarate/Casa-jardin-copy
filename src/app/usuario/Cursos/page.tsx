@@ -143,4 +143,3 @@ const MisCursos = () => {
 
 export default withAuthUser(MisCursos);
 
-

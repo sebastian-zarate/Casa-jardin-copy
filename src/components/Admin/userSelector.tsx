@@ -142,6 +142,7 @@ export default function UserSelector(props: Props) {
         }
       }
       await fetchPersonasCurso();
+      
 
     } catch (error) {
       console.error('Error al eliminar curso:', error);
