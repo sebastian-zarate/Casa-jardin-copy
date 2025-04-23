@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { AlertCircle, Loader, X, Plus, ChevronLeft } from "lucide-react";
+import { AlertCircle, X, Plus, ChevronLeft, Calendar } from "lucide-react";
 import {
   createCronograma,
   getCronogramasPorAula,
@@ -8,6 +8,7 @@ import {
   deleteCronogramaDiaHora,
   getCursosCronograma
 } from "../../../services/cronograma/cronograma";
+import Loader from '@/components/Loaders/loader/loader';
 import Navigate from "../../../components/Admin/navigate/page";
 import { getDias, getHoras } from "../../../services/dia";
 import { getAulaById } from "@/services/aulas";
@@ -172,13 +173,11 @@ export function Horario({ idAula }: { idAula: number }) {
 
   if (loading) {
     return (
-      <main className="flex min-h-screen bg-gray-50">
+      <main className=" items-center justify-center min-h-screen bg-gray-100">
         <Navigate />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center">
-            <Loader className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
-            <p className="text-gray-600">Cargando cronograma...</p>
-          </div>
+        <div className="flex flex-col items-center justify-center h-screen">
+          <Loader />
+          <p className="text-gray-700 mt-4">Cargando el cronograma elegido...</p>
         </div>
       </main>
     );
@@ -207,7 +206,7 @@ export function Horario({ idAula }: { idAula: number }) {
   return (
     <main className="flex flex-col min-h-screen bg-gray-50">
       <Navigate />
-      <div className="flex-1 p-8">
+      <div className="flex-1 p-6">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-8">
@@ -220,7 +219,9 @@ export function Horario({ idAula }: { idAula: number }) {
             </a>
             <div className="flex items-center gap-4 mb-4">
 
-              <h1 className="text-2xl text-center w-full items-center font-bold text-gray-900">
+     
+              <h1 className="text-3xl w-full font-bold text-black flex items-center justify-center gap-2">
+                <Calendar className="w-8 h-8 text-black" />
                 Cronograma de {aulaNombre}
               </h1>
             </div>
@@ -235,14 +236,14 @@ export function Horario({ idAula }: { idAula: number }) {
             <div className="overflow-x-auto">
               <table className="w-full border-collapse ">
                 <thead className="  bg-gray-100 ">
-                  <tr className="bg-gray-50 text-center">
-                    <th className="border-b px-8 py-4 text-sm font-semibold text-gray-900">
+                  <tr className="bg-indigo-600 text-center">
+                    <th className="border-b px-8 py-4 text-sm text-white font-semibold text-gray-900">
                       Hora
                     </th>
                     {dias.map((dia) => (
                       <th
                         key={dia}
-                        className="border-b px-6 py-4 text-sm font-semibold text-gray-900"
+                        className="border-b px-6 py-4 text-white text-sm font-semibold text-gray-900"
                         colSpan={6 / dias.length}
                       >
                         {dia}
@@ -334,7 +335,7 @@ export function Horario({ idAula }: { idAula: number }) {
               <div className="max-h-[60vh] overflow-y-auto">
                 {loadingCursos ? (
                   <div className="flex items-center justify-center py-8">
-                    <Loader className="w-8 h-8 animate-spin text-blue-600" />
+                    <Loader />
                   </div>
                 ) : (
                   <div className="space-y-2">

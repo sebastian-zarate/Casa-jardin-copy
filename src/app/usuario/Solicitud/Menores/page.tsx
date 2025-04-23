@@ -321,7 +321,7 @@ const Menores: React.FC = () => {
                             alumnoId={user.id}
                         />
                     ) :
-                        <div className=' w-full justify-center items-center align-middle flex'>
+                        <div className=' w-full h-screen justify-center items-center align-middle flex'>
                             <Loader />
                         </div>
 

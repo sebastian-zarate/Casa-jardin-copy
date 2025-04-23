@@ -81,7 +81,7 @@ const MisCursos = () => {
         <div className="flex-grow flex min-h-[88vh] items-center justify-center bg-gray-50">
           <div className="flex flex-col items-center gap-4">
             <Loader />
-            <h1 className="text-gray-700">Cargando cursos</h1>
+            <h1 className="text-gray-700">Cargando cursos...</h1>
           </div>
         </div>
         <But_aside />
@@ -113,11 +113,9 @@ const MisCursos = () => {
           <div className="fixed top-0 left-0 w-full z-20 bg-white shadow-md">
             <Navigate />
           </div>
-          <div className="flex flex-wrap w-full mb-20">
-            <div className="lg:w-1/2 w-full mb-6 lg:mb-0">
-              <h1 className="sm:text-3xl text-2xl font-medium title-font mb-2 text-gray-900">
-                Tus Talleres
-              </h1>
+          <div className="flex flex-wrap w-full mb-8 pl-8">
+            <div className="lg:w-1/2 w-full  lg:mb-0">
+            <h1 className="text-3xl mt-5 font-bold text-gray-900 text-center ">Cursos del estudiante</h1>
               <div className="h-1 w-20  rounded"></div>
             </div>
           </div>
@@ -129,7 +127,7 @@ const MisCursos = () => {
           ) : cursos.length === 0 ? (
             <p className="text-center text-gray-500">No estás inscripto a ningún curso aún.</p>
           ) : (
-            <div className="grid bg-white shadow-lg rounded-md p-8 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 my-4">
+            <div className="grid bg-white  shadow-lg rounded-md p-8 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 my-4">
               {cursos.map((curso) => (
                 <TallerCard key={curso.id} taller={curso} profesionales={curso.profesionales} />
               ))}
