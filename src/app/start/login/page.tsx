@@ -79,7 +79,7 @@ function Login() {
 
                 redirectToRolePage(rolIdOrError, router);
             } else {
-                rolIdOrError == "" ? setErrors({password: "La contraseña es incorrecta"}) : setErrors({ email: "El email o la contraseña son incorrectos." });
+                rolIdOrError == "" ? setErrors({password: "La contraseña es incorrecta"}) : setErrors({ email: "El email es incorrectos." });
                 setIsSaving(false);
             }
 

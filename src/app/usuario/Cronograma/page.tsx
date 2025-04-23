@@ -133,7 +133,7 @@ function Horario() {
         </div>
 
         {/* Calendar Container */}
-        <div className="bg-white rounded-xl shadow-xl overflow-hidden border border-indigo-100">
+        <div className="bg-white rounded-xl shadow-xl overflow-auto  border border-indigo-100">
           {/* Calendar Header */}
           <div className="grid grid-cols-7 bg-indigo-600 text-white">
             <div className="p-4 flex items-center justify-center font-semibold">
@@ -141,7 +141,7 @@ function Horario() {
               Hora
             </div>
             {dias.map((dia) => (
-              <div key={dia} className="p-4 overflow-hidden text-center font-semibold">
+              <div key={dia} className="px-2 py-4 overflow-hidden text-center font-semibold">
                 {dia}
               </div>
             ))}
@@ -198,7 +198,7 @@ function Horario() {
                       );
                     })
                   ) : (
-                    <div className="text-gray-400 text-sm text-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="text-gray-400 hidden sm:flex md:flex lg:flex text-sm text-center opacity-0 group-hover:opacity-100 transition-opacity">
                       Disponible
                     </div>
                   )}
