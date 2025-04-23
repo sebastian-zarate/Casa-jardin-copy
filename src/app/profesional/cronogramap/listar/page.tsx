@@ -145,8 +145,8 @@ export default function Horario() {
         </button>
         {/* Header */}
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-indigo-900 flex items-center justify-center gap-2">
-            <Calendar className="w-8 h-8 text-indigo-600" />
+          <h1 className="text-3xl font-bold text-black flex items-center justify-center gap-2">
+            <Calendar className="w-8 h-8 text-black " />
             Horario Académico
           </h1>
           <p className="text-gray-600 mt-2">Gestión de horarios y aulas</p>

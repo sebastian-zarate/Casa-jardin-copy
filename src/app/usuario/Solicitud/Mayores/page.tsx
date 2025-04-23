@@ -238,7 +238,7 @@ const Mayores: React.FC = () => {
                                 alumnoId={user.id}
                             />
                         ) : (
-                            <div className='w-full justify-center items-center align-middle flex'>
+                            <div className='w-full justify-center h-screen items-center align-middle flex'>
                                 <Loader />
                             </div>
                         )

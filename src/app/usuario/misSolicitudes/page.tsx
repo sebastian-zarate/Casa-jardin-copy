@@ -82,7 +82,7 @@ const misSolicitudes: React.FC = () => {
         <div className="flex-grow flex min-h-[88vh] items-center justify-center bg-white/50">
           <div className="flex flex-col items-center gap-4 ">
             <Loader />
-            <h1 className="text-gray-700">Cargando solicitudes</h1>
+            <h1 className="text-gray-700">Cargando solicitudes...</h1>
           </div>
         </div>
         <But_aside />

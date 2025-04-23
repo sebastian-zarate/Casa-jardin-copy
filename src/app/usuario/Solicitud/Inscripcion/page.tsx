@@ -94,6 +94,7 @@ function App() {
     document.body.removeChild(link);
   };
 
+  //region return
   return (
     <main className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -116,7 +117,7 @@ function App() {
           ) : (
             <>
               {/* Minor Registration Card */}
-              <div className={`bg-white rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl ${edad >= 18 ? 'opacity-50 cursor-not-allowed' : ''}`}>
+              <div className={`bg-white rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl ${edad < 18 ? 'opacity-50 cursor-not-allowed' : ''}`}>
                 <div className="p-8">
                   <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-6">
                     <Users className="w-8 h-8 text-blue-600" />
@@ -125,7 +126,7 @@ function App() {
                   <p className="text-gray-600 mb-6">Para participantes menores de 18 años. Incluye autorización de imagen y salidas cercanas.</p>
                   <button
                     onClick={() => handleRegistration('minor')}
-                    disabled={edad >= 18}
+                    disabled={edad < 18}
                     className="w-full text-white bg-blue-600 py-3 px-6 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
                   >
                     Continuar Inscripción
@@ -134,7 +135,7 @@ function App() {
               </div>
 
               {/* Adult Registration Card */}
-              <div className={`bg-white rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl ${edad < 18 ? 'opacity-50 cursor-not-allowed' : ''}`}>
+              <div className={`bg-white rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl ${edad >= 18 ? 'opacity-50 cursor-not-allowed' : ''}`}>
                 <div className="p-8">
                   <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-6">
                     <UserRound className="w-8 h-8 text-blue-600" />
@@ -143,7 +144,7 @@ function App() {
                   <p className="text-gray-600 mb-6">Para participantes mayores de 18 años. Proceso simplificado de inscripción.</p>
                   <button
                     onClick={() => handleRegistration('adult')}
-                    disabled={edad < 18}
+                    disabled={edad >= 18}
                     className="w-full text-white bg-blue-600 py-3 px-6 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
                   >
                     Continuar Inscripción
