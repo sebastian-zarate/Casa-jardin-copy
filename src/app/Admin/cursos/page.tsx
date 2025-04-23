@@ -381,7 +381,7 @@ const Cursos: React.FC = () => {
                       }}
                       className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-800"
                     >
-                      <GraduationCap className="w-4 h-4 text-gray-400 hover:text-blue-600" />
+                      <GraduationCap className="w-5 h-5 text-gray-400 hover:text-blue-600" />
                       <span>{talleres.cantidadAlumnos || 0}</span>
                     </button>
                     <button
@@ -393,7 +393,7 @@ const Cursos: React.FC = () => {
                       }}
                       className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-800"
                     >
-                      <UserRound className="w-4 h-4 text-gray-400 hover:text-blue-600" />
+                      <UserRound className="w-5 h-5 text-gray-400 hover:text-blue-600" />
                       <span>{talleres.cantidadProfesionales || 0}</span>
                     </button>
                   </div>
@@ -422,21 +422,32 @@ const Cursos: React.FC = () => {
         </div>
       </div>
 
-      {/*modal de alumnos a agregar */}
+      {/* Modal de alumnos a agregar */}
       {(openModalAlumnos || openModalProfesionales) && cursoselected && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <UserSelector
-            curso={{
-              id: cursoselected.id,
-              nombre: `${cursoselected.nombre}`,
-              personas: [] // Provide an empty array or the appropriate data
-            }}
-            esAlumno={openModalAlumnos ? true: false}
-            setEditar={openModalAlumnos? setOpenModalAlumnos : setOpenModalProfesionales}
-            setCursoSelected={setCursoSelected}
-            cursoselected={cursoselected ? { ...cursoselected, personas: [] } : null}
-            personas={openModalAlumnos? alumnos: profesionales }
-            setPersonas={openModalAlumnos? setAlumnos: setProfesionales}
+        curso={{
+          id: cursoselected.id,
+          nombre: `${cursoselected.nombre}`,
+          personas: [] // Provide an empty array or the appropriate data
+        }}
+        esAlumno={openModalAlumnos ? true : false}
+        setEditar={(isOpen) => {
+          if (openModalAlumnos) {
+            setOpenModalAlumnos(isOpen);
+          } else {
+            setOpenModalProfesionales(isOpen);
+          }
+          if (!isOpen) {
+            fetchCursos(); // Update the list of courses when the modal is closed
+            // traer las imegenes
+            fetchImages();
+          }
+        }}
+        setCursoSelected={setCursoSelected}
+        cursoselected={cursoselected ? { ...cursoselected, personas: [] } : null}
+        personas={openModalAlumnos ? alumnos : profesionales}
+        setPersonas={openModalAlumnos ? setAlumnos : setProfesionales}
           />
         </div>
       )}
@@ -448,7 +459,17 @@ const Cursos: React.FC = () => {
           cursos={cursos}
           setSelectedCursoId={setSelectedCursoId}
           fetchCursos={fetchCursos}
-          setImagesLoaded={setImagesLoaded}
+          setImagesLoaded={fetchImages}
+        />
+      )}
+
+      {selectedCursoId !== null && (
+        <CursoForm
+          selectedCursoId={selectedCursoId}
+          cursos={cursos}
+          setSelectedCursoId={setSelectedCursoId}
+          fetchCursos={fetchCursos}
+          setImagesLoaded={fetchImages}
         />
       )}
     </main>

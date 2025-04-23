@@ -172,9 +172,10 @@ export function Horario({ idAula }: { idAula: number }) {
 
   if (loading) {
     return (
-      <main className="flex min-h-screen bg-gray-50">
+      <main className="flex-col items-center justify-center min-h-screen bg-gray-100">
         <Navigate />
-        <div className="flex-1 flex items-center justify-center">
+
+        <div className="flex items-center justify-center h-screen">
           <div className="text-center">
             <Loader className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
             <p className="text-gray-600">Cargando cronograma...</p>
