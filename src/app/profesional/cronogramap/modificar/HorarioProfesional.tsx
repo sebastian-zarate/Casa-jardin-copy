@@ -248,7 +248,7 @@ export default function HorarioProfesional({ idAula, idProfesional }: { idAula: 
       </main>
     );
   }
-  
+
   return (
     <main className="flex flex-col min-h-screen bg-gray-50">
       <Navigate />
@@ -266,8 +266,7 @@ export default function HorarioProfesional({ idAula, idProfesional }: { idAula: 
             <div className="flex items-center gap-4 mb-4">
 
      
-            <h1 className="text-3xl w-full font-bold text-black flex items-center justify-center gap-2">
-            <Calendar className="w-8 h-8 text-black" />
+
                 Cronograma de {aulaNombre}
               </h1>
             </div>
