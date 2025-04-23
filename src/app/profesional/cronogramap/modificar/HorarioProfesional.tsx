@@ -265,10 +265,12 @@ export default function HorarioProfesional({ idAula, idProfesional }: { idAula: 
             </a>
             <div className="flex items-center gap-4 mb-4">
 
-     
 
+              <h1 className="text-3xl w-full font-bold text-black flex items-center justify-center gap-2">
+                <Calendar className="w-8 h-8 text-black" />
                 Cronograma de {aulaNombre}
               </h1>
+
             </div>
             <p className="text-gray-600 text-center w-full items-center">
               Gestiona los horarios y cursos asignados a esta aula
@@ -336,7 +338,7 @@ export default function HorarioProfesional({ idAula, idProfesional }: { idAula: 
             {/* Actions */}
             <div className="p-6 bg-gray-50 border-t">
               <div className="flex justify-between items-center">
-               
+
               </div>
             </div>
           </div>
@@ -360,94 +362,98 @@ export default function HorarioProfesional({ idAula, idProfesional }: { idAula: 
       </div>
 
       {/* Course Selection Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
-            <div className="p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                Seleccionar curso
-              </h2>
-              {errorMessage && (
-                <div className="mb-4 bg-red-50 text-red-700 p-3 rounded-lg">
-                  {errorMessage}
-                </div>
-              )}
-              <div className="max-h-[60vh] overflow-y-auto">
-                {loadingCursos ? (
-                  <div className="flex items-center justify-center py-8">
-                    <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-                  </div>
-                ) : (
-                  <div className="space-y-2 ">
-                    {cursos.map((curso) => (
-                      <button
-                        key={curso.id}
-                        onClick={() => handleSelectCurso(curso.id)}
-                        className="w-full hover:underline text-left px-4 py-3  rounded-lg hover:bg-gray-50 transition-colors"
-                      >
-                        {curso.nombre}
-                      </button>
-                    ))}
+      {
+        isModalOpen && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
+              <div className="p-6">
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                  Seleccionar curso
+                </h2>
+                {errorMessage && (
+                  <div className="mb-4 bg-red-50 text-red-700 p-3 rounded-lg">
+                    {errorMessage}
                   </div>
                 )}
+                <div className="max-h-[60vh] overflow-y-auto">
+                  {loadingCursos ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                    </div>
+                  ) : (
+                    <div className="space-y-2 ">
+                      {cursos.map((curso) => (
+                        <button
+                          key={curso.id}
+                          onClick={() => handleSelectCurso(curso.id)}
+                          className="w-full hover:underline text-left px-4 py-3  rounded-lg hover:bg-gray-50 transition-colors"
+                        >
+                          {curso.nombre}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="border-t p-4 bg-gray-50 rounded-b-xl">
+                <button
+                  onClick={() => {
+                    setIsModalOpen(false);
+                    setErrorMessage(null);
+                  }}
+                  className="w-full bg-gray-100 text-gray-700 py-2 rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                  Cancelar
+                </button>
               </div>
             </div>
-            <div className="border-t p-4 bg-gray-50 rounded-b-xl">
-              <button
-                onClick={() => {
-                  setIsModalOpen(false);
-                  setErrorMessage(null);
-                }}
-                className="w-full bg-gray-100 text-gray-700 py-2 rounded-lg hover:bg-gray-200 transition-colors"
-              >
-                Cancelar
-              </button>
-            </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* Delete Confirmation Modal */}
-      {isDeleteModalOpen && deleteTarget && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
-          
-            <div className="p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                Confirmar eliminación
-              </h2>
-              {errorMessage && (
-            <div className="mb-4 bg-red-50 text-red-700 p-3 rounded-lg">
-              {errorMessage}
-            </div>
-          )}
-              <p className="text-gray-600">
-                ¿Estás seguro de que deseas eliminar este curso del cronograma?
-              </p>
-            </div>
-           
-            <div className="border-t p-4 bg-gray-50 rounded-b-xl flex justify-end space-x-4">
-              <button
-                onClick={() => {
-                  setIsDeleteModalOpen(false);
-                  setDeleteTarget(null);
-                }}
-                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={confirmDelete}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-              >
-                Eliminar
-              </button>
+      {
+        isDeleteModalOpen && deleteTarget && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
+
+              <div className="p-6">
+                <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                  Confirmar eliminación
+                </h2>
+                {errorMessage && (
+                  <div className="mb-4 bg-red-50 text-red-700 p-3 rounded-lg">
+                    {errorMessage}
+                  </div>
+                )}
+                <p className="text-gray-600">
+                  ¿Estás seguro de que deseas eliminar este curso del cronograma?
+                </p>
+              </div>
+
+              <div className="border-t p-4 bg-gray-50 rounded-b-xl flex justify-end space-x-4">
+                <button
+                  onClick={() => {
+                    setIsDeleteModalOpen(false);
+                    setDeleteTarget(null);
+                  }}
+                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={confirmDelete}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                >
+                  Eliminar
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
-     
-    </main>
+
+    </main >
   );
 }
