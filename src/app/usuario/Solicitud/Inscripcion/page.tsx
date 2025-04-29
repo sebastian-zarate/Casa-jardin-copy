@@ -28,19 +28,14 @@ function App() {
       try {
         setIsLoading(true);
         // Simulated data fetch - replace with actual API calls
-        const user = await fetchUserData(); // Obtener datos del usuario
-        if (user) {
-          setAlumnoDetails(user as AlumnoDetails); // Set user details
-          // Calculate age from birth date
-          const birthDate = new Date(user.fechaNacimiento);
-          const today = new Date();
-          const age = today.getFullYear() - birthDate.getFullYear();
-          setEdad(age);
-          /* console.log("Edad del usuario:", age); */
-        } else {
-          setError("Usuario no autorizado o sesión expirada.");
-        }
-
+        
+        const user = await fetchUserData();
+        setAlumnoDetails(user);
+        // Calculate age from birth date
+        const birthDate = new Date(user.fechaNacimiento);
+        const today = new Date();
+        const age = today.getFullYear() - birthDate.getFullYear();
+        setEdad(age);
       } catch (error) {
         setError("Error al cargar los datos del usuario");
       } finally {
@@ -70,13 +65,13 @@ function App() {
       setError(validation);
       return;
     }
-    window.location.href = type === 'minor'
+    window.location.href = type === 'minor' 
       ? "/usuario/Solicitud/Menores"
       : "/usuario/Solicitud/Mayores";
   };
 
   const handleDownload = (type: 'minor' | 'adult') => {
-    const fileName = type === 'minor'
+    const fileName = type === 'minor' 
       ? "Planilla inscripción menores.pdf"
       : "Planilla inscripción mayores.pdf";
     const fileUrl = type === 'minor'
@@ -91,7 +86,6 @@ function App() {
     document.body.removeChild(link);
   };
 
-  //region return
   return (
     <main className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -109,12 +103,12 @@ function App() {
           {isLoading ? (
             <div className="col-span-2 mb-62 flex justify-center items-center py-20">
               <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-
+              
             </div>
           ) : (
             <>
               {/* Minor Registration Card */}
-              <div className={`bg-white rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl ${edad < 18 ? '' : 'opacity-50 cursor-not-allowed'}`}>
+              <div className={`bg-white rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl ${edad >= 18 ? 'opacity-50 cursor-not-allowed' : ''}`}>
                 <div className="p-8">
                   <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-6">
                     <Users className="w-8 h-8 text-blue-600" />
@@ -132,7 +126,7 @@ function App() {
               </div>
 
               {/* Adult Registration Card */}
-              <div className={`bg-white rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl ${edad >= 18 ? '' : 'opacity-50 cursor-not-allowed'}`}>
+              <div className={`bg-white rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl ${edad < 18 ? 'opacity-50 cursor-not-allowed' : ''}`}>
                 <div className="p-8">
                   <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-6">
                     <UserRound className="w-8 h-8 text-blue-600" />
@@ -156,7 +150,7 @@ function App() {
         <div className="mt-16 bg-white rounded-xl shadow-lg p-8 max-w-2xl mx-auto">
           <h3 className="text-xl font-semibold text-gray-900 mb-6 text-center">Formularios para Inscripción Presencial</h3>
           <div className="space-y-4">
-            <button
+            <button 
               onClick={() => handleDownload('minor')}
               className="w-full flex items-center justify-between p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
             >
@@ -166,7 +160,7 @@ function App() {
               </div>
               <span className="text-sm text-gray-500">Descargar PDF</span>
             </button>
-            <button
+            <button 
               onClick={() => handleDownload('adult')}
               className="w-full flex items-center justify-between p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
             >
@@ -178,10 +172,10 @@ function App() {
             </button>
           </div>
         </div>
-
+        
       </div>
-      {/* Footer */}
-      <But_aside />
+        {/* Footer */}
+        <But_aside />
       {/* Error Modal */}
       {error && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">

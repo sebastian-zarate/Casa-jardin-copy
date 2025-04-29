@@ -153,79 +153,73 @@ export default function Horario() {
         </div>
 
         {/* Calendar Container */}
-        <div className="bg-white rounded-xl shadow-xl overflow-auto border border-indigo-100">
+        <div className="bg-white rounded-xl shadow-xl overflow-x-auto  border border-indigo-100">
           {/* Calendar Header */}
-          <div className="grid grid-cols-7 bg-indigo-700 text-white">
+          <div className="grid grid-cols-7 min-w-[1000px]  bg-indigo-600 text-white">
             <div className="p-4 flex items-center justify-center font-semibold">
               <Clock className="w-5 h-5 mr-2" />
               Hora
             </div>
             {dias.map((dia) => (
-              <div key={dia} className="p-4 overflow-hidden text-center font-semibold">
+              <div key={dia} className="p-4  text-center font-semibold">
                 {dia}
               </div>
             ))}
           </div>
 
           {/* Calendar Body */}
-          {horas.map((hora, rowIndex) => (
-            <div
-              key={hora.id}
-              className={`grid grid-cols-7 ${rowIndex % 2 === 0 ? 'bg-white' : 'bg-indigo-50'
+            <div className="">
+              {horas.map((hora, rowIndex) => (
+              <div
+                key={hora.id}
+                className={`grid grid-cols-7 min-w-[1000px]   ${rowIndex % 2 === 0 ? 'bg-white' : 'bg-indigo-50'
                 }`}
-            >
-              <div className="p-4 border-r border-indigo-100 flex items-center justify-center font-medium text-indigo-900">
+              >
+                <div className="p-4 border-r border-indigo-100 flex items-center justify-center font-medium text-indigo-900">
                 {hora.hora_inicio}
-              </div>
-              {tabla[rowIndex]?.map((content, colIndex) => (
+                </div>
+                {tabla[rowIndex]?.map((content, colIndex) => (
                 <div
                   key={`${rowIndex}-${colIndex}`}
-                  className={`p-2 border-r border-indigo-100 relative group hover:bg-indigo-50 transition-colors ${colIndex >= 6 ? 'bg-gray-50' : ''
-                    }`}
+                  className={`p-2 border-r border-indigo-100 relative group hover:bg-indigo-50 transition-colors flex items-center justify-center ${colIndex >= 6 ? 'bg-gray-50' : ''
+                  }`}
                 >
                   {Array.isArray(content) && content.length > 0 ? (
-                    content.map((cursoCronograma, idx) => {
-                      const [curso] = cursoCronograma.split("-");
-                      return (
-                        <div
-                          key={idx}
-                          className="relative group/card"
-                        >
-                          <div className="mb-2 last:mb-0 bg-indigo-100  rounded-lg px-1 py-1 transition-all duration-300 
-                            transform origin-top-left hover:scale-[1.15] group-hover/card:scale-[1.15] 
-                            hover:bg-indigo-200 group-hover/card:bg-indigo-200 hover:shadow-lg group-hover/card:shadow-lg 
-                            hover:z-50 group-hover/card:z-50 cursor-pointer hover:w-[110px] md:hover:w-[110px] sm:hover:w-[110px] lg:hover:w-full xl:hover:w-full" >
-                            <div className="font-medium text-indigo-900 overflow-hidden  whitespace-nowrap text-ellipsis 
-                              group-hover/card:whitespace-normal group-hover/card:overflow-visible">
-                              {curso}
-                            </div>
-                            <div className="flex items-center gap-1 mt-1 text-xs text-indigo-600 opacity-90 
-                              group-hover/card:opacity-100">
-                              <MapPin className="w-3 h-3" />
-                              <span className="truncate group-hover/card:whitespace-normal">
-                                {aulaNombres[cursoCronograma] || "Aula no disponible"}
-                              </span>
-                            </div>
-                            {/*               <div className="h-0 overflow-hidden group-hover/card:h-auto group-hover/card:mt-2 
-                              transition-all duration-300">
-
-                            </div> */}
-                            {/* Gradient border effect on hover */}
-                            <div className="absolute inset-0 rounded-lg 
-                              opacity-0 group-hover/card:opacity-100 -z-10 blur-[2px] transition-opacity duration-300" />
-                          </div>
-                        </div>
-                      );
-                    })
-                  ) : (
-                    <div className="text-gray-400 hidden sm:flex md:flex lg:flex text-sm text-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      Disponible
+                  content.map((cursoCronograma, idx) => {
+                    const [curso] = cursoCronograma.split("-");
+                    return (
+                    <div
+                      key={idx}
+                      className="relative group/card w-full h-full flex flex-col items-center justify-center"
+                    >
+                      <div className="text-center">
+                      <div className="font-medium text-indigo-900 whitespace-normal break-words">
+                        {curso}
+                      </div>
+                      <div className="flex items-center gap-1 mt-1 text-xs text-indigo-600 opacity-90">
+                        <MapPin className="w-5 h-5" />
+                        <span className="truncate">
+                        {aulaNombres[cursoCronograma] || "Aula no disponible"}
+                        </span>
+                      </div>
+                      {/* Gradient border effect on hover */}
+                      <div className="absolute inset-0 rounded-lg 
+                        opacity-0 group-hover/card:opacity-100 -z-10 blur-[2px] transition-opacity duration-300" />
+                      </div>
                     </div>
+                    );
+                  })
+                  ) : (
+                  <div className="text-gray-400 text-sm text-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    Disponible
+                  </div>
                   )}
                 </div>
+                ))}
+              </div>
               ))}
             </div>
-          ))}
+
         </div>
         <div className="flex justify-center mt-4 space-x-4">
             <a

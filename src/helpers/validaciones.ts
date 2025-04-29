@@ -78,17 +78,33 @@ export function validatePasswordComplexity(password: string) {
     return null;
 }
 
-export function validateDireccion(pais?: string, provincia?: string, localidad?: string, calle?: string, numero?: number) {
+export async function validateDireccion(pais?: string, provincia?: string, localidad?: string, calle?: string, numero?: number) {
     const caracEspeciales = /[!@#$%^&*(),.?":{}|<>]/;
     console.log(pais, provincia, localidad, calle, numero);
     if(!pais){
         return "El país no puede estar vacío";
     }
+    if(pais.toUpperCase() !="ARGENTINA"){
+        return "El país debe ser Argentina";
+    }
+    
     if(!provincia){
         return "La provincia no puede estar vacía";
     }
+    //console.log("HOLAAAAAAAAAAAAAAAAAAAA")
+    const resProv = await fetch(`http://localhost:3000//api/verificarProvLoc?provincia=${encodeURIComponent((provincia))}`);
+    const responseProv = await resProv.json();
+    console.log("responseProv", responseProv);
+    if (responseProv.tipo === "provincia" && responseProv.nombre === provincia && !responseProv.valida) {
+        return "La provincia ingresada no es válida.";
+    }
     if(!localidad){
         return "La localidad no puede estar vacía";
+    }
+    const resLoc = await fetch(`http://localhost:3000//api/verificarProvLoc?localidad=${encodeURIComponent((localidad))}`);
+    const responseLoc = await resLoc.json();
+    if (responseLoc.tipo === "provincia" && responseLoc.nombre === localidad && !responseLoc.valida) {
+        return "La localidad ingresada no es válida.";
     }
     if(!calle){
         return "La calle no puede estar vacía";

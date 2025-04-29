@@ -30,6 +30,7 @@ export async function addLocalidad(data: {
       nombre: data.nombre.trim(),
       provinciaId: data.provinciaId,
     }
+    console.log("agrego localidad", dataTrim)
     const localidades = await getLocalidadByName(dataTrim.nombre);
     if(localidades) {
       console.log("LOCALIDAD EXISTENTE")

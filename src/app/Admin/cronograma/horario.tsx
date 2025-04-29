@@ -237,13 +237,13 @@ export function Horario({ idAula }: { idAula: number }) {
               <table className="w-full border-collapse ">
                 <thead className="  bg-gray-100 ">
                   <tr className="bg-indigo-600 text-center">
-                    <th className="border-b px-8 py-4 text-sm text-white font-semibold text-gray-900">
+                    <th className="border-b px-8 py-4 text-sm text-white font-semibold ">
                       Hora
                     </th>
                     {dias.map((dia) => (
                       <th
                         key={dia}
-                        className="border-b px-6 py-4 text-white text-sm font-semibold text-gray-900"
+                        className="border-b px-6 py-4 text-white text-sm font-semibold"
                         colSpan={6 / dias.length}
                       >
                         {dia}

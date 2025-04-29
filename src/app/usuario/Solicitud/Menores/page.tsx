@@ -138,6 +138,7 @@ const Menores: React.FC = () => {
                     let direccion, localidad, provincia, pais;
                     if (user.direccionId) {
                         direccion = await getDireccionCompleta(user.direccionId);
+                        console.log("DIRECCION::::", direccion)
                         localidad = direccion?.localidad;
                         provincia = localidad?.provincia;
                         pais = provincia?.nacionalidad;
@@ -201,43 +202,43 @@ const Menores: React.FC = () => {
         let resultValidate;
         if (selectedScreen === 0 && selectedCursosId.length === 0) return "Debe seleccionar al menos un taller";
 
-        if (selectedScreen === 1) {
-            resultValidate = validateNombre(nombre);
-            if (resultValidate) return resultValidate;
-
-            resultValidate = validateApellido(apellido);
-            if (resultValidate) return resultValidate;
-
-            resultValidate = validateDni(String(dni));
-            if (resultValidate) return resultValidate;
-            console.log(JSON.stringify(datosMayor))
-            resultValidate = validateDireccion(pais, provincia, localidad, String(calle), Number(numero));
-            if (resultValidate) return resultValidate
-        }
-
-        if (selectedScreen === 2) {
-            resultValidate = validateNombre(nombreM);
-            if (resultValidate) return resultValidate;
-
-            resultValidate = validateApellido(apellidoM);
-            if (resultValidate) return resultValidate;
-
-            resultValidate = validateEmail(correoElelctronicoM);
-            if (resultValidate) return resultValidate;
-
-            resultValidate = validateDni(String(dni));
-            if (resultValidate) return resultValidate;
-
-            if (!telefonoM) {
-                return "El teléfono no puede estar vacío";
-            }
-            resultValidate = validatePhoneNumber(String(telefonoM));
-            if (resultValidate) return resultValidate;
-            resultValidate = validateDireccion(paisM, provinciaM, localidadM, String(calleM), Number(numeroM));
-            if (resultValidate) return resultValidate
-
-            console.log(JSON.stringify(datosMayor))
-        }
+        /*         if (selectedScreen === 1) {
+                    resultValidate = validateNombre(nombre);
+                    if (resultValidate) return resultValidate;
+        
+                    resultValidate = validateApellido(apellido);
+                    if (resultValidate) return resultValidate;
+        
+                    resultValidate = validateDni(String(dni));
+                    if (resultValidate) return resultValidate;
+                    console.log(JSON.stringify(datosMayor))
+                    resultValidate = validateDireccion(pais, provincia, localidad, String(calle), Number(numero));
+                    if (resultValidate) return resultValidate
+                }
+        
+                if (selectedScreen === 2) {
+                    resultValidate = validateNombre(nombreM);
+                    if (resultValidate) return resultValidate;
+        
+                    resultValidate = validateApellido(apellidoM);
+                    if (resultValidate) return resultValidate;
+        
+                    resultValidate = validateEmail(correoElelctronicoM);
+                    if (resultValidate) return resultValidate;
+        
+                    resultValidate = validateDni(String(dni));
+                    if (resultValidate) return resultValidate;
+        
+                    if (!telefonoM) {
+                        return "El teléfono no puede estar vacío";
+                    }
+                    resultValidate = validatePhoneNumber(String(telefonoM));
+                    if (resultValidate) return resultValidate;
+                    resultValidate = validateDireccion(paisM, provinciaM, localidadM, String(calleM), Number(numeroM));
+                    if (resultValidate) return resultValidate
+        
+                    console.log(JSON.stringify(datosMayor))
+                } */
         return "";
     }
 
@@ -245,7 +246,7 @@ const Menores: React.FC = () => {
 
         if (selectedScreen === 0 && selectedCursosId.length === 0) return setError("Debe seleccionar al menos un taller");
         const err = await validatealumnoDetails();
-        if (err != "") return setError(err);
+        if (err != "") return setError(String(err));
         setSelectedScreen(selectedScreen + 1)
         setStep({ ...steps, currentStep: steps.currentStep + 1 });
     }
@@ -258,7 +259,7 @@ const Menores: React.FC = () => {
         //console.log("ALUMNO::::", alumno)
         //crear ubicaciones del mayor/responsable
         //crear responsable del menor
-        console.log("datosMayor", datosMayor)
+        // console.log("datosMayor", datosMayor)
         const alumno = user
 
         //console.log("RESPONSABLE::::", responsable)
@@ -306,13 +307,9 @@ const Menores: React.FC = () => {
             <div className='p-4  mt-5'>
                 <h3 className='p-2 shadow-md w-60'>Inscripción a talleres - Menores</h3>
             </div>
-            <div className="max-w-4xl mx-auto px-4 md:px-8 mb-5">
-                <div className="max-w-xl mx-auto px-4 md:px-0 mb-5">
-                    <Stepper
-                        steps={steps.stepsItems}
-                        currentStep={selectedScreen + 1}
-                        className="flex flex-wrap justify-center md:justify-between gap-2 md:gap-0"
-                    />
+            <div className="max-w-full mx-auto px-4 md:px-8 mb-5">
+                <div className="w-full md:max-w-2xl mx-auto px-4 md:px-0 mb-5">
+                    <Stepper steps={steps.stepsItems} currentStep={selectedScreen + 1} className='' />
                 </div>
             </div>
             <div id='miDiv' style={{ height: "auto" }}>
@@ -325,7 +322,7 @@ const Menores: React.FC = () => {
                             alumnoId={user.id}
                         />
                     ) :
-                        <div className=' w-full h-screen justify-center items-center align-middle flex'>
+                        <div className=' w-full justify-center items-center align-middle flex'>
                             <Loader />
                         </div>
 
@@ -356,35 +353,33 @@ const Menores: React.FC = () => {
                         setDatosReglamentacion={setDatosReglamentacion}
                     />
                 )}
-                {selectedScreen === 0 && (
-                    (user) && (
-                        <div className='p-5 w-full'>
-                            <div className='flex mb-5 justify-between md:justify-center lg:justify-center  md:space-x-80 lg:space-x-80'>
-                                <button
-                                    className='group flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-all duration-200 shadow-lg hover:shadow-xl'
-                                    onClick={() => {
-                                        selectedScreen - 1 < 0
-                                            ? window.location.href = "/usuario/Solicitud/Inscripcion"
-                                            : (setSelectedScreen(selectedScreen - 1), setStep({ ...steps, currentStep: steps.currentStep - 1 }));
-                                    }}
-                                >
-                                    <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-                                    Volver
-                                </button>
-                                <button
-                                    className='group flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl'
-                                    onClick={() => { continuar(); }}
-                                >
-                                    Continuar
-                                    <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                                </button>
-                            </div>
-                        </div>)
-
+                {selectedScreen === 0 && user && (
+                    <div className='p-5 w-full'>
+                        <div className='flex justify-center gap-8 md:gap-16'>
+                            <button
+                                className='group flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-all duration-200 shadow-lg hover:shadow-xl'
+                                onClick={() => {
+                                    selectedScreen - 1 < 0
+                                        ? window.location.href = "/usuario/Solicitud/Inscripcion"
+                                        : (setSelectedScreen(selectedScreen - 1), setStep({ ...steps, currentStep: steps.currentStep - 1 }));
+                                }}
+                            >
+                                <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+                                Volver
+                            </button>
+                            <button
+                                className='group flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl'
+                                onClick={() => { continuar(); }}
+                            >
+                                Continuar
+                                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                            </button>
+                        </div>
+                    </div>
                 )}
                 {(selectedScreen < 5 && selectedScreen !== 0) && (
                     <div className='p-5 w-full'>
-                        <div className='flex mb-5 justify-between md:justify-center lg:justify-center  md:space-x-80 lg:space-x-80'>
+                        <div className='flex justify-center gap-8 md:gap-16'>
                             <button
                                 className='group flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-all duration-200 shadow-lg hover:shadow-xl'
                                 onClick={() => {
@@ -409,7 +404,7 @@ const Menores: React.FC = () => {
 
                 {selectedScreen === 5 && (
                     <div className='p-5 w-full'>
-                        <div className='flex mb-5 justify-between md:justify-center lg:justify-center  md:space-x-80 lg:space-x-80'>
+                        <div className='flex justify-center gap-8 md:gap-16'>
                             <button
                                 className='group flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-all duration-200 shadow-lg hover:shadow-xl'
                                 onClick={() => {

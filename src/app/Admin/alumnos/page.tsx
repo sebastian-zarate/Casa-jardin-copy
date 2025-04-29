@@ -39,7 +39,7 @@ type Usuario = {
 };
 
 type Direccion = {
-    pais: string;
+    pais: "Argentina";
     provincia: string;
     localidad: string;
     calle: string;
