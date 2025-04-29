@@ -18,7 +18,7 @@ export const direccionSchema = z.object({
   }).min(1, { message: "El número debe ser mayor a 0" }),
 }).superRefine(async (data, ctx) => {
   // Validar provincia
-  const resProv = await fetch(`${API_URL}/verificarProvLoc?provincia=${encodeURIComponent(data.provincia)}`);
+  const resProv = await fetch(`${API_URL}/geo?provincia=${encodeURIComponent(data.provincia)}`);
   const prov = await resProv.json();
   if (!prov.valida) {
     ctx.addIssue({
@@ -29,7 +29,7 @@ export const direccionSchema = z.object({
   }
 
   // Validar localidad
-  const resLoc = await fetch(`${API_URL}/verificarProvLoc?localidad=${encodeURIComponent(data.localidad)}`);
+  const resLoc = await fetch(`${API_URL}/geo?localidad=${encodeURIComponent(data.localidad)}`);
   const loc = await resLoc.json();
   if (!loc.valida) {
     ctx.addIssue({
@@ -41,7 +41,7 @@ export const direccionSchema = z.object({
 
   // Validar localidad en provincia
 if (prov.valida && loc.valida) {
-  const resLocProv = await fetch(`${API_URL}/verificarProvLoc?localidad=${encodeURIComponent(data.localidad)}&provincia=${encodeURIComponent(data.provincia)}`);
+  const resLocProv = await fetch(`${API_URL}/geo?localidad=${encodeURIComponent(data.localidad)}&provincia=${encodeURIComponent(data.provincia)}`);
   const locProv = await resLocProv.json();
   if (!locProv.valida) {
     ctx.addIssue({

@@ -1,6 +1,5 @@
 "use server"
-import axios from "axios";
-import { API } from "@/helpers/Api";
+
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
