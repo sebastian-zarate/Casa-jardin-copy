@@ -85,7 +85,7 @@ const AlumnoForm: React.FC<AlumnoProps> = (AlumnoProps) => {
       dni: AlumnoProps.alumno?.dni || undefined,
       telefono: AlumnoProps.alumno?.telefono || "",
       direccion: AlumnoProps.alumno?.direccion || {
-        pais: "",
+        pais: "Argentina",
         provincia: "",
         localidad: "",
         calle: "",

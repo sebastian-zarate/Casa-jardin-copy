@@ -32,7 +32,7 @@ type Usuario = {
 };
 
 type Direccion = {
-    pais: string;
+    pais: "Argentina"
     provincia: string;
     localidad: string;
     calle: string;
@@ -99,16 +99,26 @@ const Cuenta: React.FC = () => {
             setMayoriaEdad(false);
             const r = await getResponsableByAlumnoId(user.id);
             console.log("responsable", responsable);
-            if(r && r.direccionId){
-                const direccion = await getDireccionSimple(r.direccionId);
-                setResponsable({...r, direccion: direccion});
-            }
-            else{setResponsable(r);}
+            if (r && r.direccionId) {
+              const direccion = await getDireccionSimple(r.direccionId);
+              setResponsable({
+                  ...r,
+                  direccion: {
+                      pais: "Argentina",
+                      provincia: direccion?.provincia || "",
+                      localidad: direccion?.localidad || "",
+                      calle: direccion?.calle || "",
+                      numero: direccion?.numero || 0,
+                  },
+              });
+          } else {
+              setResponsable(r);
+          }
         }
         //cargar direccion en user
         if(user.direccionId){
             const direccion = await getDireccionSimple(user.direccionId);
-            setUser({...user, direccion: direccion});
+            setUser({...user, direccion: {...direccion, pais: "Argentina"}});
         }
         console.log("---------> edad", edad)
         console.log("mayoria edad:", mayoriaEdad);
@@ -149,9 +159,19 @@ const Cuenta: React.FC = () => {
             if(!r) return
             if(r.direccionId){
                 const direccion = await getDireccionSimple(r.direccionId);
-                setResponsable({...r, direccion: direccion});
+                setResponsable({
+                  ...r,
+                  direccion: {
+                      pais: "Argentina",
+                      provincia: direccion?.provincia || "",
+                      localidad: direccion?.localidad || "",
+                      calle: direccion?.calle || "",
+                      numero: direccion?.numero || 0,
+                  },
+              });
             }
             else{setResponsable(r);}
+
         //
         setCambiosResponsable(false);
         setLoading(false);

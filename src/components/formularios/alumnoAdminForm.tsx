@@ -82,8 +82,9 @@ const AlumnoAdminForm: React.FC<FormProps> = (FormProps) => {
         if (FormProps.alumno && FormProps.alumno.direccionId) {
           const direccion = await fetchDireccion(FormProps.alumno.direccionId);
           if (direccion) {
-            methods.setValue("direccion", direccion);
+            methods.setValue("direccion", { ...direccion, pais: "Argentina" });
           }
+         
         }
         if (FormProps.alumno?.id && !FormProps.mayor) {
           const responsable = await fetchResponsable(FormProps.alumno.id);
@@ -106,7 +107,7 @@ const AlumnoAdminForm: React.FC<FormProps> = (FormProps) => {
     const dire = await getDireccionCompleta(direccionId)
     if(dire){
       return {
-        pais: String(dire.localidad.provincia.nacionalidad.nombre),
+        pais: "Argentina" as const,
         provincia: String(dire.localidad.provincia.nombre),
         localidad: String(dire.localidad.nombre),
         calle: String(dire.calle),
@@ -154,7 +155,7 @@ const AlumnoAdminForm: React.FC<FormProps> = (FormProps) => {
       dni: FormProps.alumno?.dni || undefined,
       telefono: FormProps.alumno?.telefono || "",
       direccion: FormProps.alumno?.direccion || {
-        pais: "",
+        pais: "Argentina",
         provincia: "",
         localidad: "",
         calle: "",
