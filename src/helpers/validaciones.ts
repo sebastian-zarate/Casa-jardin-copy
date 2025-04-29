@@ -92,7 +92,7 @@ export async function validateDireccion(pais?: string, provincia?: string, local
         return "La provincia no puede estar vacía";
     }
     //console.log("HOLAAAAAAAAAAAAAAAAAAAA")
-    const resProv = await fetch(`http://localhost:3000//api/verificarProvLoc?provincia=${encodeURIComponent((provincia))}`);
+    const resProv = await fetch(`http://api/verificarProvLoc?provincia=${encodeURIComponent((provincia))}`);
     const responseProv = await resProv.json();
     console.log("responseProv", responseProv);
     if (responseProv.tipo === "provincia" && responseProv.nombre === provincia && !responseProv.valida) {
@@ -101,7 +101,7 @@ export async function validateDireccion(pais?: string, provincia?: string, local
     if(!localidad){
         return "La localidad no puede estar vacía";
     }
-    const resLoc = await fetch(`http://localhost:3000//api/verificarProvLoc?localidad=${encodeURIComponent((localidad))}`);
+    const resLoc = await fetch(`http://api/verificarProvLoc?localidad=${encodeURIComponent((localidad))}`);
     const responseLoc = await resLoc.json();
     if (responseLoc.tipo === "provincia" && responseLoc.nombre === localidad && !responseLoc.valida) {
         return "La localidad ingresada no es válida.";
