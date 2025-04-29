@@ -120,7 +120,7 @@ const Inicio = () => {
       </div>
 
       {/* Banner de imágenes */}
-      <div className="relative  z-30 mt-18 md:mt-20 lg:mt-20"> {/* mt-16 para dar espacio al Navigate */}
+      <div className="relative  z-30 mt-18  lg:mt-20"> {/* mt-16 para dar espacio al Navigate */}
         <RotatingImages />
       </div>
 

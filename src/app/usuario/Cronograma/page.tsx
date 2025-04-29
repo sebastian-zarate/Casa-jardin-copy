@@ -204,6 +204,7 @@ function Horario() {
 
        
       </div>
+      <But_aside />
     </div>
   );
 
