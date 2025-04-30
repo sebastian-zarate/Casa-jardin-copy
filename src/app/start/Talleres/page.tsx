@@ -89,7 +89,7 @@ const Talleres = () => {
     };
     return (
         <>
-            <main className="relative min-h-[210vh] sm:min-h-screen md:min-h-screen xl:min-h-screen 2xl:min-h-screen  text-gray-600 body-font">
+            <main className="relative min-h-[110vh] sm:min-h-screen md:min-h-screen xl:min-h-screen  text-gray-600 body-font">
                 <Navigate />
                 <div className="fixed inset-0 opacity-70 z-[-1] h-full w-full">
                     <Image src={Background}
