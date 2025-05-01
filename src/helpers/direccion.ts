@@ -9,48 +9,21 @@ export const direccionSchema = z.object({
   pais: z.string().min(1, "El país es obligatorio").refine((value) => value === "Argentina", {
     message: "El país ingresado debe ser Argentina",
   }),
-  provincia: z.string().min(1, "La provincia es obligatoria"),
-  localidad: z.string().min(1, "La localidad es obligatoria"),
+  provincia: z.string()
+    .min(1, "La provincia es obligatoria")
+    .refine((value) => value !== "Seleccione una provincia", {
+      message: "La provincia es obligatoria",
+    }),
+  localidad: z.string()
+    .min(1, "La localidad es obligatoria")
+    .refine((value) => value !== "Seleccione una localidad", {
+    message: "La localidad es obligatoria",
+  }),
   calle: z.string().min(1, "La calle es obligatoria"),
   numero: z.number({
     required_error: "El número es obligatorio",
     invalid_type_error: "El número debe ser válido",
   }).min(1, { message: "El número debe ser mayor a 0" }),
-}).superRefine(async (data, ctx) => {
-  // Validar provincia
-  const resProv = await fetch(`${API_URL}/geo?provincia=${encodeURIComponent(data.provincia)}`);
-  const prov = await resProv.json();
-  if (!prov.valida) {
-    ctx.addIssue({
-      path: ["provincia"],
-      code: z.ZodIssueCode.custom,
-      message: "La provincia ingresada no es válida.",
-    });
-  }
-
-  // Validar localidad
-  const resLoc = await fetch(`${API_URL}/geo?localidad=${encodeURIComponent(data.localidad)}`);
-  const loc = await resLoc.json();
-  if (!loc.valida) {
-    ctx.addIssue({
-      path: ["localidad"],
-      code: z.ZodIssueCode.custom,
-      message: "La localidad ingresada no es válida.",
-    });
-  }
-
-  // Validar localidad en provincia
-if (prov.valida && loc.valida) {
-  const resLocProv = await fetch(`${API_URL}/geo?localidad=${encodeURIComponent(data.localidad)}&provincia=${encodeURIComponent(data.provincia)}`);
-  const locProv = await resLocProv.json();
-  if (!locProv.valida) {
-    ctx.addIssue({
-      path: ["localidad"],
-      code: z.ZodIssueCode.custom,
-      message: "La localidad no pertenece a la provincia ingresada.",
-    });
-  }
-}
 })
 
 
