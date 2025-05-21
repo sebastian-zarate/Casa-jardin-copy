@@ -30,7 +30,7 @@ export const direccionSchema = z.object({
 export type DireccionSchemaType = z.infer<typeof direccionSchema>   
 
 type Direccion = {
-    pais: string
+    pais: "Argentina"
     provincia: string
     localidad: string
     calle: string
@@ -53,7 +53,7 @@ export async function getDireccionSimple(direccionId: number){
 
         if(!dire) return 
         const direccion: Direccion = {
-            pais: String(dire?.localidad.provincia?.nacionalidad?.nombre),
+            pais: "Argentina",
             provincia: String(dire.localidad?.provincia?.nombre),
             localidad: String(dire.localidad?.nombre),
             calle: String(dire.calle),

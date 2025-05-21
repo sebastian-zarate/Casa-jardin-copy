@@ -29,6 +29,7 @@ interface Props {
   cursoselected: Curso | null;
   personas: Persona[];
   setPersonas: React.Dispatch<React.SetStateAction<Persona[]>>;
+  setParticipantesPorTaller: React.Dispatch<React.SetStateAction<{ cursoId: number; alumnos: number; profesionales: number }[]>>;
 }
 
 export default function UserSelector(props: Props) {
@@ -122,7 +123,33 @@ export default function UserSelector(props: Props) {
       setLoading(false);
       setIsAdding(false);
       setpersonaAlta(false);
-
+      
+      // Actualiza el estado de participantes por taller
+      props.setParticipantesPorTaller(prev => {
+        // Busca el índice del taller correspondiente al curso actual
+        const idx = prev.findIndex(p => p.cursoId === curso.id);
+        // Crea una copia del array anterior para no mutar el estado directamente
+        const updated = [...prev];
+        if (idx !== -1) {
+          if (props.esAlumno) {
+        // Si es alumno, incrementa la cantidad de alumnos en el taller correspondiente
+        updated[idx] = {
+          ...updated[idx],
+          alumnos: updated[idx].alumnos + personasSeleccionadas.length
+        };
+          } else {
+        // Si es profesional, incrementa la cantidad de profesionales en el taller correspondiente
+        updated[idx] = {
+          ...updated[idx],
+          profesionales: updated[idx].profesionales + personasSeleccionadas.length
+        };
+          }
+          // Devuelve el array actualizado
+          return updated;
+        }
+        // Si no se encontró el taller, retorna el array anterior sin cambios
+        return prev;
+      });
     }
   };
 
@@ -152,7 +179,32 @@ export default function UserSelector(props: Props) {
       setLoading(false);
       setIsDeleting(false);
       setpersonaBaja(false);
-
+// Actualiza el estado de participantes por taller
+      props.setParticipantesPorTaller(prev => {
+        // Busca el índice del taller correspondiente al curso actual
+        const idx = prev.findIndex(p => p.cursoId === curso.id);
+        // Crea una copia del array anterior para no mutar el estado directamente
+        const updated = [...prev];
+        if (idx !== -1) {
+          if (props.esAlumno) {
+        // Si es alumno, resta la cantidad de alumnos en el taller correspondiente
+        updated[idx] = {
+          ...updated[idx],
+          alumnos: updated[idx].alumnos - personasSeleccionadas.length
+        };
+          } else {
+        // Si es profesional, resta la cantidad de profesionales en el taller correspondiente
+        updated[idx] = {
+          ...updated[idx],
+          profesionales: updated[idx].profesionales - personasSeleccionadas.length
+        };
+          }
+          // Devuelve el array actualizado
+          return updated;
+        }
+        // Si no se encontró el taller, retorna el array anterior sin cambios
+        return prev;
+      });
     }
   };
 
@@ -402,7 +454,7 @@ export default function UserSelector(props: Props) {
                     onAgregarPersona();
                   }}
                   disabled={isAdding}
-                  className="bg-red-700 py-2 px-5 text-white rounded hover:bg-red-800"
+                  className="bg-blue-700 py-2 px-5 text-white rounded hover:bg-blue-800"
                 >
                   {isAdding ? "Agregando..." : "Agregar"}
                 </button>

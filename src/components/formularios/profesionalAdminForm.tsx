@@ -43,6 +43,7 @@ interface ProfesionalProps {
     nueva: boolean
     //para la imagen que hay que mostrar
     downloadUrl: string
+    setProfesionalesListaCompleta?: React.Dispatch<React.SetStateAction<any[]>>
 }
 
 const ProfesionalAdminForm: React.FC<ProfesionalProps> = (ProfesionalProps) => {
@@ -94,6 +95,10 @@ const ProfesionalAdminForm: React.FC<ProfesionalProps> = (ProfesionalProps) => {
                     imagen: nuevoUrl ? nuevoUrl : null
                 })
                 console.log(pro) 
+
+                //actualizo la lista de profesionales
+                ProfesionalProps.setProfesionalesListaCompleta?.((prev) => [...prev, pro])
+                //cambio el estado de editar
                 ProfesionalProps.setChanged(true)
                 ProfesionalProps.setEditar(false)
         }

@@ -6,7 +6,7 @@ import But_aside from "../../../components/but_aside/page";
 import Image from "next/image";
 import Background from "../../../../public/Images/BackgroundSolicitudes.jpg";
 import TabbedContent from "./tabs";
-import { getImagesUser } from "@/services/repoImage";
+import { get_rotatingImages, getImagesUser } from "@/services/repoImage";
 import RotatingImages from "@/components/start/rotatingImages";
 
 
@@ -36,7 +36,7 @@ const Nosotros = () => {
   }, [images]);
 
   const fetchImages = async () => {
-    const result = await getImagesUser();
+    const result = await get_rotatingImages();
     if (result.images) {
       setImages(result.images);
       setDownloadurls(result.downloadurls);

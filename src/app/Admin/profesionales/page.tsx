@@ -382,6 +382,7 @@ const Profesionales = () => {
             setChanged={setChanged}
             nueva={false}
             downloadUrl={selectedProfesional.id ? imageUrls[selectedProfesional.id] : ""}
+            
           />
         </div>
       )}
@@ -393,6 +394,7 @@ const Profesionales = () => {
             setChanged={setChanged}
             nueva={true}
             downloadUrl=""
+            setProfesionalesListaCompleta = {setProfesionalesListaCompleta}
           />
         </div>
       )}

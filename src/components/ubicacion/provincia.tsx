@@ -1,45 +1,61 @@
-
-import React, { use, useEffect, useRef, useState } from 'react';
-import { UseFormRegister } from 'react-hook-form';
-
+import { DireccionSchemaType } from '@/helpers/direccion';
+import { getProvincias } from '@/helpers/geo';
+import React, { useEffect, useState } from 'react';
+import { UseFormRegister, FieldErrors, useFormContext } from 'react-hook-form';
 
 interface ProvinciaPros {
     setprovincia: React.Dispatch<React.SetStateAction<string | null>>;
     provincia: string | null;
-    register: UseFormRegister<{ direccion: { localidad: string; provincia: string; pais: "Argentina"; calle: string; numero: number; } }>
-    
+    fieldPath?: string; // Default field path
+    direccionErrors?: FieldErrors<DireccionSchemaType> ;
 }
-const Provincias: React.FC<ProvinciaPros> = ({register, setprovincia, provincia}) => {
-    const [provinces, setProvinces] = useState([]);
-    const [habilitarProv, setHabilitarProv] = useState<boolean>(false)
+interface Provincia {
+    id: string;
+    nombre: string;
+}
+
+const Provincias: React.FC<ProvinciaPros> = ({
+    setprovincia,
+    provincia,
+    fieldPath,
+    direccionErrors
+}) => {
+    const [provinces, setProvinces] = useState<Provincia[]>([]);
+    const [habilitarProv, setHabilitarProv] = useState<boolean>(false);
+        const {
+            register,
+            formState: { errors },
+        } = useFormContext()
 
     useEffect(() => {
-        const fetchProvinces = async () => {
-            try {
-                const response = await fetch("https://apis.datos.gob.ar/georef/api/provincias")
-                const responseJson = await response.json();
-                setProvinces(responseJson.provincias);
-            } catch (error) {
-                console.error('Error al obtener las provincias:', error);
-            }
-        };
-        if(provinces.length === 0) fetchProvinces();
-        fetchProvinces();
+        const fetchProvinces = async () =>{
+            const response = await getProvincias()
+            console.log('response', response)
+            setProvinces(response);
+        }
+        if (provinces.length === 0) fetchProvinces();
     }, [provinces]);
 
     return (
         <div>
-            <select onClick={()=> setHabilitarProv(true)} {...register("direccion.provincia")} onChange={(e) => {setprovincia(String(e.target.value)); console.log("Id de provincia seleccionada:"+ Number(e.target.value))}} className=' mt-1 border p-2 rounded w-full text-sm'>
-                <option value="">{(!provincia || habilitarProv ) ? "Seleccione una provincia" :provincia }</option>
-                {provinces.map((province: { id: string; nombre: number }) => (
+            <select
+                {...register(`${fieldPath}.provincia`, { required: 'La provincia es obligatoria' })}
+                onClick={() => setHabilitarProv(true)}
+                onChange={(e) => setprovincia(String(e.target.value))}
+                className={`mt-1 border p-2 rounded w-full text-sm `}
+            >
+                <option value="">{(!provincia || habilitarProv) ? "Seleccione una provincia" : provincia}</option>
+                {provinces.map((province: Provincia) => (
                     <option key={province.id} value={province.nombre}>
                         {province.nombre}
                     </option>
                 ))}
             </select>
-
+            {direccionErrors?.provincia && (
+                <p className="text-destructive text-sm mt-1">{direccionErrors?.provincia.message}</p>
+            )}
         </div>
-
     );
 };
+
 export default Provincias;

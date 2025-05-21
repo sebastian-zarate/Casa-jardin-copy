@@ -110,7 +110,7 @@ const AlumnoForm: React.FC<AlumnoProps> = (AlumnoProps) => {
     })) {
       console.log("no hay cambios")
       await new Promise((resolve) => setTimeout(resolve, 1000))
-      console.log(data)
+     // console.log(data)
       AlumnoProps.setEditar(false)
       return
     }
@@ -139,8 +139,8 @@ const AlumnoForm: React.FC<AlumnoProps> = (AlumnoProps) => {
 
   const cancelar = () => {
     console.log("errores alumno form: ", errors)
-    console.log(AlumnoProps.alumno)
-    console.log(AlumnoProps.alumno?.direccion)
+   // console.log(AlumnoProps.alumno)
+   // console.log(AlumnoProps.alumno?.direccion)
     AlumnoProps.setEditar(false)
   }
 

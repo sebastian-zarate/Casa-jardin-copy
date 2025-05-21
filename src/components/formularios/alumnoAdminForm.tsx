@@ -83,6 +83,7 @@ const AlumnoAdminForm: React.FC<FormProps> = (FormProps) => {
           const direccion = await fetchDireccion(FormProps.alumno.direccionId);
           if (direccion) {
             methods.setValue("direccion", { ...direccion, pais: "Argentina" });
+          //  console.log("direccion: ", direccion)
           }
          
         }
@@ -90,6 +91,7 @@ const AlumnoAdminForm: React.FC<FormProps> = (FormProps) => {
           const responsable = await fetchResponsable(FormProps.alumno.id);
           if (responsable) {
             methods.setValue("responsable", responsable);
+            console.log("responsableeeeeeee: ", responsable)
           }
         }
       } catch (error) {
@@ -122,6 +124,14 @@ const AlumnoAdminForm: React.FC<FormProps> = (FormProps) => {
       if(res){
         res.direccionId ? dire = await fetchDireccion(res.direccionId) : null
         //devuelve un responsable con el formato de responsableSchema
+         if (dire) {
+            methods.setValue("responsable.direccion", { ...dire, pais: "Argentina" });
+            console.log("direccionNNNNNNNNNNNNNNNNN: ", dire)
+          }
+          else {
+            console.log("NOOOOOOOOo hay direccion")
+          }
+          
         return {
           id: res.id,
           nombre: res.nombre,
@@ -161,6 +171,8 @@ const AlumnoAdminForm: React.FC<FormProps> = (FormProps) => {
         calle: "",
         numero: undefined,
       },
+      responsable: FormProps.alumno?.responsable,
+     
     },
   })
 
@@ -186,10 +198,10 @@ const AlumnoAdminForm: React.FC<FormProps> = (FormProps) => {
     } */
 
     //si hay cambios
-    
+   // console.log(data.direccion)
     //paso 1 actualizar / crear direccion
     const direccion = await direccionHelper(data.direccion)
-
+   // console.log("direccionALumno: ", direccion)
     //paso 2 actualizar alumno
     if(FormProps.alumno?.id){
       //cambio el direccion id por los nuevos datos
@@ -220,17 +232,18 @@ const AlumnoAdminForm: React.FC<FormProps> = (FormProps) => {
           telefono: data.telefono,
           direccionId: direccion?.id
         })
+        //console.log("alumno actualizado: ", upAl)
       }
 
       //paso 3 actualiar el responsable si es menor
       if(!FormProps.mayor && data.responsable){
-        
+       // console.log("responsableantes del helper: ", data.responsable)
         //paso 3.1 actualizar / crear direccion responsable
         const dirRes = await direccionHelper(data.responsable.direccion)
         data.responsable.direccionId = dirRes?.id
-
+       // console.log("direccion responsable: ", dirRes)
         //paso 3.2 actualizar responsable
-        const r = await updateResponsable( FormProps.alumno.id,{
+         await updateResponsable( FormProps.alumno.id,{
           alumnoId: FormProps.alumno.id,
           nombre: data.responsable?.nombre,
           apellido: data.responsable?.apellido,
@@ -239,7 +252,7 @@ const AlumnoAdminForm: React.FC<FormProps> = (FormProps) => {
           email: data.responsable?.email,
           direccionId: dirRes?.id
         })
-        console.log("responsable actualizado: ", r)
+        //console.log("responsable actualizado: ", r)
       }
 
       FormProps.setChanged(true)
@@ -290,7 +303,7 @@ const AlumnoAdminForm: React.FC<FormProps> = (FormProps) => {
   const cancelar = () => {
     console.log("errores alumno form: ", errors)
     console.log(FormProps.alumno)
-    console.log(FormProps.alumno?.direccion)
+    console.log(methods.getValues().responsable)
     FormProps.setEditar(false)
   }
 
@@ -361,7 +374,7 @@ const AlumnoAdminForm: React.FC<FormProps> = (FormProps) => {
              </CardTitle>
            </CardHeader>
            <CardContent className="pt-6">
-             <DireccionAdminForm fieldPath={"direccion"}/>
+             <DireccionAdminForm fieldPath={"direccion"} />
            </CardContent>
          </Card>
 

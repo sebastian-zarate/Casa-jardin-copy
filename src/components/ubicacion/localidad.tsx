@@ -1,49 +1,70 @@
-// components/LocalitiesSearch.tsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { API } from '@/helpers/Api';
-import { UseFormRegister } from 'react-hook-form';
+
+import { FieldErrors, useFormContext, UseFormRegister } from 'react-hook-form';
+import { DireccionSchemaType } from '@/helpers/direccion';
+import { getLocalidadesByProvincia } from '@/helpers/geo';
+interface Localidad {
+    id: string;
+    nombre: string;
+    provincia: { id: string; nombre: string };
+}
+
 
 
 interface localidadProps {
-    provinciaName: string | null
+    provinciaName: string | null;
     setLocalidad: React.Dispatch<React.SetStateAction<string | null>>;
     localidad: string | null;
-    register: UseFormRegister<{ direccion: { localidad: string; provincia: string; pais: "Argentina"; calle: string; numero: number; } }>
+    fieldPath?: string; // Default field path
+    direccionErrors?:  FieldErrors<DireccionSchemaType> ;
 }
 
-const Localidades: React.FC<localidadProps> = ({ provinciaName, setLocalidad, localidad, register }) => {
-    const [localities, setLocalities] = useState([]);
-    const [habilitarLocalidades, setHabilitarLocalidades]= useState<Boolean>(false)
-
+const Localidades: React.FC<localidadProps> = ({
+    provinciaName,
+    setLocalidad,
+    localidad,
+    fieldPath,
+    direccionErrors,
+}) => {
+    const [localities, setLocalities] = useState<Localidad[]>([]);
+    const [habilitarLocalidades, setHabilitarLocalidades] = useState<Boolean>(false);
+    const {
+        register,
+        formState: { errors },
+    } = useFormContext()
     useEffect(() => {
-        const handleProvinceChange = async () => {
-            try {
-                const response = await axios.get(API + `localidades?provincia=${provinciaName}&max=900`);
-                const sortedLocalities = response.data.localidades.sort((a: { nombre: string }, b: { nombre: string }) => a.nombre.localeCompare(b.nombre));
-                setLocalities(sortedLocalities);
-                
-            } catch (error) {
-                console.error('Error al obtener las localidades:', error);
+        
+        if(localities.length === 0 && provinciaName) {
+            const fetchLocalities = async () => {
+                const responde = await getLocalidadesByProvincia(provinciaName);
+                //console.log('responde', responde)
+                setLocalities(responde);
             }
-        };
-/*         if (localities.length === 0) {
-            handleProvinceChange();
-        } */
-        handleProvinceChange();
-
-    }, [localities, provinciaName]);
+            fetchLocalities();
+        }
+    }, [provinciaName]);
 
     return (
         <div>
-            <select {...register("direccion.localidad")} onClick={()=>setHabilitarLocalidades(true)}  onChange={(e) => {setLocalidad(String(e.target.value)); }} className=' border p-2 rounded mt-1 text-sm w-full'>
-                <option>{ (!habilitarLocalidades && localidad) ? localidad: "Seleccione una localidad"}</option>
-                {localities.map((locality: { nombre: string, id: number }) => (
+            <select
+                {...register(`${fieldPath}.localidad`, { required: "La localidad es obligatoria" })}
+                onClick={() => setHabilitarLocalidades(true)}
+                onChange={(e) => {
+                    setLocalidad(String(e.target.value));
+                }}
+                className="border p-2 rounded mt-1 text-sm w-full"
+            >
+                <option>{!habilitarLocalidades && localidad ? localidad : "Seleccione una localidad"}</option>
+                {localities.map((locality: Localidad) => (
                     <option key={locality.id} value={locality.nombre}>
                         {habilitarLocalidades && locality.nombre}
                     </option>
                 ))}
             </select>
+            {direccionErrors?.localidad && (
+                <p className="text-destructive text-sm mt-1">{direccionErrors.localidad?.message}</p>
+            )}
         </div>
     );
 };

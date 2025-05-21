@@ -17,6 +17,7 @@ import CursoForm from "./../../../components/formularios/CursoForm";
 import { Alumno, getAlumnos } from "@/services/Alumno";
 import UserSelector from "@/components/Admin/userSelector";
 import { getProfesionalesByCursoId } from "@/services/profesional_curso";
+import Talleres from "@/components/talleres/page";
 
 const Cursos: React.FC = () => {
   // Estado para almacenar la lista de cursos
@@ -84,9 +85,22 @@ const Cursos: React.FC = () => {
   //Estado para abrir el modal de agregar alumnos
   const [openModalAlumnos, setOpenModalAlumnos] = useState(false);
 
-    //Estado para abrir el modal de agregar profesionales
+  //Estado para abrir el modal de agregar profesionales
   const [openModalProfesionales, setOpenModalProfesionales] = useState(false);
 
+  // Estado para almacenar la cantidad de alumnos y profesionales por taller (matriz)
+  const [participantesPorTaller, setParticipantesPorTaller] = useState<
+    { cursoId: number; alumnos: number; profesionales: number }[]
+  >([]);
+
+  // Método para obtener la cantidad de alumnos o profesionales por id de taller
+  const getCantidadPorTaller = (
+    cursoId: number,
+    tipo: "alumnos" | "profesionales"
+  ): number => {
+    const entry = participantesPorTaller.find((p) => p.cursoId === cursoId);
+    return entry ? entry[tipo] : 0;
+  };
   const router = useRouter();
 
   // Autorización de admin
@@ -99,8 +113,8 @@ const Cursos: React.FC = () => {
 
   // Cargar cursos al iniciar
   useEffect(() => {
-    fetchCursos();
-  }, []);
+    if (cursos.length === 0) fetchCursos();
+  }, [cursos]);
 
   // Cargar imágenes después de cargar cursos
   useEffect(() => {
@@ -132,6 +146,7 @@ const Cursos: React.FC = () => {
 
 
 
+
   // Función para obtener la lista de cursos
   async function fetchCursos() {
     try {
@@ -143,9 +158,15 @@ const Cursos: React.FC = () => {
         selected: false,
         cantidadProfesionales: curso.cantidadProfesionales,
         cantidadAlumnos: curso.cantidadAlumnos,
-        
+
 
       })));
+      const participantes = curs.map((curso: any) => ({
+        cursoId: curso.id,
+        alumnos: curso.cantidadAlumnos || 0,
+        profesionales: curso.cantidadProfesionales || 0,
+      }));
+      setParticipantesPorTaller(participantes);
     } catch (error) {
       console.error("Error al cargar los cursos:", error);
     } finally {
@@ -333,7 +354,7 @@ const Cursos: React.FC = () => {
                   Comienza creando un taller
                 </p>
               </div>
-            ) :  (
+            ) : (
               filteredCursos.map((talleres) => (
                 // Tarjetas responsivas
                 <div
@@ -373,7 +394,7 @@ const Cursos: React.FC = () => {
                   {/* Participantes */}
                   <div className="sm:col-span-2 flex items-center justify-center gap-1.5 mb-4 sm:mb-0">
                     <button
-                    title="Alumnos inscriptos"
+                      title="Alumnos inscriptos"
                       onClick={() => {
                         fetchAlumnosByIdCurso(talleres.id);
                         setCursoSelected(talleres);
@@ -382,10 +403,10 @@ const Cursos: React.FC = () => {
                       className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-800"
                     >
                       <GraduationCap className="w-5 h-5 text-gray-400 hover:text-blue-600" />
-                      <span>{talleres.cantidadAlumnos || 0}</span>
+                      <span>{getCantidadPorTaller(talleres.id, "alumnos") || 0}</span>
                     </button>
                     <button
-                    title="Profesionales inscriptos"
+                      title="Profesionales inscriptos"
                       onClick={() => {
                         fetcProfesionalesByIdCurso(talleres.id);
                         setCursoSelected(talleres);
@@ -394,7 +415,7 @@ const Cursos: React.FC = () => {
                       className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-800"
                     >
                       <UserRound className="w-5 h-5 text-gray-400 hover:text-blue-600" />
-                      <span>{talleres.cantidadProfesionales || 0}</span>
+                      <span>{getCantidadPorTaller(talleres.id, "profesionales") || 0}</span>
                     </button>
                   </div>
 
@@ -426,28 +447,29 @@ const Cursos: React.FC = () => {
       {(openModalAlumnos || openModalProfesionales) && cursoselected && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <UserSelector
-        curso={{
-          id: cursoselected.id,
-          nombre: `${cursoselected.nombre}`,
-          personas: [] // Provide an empty array or the appropriate data
-        }}
-        esAlumno={openModalAlumnos ? true : false}
-        setEditar={(isOpen) => {
-          if (openModalAlumnos) {
-            setOpenModalAlumnos(isOpen);
-          } else {
-            setOpenModalProfesionales(isOpen);
-          }
-          if (!isOpen) {
-            fetchCursos(); // Update the list of courses when the modal is closed
-            // traer las imegenes
-            fetchImages();
-          }
-        }}
-        setCursoSelected={setCursoSelected}
-        cursoselected={cursoselected ? { ...cursoselected, personas: [] } : null}
-        personas={openModalAlumnos ? alumnos : profesionales}
-        setPersonas={openModalAlumnos ? setAlumnos : setProfesionales}
+            curso={{
+              id: cursoselected.id,
+              nombre: `${cursoselected.nombre}`,
+              personas: [] // Provide an empty array or the appropriate data
+            }}
+            setParticipantesPorTaller = {setParticipantesPorTaller}
+            esAlumno={openModalAlumnos ? true : false}
+            setEditar={(isOpen) => {
+              if (openModalAlumnos) {
+                setOpenModalAlumnos(isOpen);
+              } else {
+                setOpenModalProfesionales(isOpen);
+              }
+              if (!isOpen) {
+                fetchCursos(); // Update the list of courses when the modal is closed
+                // traer las imegenes
+                fetchImages();
+              }
+            }}
+            setCursoSelected={setCursoSelected}
+            cursoselected={cursoselected ? { ...cursoselected, personas: [] } : null}
+            personas={openModalAlumnos ? alumnos : profesionales}
+            setPersonas={openModalAlumnos ? setAlumnos : setProfesionales}
           />
         </div>
       )}

@@ -13,6 +13,7 @@ import { DireccionAdminForm } from "./direccionAdminForm"
 
 
 
+
 export const responsableSchema = z.object({
   id: z.number().optional(),
   nombre: z
@@ -96,7 +97,7 @@ export const ResponsableAdminForm: React.FC = () => {
                 <div>
                 </div>
             </div>
-            <DireccionAdminForm fieldPath="responsable.direccion" />
+            <DireccionAdminForm fieldPath="responsable.direccion"  />
         </div>
         
     )

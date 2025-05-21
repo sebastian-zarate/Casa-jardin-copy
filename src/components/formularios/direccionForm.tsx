@@ -38,12 +38,12 @@ export const DireccionForm: React.FC = () => {
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <div>
         <Label htmlFor="pais">País</Label>
-        <Input id="pais" type="text" {...register("direccion.pais")} className="mt-1" />
+        <Input id="pais" type="text" readOnly {...register("direccion.pais")} className="mt-1" />
         {errors.direccion?.pais && <p className="text-destructive text-sm mt-1">{errors.direccion.pais.message}</p>}
       </div>
       <div >
         <Label htmlFor="provincia">Provincia</Label>
-        <Provincias setprovincia={setProvincia} provincia={provincia} register={register} />
+        <Provincias setprovincia={setProvincia} provincia={provincia} />
         {errors.direccion?.provincia && (
           <p className="text-destructive text-sm mt-1">{errors.direccion.provincia.message}</p>
         )}
@@ -51,7 +51,7 @@ export const DireccionForm: React.FC = () => {
 
       <div >
         <Label htmlFor="localidad">Localidad</Label>
-        <Localidades setLocalidad={setLocalidad} provinciaName={provincia} localidad={localidad} register={register} />       
+        <Localidades setLocalidad={setLocalidad} provinciaName={provincia} localidad={localidad}  />       
         {errors.direccion?.localidad && (
           <p className="text-destructive text-sm mt-1">{errors.direccion.localidad.message}</p>
         )}
