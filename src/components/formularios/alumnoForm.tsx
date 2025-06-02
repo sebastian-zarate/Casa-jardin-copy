@@ -110,7 +110,7 @@ const AlumnoForm: React.FC<AlumnoProps> = (AlumnoProps) => {
     })) {
       console.log("no hay cambios")
       await new Promise((resolve) => setTimeout(resolve, 1000))
-     // console.log(data)
+      // console.log(data)
       AlumnoProps.setEditar(false)
       return
     }
@@ -139,8 +139,8 @@ const AlumnoForm: React.FC<AlumnoProps> = (AlumnoProps) => {
 
   const cancelar = () => {
     console.log("errores alumno form: ", errors)
-   // console.log(AlumnoProps.alumno)
-   // console.log(AlumnoProps.alumno?.direccion)
+    // console.log(AlumnoProps.alumno)
+    // console.log(AlumnoProps.alumno?.direccion)
     AlumnoProps.setEditar(false)
   }
 
@@ -201,27 +201,35 @@ const AlumnoForm: React.FC<AlumnoProps> = (AlumnoProps) => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
                   <Label htmlFor="dni">DNI</Label>
-                  <Input id="dni" type="text" {...register("dni", { valueAsNumber: true })} className="mt-1" />
+                  <Input id="dni" placeholder="DNI del alumno" type="text" {...register("dni", { valueAsNumber: true })} className="mt-1" />
                   {errors.dni && <p className="text-destructive text-sm mt-1">{errors.dni.message}</p>}
                 </div>
                 {AlumnoProps.mayor && (
                   <div>
                     <Label htmlFor="telefono">Teléfono</Label>
-                    <Input id="telefono" maxLength={11} type="text" {...register("telefono")} className="mt-1" />
+                    <Input id="telefono" placeholder="Teléfono del alumno" maxLength={11} type="text" {...register("telefono")} className="mt-1" />
                     {errors.telefono && <p className="text-destructive text-sm mt-1">{errors.telefono.message}</p>}
                   </div>
                 )}
-                <div>
-                  <button type="button" className=" hover:underline" onClick={ ()=> setShowEmailVerification(true)}>Cambiar Contraseña</button>
+                <div className="">
+                    <div className="flex  mt-7">
+                    <Button
+                      type="button"
+                      onClick={() => setShowEmailVerification(true)}
+                      className="mt-auto p-4 bg-slate-500 hover:bg-slate-700 text-white"
+                    >
+                      Cambiar contraseña
+                    </Button>
+                    </div>
                 </div>
                 {showEmailVerification && (
-                        <PasswordComponent
-                            email={String(AlumnoProps.alumno?.email)}
-                            setVerificarEmail={setShowEmailVerification}
-                            setSaving={setIsSaving}
-                        />
-                    )}
-                </div>
+                  <PasswordComponent
+                    email={String(AlumnoProps.alumno?.email)}
+                    setVerificarEmail={setShowEmailVerification}
+                    setSaving={setIsSaving}
+                  />
+                )}
+              </div>
             </CardContent>
           </Card>
 

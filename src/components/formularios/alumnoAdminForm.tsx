@@ -326,12 +326,12 @@ const AlumnoAdminForm: React.FC<FormProps> = (FormProps) => {
              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                <div>
                  <Label htmlFor="nombre">Nombre</Label>
-                 <Input id="nombre" type="text" {...register("nombre")} className="mt-1" />
+                 <Input id="nombre" placeholder="Nombre del alumno" type="text" {...register("nombre")} className="mt-1" />
                  {errors.nombre && <p className="text-destructive text-sm mt-1">{errors.nombre.message}</p>}
                </div>
                <div>
                  <Label htmlFor="apellido">Apellido</Label>
-                 <Input id="apellido" type="text" {...register("apellido")} className="mt-1" />
+                 <Input id="apellido" placeholder="Apellido del alumno" type="text" {...register("apellido")} className="mt-1" />
                  {errors.apellido && <p className="text-destructive text-sm mt-1">{errors.apellido.message}</p>}
                </div>
                <div>
@@ -341,24 +341,24 @@ const AlumnoAdminForm: React.FC<FormProps> = (FormProps) => {
                </div>
                <div>
                  <Label htmlFor="email">Email</Label>
-                 <Input id="email" type="email" {...register("email")} className="mt-1" />
+                 <Input id="email" placeholder="Correo electrónico del alumno" type="email" {...register("email")} className="mt-1" />
                  {errors.email && <p className="text-destructive text-sm mt-1">{errors.email.message}</p>}
                </div>
                <div>
                  <Label htmlFor="password">Contraseña</Label>
                   <Input id="password" type="text" {...register("password")} className="mt-1" 
-                  placeholder={FormProps.nueva ? "" : "cambiar contraseña (opcional)"}/>
+                  placeholder={FormProps.nueva ? "Contraseña del alumno" : "cambiar contraseña (opcional)"}/>
                   {errors.password && <p className="text-destructive text-sm mt-1">{errors.password.message}</p>}
                </div>
                <div>
                  <Label htmlFor="dni">DNI</Label>
-                 <Input id="dni" type="text" {...register("dni", { valueAsNumber: true })} className="mt-1" />
+                 <Input id="dni" placeholder="DNI (sin puntos) del alumno" type="text" {...register("dni", { valueAsNumber: true })} className="mt-1" />
                  {errors.dni && <p className="text-destructive text-sm mt-1">{errors.dni.message}</p>}
                </div>
                {FormProps.mayor && (
                  <div>
                    <Label htmlFor="telefono">Teléfono</Label>
-                   <Input id="telefono" type="text" {...register("telefono")} className="mt-1" />
+                   <Input id="telefono" placeholder="Teléfono del alumno" type="text" {...register("telefono")} className="mt-1" />
                    {errors.telefono && <p className="text-destructive text-sm mt-1">{errors.telefono.message}</p>}
                  </div>
                )}

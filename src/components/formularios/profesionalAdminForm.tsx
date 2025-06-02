@@ -193,33 +193,33 @@ const ProfesionalAdminForm: React.FC<ProfesionalProps> = (ProfesionalProps) => {
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <div>
                       <Label htmlFor="nombre">Nombre</Label>
-                      <Input id="nombre" type="text" {...register("nombre")} className="mt-1" />
+                      <Input id="nombre" placeholder="Nombre del Profesional" type="text" {...register("nombre")} className="mt-1" />
                       {errors.nombre && <p className="text-destructive text-sm mt-1">{errors.nombre.message}</p>}
                     </div>
                     <div>
                       <Label htmlFor="apellido">Apellido</Label>
-                      <Input id="apellido" type="text" {...register("apellido")} className="mt-1" />
+                      <Input id="apellido" placeholder="Apellido del Profesional" type="text" {...register("apellido")} className="mt-1" />
                       {errors.apellido && <p className="text-destructive text-sm mt-1">{errors.apellido.message}</p>}
                     </div>
                     <div>
                       <Label htmlFor="especialidad">Especialidad</Label>
-                      <Input id="especialidad" type="text" {...register("especialidad")} className="mt-1" />
+                      <Input id="especialidad" placeholder="Especialidad del Profesional" type="text" {...register("especialidad")} className="mt-1" />
                       {errors.especialidad && <p className="text-destructive text-sm mt-1">{errors.especialidad.message}</p>}
                     </div>
                     <div>
                       <Label htmlFor="email">Email</Label>
-                      <Input id="email" type="email" {...register("email")} className="mt-1" />
+                      <Input id="email" placeholder="Correo electrónico del Profesional" type="email" {...register("email")} className="mt-1" />
                       {errors.email && <p className="text-destructive text-sm mt-1">{errors.email.message}</p>}
                     </div>
                     <div>
                         <Label htmlFor="password">Contraseña</Label>
                         <Input id="password" type="text" {...register("password")} className="mt-1" 
-                        placeholder={ProfesionalProps.nueva ? "" : "cambiar contraseña (opcional)"}/>
+                        placeholder={ProfesionalProps.nueva ? "Contraseña del Profesional" : "cambiar contraseña (opcional)"}/>
                         {errors.password && <p className="text-destructive text-sm mt-1">{errors.password.message}</p>}
                     </div>
                     <div>
                       <Label htmlFor="telefono">Teléfono</Label>
-                      <Input id="telefono" type="text" {...register("telefono")} className="mt-1" />
+                      <Input id="telefono" placeholder="Teléfono del Profesional" type="text" {...register("telefono")} className="mt-1" />
                       {errors.telefono && <p className="text-destructive text-sm mt-1">{errors.telefono.message}</p>}
                     </div>
                     <div>

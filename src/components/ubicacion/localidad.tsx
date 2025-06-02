@@ -55,10 +55,12 @@ const Localidades: React.FC<localidadProps> = ({
                 }}
                 className="border p-2 rounded mt-1 text-sm w-full"
             >
-                <option>{!habilitarLocalidades && localidad ? localidad : "Seleccione una localidad"}</option>
+                <option value="" disabled selected={!localidad}>
+                    Seleccione una localidad
+                </option>
                 {localities.map((locality: Localidad) => (
                     <option key={locality.id} value={locality.nombre}>
-                        {habilitarLocalidades && locality.nombre}
+                        {locality.nombre}
                     </option>
                 ))}
             </select>
