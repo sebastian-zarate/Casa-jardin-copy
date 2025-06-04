@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Mail, CheckCircle2, XCircle, Loader2, KeyRound } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { changePassword } from "@/services/Alumno";
+import PasswordInput from "../passwordInput/passwordForm";
 
 interface Datos {
   email: string;
@@ -145,21 +146,7 @@ const Paswordcomponent: React.FC<Datos> = ({ email, setVerificarEmail, setSaving
 
                 </div>
                 <div className="relative">
-                  <Input
-                    type="password"
-                    value={newPasword}
-                    onChange={(e) => {
-                      setNewPassword(e.target.value);
-                      setErrorMessage({});
-                    }}
-                    placeholder="Ingrese la nueva contraseña"
-                    className={`pr-10 ${errorMessage.newPassw ? 'border-red-500' : ''}`}
-                    maxLength={40}
-                  />
-
-                  {errorMessage && (
-                    <p className="text-sm text-red-500 mt-1 max-w-[30vh]">{errorMessage.newPassw}</p>
-                  )}
+                 <PasswordInput errors={{ password: errorMessage?.newPassw }} setPassword={setNewPassword} password={newPasword} placeholderPassw={"Ingrese su nueva contraseña"}/>
                 </div>
 
               </div>

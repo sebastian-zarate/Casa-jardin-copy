@@ -1,6 +1,5 @@
-import { emailExists } from "@/services/Alumno";
-
-
+// validaciones.ts
+// Este archivo contiene funciones de validación para diferentes campos de entrada, como DNI, email, contraseña, dirección, nombre y apellido.
 
 export  const caracEspeciales = /^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/; // Expresión regular correcta para validar nombres y apellidos
 export function validateDni(dni: string) {
