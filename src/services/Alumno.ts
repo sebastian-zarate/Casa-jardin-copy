@@ -89,14 +89,14 @@ export async function createAlumnoAdmin(data: {
     password: data.password.trim(),
     telefono: data?.telefono?.trim(),
     direccionId: data?.direccionId,
-    dni:  Number(data.dni),
+    dni: Number(data.dni),
     fechaNacimiento: data.fechaNacimiento,
     mayoriaEdad: data?.mayoriaEdad,
     rolId: 2
   }
   // Verificar si el email ya existe en la base de datos
   const existingAlumno = await emailExists(data.email.trim());
-    // Convertir fechaNacimiento a Date si está presente
+  // Convertir fechaNacimiento a Date si está presente
   data.fechaNacimiento = new Date(data.fechaNacimiento);
   if (existingAlumno) {
     return "El email ya está registrado";
@@ -105,7 +105,7 @@ export async function createAlumnoAdmin(data: {
   const hashedPassword = await hashPassword(data.password.trim());
   data.password = hashedPassword;
 
-//  console.log("fecha:", data.fechaNacimiento)
+  //  console.log("fecha:", data.fechaNacimiento)
   console.log("CREANDO ALUMNO COMO ADMIN")
   // Guardar el alumno
   const alum = await prisma.alumno.create({
@@ -121,7 +121,7 @@ export async function createAlumnoAdmin(data: {
 export async function authenticateUser(email: string, password: string): Promise<string | number> {
   const tables = ['alumno', 'administrador', 'profesional'] as const;
   type Table = typeof tables[number];
-  
+
   // Realiza búsquedas en paralelo para cada tabla y espera el primer resultado exitoso
   const userResults = await Promise.all(
     tables.map((table) => (prisma[table as Table] as any).findUnique({ where: { email } }))
@@ -142,7 +142,7 @@ export async function authenticateUser(email: string, password: string): Promise
       return user.rolId; // Retorna el rol del usuario autenticado
     }
   }
-  
+
   return ""; // Devuelve null si no se encuentra usuario válido en ninguna tabla
 }
 
@@ -175,16 +175,16 @@ export async function updateAlumno(id: number, data: {
   // Verificar si el alumno existe
   const alumno = await prisma.alumno.findUnique({ where: { id } });
   if (!alumno) {
-    return("El alumno no existe.");
+    return ("El alumno no existe.");
   }
   // Verificar si el email ya existe en la base de datos
   const existingAlumno = await verifyusuario(id, data.email.trim(), alumno.email.trim());
   if (!existingAlumno) {
-    return("El email ya está registrado");
+    return ("El email ya está registrado");
   }
-  
+
   if (data.fechaNacimiento) data.fechaNacimiento = new Date(data.fechaNacimiento);
- 
+
 
   //console.log("Actualizando alumno password", data.password);
   // Crear objeto de datos del alumno
@@ -205,17 +205,17 @@ export async function updateAlumno(id: number, data: {
     }
   }
   // Si no se envía la contraseña, no se actualiza
-  if(!alumnoTrim.password){
+  if (!alumnoTrim.password) {
     // Actualizar el alumno
     alumnoData = {
-    id: id,
-    nombre: alumnoTrim.nombre,
-    apellido: alumnoTrim.apellido,
-    dni: alumnoTrim.dni,
-    telefono: alumnoTrim.telefono,
-    direccionId: alumnoTrim.direccionId,
-    email: alumnoTrim.email,
-    fechaNacimiento: alumnoTrim.fechaNacimiento,
+      id: id,
+      nombre: alumnoTrim.nombre,
+      apellido: alumnoTrim.apellido,
+      dni: alumnoTrim.dni,
+      telefono: alumnoTrim.telefono,
+      direccionId: alumnoTrim.direccionId,
+      email: alumnoTrim.email,
+      fechaNacimiento: alumnoTrim.fechaNacimiento,
     }
   }
   console.log("Actualizando alumno", alumnoData);
@@ -225,19 +225,34 @@ export async function updateAlumno(id: number, data: {
   });
 }
 //cambiar contraseña
-export async function changePassword(password:string, newPassword:string, email:string) {
+export async function changePassword(password: string, newPassword: string, email: string) {
   console.log(password, newPassword, email);
-  const alumno = await prisma.alumno.findUnique({ where: { email: email.trim()  } });
+  const alumno = await prisma.alumno.findUnique({ where: { email: email.trim() } });
   if (!alumno) {
-    return  "El alumno no existe." ;
+    const admin = await prisma.administrador.findUnique({ where: { email: email.trim() } });
+    if (!admin) return "El usuario no se encuentra registrado";
+    if (!await verifyPassword(password, admin.password)) {
+      return "Contraseña incorrecta.";
+    }
+    // verificar si la contraseña cumple con los requisitos
+    const verify = validatePasswordComplexity(newPassword.trim())
+
+    if (typeof verify === "string") { return verify };
+
+    const hashedPassword = await hashPassword(newPassword.trim());
+    console.log("Se guardó correctamente la contraseña");
+    return await prisma.administrador.update({
+      where: { id: admin.id },
+      data: { password: hashedPassword },
+    });
   }
   if (!await verifyPassword(password, alumno.password)) {
-    return  "Contraseña incorrecta.";
+    return "Contraseña incorrecta.";
   }
   // verificar si la contraseña cumple con los requisitos
   const verify = validatePasswordComplexity(newPassword.trim())
-  
-  if ( typeof verify === "string") {return verify};
+
+  if (typeof verify === "string") { return verify };
 
   const hashedPassword = await hashPassword(newPassword.trim());
   console.log("Se guardó correctamente la contraseña");
@@ -263,10 +278,10 @@ export async function getAlumnoByCookie() {
       }
     });
     return alumno;
-  } else{
+  } else {
     return null;
   }
-   
+
 }
 
 // Obtener Alumnos
@@ -277,11 +292,11 @@ export async function getAlumnos() {
 
 export async function deleteAlumno(id: number) {
   console.log("Eliminando alumno", id);
-  try{
-    const foundAlumno =await prisma.alumno_Curso.deleteMany({
+  try {
+    const foundAlumno = await prisma.alumno_Curso.deleteMany({
       where: { alumnoId: id }
     })
-    if(!foundAlumno){
+    if (!foundAlumno) {
       return 'No se encontró el alumno'
     }
     const x = await prisma.alumno.delete({
@@ -290,7 +305,7 @@ export async function deleteAlumno(id: number) {
     console.log("Alumno eliminado", x);
     return x
   }
-  catch(err){
+  catch (err) {
     console.log("Error al eliminar alumno", err);
     return null;
   }
@@ -319,15 +334,15 @@ export async function emailExists(email: string): Promise<boolean> {
         try {
           return await (prisma[table as Table] as any).findUnique({ where: { email } });
         } catch (error) {
-          
+
           return null; // Si hay error en la consulta, devolvemos null
         }
       })
     );
-  
+
     return userResults.some((user) => user !== null);
   } catch (error) {
-   
+
     return false; // Si hay algún error general, devolvemos false
   }
 }
@@ -337,7 +352,7 @@ export async function emailExists(email: string): Promise<boolean> {
 export async function dniExists(dni: number): Promise<boolean> {
   // Realiza búsquedas en paralelo para cada tabla y espera el primer resultado exitoso
   try {
-    const userResults = await prisma.alumno.findUnique({ where: {dni} }
+    const userResults = await prisma.alumno.findUnique({ where: { dni } }
     );
     // Busca el primer usuario que no sea null
     // si existe el dni retorna true
@@ -386,12 +401,12 @@ export async function verifyusuario(id: number, email: string, currentEmail: str
 }
 
 //verificar si el alumno pertenece a algun curso
-export async function verifyAlumnoCurso(alumnoId: number){
-   const alumnoExist = await getalumnos_cursoByIdAlumno(alumnoId);
-    if(alumnoExist){
-      return true;
-    }
-    return false;
+export async function verifyAlumnoCurso(alumnoId: number) {
+  const alumnoExist = await getalumnos_cursoByIdAlumno(alumnoId);
+  if (alumnoExist) {
+    return true;
+  }
+  return false;
 }
 
 export async function updateAlumnoCuenta(alumnoId: number, data: {
